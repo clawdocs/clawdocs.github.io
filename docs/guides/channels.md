@@ -1,0 +1,132 @@
+---
+sidebar_position: 2
+title: Channels & Integrations
+description: Connect OpenClaw to WhatsApp, Telegram, Discord, Slack, Gmail, and 50+ other platforms
+---
+
+# Channels & Integrations
+
+OpenClaw can communicate through 50+ platforms. Each connection is called a **channel**.
+
+## Supported Channels
+
+### Messaging Platforms
+
+| Channel | Status | Auth Method |
+|---------|--------|-------------|
+| WhatsApp | Stable | QR code scan |
+| Telegram | Stable | Bot token |
+| Discord | Stable | Bot token |
+| Slack | Stable | OAuth app |
+| Signal | Stable | Phone number link |
+| iMessage | macOS only | System integration |
+| Microsoft Teams | Stable | Azure AD app |
+| Google Chat | Stable | Service account |
+| Matrix | Stable | Access token |
+| WebChat | Built-in | Gateway URL |
+
+### Service Integrations
+
+| Integration | Capabilities |
+|-------------|-------------|
+| **Gmail** | Read, send, search, label emails |
+| **GitHub** | Issues, PRs, notifications, code review |
+| **Spotify** | Playback control, playlist management |
+| **Obsidian** | Read/write notes, search vault |
+| **Hue** | Smart light control |
+| **Calendar** | Google Calendar, Outlook events |
+| **Twitter/X** | Read timeline, post tweets |
+| **Browser** | Full Chromium automation |
+
+## Adding a Channel
+
+```bash
+# Interactive setup
+openclaw channel add <channel-name>
+
+# Examples
+openclaw channel add whatsapp
+openclaw channel add telegram
+openclaw channel add discord
+openclaw channel add gmail
+```
+
+Each channel walks you through authentication specific to that platform.
+
+## Channel Configuration
+
+```yaml title="~/.openclaw/config.yml"
+channels:
+  whatsapp:
+    enabled: true
+    auto_reply: true
+    allowed_contacts: []  # Empty = all contacts
+
+  telegram:
+    enabled: true
+    bot_token: "${TELEGRAM_BOT_TOKEN}"
+    allowed_chat_ids: []
+
+  discord:
+    enabled: true
+    bot_token: "${DISCORD_BOT_TOKEN}"
+    allowed_guild_ids: []
+    allowed_channel_ids: []
+
+  gmail:
+    enabled: true
+    credentials_path: "~/.openclaw/gmail-credentials.json"
+    scopes:
+      - "read"
+      - "send"
+      - "labels"
+```
+
+## Channel Permissions
+
+Control what OpenClaw can do per channel:
+
+```yaml
+channels:
+  whatsapp:
+    permissions:
+      read: true
+      reply: true
+      initiate: false    # Can't start conversations
+      send_media: false  # Can't send images/files
+```
+
+## Multi-Channel Routing
+
+OpenClaw can route between channels:
+
+```
+You (WhatsApp): "Forward today's urgent emails to my Slack"
+OpenClaw: Checks Gmail → Finds 3 urgent emails → Posts summaries to Slack
+```
+
+## Managing Channels
+
+```bash
+# List active channels
+openclaw channel list
+
+# Check channel status
+openclaw channel status whatsapp
+
+# Disconnect a channel
+openclaw channel remove telegram
+
+# Reconnect after auth expires
+openclaw channel reconnect discord
+```
+
+:::warning
+**Security note:** Each connected channel is an attack surface. A compromised WhatsApp contact could send prompt injection via message. See [Security Hardening](/security/hardening) for mitigation strategies.
+:::
+
+## See Also
+
+- [Configuration Reference](/reference/configuration) — All channel settings
+- [Security Hardening](/security/hardening) — Securing channel access
+- [Heartbeat Guide](/guides/heartbeat) — Proactive channel monitoring

@@ -1,0 +1,23 @@
+{
+  "@context": [
+    "https://w3id.org/did",
+    "https://w3id.org/nostr/context"
+  ],
+  "id": "did:nostr:b7a12e7d26af373b3181e844a688107505144feae5a99643a0f417c15dbe7c53",
+  "type": "DIDNostr",
+  "verificationMethod": [
+    {
+      "id": "did:nostr:b7a12e7d26af373b3181e844a688107505144feae5a99643a0f417c15dbe7c53#key1",
+      "type": "Multikey",
+      "controller": "did:nostr:b7a12e7d26af373b3181e844a688107505144feae5a99643a0f417c15dbe7c53",
+      "publicKeyMultibase": "fe70102b7a12e7d26af373b3181e844a688107505144feae5a99643a0f417c15dbe7c53"
+    }
+  ],
+  "authentication": [
+    "#key1"
+  ],
+  "assertionMethod": [
+    "#key1"
+  ],
+  "service": []
+}
