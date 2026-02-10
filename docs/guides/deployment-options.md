@@ -197,9 +197,9 @@ With managed hosting, your conversations and data pass through a third party's i
 
 ```mermaid
 flowchart TD
-    Start["How do you want\nto run OpenClaw?"] --> Tech{Comfortable with\ncommand line?}
-    Tech -- Yes --> Cloud{Own server\nor cloud?}
-    Tech -- No --> GUI{Want to manage\nthe server?}
+    Start["How do you want<br/>to run OpenClaw?"] --> Tech{Comfortable with<br/>command line?}
+    Tech -- Yes --> Cloud{Own server<br/>or cloud?}
+    Tech -- No --> GUI{Want to manage<br/>the server?}
 
     Cloud -- Local --> Local["📦 Local Install"]
     Cloud -- VPS --> Docker["🐳 Docker Compose"]
@@ -207,7 +207,7 @@ flowchart TD
     GUI -- Yes --> Panel["🖥️ 1Panel"]
     GUI -- No --> Managed["☁️ Managed Hosting"]
 
-    Docker --> Ollama{Need local\nLLMs?}
+    Docker --> Ollama{Need local<br/>LLMs?}
     Ollama -- Yes --> DockerOllama["🐳 Docker + Ollama"]
     Ollama -- No --> DockerAPI["🐳 Docker + API Key"]
 ```

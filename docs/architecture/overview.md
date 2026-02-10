@@ -12,16 +12,16 @@ OpenClaw uses a **Gateway-centric architecture** where a single long-running pro
 
 ```mermaid
 graph TD
-    Channels["🔗 Channels\n(WhatsApp, Telegram, Discord...)"]
+    Channels["🔗 Channels<br/>(WhatsApp, Telegram, Discord...)"]
 
     subgraph Gateway["⚡ Gateway (ws://localhost:18789)"]
         Router["Router"]
-        Heartbeat["Heartbeat\nTimer"]
-        SkillReg["Skill\nRegistry"]
+        Heartbeat["Heartbeat<br/>Timer"]
+        SkillReg["Skill<br/>Registry"]
         Orchestrator["Orchestrator"]
-        Brain["🧠 Brain\n(LLM)"]
-        Hands["🤖 Hands\n(Exec)"]
-        Memory["💾 Memory\n(Local)"]
+        Brain["🧠 Brain<br/>(LLM)"]
+        Hands["🤖 Hands<br/>(Exec)"]
+        Memory["💾 Memory<br/>(Local)"]
     end
 
     Channels --> Router

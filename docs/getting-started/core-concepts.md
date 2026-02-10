@@ -88,15 +88,15 @@ This enables proactive behaviors like:
 ```mermaid
 graph TD
     subgraph Gateway["⚡ Gateway"]
-        Brain["🧠 Brain\n(LLM)"]
-        Hands["🤖 Hands\n(Shell, Files, Browser)"]
-        HB["⏱️ Heartbeat\n(30m loop)"]
+        Brain["🧠 Brain<br/>(LLM)"]
+        Hands["🤖 Hands<br/>(Shell, Files, Browser)"]
+        HB["⏱️ Heartbeat<br/>(30m loop)"]
         Brain <--> Hands
-        Brain --- Memory["💾 Memory\n(~/.openclaw/memory/*.md)"]
+        Brain --- Memory["💾 Memory<br/>(~/.openclaw/memory/*.md)"]
         HB --- Memory
     end
 
-    Channels["🔗 Channels\nWhatsApp · Telegram · Discord\nSlack · Signal · WebChat"] --> Gateway
+    Channels["🔗 Channels<br/>WhatsApp · Telegram · Discord<br/>Slack · Signal · WebChat"] --> Gateway
 ```
 
 ## Skills

@@ -76,12 +76,12 @@ openclaw gateway stop
 ```mermaid
 flowchart LR
     Boot["🔄 Boot"] --> Config["Load Config"]
-    Config --> Memory["Initialize\nMemory"]
-    Memory --> WS["Start WebSocket\nServer"]
-    WS --> Chan["Connect\nChannels"]
-    Chan --> Skills["Register\nSkills"]
-    Skills --> HB["Start Heartbeat\nTimer"]
-    HB --> Ready["✅ Ready\n(accepting connections)"]
+    Config --> Memory["Initialize<br/>Memory"]
+    Memory --> WS["Start WebSocket<br/>Server"]
+    WS --> Chan["Connect<br/>Channels"]
+    Chan --> Skills["Register<br/>Skills"]
+    Skills --> HB["Start Heartbeat<br/>Timer"]
+    HB --> Ready["✅ Ready<br/>(accepting connections)"]
 ```
 
 On shutdown, the Gateway:

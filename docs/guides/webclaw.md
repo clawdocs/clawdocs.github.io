@@ -84,9 +84,9 @@ WebClaw is a TypeScript monorepo that communicates with OpenClaw through the sam
 
 ```mermaid
 flowchart LR
-    Browser["🌐 Browser\n(WebClaw UI)"] -->|WebSocket| GW["⚡ Gateway\n:18789"]
-    CLI["💻 CLI\n(openclaw chat)"] -->|WebSocket| GW
-    Apps["📱 Companion Apps\n(macOS/iOS)"] -->|WebSocket| GW
+    Browser["🌐 Browser<br/>(WebClaw UI)"] -->|WebSocket| GW["⚡ Gateway<br/>:18789"]
+    CLI["💻 CLI<br/>(openclaw chat)"] -->|WebSocket| GW
+    Apps["📱 Companion Apps<br/>(macOS/iOS)"] -->|WebSocket| GW
     GW --> Brain["🧠 Brain"]
     GW --> Hands["🤖 Hands"]
 ```

@@ -14,13 +14,13 @@ Every N minutes (default: 30), the Gateway triggers a heartbeat cycle:
 
 ```mermaid
 flowchart TD
-    Timer["⏱️ Timer fires\n(every 30 min)"] --> Prompt["Gateway sends\nheartbeat prompt"]
-    Prompt --> ReadHB["Agent reads\nHEARTBEAT.md"]
+    Timer["⏱️ Timer fires<br/>(every 30 min)"] --> Prompt["Gateway sends<br/>heartbeat prompt"]
+    Prompt --> ReadHB["Agent reads<br/>HEARTBEAT.md"]
     ReadHB --> CheckTasks["Check pending tasks"]
     CheckTasks --> CheckQueues["Check channel queues"]
-    CheckQueues --> Decision{"Anything\nto do?"}
-    Decision -- No --> OK["HEARTBEAT_OK\n(go back to sleep)"]
-    Decision -- Yes --> Execute["Execute task\n& report to user"]
+    CheckQueues --> Decision{"Anything<br/>to do?"}
+    Decision -- No --> OK["HEARTBEAT_OK<br/>(go back to sleep)"]
+    Decision -- Yes --> Execute["Execute task<br/>& report to user"]
     OK --> Reset["Timer resets"]
     Execute --> Reset
     Reset -.-> Timer
