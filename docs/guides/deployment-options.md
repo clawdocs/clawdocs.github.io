@@ -1,7 +1,7 @@
 ---
 sidebar_position: 8
 title: Deployment Options
-description: Compare ways to deploy OpenClaw — bare metal, Docker, 1Panel, Coolify, and managed hosting
+description: Compare ways to deploy OpenClaw — bare metal, Docker, Kubernetes, Cloudflare Workers, 1Panel, Coolify, and more
 ---
 
 # Deployment Options
@@ -14,6 +14,8 @@ OpenClaw can be deployed in many ways, from a simple local install to fully mana
 |--------|-----------|----------|------|
 | [Local install](/getting-started/installation) | Easy | Personal use, development | Free (+ LLM API) |
 | [Docker](#docker) | Medium | Self-hosters, VPS | Free (+ VPS + LLM API) |
+| [Moltworker](#moltworker) | Easy | Cloudflare users | ~$34.50/mo |
+| [Kubernetes](#kubernetes) | Hard | Production, teams | Free (+ cluster + LLM API) |
 | [1Panel](#1panel) | Easy | VPS with GUI management | Free (+ VPS + LLM API) |
 | [Coolify](#coolify) | Easy | Self-hosted PaaS users | Free (+ VPS + LLM API) |
 | [DigitalOcean 1-Click](#digitalocean) | Easy | Quick cloud deploy | From $24/mo |
@@ -97,6 +99,64 @@ volumes:
   ollama-data:
 ```
 
+## Moltworker (Cloudflare Workers) {#moltworker}
+
+[Moltworker](https://github.com/cloudflare/moltworker) is **Cloudflare's official** adaptation that runs OpenClaw on Workers and Sandbox containers — fully managed, always-on, no self-hosting required.
+
+- **8,400 GitHub stars** | **License**: Apache-2.0
+- Multi-channel chat (Telegram, Discord, Slack)
+- Device pairing authentication
+- Optional R2 persistent storage
+- Browser automation via CDP
+- Cloudflare AI Gateway routing
+- **Cost**: ~$34.50/month on standard-1 instance
+
+### Getting Started with Moltworker
+
+1. Fork the [Moltworker repo](https://github.com/cloudflare/moltworker)
+2. Configure your Cloudflare account and Workers environment
+3. Set environment variables (LLM API keys, channel tokens)
+4. Deploy via `wrangler deploy`
+
+:::tip
+Moltworker is ideal if you're already on the Cloudflare ecosystem. It handles scaling, uptime, and edge deployment automatically.
+:::
+
+## Kubernetes (Helm Chart) {#kubernetes}
+
+For production deployments on Kubernetes, use the community [Helm chart](https://github.com/serhanekicii/openclaw-helm):
+
+```bash
+helm repo add openclaw https://serhanekicii.github.io/openclaw-helm
+helm install openclaw openclaw/openclaw -f values.yaml
+```
+
+### Key Features
+
+- **StatefulSet** deployment with Chromium sidecar for browser automation
+- **Security-hardened**: non-root containers, read-only root filesystems, all capabilities dropped
+- **Dual config modes**: "merge" (preserves runtime changes) or "overwrite" (strict GitOps)
+- **Init containers** for auto-installing ClawHub skills
+- **Health probes** on both OpenClaw and Chromium containers
+- **ArgoCD** and **Stakater Reloader** compatible
+- **Network policies** with deny-all-ingress defaults
+- Requires K8s 1.26+
+
+```yaml title="values.yaml (example)"
+openclaw:
+  config:
+    gateway:
+      port: 18789
+      host: "0.0.0.0"
+    brain:
+      provider: anthropic
+  env:
+    ANTHROPIC_API_KEY:
+      secretKeyRef:
+        name: openclaw-secrets
+        key: anthropic-api-key
+```
+
 ## 1Panel {#1panel}
 
 [1Panel](https://github.com/1Panel-dev/1Panel) is an open-source web-based Linux server management panel with an **App Store** that includes OpenClaw as a one-click install.
@@ -154,14 +214,25 @@ Once installed, you can:
 
 ## Coolify {#coolify}
 
-[Coolify](https://coolify.io) is a self-hosted PaaS (like Heroku) that supports OpenClaw deployment.
+[Coolify](https://coolify.io) is a self-hosted PaaS (like Heroku) that supports OpenClaw deployment. The most popular community integration is [openclaw-coolify](https://github.com/essamamdani/openclaw-coolify) (96 stars).
+
+Features of the Coolify integration:
+- **Docker Sidecar Proxy** for sandboxing
+- **Cloudflare Tunnel** integration for secure access
+- **SearXNG** private search engine
+- Pre-installed dev tools (GitHub CLI, Vercel, Bun, Python, ripgrep)
+- Bitwarden/GPG encryption support
 
 ```bash
 # Deploy via Coolify's one-click service
 # (from the Coolify dashboard, select OpenClaw from the service catalog)
 ```
 
-Multiple community forks exist for optimized Coolify deployments. See [coolify.io/docs/services/openclaw](https://coolify.io/docs/services/openclaw) for the official guide.
+See the [official Coolify docs](https://coolify.io/docs/services/openclaw) or the [community integration repo](https://github.com/essamamdani/openclaw-coolify) for details.
+
+:::info
+The Coolify build requires ~13 GB free disk space for the Docker build cache.
+:::
 
 ## DigitalOcean 1-Click {#digitalocean}
 

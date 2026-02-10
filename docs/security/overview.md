@@ -55,6 +55,20 @@ Before using OpenClaw, at minimum:
 - [ ] **Start read-only** — Add write/execute permissions gradually
 - [ ] **Review memory** — Check `~/.openclaw/memory/` periodically
 
+## Community Security Tools
+
+The community has built several tools to help secure OpenClaw deployments:
+
+| Tool | Stars | Description |
+|------|-------|-------------|
+| [**ClawSec**](https://github.com/prompt-security/clawsec) | 265 | Security skill suite — advisory monitoring, audit watchdog, drift detection |
+| [**ClawBands**](https://github.com/SeyZ/clawbands) | 34 | Middleware that enforces human approval before dangerous actions |
+| [**Clawprint**](https://github.com/cyntrisec/clawprint) | New | Tamper-evident audit trail with SHA-256 hash chain ledger |
+| [**SkillGuard**](https://github.com/bossondehiggs/skillguard) | New | Skill file scanner for vulnerabilities and malicious patterns |
+| [**Security Monitor**](https://github.com/adibirzu/openclaw-security-monitor) | New | 32-script monitoring suite targeting known threat campaigns |
+
+See the [Ecosystem page](/reference/ecosystem#security-tools) for full details on each tool.
+
 ## Deep Dives
 
 - [Security Hardening](/security/hardening) — Step-by-step production security
