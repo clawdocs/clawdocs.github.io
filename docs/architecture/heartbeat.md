@@ -12,21 +12,18 @@ The Heartbeat is what transforms OpenClaw from a reactive chatbot into a **proac
 
 Every N minutes (default: 30), the Gateway triggers a heartbeat cycle:
 
-```
-┌─────────────────────────────────────┐
-│         Heartbeat Cycle              │
-│                                      │
-│  1. Timer fires (every 30 min)       │
-│  2. Gateway sends heartbeat prompt   │
-│  3. Agent reads HEARTBEAT.md         │
-│  4. Agent checks pending tasks       │
-│  5. Agent checks channel queues      │
-│  6. Decision:                        │
-│     ├─ Nothing to do → HEARTBEAT_OK  │
-│     └─ Task found → Execute + report │
-│  7. Timer resets                     │
-│                                      │
-└─────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Timer["⏱️ Timer fires\n(every 30 min)"] --> Prompt["Gateway sends\nheartbeat prompt"]
+    Prompt --> ReadHB["Agent reads\nHEARTBEAT.md"]
+    ReadHB --> CheckTasks["Check pending tasks"]
+    CheckTasks --> CheckQueues["Check channel queues"]
+    CheckQueues --> Decision{"Anything\nto do?"}
+    Decision -- No --> OK["HEARTBEAT_OK\n(go back to sleep)"]
+    Decision -- Yes --> Execute["Execute task\n& report to user"]
+    OK --> Reset["Timer resets"]
+    Execute --> Reset
+    Reset -.-> Timer
 ```
 
 ## Defining Heartbeat Tasks

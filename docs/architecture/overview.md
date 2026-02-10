@@ -10,37 +10,27 @@ OpenClaw uses a **Gateway-centric architecture** where a single long-running pro
 
 ## High-Level Architecture
 
-```
-                    ┌─────────────┐
-                    │   Channels   │
-                    │  (WhatsApp,  │
-                    │  Telegram,   │
-                    │  Discord...) │
-                    └──────┬──────┘
-                           │
-                           ▼
-┌──────────────────────────────────────────────┐
-│                   Gateway                     │
-│            (ws://localhost:18789)              │
-│                                               │
-│  ┌──────────┐  ┌──────────┐  ┌────────────┐ │
-│  │  Router   │  │ Heartbeat│  │  Skill     │ │
-│  │          │  │  Timer   │  │  Registry  │ │
-│  └────┬─────┘  └────┬─────┘  └─────┬──────┘ │
-│       │              │              │         │
-│       └──────────────┼──────────────┘         │
-│                      │                         │
-│              ┌───────┴────────┐                │
-│              │  Orchestrator  │                │
-│              └───────┬────────┘                │
-│                      │                         │
-│         ┌────────────┼────────────┐            │
-│         ▼            ▼            ▼            │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐      │
-│  │  Brain   │ │  Hands   │ │  Memory  │      │
-│  │  (LLM)  │ │ (Exec)   │ │  (Local) │      │
-│  └──────────┘ └──────────┘ └──────────┘      │
-└──────────────────────────────────────────────┘
+```mermaid
+graph TD
+    Channels["🔗 Channels\n(WhatsApp, Telegram, Discord...)"]
+
+    subgraph Gateway["⚡ Gateway (ws://localhost:18789)"]
+        Router["Router"]
+        Heartbeat["Heartbeat\nTimer"]
+        SkillReg["Skill\nRegistry"]
+        Orchestrator["Orchestrator"]
+        Brain["🧠 Brain\n(LLM)"]
+        Hands["🤖 Hands\n(Exec)"]
+        Memory["💾 Memory\n(Local)"]
+    end
+
+    Channels --> Router
+    Router --> Orchestrator
+    Heartbeat --> Orchestrator
+    SkillReg --> Orchestrator
+    Orchestrator --> Brain
+    Orchestrator --> Hands
+    Orchestrator --> Memory
 ```
 
 ## Component Summary

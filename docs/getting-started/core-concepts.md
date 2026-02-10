@@ -85,28 +85,18 @@ This enables proactive behaviors like:
 
 ## How They Fit Together
 
-```
-┌─────────────────────────────────────────────┐
-│                  Gateway                     │
-│  ┌─────────┐  ┌─────────┐  ┌─────────────┐ │
-│  │  Brain   │  │  Hands  │  │  Heartbeat  │ │
-│  │  (LLM)  │←→│ (Shell, │  │  (30m loop) │ │
-│  │         │  │  Files,  │  │             │ │
-│  └────┬────┘  │ Browser) │  └──────┬──────┘ │
-│       │       └─────────┘         │         │
-│       └───────────┬───────────────┘         │
-│                   │                          │
-│  ┌────────────────┴─────────────────┐       │
-│  │            Memory                 │       │
-│  │    (~/.openclaw/memory/*.md)     │       │
-│  └──────────────────────────────────┘       │
-│                                              │
-│  ┌──────────────────────────────────┐       │
-│  │          Channels                 │       │
-│  │  WhatsApp │ Telegram │ Discord   │       │
-│  │  Slack    │ Signal   │ WebChat   │       │
-│  └──────────────────────────────────┘       │
-└─────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Gateway["⚡ Gateway"]
+        Brain["🧠 Brain\n(LLM)"]
+        Hands["🤖 Hands\n(Shell, Files, Browser)"]
+        HB["⏱️ Heartbeat\n(30m loop)"]
+        Brain <--> Hands
+        Brain --- Memory["💾 Memory\n(~/.openclaw/memory/*.md)"]
+        HB --- Memory
+    end
+
+    Channels["🔗 Channels\nWhatsApp · Telegram · Discord\nSlack · Signal · WebChat"] --> Gateway
 ```
 
 ## Skills

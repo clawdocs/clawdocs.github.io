@@ -73,13 +73,15 @@ openclaw gateway stop
 
 ## Process Lifecycle
 
-```
-Boot → Load Config → Initialize Memory
-  → Start WebSocket Server
-  → Connect Channels
-  → Register Skills
-  → Start Heartbeat Timer
-  → Ready (accepting connections)
+```mermaid
+flowchart LR
+    Boot["🔄 Boot"] --> Config["Load Config"]
+    Config --> Memory["Initialize\nMemory"]
+    Memory --> WS["Start WebSocket\nServer"]
+    WS --> Chan["Connect\nChannels"]
+    Chan --> Skills["Register\nSkills"]
+    Skills --> HB["Start Heartbeat\nTimer"]
+    HB --> Ready["✅ Ready\n(accepting connections)"]
 ```
 
 On shutdown, the Gateway:
