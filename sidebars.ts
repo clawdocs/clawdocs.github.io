@@ -40,6 +40,9 @@ const sidebars: SidebarsConfig = {
         'guides/deployment-options',
         'guides/hosting-providers',
         'guides/cloud-gpu-models',
+        'guides/use-cases',
+        'guides/cost-management',
+        'guides/privacy-compliance',
         {
           type: 'category',
           label: 'Recipes',
