@@ -118,6 +118,7 @@ This gives you the best of both worlds: zero-cost heartbeat with full-power reas
 
 ## See Also
 
+- [Cloud GPU & Self-Hosted Models](/guides/cloud-gpu-models) — Run your own models on cloud GPUs (RunPod, Vast.ai, etc.)
 - [Brain & Hands Architecture](/architecture/brain-and-hands) — How models are integrated
 - [Configuration Reference](/reference/configuration) — All model settings
 - [Heartbeat](/architecture/heartbeat) — Cost optimization with hybrid mode

@@ -39,6 +39,7 @@ const sidebars: SidebarsConfig = {
         'guides/webclaw',
         'guides/deployment-options',
         'guides/hosting-providers',
+        'guides/cloud-gpu-models',
         {
           type: 'category',
           label: 'Recipes',
