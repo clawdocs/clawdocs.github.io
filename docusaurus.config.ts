@@ -114,6 +114,10 @@ const config: Config = {
           label: 'Ecosystem',
           position: 'right',
           items: [
+            {label: 'Ecosystem Overview', to: '/reference/ecosystem'},
+            {label: 'Deployment Options', to: '/guides/deployment-options'},
+            {label: 'WebClaw Client', to: '/guides/webclaw'},
+            {type: 'html', value: '<hr style="margin: 0.5rem 0;">'},
             {label: 'OpenClaw GitHub', href: 'https://github.com/openclaw/openclaw'},
             {label: 'ClawHub Skills', href: 'https://openclaw.ai/clawhub'},
             {type: 'html', value: '<hr style="margin: 0.5rem 0;">'},

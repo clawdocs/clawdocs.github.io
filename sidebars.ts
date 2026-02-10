@@ -36,6 +36,8 @@ const sidebars: SidebarsConfig = {
         'guides/heartbeat',
         'guides/local-models',
         'guides/clawhub',
+        'guides/webclaw',
+        'guides/deployment-options',
         {
           type: 'category',
           label: 'Recipes',
@@ -71,6 +73,7 @@ const sidebars: SidebarsConfig = {
         'reference/environment-variables',
         'reference/troubleshooting',
         'reference/faq',
+        'reference/ecosystem',
       ],
     },
     {

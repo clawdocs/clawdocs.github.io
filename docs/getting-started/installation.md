@@ -123,4 +123,5 @@ rm -rf ~/.openclaw
 
 - [Quick Start](/getting-started/quick-start) — Get your first agent conversation in 5 minutes
 - [Core Concepts](/getting-started/core-concepts) — Understand the Gateway, Brain, Hands, and Heartbeat
+- [Deployment Options](/guides/deployment-options) — Docker, 1Panel, Coolify, and cloud hosting
 - [Configuration Reference](/reference/configuration) — Full config file documentation
