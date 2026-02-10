@@ -10,7 +10,7 @@ const config: Config = {
   url: 'https://clawdocs.org',
   baseUrl: '/',
   organizationName: 'clawdocs',
-  projectName: 'clawdocs',
+  projectName: 'clawdocs.github.io',
 
   onBrokenLinks: 'warn',
 
@@ -29,7 +29,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/clawdocs/clawdocs/tree/gh-pages/',
+          editUrl: 'https://github.com/clawdocs/clawdocs.github.io/tree/gh-pages/',
           routeBasePath: '/',
         },
         blog: false,
@@ -116,7 +116,7 @@ const config: Config = {
           ],
         },
         {
-          href: 'https://github.com/clawdocs/clawdocs',
+          href: 'https://github.com/clawdocs/clawdocs.github.io',
           label: 'GitHub',
           position: 'right',
         },
@@ -156,7 +156,7 @@ const config: Config = {
           title: 'More',
           items: [
             {label: 'Changelog', href: 'https://github.com/openclaw/openclaw/releases'},
-            {label: 'Contribute to these docs', href: 'https://github.com/clawdocs/clawdocs'},
+            {label: 'Contribute to these docs', href: 'https://github.com/clawdocs/clawdocs.github.io'},
             {label: 'Official Site', href: 'https://openclaw.ai'},
           ],
         },

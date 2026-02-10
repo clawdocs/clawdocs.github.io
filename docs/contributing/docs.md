@@ -6,7 +6,7 @@ description: How to contribute to the ClaweDocs community documentation
 
 # Contributing to These Docs
 
-These docs are community-maintained and hosted at [github.com/clawdocs/clawdocs](https://github.com/clawdocs/clawdocs). We welcome contributions of all sizes.
+These docs are community-maintained and hosted at [github.com/clawdocs/clawdocs.github.io](https://github.com/clawdocs/clawdocs.github.io). We welcome contributions of all sizes.
 
 ## Quick Edits
 
@@ -15,7 +15,7 @@ Every page has an **"Edit this page"** link at the bottom. Click it to edit dire
 ## Local Development
 
 ```bash
-git clone https://github.com/clawdocs/clawdocs.git
+git clone https://github.com/clawdocs/clawdocs.github.io.git
 cd clawdocs
 npm install
 npm start
@@ -62,7 +62,7 @@ Content here...
 
 ## Reporting Issues
 
-- Missing documentation? [Open an issue](https://github.com/clawdocs/clawdocs/issues)
+- Missing documentation? [Open an issue](https://github.com/clawdocs/clawdocs.github.io/issues)
 - Incorrect information? Edit the page or file a bug
 - Feature request? Start a discussion
 
