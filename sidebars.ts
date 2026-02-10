@@ -38,6 +38,7 @@ const sidebars: SidebarsConfig = {
         'guides/clawhub',
         'guides/webclaw',
         'guides/deployment-options',
+        'guides/hosting-providers',
         {
           type: 'category',
           label: 'Recipes',

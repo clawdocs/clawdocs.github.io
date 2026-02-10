@@ -255,10 +255,14 @@ Hostinger provides a one-click OpenClaw Docker template for their VPS plans:
 
 ## Managed Hosting {#managed-hosting}
 
-For users who don't want to manage infrastructure at all, several managed hosting providers have emerged:
+35+ managed hosting providers have emerged for OpenClaw, ranging from $0.99/month shared containers to enterprise GDPR-compliant deployments. See the **[Hosting Providers guide](/guides/hosting-providers)** for a comprehensive comparison.
 
-- **OpenClawd** — Dedicated managed hosting for OpenClaw with automatic updates and monitoring
-- Various other providers listed on [Product Hunt alternatives](https://www.producthunt.com/products/clawdbot-2/alternatives)
+Highlights:
+- **Cheapest**: [Agent37](https://www.agent37.com/openclaw) at $0.99/mo (shared)
+- **Free**: [Oracle Cloud free tier](https://docs.openclaw.ai/platforms/oracle) — 4 ARM CPUs, 24 GB RAM
+- **Budget managed**: [MyClaw.ai](https://myclaw.ai) from $9/mo
+- **GDPR**: [WZ-IT](https://wz-it.com/en/expertises/openclaw/) (German enterprise), [RunClaw.ai](https://runclaw.ai) (Hetzner DE)
+- **Pay-as-you-go**: [Clowd.bot](https://clowd.bot) at $0.50 per launch
 
 :::warning
 With managed hosting, your conversations and data pass through a third party's infrastructure. Review the provider's privacy policy carefully. Self-hosting gives you full control over your data.
