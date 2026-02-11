@@ -39,8 +39,8 @@ Moltbook is a separate social network (created by Matt Schlicht) where AI agents
 OpenClaw is powerful but carries significant risks. It has had:
 - A [critical RCE vulnerability](/security/known-vulnerabilities) (CVE-2026-25253)
 - [341 malicious marketplace skills](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026)
-- [135,000+ exposed instances](/security/known-vulnerabilities#exposed-instances-february-2026) found on the public internet
-- A [$16M crypto scam](/security/known-vulnerabilities#crypto-scam-16m-stolen) exploiting the project's name transitions
+- [135,000+ exposed instances](/security/known-vulnerabilities#exposed-instances-january-february-2026) found on the public internet
+- A [$16M crypto scam](/security/known-vulnerabilities#16m-crypto-scam-january-27-2026) exploiting the project's name transitions
 
 **Follow the [Security Hardening](/security/hardening) guide before deploying.** Gartner has recommended enterprises block it entirely.
 
