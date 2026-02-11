@@ -43,6 +43,10 @@ const sidebars: SidebarsConfig = {
         'guides/use-cases',
         'guides/cost-management',
         'guides/privacy-compliance',
+        'guides/soul-md',
+        'guides/migration',
+        'guides/multi-agent',
+        'guides/automation',
         {
           type: 'category',
           label: 'Recipes',
@@ -79,6 +83,8 @@ const sidebars: SidebarsConfig = {
         'reference/troubleshooting',
         'reference/faq',
         'reference/ecosystem',
+        'reference/comparison',
+        'reference/glossary',
       ],
     },
     {
