@@ -34,6 +34,7 @@ flowchart LR
 | [Railway](#railway) | PaaS | $5/mo | No | No | Testing / development |
 | [Hostinger](#hostinger) | VPS template | $5.99/mo | Possible | — | Budget VPS with AI credits |
 | [MyClaw.ai](#myclawai) | Managed | $9/mo | No | Partial | Cheapest dedicated managed |
+| [OpenClaw Launch](#openclawlaunch) | Managed | $6/mo | No | No | AI credits, fast setup |
 | [RunClaw.ai](#runclawai) | Managed | ~$13/mo | No | Yes | Transparent managed (Hetzner DE) |
 | [OpenClaw Cloud](#openclaw-cloud) | Managed | $19/mo | Free model | Yes | Free trial, own URL |
 | [ClawHosters](#clawhosters) | Managed VPS | €19/mo | — | Yes | GDPR, German servers |
@@ -85,6 +86,22 @@ The most affordable fully managed option with dedicated instances.
 
 - **Channels**: WhatsApp, Telegram, Discord, Slack
 - **Security**: Isolated container per plan with encrypted access
+
+### OpenClaw Launch {#openclawlaunch}
+
+Visual configurator with one-click deploy — configure your OpenClaw instance in-browser and launch in under 30 seconds.
+
+- **URL**: [openclawlaunch.com](https://openclawlaunch.com)
+- **Pricing**:
+
+| Plan | Price | Features |
+|------|-------|----------|
+| Lite | $6/mo | 1 instance, AI credits included |
+| Pro | $20/mo | Up to 3 instances, more AI credits, dedicated resources |
+
+- **Setup**: Under 30 seconds — no terminal, no Docker knowledge needed
+- **Channels**: Telegram, Discord, Web gateway
+- **Features**: Browser-based visual configurator, isolated Docker containers, E2E encryption
 
 ### OpenClaw Cloud {#openclaw-cloud}
 
