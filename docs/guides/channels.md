@@ -35,8 +35,21 @@ OpenClaw can communicate through 50+ platforms. Each connection is called a **ch
 | **Obsidian** | Read/write notes, search vault |
 | **Hue** | Smart light control |
 | **Calendar** | Google Calendar, Outlook events |
-| **Twitter/X** | Read timeline, post tweets |
+| **Twitter/X** | Read timeline, search tweets and replies, post tweets. See [TweetClaw](#twitter-x-with-tweetclaw) for plugin setup |
 | **Browser** | Full Chromium automation |
+
+### Twitter X with TweetClaw
+
+Use [TweetClaw](https://github.com/Xquik-dev/tweetclaw) when an OpenClaw agent needs deeper X/Twitter automation than the base channel entry.
+
+```bash
+openclaw plugins install @xquik/tweetclaw
+```
+
+TweetClaw adds tweet search, reply search, post tweets, post replies, follower export, user lookup, media upload, media download, direct messages, tweet monitors, webhooks, and giveaway draws through Xquik.
+
+- **Package**: [@xquik/tweetclaw](https://www.npmjs.com/package/@xquik/tweetclaw)
+- **ClawHub**: [clawhub.ai/plugins/@xquik/tweetclaw](https://clawhub.ai/plugins/@xquik/tweetclaw)
 
 ## Adding a Channel
 
