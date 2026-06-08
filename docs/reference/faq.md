@@ -10,7 +10,7 @@ description: Frequently asked questions about OpenClaw
 
 ### What is OpenClaw?
 
-OpenClaw is a free, open-source, autonomous AI agent that runs locally on your machine. It connects LLMs to your files, shell, browser, and messaging apps to automate tasks. It has 182,000+ GitHub stars as of February 2026.
+OpenClaw is a free, open-source, autonomous AI agent that runs locally on your machine. It connects LLMs to your files, shell, browser, and messaging apps to automate tasks. It has 377,000+ GitHub stars as of June 2026.
 
 ### Is OpenClaw free?
 
@@ -92,11 +92,11 @@ Yes, using [local models](/guides/local-models) via Ollama or vLLM. No API key o
 
 | Use Case | Recommendation |
 |----------|---------------|
-| Best quality | Claude Opus 4.6 |
-| Good balance | Claude Sonnet 4.5 or GPT-4o |
-| Cheapest cloud | Claude Haiku 4.5 |
-| Free (local) | Llama 3.1 70B via Ollama |
-| Coding tasks | Claude Opus or GPT-5.3-Codex |
+| Best quality | Claude Opus 4.8 |
+| Good balance | Claude Sonnet 4.6 or GPT-4o |
+| Cheapest cloud | DeepSeek V3.2 or Gemini 2.5 Flash (via OpenRouter) |
+| Free (local) | Qwen3 72B or Llama 3.3 70B via Ollama |
+| Coding tasks | Claude Opus 4.8 or Claude Sonnet 4.6 |
 
 ## Technical
 

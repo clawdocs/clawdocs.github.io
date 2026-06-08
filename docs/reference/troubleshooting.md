@@ -36,16 +36,16 @@ openclaw gateway
 ### Node.js version too old
 
 ```
-Error: OpenClaw requires Node.js >= 22
+Error: OpenClaw requires Node.js >= 22.19
 ```
 
 ```bash
 # Check version
 node --version
 
-# Update Node.js
-nvm install 22
-nvm use 22
+# Update Node.js (Node 24 recommended, or 22.19+ minimum)
+nvm install 24
+nvm use 24
 ```
 
 ## Connection Issues

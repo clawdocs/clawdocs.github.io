@@ -35,6 +35,24 @@ openclaw onboard [--install-daemon] [--skip-channels]
 | `--skip-channels` | Skip messaging channel setup |
 | `--provider <name>` | Pre-select LLM provider |
 
+### `openclaw dashboard`
+
+Launch the Control UI in your browser for system monitoring and management.
+
+```bash
+openclaw dashboard [--no-open]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--no-open` | Print the tokenized URL without opening a browser |
+
+The Control UI runs on `localhost:18789` and requires your gateway auth token. For remote access, use SSH port forwarding:
+
+```bash
+ssh -N -L 18789:127.0.0.1:18789 root@your-server-ip
+```
+
 ### `openclaw gateway`
 
 Manage the gateway process.
@@ -89,6 +107,26 @@ openclaw skill <install|remove|list|test|config> [skill-name|path]
 | `list` | List all installed skills |
 | `test <path> <msg>` | Test a skill without installing |
 | `config <name>` | View/set skill configuration |
+
+### `openclaw plugins`
+
+Manage installed plugins.
+
+```bash
+openclaw plugins <list|inspect|install|uninstall|update|enable|disable|doctor|marketplace> [args]
+```
+
+| Subcommand | Description |
+|------------|-------------|
+| `list` | Show installed plugins |
+| `inspect <name>` | View plugin details |
+| `install <name>` | Install a plugin |
+| `uninstall <name>` | Remove a plugin |
+| `update [name]` | Upgrade plugins (all or specific) |
+| `enable <name>` | Enable a disabled plugin |
+| `disable <name>` | Disable a plugin |
+| `doctor` | Diagnose plugin issues |
+| `marketplace list` | Browse available plugins |
 
 ### `openclaw clawhub`
 

@@ -10,9 +10,9 @@ OpenClaw runs on **macOS**, **Linux**, and **Windows**. Choose the installation 
 
 ## Prerequisites
 
-- **Node.js >= 22** (required)
-- **pnpm** (for git/developer installs)
-- A supported LLM API key (Anthropic, OpenAI, xAI) *or* a local model setup
+- **Node.js 24** (recommended) or **Node.js 22 LTS** (22.19+ minimum)
+- **pnpm** (for git/developer installs — run `corepack enable` first)
+- A supported LLM API key (Anthropic, OpenAI, OpenRouter, Google, xAI) *or* a local model setup
 
 ## Method 1: One-Liner (Recommended)
 
@@ -38,6 +38,7 @@ For contributors or anyone who wants to hack on OpenClaw itself:
 ```bash
 git clone https://github.com/openclaw/openclaw.git
 cd openclaw
+corepack enable
 pnpm install
 pnpm build
 ```

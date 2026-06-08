@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 title: Introduction
-description: What is OpenClaw and why it matters — the open-source autonomous AI agent with 182k+ stars
+description: What is OpenClaw and why it matters — the open-source autonomous AI agent with 377k+ stars
 ---
 
 # Introduction to OpenClaw
@@ -44,7 +44,7 @@ OpenClaw has had one of the most dramatic trajectories in open-source history:
 6. **Late January 2026** — Goes massively viral, gaining **100,000+ GitHub stars in ~2 days** — the fastest repo to 100K stars in GitHub history
 7. **February 2026** — 341 malicious ClawHub skills discovered; VirusTotal partnership announced; 40,000+ exposed instances found; adopted by Alibaba and Tencent; banned by Korean tech firms
 
-As of February 2026, OpenClaw has **182,000+ GitHub stars**, 29,600+ forks, and 376+ contributors. It drew 2 million visitors to its website in a single week.
+As of June 2026, OpenClaw has **377,000+ GitHub stars**, 78,900+ forks, and 365+ contributors. It drew 2 million visitors to its website in a single week.
 
 :::info
 Steinberger has said he *"ships code he doesn't read"* — having made 6,600 commits in January alone using AI coding tools. This philosophy of rapid AI-assisted development is both OpenClaw's strength and a source of its security challenges.

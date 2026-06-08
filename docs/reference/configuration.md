@@ -1,92 +1,110 @@
 ---
 sidebar_position: 2
 title: Configuration
-description: Complete reference for ~/.openclaw/config.yml — every setting explained
+description: Complete reference for ~/.openclaw/openclaw.json — every setting explained
 ---
 
 # Configuration Reference
 
-OpenClaw is configured via `~/.openclaw/config.yml`. This page documents every available setting.
+OpenClaw reads an optional JSON5 config from `~/.openclaw/openclaw.json`. JSON5 supports comments and trailing commas. You can override the path via the `OPENCLAW_CONFIG_PATH` environment variable.
 
 ## Full Example
 
-```yaml title="~/.openclaw/config.yml"
-# LLM Configuration
-brain:
-  provider: "anthropic"           # anthropic, openai, xai, local
-  model: "claude-opus-4-6"
-  api_key: "${ANTHROPIC_API_KEY}"
-  temperature: 0.7
-  max_tokens: 4096
-  fallback:
-    provider: "openai"
-    model: "gpt-4o"
-  heartbeat_override:
-    provider: "anthropic"
-    model: "claude-haiku-4-5-20251001"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  // LLM Configuration
+  "brain": {
+    "provider": "anthropic",           // anthropic, openai, openrouter, google, xai, local
+    "model": "claude-opus-4-6",
+    "api_key": "${ANTHROPIC_API_KEY}",
+    "temperature": 0.7,
+    "max_tokens": 4096,
+    "fallback": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    },
+    "heartbeat_override": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5-20251001"
+    }
+  },
 
-# Gateway Configuration
-gateway:
-  host: "127.0.0.1"
-  port: 18789
-  max_connections: 10
-  log_level: "info"
-  pid_file: "~/.openclaw/gateway.pid"
+  // Gateway Configuration
+  "gateway": {
+    "host": "127.0.0.1",
+    "port": 18789,
+    "max_connections": 10,
+    "log_level": "info",
+    "pid_file": "~/.openclaw/gateway.pid"
+  },
 
-# Execution Environment
-hands:
-  shell:
-    enabled: true
-    timeout: 30000
-    blocked_commands: []
-  browser:
-    enabled: true
-    headless: true
-    timeout: 60000
-    allowed_domains: []
-  filesystem:
-    writable_paths: []
-    blocked_paths:
-      - "~/.ssh"
-      - "~/.gnupg"
-  sandbox:
-    enabled: false
-    type: "docker"
+  // Execution Environment
+  "hands": {
+    "shell": {
+      "enabled": true,
+      "timeout": 30000,
+      "blocked_commands": []
+    },
+    "browser": {
+      "enabled": true,
+      "headless": true,
+      "timeout": 60000,
+      "allowed_domains": []
+    },
+    "filesystem": {
+      "writable_paths": [],
+      "blocked_paths": [
+        "~/.ssh",
+        "~/.gnupg"
+      ]
+    },
+    "sandbox": {
+      "enabled": false,
+      "type": "docker"
+    }
+  },
 
-# Heartbeat
-heartbeat:
-  enabled: true
-  interval: 1800
-  quiet_hours:
-    start: "23:00"
-    end: "07:00"
-    timezone: "America/Los_Angeles"
+  // Heartbeat
+  "heartbeat": {
+    "enabled": true,
+    "interval": 1800,
+    "quiet_hours": {
+      "start": "23:00",
+      "end": "07:00",
+      "timezone": "America/Los_Angeles"
+    }
+  },
 
-# Memory
-memory:
-  enabled: true
-  path: "~/.openclaw/memory"
-  max_context_tokens: 2000
-  auto_save: true
+  // Memory
+  "memory": {
+    "enabled": true,
+    "path": "~/.openclaw/memory",
+    "max_context_tokens": 2000,
+    "auto_save": true
+  },
 
-# Skills
-skills:
-  path: "~/.openclaw/skills"
-  allow_install: true
-  allow_clawhub: true
-  auto_install_deps: false
+  // Skills
+  "skills": {
+    "path": "~/.openclaw/skills",
+    "allow_install": true,
+    "allow_clawhub": true,
+    "auto_install_deps": false
+  },
 
-# Channels (configured individually)
-channels: {}
+  // Channels (configured individually)
+  "channels": {},
 
-# Logging
-logging:
-  level: "info"
-  path: "~/.openclaw/logs"
-  max_size: "10m"
-  max_files: 5
-  audit:
-    enabled: false
+  // Logging
+  "logging": {
+    "level": "info",
+    "path": "~/.openclaw/logs",
+    "max_size": "10m",
+    "max_files": 5,
+    "audit": {
+      "enabled": false
+    }
+  }
+}
 ```
 
 ## Section Reference
@@ -139,9 +157,12 @@ See sub-sections: `shell`, `browser`, `filesystem`, `sandbox`.
 
 Any config value can reference environment variables:
 
-```yaml
-brain:
-  api_key: "${ANTHROPIC_API_KEY}"
+```json5
+{
+  "brain": {
+    "api_key": "${ANTHROPIC_API_KEY}"
+  }
+}
 ```
 
 ## See Also
