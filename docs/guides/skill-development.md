@@ -161,6 +161,7 @@ so they're available on the next invocation.
 
 ## See Also
 
+- [Skill Workshop](/guides/skill-workshop) — Governed skill creation with proposal queues, security scanning, and versioning (v2026.6.1+)
 - [ClawHub Guide](/guides/clawhub) — Browse and install community skills
 - [Skill Verification](/security/skill-verification) — Security review process
 - [Recipes](/guides/recipes/email-assistant) — Example skill implementations
