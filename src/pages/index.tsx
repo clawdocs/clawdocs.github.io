@@ -53,7 +53,7 @@ function StatsBar() {
     {value: '40+', label: 'Guides'},
     {value: '50+', label: 'Channels'},
     {value: '32k+', label: 'MCP Servers'},
-    {value: '100+', label: 'Skills on ClawHub'},
+    {value: '10,700+', label: 'Skills on ClawHub'},
   ];
   return (
     <section className={styles.statsBar}>
@@ -111,8 +111,8 @@ const features: FeatureItem[] = [
     title: 'Extensible Skills',
     icon: '⚡',
     description:
-      'Build skills with Markdown + YAML. Share on ClawHub or install from 100+ community skills.',
-    link: '/guides/skill-development',
+      'Build skills with Markdown + YAML. Browse 10,700+ community skills on ClawHub with security scanning.',
+    link: '/guides/clawhub',
   },
   {
     title: 'Private & Secure',
@@ -231,25 +231,25 @@ const newGuides: GuideCard[] = [
     tagColor: '#d97706',
   },
   {
-    title: 'Plugin System',
-    description: 'Gateway-level extensions — install, configure, and build plugins',
-    link: '/guides/plugin-system',
-    tag: 'Guide',
-    tagColor: '#2563eb',
+    title: 'ClawHub Marketplace',
+    description: '10,700+ skills — browse, install, verify, publish, and secure your skill supply chain',
+    link: '/guides/clawhub',
+    tag: 'Updated',
+    tagColor: '#16a34a',
   },
   {
-    title: 'Memory Systems Compared',
-    description: '12+ memory options compared — find the right one for your setup',
-    link: '/guides/memory-systems',
-    tag: 'Guide',
-    tagColor: '#2563eb',
+    title: 'Multi-Agent Workflows',
+    description: 'Orchestrator-worker fleets, Workboard kanban, shared memory, and cost optimization',
+    link: '/guides/multi-agent',
+    tag: 'Updated',
+    tagColor: '#16a34a',
   },
   {
-    title: 'Advanced Recipes',
-    description: 'Multi-agent DevOps, RAG pipelines, Home Assistant, voice control, and more',
-    link: '/guides/recipes/advanced-recipes',
-    tag: 'Recipes',
-    tagColor: '#0891b2',
+    title: 'Security Hardening',
+    description: 'MCP trust tiers, SOUL.md protection, incident response runbook, and audit recipes',
+    link: '/security/hardening',
+    tag: 'Updated',
+    tagColor: '#16a34a',
   },
 ];
 
