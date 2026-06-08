@@ -34,7 +34,7 @@ openclaw gateway
 You should see:
 
 ```
-🦞 OpenClaw Gateway v2026.2.6
+🦞 OpenClaw Gateway v2026.6.1
    WebSocket control plane: ws://localhost:18789
    Heartbeat interval: 30m
    Model: claude-opus-4-6

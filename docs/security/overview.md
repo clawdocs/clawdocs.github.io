@@ -16,7 +16,7 @@ OpenClaw is a powerful tool that grants an AI agent significant access to your s
 
 ## The Security Reality
 
-OpenClaw's explosive adoption (183k+ GitHub stars, 300k-400k estimated users) massively outpaced its security maturity. In a single week in late January / early February 2026:
+OpenClaw's explosive adoption (377k+ GitHub stars as of June 2026) massively outpaced its security maturity. In a single week in late January / early February 2026:
 
 - A **one-click RCE vulnerability** was discovered and patched (CVE-2026-25253)
 - **40,000-135,000+ exposed instances** were found on the public internet
@@ -25,7 +25,7 @@ OpenClaw's explosive adoption (183k+ GitHub stars, 300k-400k estimated users) ma
 - The **Moltbook database breach** exposed 1.5 million API tokens
 - **93.4% of publicly reachable instances** had critical authentication bypasses
 
-As of February 2026, OpenClaw has no bug bounty program and no dedicated security team.
+As of early 2026, OpenClaw had no bug bounty program and no dedicated security team. Security has improved significantly since then — run `openclaw security audit --deep` regularly to stay current.
 
 ---
 
@@ -122,7 +122,7 @@ All of this abuses intended capabilities — no software vulnerability required.
 
 Before using OpenClaw, at minimum:
 
-- [ ] **Update to v2026.1.29+** — patches critical RCE
+- [ ] **Update to the latest stable release** (currently v2026.6.1) — patches critical RCE and many subsequent security improvements
 - [ ] **Bind gateway to localhost** — never expose port 18789
 - [ ] **Enable authentication** — token or password mode
 - [ ] **Set `trustedProxies`** — if behind any reverse proxy
