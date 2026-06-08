@@ -51,6 +51,7 @@ const sidebars: SidebarsConfig = {
         'guides/skill-development',
         'guides/skill-workshop',
         'guides/heartbeat',
+        'guides/mcp-servers',
         'guides/model-selection',
         'guides/local-models',
         'guides/cloud-gpu-models',
