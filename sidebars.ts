@@ -65,6 +65,7 @@ const sidebars: SidebarsConfig = {
         'guides/automation',
         'guides/webclaw',
         'guides/cicd-testing',
+        'guides/monitoring',
         'guides/deployment-options',
         'guides/hosting-providers',
         'guides/lightweight-variants',
