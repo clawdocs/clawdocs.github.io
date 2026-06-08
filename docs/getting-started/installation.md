@@ -31,7 +31,22 @@ npm i -g openclaw
 openclaw onboard
 ```
 
-## Method 3: Git Clone (Developer Mode)
+## Method 3: Docker
+
+Run OpenClaw as a container — ideal for servers and VPS deployments:
+
+```bash
+docker run -d \
+  --name openclaw \
+  --restart unless-stopped \
+  -v ~/.openclaw:/root/.openclaw \
+  -p 18789:18789 \
+  ghcr.io/openclaw/openclaw:latest
+```
+
+One-click deployment is also available via **[Coolify](https://coolify.io)**, **[1Panel](https://1panel.dev)**, and **[Portainer](https://portainer.io)** templates. See [Deployment Options](/guides/deployment-options) for full Docker Compose, Kubernetes Helm, and cloud hosting guides.
+
+## Method 4: Git Clone (Developer Mode)
 
 For contributors or anyone who wants to hack on OpenClaw itself:
 

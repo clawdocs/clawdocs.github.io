@@ -8,6 +8,8 @@ description: Get OpenClaw running and talking to you in under 5 minutes
 
 Get from zero to a working OpenClaw agent in under 5 minutes.
 
+**What you'll have at the end:** A running OpenClaw gateway with CLI chat, able to execute shell commands, read/write files, and answer questions using your chosen LLM. Optionally connected to a messaging app so you can talk to it from your phone.
+
 ## Step 1: Install
 
 ```bash
@@ -99,16 +101,26 @@ The heartbeat makes OpenClaw truly autonomous — it checks for tasks periodical
 
 Edit `~/.openclaw/HEARTBEAT.md` with your preferences, then restart the gateway. OpenClaw will proactively act on these instructions.
 
+:::caution Cost awareness
+Each heartbeat tick costs tokens. With a 30-minute interval and Claude Opus, expect ~$5-20/day in API costs. See [Performance Tuning](/guides/performance-tuning) to reduce this — model routing alone can cut costs by 60x.
+:::
+
 ## What's Next?
 
 You now have a working OpenClaw agent. Here's where to go from here:
 
 | Goal | Guide |
 |------|-------|
+| Structured learning path | [First 7 Days with OpenClaw](/guides/first-7-days) |
 | Understand how it works | [Architecture Overview](/architecture/overview) |
 | Connect more platforms | [Channels & Integrations](/guides/channels) |
+| Browse 10,700+ community skills | [ClawHub Marketplace](/guides/clawhub) |
 | Build custom skills | [Skill Development](/guides/skill-development) |
+| Add voice and vision | [Voice & Multimodal](/guides/voice-multimodal) |
+| Build integrations | [API & Webhooks](/guides/api-webhooks) |
+| Reduce API costs | [Performance Tuning](/guides/performance-tuning) |
 | Run without API costs | [Local Models](/guides/local-models) |
+| Run multi-agent fleets | [Multi-Agent Workflows](/guides/multi-agent) |
 | Lock down security | [Security Hardening](/security/hardening) |
 | Fine-tune behavior | [Configuration Reference](/reference/configuration) |
 
