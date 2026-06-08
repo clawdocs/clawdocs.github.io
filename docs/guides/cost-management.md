@@ -69,16 +69,16 @@ Every request sends the full conversation history. One user's session grew to **
 
 Use different models for different tasks. The cost difference between Opus and Flash-Lite is **60x**.
 
-| Task Type | Recommended Model | Cost/1M Tokens | Notes |
+| Task Type | Recommended Model | Approx. Cost/1M Tokens | Notes |
 |-----------|------------------|----------------|-------|
-| Heartbeat checks | Gemini 2.5 Flash-Lite | **$0.50** | No quality difference for simple checks |
-| Simple tasks | Gemini 3 Flash | **$0.15** | Quick lookups, status checks |
-| Long context | Kimi K2.5 | **$0.50** | Large document handling |
-| Coding | Gemini 3 Pro | **$1.25** | Mid-tier reasoning |
-| Quick responses | Claude Haiku | **$1.00/$5.00** | 90% of Sonnet quality at 1/3 price |
-| Mid-tier general | Claude Sonnet | **$3.00/$15.00** | Good balance |
-| Complex reasoning | Claude Opus 4.5 | **$5.00/$25.00** | Reserve for complex tasks only |
-| Budget alternative | DeepSeek V3.2 | **$0.53** | 60x cheaper than Opus |
+| Heartbeat checks | Local model (Qwen3 14B) | **$0** | Zero cost, runs on your hardware |
+| Heartbeat checks | Gemini 2.5 Flash | **~$0.20** | If no local GPU available |
+| Simple tasks | DeepSeek V3.2 | **~$0.40** | Great quality-per-dollar |
+| Quick responses | Claude Haiku 4.5 | **~$3.00** | 90% of Sonnet quality at 1/3 price |
+| General use | Claude Sonnet 4.6 | **~$9.00** | Best balance |
+| Complex reasoning | Claude Opus 4.8 | **~$15.00** | Reserve for complex tasks only |
+
+See the **[Model Selection Guide](/guides/model-selection)** for the full breakdown by use case, budget, and hardware.
 
 Configure hybrid routing:
 
@@ -86,7 +86,7 @@ Configure hybrid routing:
 {
   "brain": {
     "provider": "anthropic",
-    "model": "claude-sonnet-4",
+    "model": "claude-sonnet-4-6",
     // Use local model for heartbeat
     "heartbeat_override": {
       "provider": "local",
@@ -191,9 +191,9 @@ openclaw config set monthly_budget_usd 50.00
 ```json title="~/.openclaw/openclaw.json"
 {
   "models": {
-    "primary": "anthropic/claude-sonnet-4",
+    "primary": "anthropic/claude-sonnet-4-6",
     "fallback": "anthropic/claude-haiku",
-    "complex": "anthropic/claude-opus-4.5"
+    "complex": "anthropic/claude-opus-4-8"
   }
 }
 ```
@@ -281,7 +281,7 @@ If you're spending too much right now, apply these changes immediately:
 {
   "brain": {
     "provider": "anthropic",
-    "model": "claude-sonnet-4",
+    "model": "claude-sonnet-4-6",
     "heartbeat_override": {
       "provider": "local",
       "local": {

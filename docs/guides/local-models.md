@@ -25,9 +25,9 @@ OpenClaw can run entirely offline using local LLMs, eliminating API costs and ke
 curl -fsSL https://ollama.ai/install.sh | bash
 
 # Pull a model
-ollama pull llama3.1:70b    # Best quality
-ollama pull llama3.1:8b     # Faster, less RAM
-ollama pull codellama:34b   # Good for coding tasks
+ollama pull qwen3:32b       # Best balance of quality and speed
+ollama pull qwen3:14b       # Good for most tasks, less RAM
+ollama pull llama3.3:70b    # Best quality (needs 40GB+ VRAM)
 ```
 
 ### Configure OpenClaw
@@ -113,6 +113,10 @@ Use local models for cheap tasks and cloud models for complex ones:
 ```
 
 This gives you the best of both worlds: zero-cost heartbeat with full-power reasoning when needed.
+
+:::tip
+For help choosing between local and cloud models, see the **[Model Selection Guide](/guides/model-selection)**.
+:::
 
 ## Performance Tips
 

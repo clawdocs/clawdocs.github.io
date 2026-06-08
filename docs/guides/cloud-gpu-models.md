@@ -356,7 +356,11 @@ This approach can **cut costs by 50%+** while maintaining quality for critical t
 
 ---
 
-## Recommended Models (February 2026)
+## Recommended Models
+
+:::tip
+For a comprehensive model selection guide covering cloud, local, and hybrid setups, see the **[Model Selection Guide](/guides/model-selection)**.
+:::
 
 ### By VRAM Budget
 
