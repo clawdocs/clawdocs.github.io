@@ -111,6 +111,7 @@ const sidebars: SidebarsConfig = {
         'reference/environment-variables',
         'reference/troubleshooting',
         'reference/faq',
+        'reference/resources',
         'reference/ecosystem',
         'reference/comparison',
         'reference/glossary',

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 8
 title: Ecosystem & Community Tools
 description: 25+ community-built tools, clients, deployment platforms, security tools, and alternatives in the OpenClaw ecosystem
 ---
