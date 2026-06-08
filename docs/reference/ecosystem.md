@@ -6,7 +6,7 @@ description: 25+ community-built tools, clients, deployment platforms, security 
 
 # Ecosystem & Community Tools
 
-OpenClaw's explosive growth (0 to 183k GitHub stars in ~60 days) has spawned one of the richest ecosystems in open-source AI. This page catalogs **25+ notable projects** across 10 categories.
+OpenClaw's explosive growth (0 to 377k+ GitHub stars in ~6 months) has spawned one of the richest ecosystems in open-source AI. This page catalogs **25+ notable projects** across 10 categories.
 
 ## Top Projects by Stars
 
@@ -29,12 +29,12 @@ OpenClaw's explosive growth (0 to 183k GitHub stars in ~60 days) has spawned one
 
 | Project | Stars | Description | Link |
 |---------|-------|-------------|------|
-| **OpenClaw** | 183k | The core autonomous AI agent | [GitHub](https://github.com/openclaw/openclaw) |
+| **OpenClaw** | 377k+ | The core autonomous AI agent | [GitHub](https://github.com/openclaw/openclaw) |
 | **ClawHub** | 1,700 | Official skill marketplace (5,700+ skills) | [GitHub](https://github.com/openclaw/clawhub) |
 | **Lobster** | 440 | Official workflow shell for composable pipelines | [GitHub](https://github.com/openclaw/lobster) |
 | **Skills Archive** | — | Snapshot of all ClawHub skill versions | [GitHub](https://github.com/openclaw/skills) |
 | **macOS Companion** | — | Menu bar app with gateway health, voice control, debug tools | Included in OpenClaw |
-| **iOS/Android** | — | Mobile companion apps (in development) | In main repo |
+| **iOS/Android** | — | Mobile companion apps with hosted push relay | In main repo |
 
 ### Lobster {#lobster}
 
@@ -302,7 +302,7 @@ OpenClaw on a **$25 Android smartphone** via Termux.
 
 - **iOS**: Swift, available in source (`apps/ios/`), no App Store release yet
 - **Android**: Kotlin + Jetpack Compose, minSdk 31 (`apps/android/`), no Play Store release yet
-- **macOS Companion**: Beta available, Universal Binary on macOS 14+
+- **macOS Companion**: Beta available, Universal Binary on macOS 15+
 
 ---
 

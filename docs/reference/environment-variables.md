@@ -6,7 +6,7 @@ description: All environment variables that configure OpenClaw behavior
 
 # Environment Variables
 
-OpenClaw reads these environment variables. They override corresponding `config.yml` settings.
+OpenClaw reads these environment variables. They override corresponding `openclaw.json` settings.
 
 ## LLM API Keys
 
@@ -30,7 +30,7 @@ OpenClaw reads these environment variables. They override corresponding `config.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `OPENCLAW_HOME` | `~/.openclaw` | Base directory for all OpenClaw data |
-| `OPENCLAW_CONFIG` | `~/.openclaw/config.yml` | Config file path |
+| `OPENCLAW_CONFIG_PATH` | `~/.openclaw/openclaw.json` | Config file path |
 | `OPENCLAW_MEMORY_PATH` | `~/.openclaw/memory` | Memory directory |
 | `OPENCLAW_SKILLS_PATH` | `~/.openclaw/skills` | Skills directory |
 

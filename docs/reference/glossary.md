@@ -62,9 +62,9 @@ A separate enterprise-focused product offering managed OpenClaw with additional 
 
 Gemini-powered deep package analysis used by [ClawHub](#clawhub) since v2026.2.6 to scan skill uploads for malicious content. Part of the VirusTotal integration. See [Skill Verification](/security/skill-verification#virustotal-integration-v202626).
 
-### config.yml
+### openclaw.json
 
-OpenClaw's main configuration file, located at `~/.openclaw/config.yml`. Controls LLM provider, heartbeat interval, channel settings, security options, and more. See [Configuration Reference](/reference/configuration).
+OpenClaw's main configuration file, located at `~/.openclaw/openclaw.json` (JSON5 format). Controls LLM provider, heartbeat interval, channel settings, security options, and more. Override the path via `OPENCLAW_CONFIG_PATH`. See [Configuration Reference](/reference/configuration).
 
 ### Context Accumulation
 
@@ -148,7 +148,7 @@ An attack where untrusted content (chat messages, skill outputs, external docume
 
 ### Quiet Hours
 
-Configurable time periods when the [Heartbeat](#heartbeat) is paused to reduce costs and prevent unnecessary overnight activity. Configured in `config.yml`. See [Cost Management](/guides/cost-management).
+Configurable time periods when the [Heartbeat](#heartbeat) is paused to reduce costs and prevent unnecessary overnight activity. Configured in `openclaw.json`. See [Cost Management](/guides/cost-management).
 
 ### Router
 
