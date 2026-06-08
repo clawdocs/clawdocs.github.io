@@ -27,7 +27,7 @@ Unlike chatbots that wait for you to type, OpenClaw is an **autonomous agent**:
 
 - **Autonomous operation** — The [heartbeat system](/architecture/heartbeat) checks for pending tasks every 30 minutes and takes action without prompting
 - **Multi-platform messaging** — Operate through WhatsApp, Telegram, Discord, Slack, Signal, iMessage, Teams, Feishu/Lark, and more
-- **100+ skills** — Extensible via [ClawHub](/guides/clawhub), the community skill marketplace
+- **10,700+ skills** — Extensible via [ClawHub](/guides/clawhub), the community skill marketplace with security scanning
 - **Model-agnostic** — Works with any LLM provider or [local models](/guides/local-models) via Ollama/vLLM
 - **Self-improving** — Can write code for its own new capabilities
 - **Private by default** — All data stored locally as Markdown files
@@ -74,10 +74,11 @@ OpenClaw itself is free (MIT license), but LLM API costs can add up quickly:
 | Heavy (many channels, complex skills) | $20–50+ |
 | Local models (Ollama/vLLM) | $0 |
 
-Some users have reported bills of $600+/month with heavy use. See [Local Models](/guides/local-models) for the zero-cost alternative.
+Some users have reported bills of $600+/month with heavy use. See [Local Models](/guides/local-models) for the zero-cost alternative and [Performance Tuning](/guides/performance-tuning) for techniques that have cut costs by 97%.
 
 ## Next Steps
 
 - [Install OpenClaw](/getting-started/installation) on your machine
 - Follow the [Quick Start](/getting-started/quick-start) to get running in 5 minutes
 - Understand the [Core Concepts](/getting-started/core-concepts) behind the architecture
+- Walk through the [First 7 Days](/guides/first-7-days) for a structured learning path

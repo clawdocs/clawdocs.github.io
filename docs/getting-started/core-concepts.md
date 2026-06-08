@@ -99,14 +99,26 @@ graph TD
     Channels["🔗 Channels<br/>WhatsApp · Telegram · Discord<br/>Slack · Signal · WebChat"] --> Gateway
 ```
 
+## SOUL.md (Identity & Personality)
+
+The **SOUL.md** file defines *who* the agent is — its name, personality, tone, rules, and behavioral boundaries:
+
+```markdown title="~/.openclaw/SOUL.md"
+# Agent Identity
+
+You are Jarvis, a helpful personal assistant.
+
+## Rules
+- Always respond politely
+- Never make purchases without explicit approval
+- Summarize long emails instead of forwarding them in full
+```
+
+SOUL.md is loaded into every conversation as system context. It's the primary way to customize the agent's behavior — and also the [#1 attack surface](/security/hardening#soulmd-protection) for prompt injection. Protect it with appropriate file permissions.
+
 ## Skills
 
-Skills are OpenClaw's extension system. Each skill is a Markdown file with YAML frontmatter that defines:
-
-- **What** the skill does
-- **When** to activate it
-- **What tools** it needs
-- **How** to execute
+Skills are OpenClaw's extension system — Markdown files with YAML frontmatter that define reusable agent capabilities:
 
 ```yaml title="skills/weather.md"
 ---
@@ -122,10 +134,38 @@ and provide a concise briefing with temperature, conditions,
 and any weather alerts.
 ```
 
-Skills can be installed from [ClawHub](/guides/clawhub) or written from scratch. See [Skill Development](/guides/skill-development) for details.
+Over **10,700 skills** are available on [ClawHub](/guides/clawhub), the community marketplace. Skills can also be written from scratch — see [Skill Development](/guides/skill-development).
+
+:::warning
+ClawHub has been targeted by malicious actors. Always [verify skills](/guides/clawhub#security) before installing.
+:::
+
+## MCP (Model Context Protocol)
+
+**MCP** is the open protocol that connects OpenClaw to external tools and services. With 32,600+ MCP servers and 229,800+ tools available, it's how the agent accesses databases, APIs, cloud services, and more without custom code.
+
+```json title="~/.openclaw/openclaw.json (excerpt)"
+{
+  "mcp": {
+    "servers": {
+      "filesystem": { "command": "npx @anthropic/mcp-filesystem" },
+      "github": { "command": "npx @anthropic/mcp-github" }
+    }
+  }
+}
+```
+
+See [MCP Servers](/guides/mcp-servers) for setup and the full ecosystem.
+
+## Multi-Agent
+
+OpenClaw can spawn **sub-agents** for parallel work — an orchestrator delegates tasks to specialized workers, each with their own context and tools. This enables complex workflows like research pipelines, DevOps fleets, and virtual companies.
+
+Multi-agent comes with a 15x token cost multiplier, so it's best for tasks that genuinely benefit from parallelism. See [Multi-Agent Workflows](/guides/multi-agent) for patterns and cost management.
 
 ## Next Steps
 
 - [Architecture Overview](/architecture/overview) — Deep dive into each component
 - [Basic Usage](/guides/basic-usage) — Common patterns and workflows
 - [Configuration](/reference/configuration) — Tune every setting
+- [First 7 Days](/guides/first-7-days) — Hands-on structured learning path
