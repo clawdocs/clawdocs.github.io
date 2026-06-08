@@ -80,11 +80,15 @@ One user reported processing **15,000 emails** with this pattern.
 3. **Specify channels** — "Send to WhatsApp" vs "Post in Slack #alerts"
 4. **Use quiet hours** — Avoid 2am notifications
 
-```yaml title="~/.openclaw/config.yml"
-heartbeat:
-  quiet_hours:
-    start: "22:00"
-    end: "07:00"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "heartbeat": {
+    "quiet_hours": {
+      "start": "22:00",
+      "end": "07:00"
+    }
+  }
+}
 ```
 
 5. **Monitor costs** — Each heartbeat consumes tokens. Use `openclaw stats` to track spend.

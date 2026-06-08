@@ -82,18 +82,22 @@ Use different models for different tasks. The cost difference between Opus and F
 
 Configure hybrid routing:
 
-```yaml title="~/.openclaw/config.yml"
-brain:
-  provider: "anthropic"
-  model: "claude-sonnet-4"
-
-  # Use local model for heartbeat
-  heartbeat_override:
-    provider: "local"
-    local:
-      endpoint: "http://localhost:11434"
-      model: "qwen3:14b"
-      type: "ollama"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "brain": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4",
+    // Use local model for heartbeat
+    "heartbeat_override": {
+      "provider": "local",
+      "local": {
+        "endpoint": "http://localhost:11434",
+        "model": "qwen3:14b",
+        "type": "ollama"
+      }
+    }
+  }
+}
 ```
 
 ### 2. Context Window Management
@@ -273,17 +277,21 @@ If you're spending too much right now, apply these changes immediately:
 4. **Use `/compact` regularly** — prevent context snowball
 5. **Disable thinking mode** for routine tasks
 
-```yaml title="~/.openclaw/config.yml — Minimum cost configuration"
-brain:
-  provider: "anthropic"
-  model: "claude-sonnet-4"
-
-  heartbeat_override:
-    provider: "local"
-    local:
-      endpoint: "http://localhost:11434"
-      model: "llama3.1:8b"
-      type: "ollama"
+```json5 title="~/.openclaw/openclaw.json — Minimum cost configuration"
+{
+  "brain": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4",
+    "heartbeat_override": {
+      "provider": "local",
+      "local": {
+        "endpoint": "http://localhost:11434",
+        "model": "llama3.1:8b",
+        "type": "ollama"
+      }
+    }
+  }
+}
 ```
 
 ```json title="~/.openclaw/openclaw.json — Budget limits"

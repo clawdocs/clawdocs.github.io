@@ -30,10 +30,13 @@ Subscribe to [OpenClaw security advisories](https://github.com/openclaw/openclaw
 
 ### Bind Gateway to Localhost
 
-```yaml title="~/.openclaw/config.yml"
-gateway:
-  host: "127.0.0.1"  # NEVER use 0.0.0.0
-  port: 18789
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "gateway": {
+    "host": "127.0.0.1",  // NEVER use 0.0.0.0
+    "port": 18789
+  }
+}
 ```
 
 This is the single most important security step. The old default bound to `0.0.0.0`, which is how **40,000+ instances** ended up exposed to the internet.
@@ -42,10 +45,14 @@ This is the single most important security step. The old default bound to `0.0.0
 
 The gateway supports three auth modes. Token-based is the most robust:
 
-```yaml title="~/.openclaw/config.yml"
-gateway:
-  auth:
-    mode: "token"  # or "password"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "gateway": {
+    "auth": {
+      "mode": "token"  // or "password"
+    }
+  }
+}
 ```
 
 If no token/password is configured, the gateway **refuses WebSocket connections** (fail-closed). The onboarding wizard generates an auth token by default — don't disable it.
@@ -72,18 +79,23 @@ Auto-fix applies safe defaults only:
 
 ### Restrict Shell Commands
 
-```yaml title="~/.openclaw/config.yml"
-hands:
-  shell:
-    blocked_commands:
-      - "rm -rf"
-      - "shutdown"
-      - "reboot"
-      - "mkfs"
-      - "dd"
-      - "chmod 777"
-      - "curl * | bash"
-      - "wget * | bash"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "hands": {
+    "shell": {
+      "blocked_commands": [
+        "rm -rf",
+        "shutdown",
+        "reboot",
+        "mkfs",
+        "dd",
+        "chmod 777",
+        "curl * | bash",
+        "wget * | bash"
+      ]
+    }
+  }
+}
 ```
 
 ---
@@ -203,51 +215,73 @@ openclaw.example.com {
 
 Only allow messages from known contacts:
 
-```yaml title="~/.openclaw/config.yml"
-channels:
-  whatsapp:
-    allowed_contacts:
-      - "+1234567890"
-  telegram:
-    allowed_chat_ids:
-      - 123456789
-  discord:
-    allowed_guild_ids:
-      - "987654321"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "channels": {
+    "whatsapp": {
+      "allowed_contacts": [
+        "+1234567890"
+      ]
+    },
+    "telegram": {
+      "allowed_chat_ids": [
+        123456789
+      ]
+    },
+    "discord": {
+      "allowed_guild_ids": [
+        "987654321"
+      ]
+    }
+  }
+}
 ```
 
 A bot that accepts messages from anyone on WhatsApp or Telegram is a significant liability. Keep inbound DMs locked down and use mention-gating in group channels.
 
 ### Browser Domain Restrictions
 
-```yaml title="~/.openclaw/config.yml"
-hands:
-  browser:
-    allowed_domains:
-      - "github.com"
-      - "*.google.com"
-      - "news.ycombinator.com"
-    blocked_domains:
-      - "*.bank.com"
-      - "*.gov"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "hands": {
+    "browser": {
+      "allowed_domains": [
+        "github.com",
+        "*.google.com",
+        "news.ycombinator.com"
+      ],
+      "blocked_domains": [
+        "*.bank.com",
+        "*.gov"
+      ]
+    }
+  }
+}
 ```
 
 ### File System Restrictions
 
-```yaml title="~/.openclaw/config.yml"
-hands:
-  filesystem:
-    writable_paths:
-      - "~/.openclaw"
-      - "~/projects"
-      - "/tmp/openclaw"
-    readable_paths:
-      - "~"
-    blocked_paths:
-      - "~/.ssh"
-      - "~/.gnupg"
-      - "~/.aws"
-      - "~/.config/gcloud"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "hands": {
+    "filesystem": {
+      "writable_paths": [
+        "~/.openclaw",
+        "~/projects",
+        "/tmp/openclaw"
+      ],
+      "readable_paths": [
+        "~"
+      ],
+      "blocked_paths": [
+        "~/.ssh",
+        "~/.gnupg",
+        "~/.aws",
+        "~/.config/gcloud"
+      ]
+    }
+  }
+}
 ```
 
 ---
@@ -312,16 +346,21 @@ volumes:
 
 ### Sandbox Mode for Tool Execution
 
-```yaml title="~/.openclaw/config.yml"
-hands:
-  sandbox:
-    enabled: true
-    type: "docker"
-    image: "openclaw/sandbox:latest"
-    network: false          # Default: no egress
-    read_only_root: true
-    writable_paths:
-      - "/workspace"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "hands": {
+    "sandbox": {
+      "enabled": true,
+      "type": "docker",
+      "image": "openclaw/sandbox:latest",
+      "network": false,          // Default: no egress
+      "read_only_root": true,
+      "writable_paths": [
+        "/workspace"
+      ]
+    }
+  }
+}
 ```
 
 The default `docker.network` setting is `"none"` — no outbound access from sandboxed tasks.
@@ -362,33 +401,44 @@ chmod 600 ~/.openclaw/env
 
 Eliminate all cloud API data exposure:
 
-```yaml title="~/.openclaw/config.yml"
-brain:
-  provider: "local"
-  local:
-    endpoint: "http://localhost:11434"
-    model: "llama3.1:70b"
-    type: "ollama"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "brain": {
+    "provider": "local",
+    "local": {
+      "endpoint": "http://localhost:11434",
+      "model": "llama3.1:70b",
+      "type": "ollama"
+    }
+  }
+}
 ```
 
 ### Disable Skill Installation
 
-```yaml title="~/.openclaw/config.yml"
-skills:
-  allow_install: false
-  allow_clawhub: false
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "skills": {
+    "allow_install": false,
+    "allow_clawhub": false
+  }
+}
 ```
 
 ### Audit Logging
 
-```yaml title="~/.openclaw/config.yml"
-logging:
-  audit:
-    enabled: true
-    path: "~/.openclaw/logs/audit.log"
-    log_tool_calls: true
-    log_memory_writes: true
-    log_channel_messages: true
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "logging": {
+    "audit": {
+      "enabled": true,
+      "path": "~/.openclaw/logs/audit.log",
+      "log_tool_calls": true,
+      "log_memory_writes": true,
+      "log_channel_messages": true
+    }
+  }
+}
 ```
 
 Audit logs record: user ID + timestamp + action + result + IP. Exportable as CSV/JSON. 90-day retention meets ISO 27001 (configurable up to 365 days).

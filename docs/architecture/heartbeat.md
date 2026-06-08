@@ -64,16 +64,20 @@ The agent responds to each heartbeat with one of:
 
 ## Configuration
 
-```yaml title="~/.openclaw/config.yml"
-heartbeat:
-  enabled: true
-  interval: 1800         # seconds (30 minutes)
-  model: "claude-haiku-4-5-20251001"  # Use a cheap model for heartbeat
-  max_tokens: 1024
-  quiet_hours:
-    start: "23:00"
-    end: "07:00"
-    timezone: "America/Los_Angeles"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "heartbeat": {
+    "enabled": true,
+    "interval": 1800,         // seconds (30 minutes)
+    "model": "claude-haiku-4-5-20251001",  // Use a cheap model for heartbeat
+    "max_tokens": 1024,
+    "quiet_hours": {
+      "start": "23:00",
+      "end": "07:00",
+      "timezone": "America/Los_Angeles"
+    }
+  }
+}
 ```
 
 ### Cost Optimization

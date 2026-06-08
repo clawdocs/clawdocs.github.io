@@ -47,7 +47,7 @@ flowchart LR
 | **Memory search index** | `~/.openclaw/memory/<agentId>.sqlite` | **None** (unencrypted SQLite) |
 | **Credentials** | `~/.openclaw/credentials/` | **None** (plaintext by default) |
 | **Session transcripts** | Workspace directory | **None** (JSON with descriptive filenames) |
-| **Configuration** | `~/.openclaw/config.yml`, `openclaw.json` | **None** |
+| **Configuration** | `~/.openclaw/openclaw.json`, `openclaw.json` | **None** |
 | **Telemetry logs** | `~/.openclaw/logs/telemetry.jsonl` | Local only (opt-in plugin) |
 
 :::danger Credentials Are Stored in Plaintext

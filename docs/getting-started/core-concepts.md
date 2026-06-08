@@ -58,7 +58,7 @@ OpenClaw remembers things across conversations using **local Markdown files**:
 │   ├── projects.md       # Active projects and context
 │   └── learnings.md      # Things it's figured out
 ├── HEARTBEAT.md          # Autonomous task definitions
-└── config.yml            # Main configuration
+└── openclaw.json         # Main configuration
 ```
 
 Memory is:

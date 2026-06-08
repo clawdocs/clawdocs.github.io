@@ -66,13 +66,17 @@ RunPod has a native vLLM deployment template:
 4. Set `Max Model Length` to 8192 (or your preferred context window)
 5. Note the endpoint URL once initialized
 
-```yaml title="~/.openclaw/config.yml"
-brain:
-  provider: "local"
-  local:
-    endpoint: "https://your-runpod-endpoint/v1"
-    model: "Qwen/Qwen3-32B-Instruct"
-    type: "openai-compatible"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "brain": {
+    "provider": "local",
+    "local": {
+      "endpoint": "https://your-runpod-endpoint/v1",
+      "model": "Qwen/Qwen3-32B-Instruct",
+      "type": "openai-compatible"
+    }
+  }
+}
 ```
 
 #### RunPod Serverless
@@ -202,13 +206,17 @@ vllm serve Qwen/Qwen3-32B-Instruct \
   --max-model-len 8192
 ```
 
-```yaml title="~/.openclaw/config.yml"
-brain:
-  provider: "local"
-  local:
-    endpoint: "http://your-server:8090/v1"
-    model: "Qwen/Qwen3-32B-Instruct"
-    type: "openai-compatible"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "brain": {
+    "provider": "local",
+    "local": {
+      "endpoint": "http://your-server:8090/v1",
+      "model": "Qwen/Qwen3-32B-Instruct",
+      "type": "openai-compatible"
+    }
+  }
+}
 ```
 
 vLLM supports both NVIDIA (CUDA) and AMD (ROCm) GPUs.
@@ -235,7 +243,7 @@ Exposes both OpenAI-compatible and KoboldAI-compatible APIs.
 |------|---------|------------|
 | `~/.openclaw/openclaw.json` | Provider settings, model IDs, agent config | 644 |
 | `~/.openclaw/env` | API keys and secrets | **600** |
-| `~/.openclaw/config.yml` | Gateway and brain config | 644 |
+| `~/.openclaw/openclaw.json` | Gateway and brain config | 644 |
 
 ### Full Custom Provider Example
 
@@ -327,17 +335,21 @@ The most cost-effective approach uses **different models for different tasks**:
 
 Configure hybrid routing in OpenClaw:
 
-```yaml title="~/.openclaw/config.yml"
-brain:
-  provider: "anthropic"
-  model: "claude-opus-4-6"
-
-  heartbeat_override:
-    provider: "local"
-    local:
-      endpoint: "http://localhost:11434"
-      model: "qwen3:14b"
-      type: "ollama"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "brain": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-6",
+    "heartbeat_override": {
+      "provider": "local",
+      "local": {
+        "endpoint": "http://localhost:11434",
+        "model": "qwen3:14b",
+        "type": "ollama"
+      }
+    }
+  }
+}
 ```
 
 This approach can **cut costs by 50%+** while maintaining quality for critical tasks.

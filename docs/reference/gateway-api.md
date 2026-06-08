@@ -176,11 +176,15 @@ Result of a heartbeat cycle.
 
 By default, the Gateway trusts all localhost connections. For additional security:
 
-```yaml title="~/.openclaw/config.yml"
-gateway:
-  auth:
-    enabled: true
-    token: "${OPENCLAW_AUTH_TOKEN}"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "gateway": {
+    "auth": {
+      "enabled": true,
+      "token": "${OPENCLAW_AUTH_TOKEN}"
+    }
+  }
+}
 ```
 
 Include the token in the WebSocket URL:
