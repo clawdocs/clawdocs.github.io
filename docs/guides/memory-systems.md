@@ -190,8 +190,8 @@ Mem0 is a general-purpose memory layer, not OpenClaw-specific. Integration requi
 
 | Tier | Detail Level | Token Budget |
 |------|-------------|-------------|
-| **L0** (Abstract) | One-sentence summary | <100 tokens |
-| **L1** (Overview) | Essential information | <2,000 tokens |
+| **L0** (Abstract) | One-sentence summary | Under 100 tokens |
+| **L1** (Overview) | Essential information | Under 2,000 tokens |
 | **L2** (Detail) | Complete content | On-demand |
 
 The agent loads L0 first, drills into L1/L2 only when needed — dramatically reducing token consumption.
