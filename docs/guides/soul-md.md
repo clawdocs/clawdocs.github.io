@@ -30,7 +30,7 @@ SOUL.md is a plain Markdown file at `~/.openclaw/workspace/SOUL.md` that gets in
 | **USER.md** | User context | Information about you (bio, preferences) |
 | **TOOLS.md** | Capabilities | Available tools, calendar IDs, contact info |
 | **MEMORY.md** | Persistence | Accumulated knowledge across sessions |
-| **config.yml** | Infrastructure | LLM provider, API keys, channel settings |
+| **openclaw.json** | Infrastructure | LLM provider, API keys, channel settings |
 
 The key distinction: *"Soul is what the model embodies. Identity is what users see. You can have a formal, precise soul with a playful emoji and nickname — internal behavior and external presentation don't have to match."*
 

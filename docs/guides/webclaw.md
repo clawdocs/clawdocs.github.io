@@ -49,20 +49,24 @@ pnpm install
 Create the environment file at `apps/webclaw/.env.local`:
 
 ```bash title="apps/webclaw/.env.local"
-CLAWDBOT_GATEWAY_URL=ws://127.0.0.1:18789
-CLAWDBOT_GATEWAY_TOKEN=your-gateway-token-here
+OPENCLAW_GATEWAY_URL=ws://127.0.0.1:18789
+OPENCLAW_GATEWAY_TOKEN=your-gateway-token-here
 ```
 
-The token must match your OpenClaw Gateway authentication settings. You can find or set your token in `~/.openclaw/config.yml`:
+The token must match your OpenClaw Gateway authentication settings. You can find or set your token in `~/.openclaw/openclaw.json`:
 
-```yaml title="~/.openclaw/config.yml"
-gateway:
-  auth:
-    token: "your-gateway-token-here"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "gateway": {
+    "auth": {
+      "token": "your-gateway-token-here"
+    }
+  }
+}
 ```
 
 :::tip
-If you use password authentication instead of token auth, set `CLAWDBOT_GATEWAY_PASSWORD` instead of `CLAWDBOT_GATEWAY_TOKEN`.
+If you use password authentication instead of token auth, set `OPENCLAW_GATEWAY_PASSWORD` instead of `OPENCLAW_GATEWAY_TOKEN`.
 :::
 
 ## Running
@@ -124,7 +128,7 @@ Verify your token matches the Gateway config:
 
 ```bash
 # Check Gateway auth settings
-grep -A 3 'auth:' ~/.openclaw/config.yml
+cat ~/.openclaw/openclaw.json | grep -A 3 'auth'
 ```
 
 ### CORS errors
