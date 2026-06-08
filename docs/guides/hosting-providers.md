@@ -33,8 +33,8 @@ flowchart LR
 | [Contabo](#contabo) | VPS template | €4.50/mo | Possible | Partial | Global budget VPS |
 | [Railway](#railway) | PaaS | $5/mo | No | No | Testing / development |
 | [Hostinger](#hostinger) | VPS template | $5.99/mo | Possible | — | Budget VPS with AI credits |
-| [MyClaw.ai](#myclawai) | Managed | $9/mo | No | Partial | Cheapest dedicated managed |
 | [OpenClaw Launch](#openclawlaunch) | Managed | $6/mo | No | No | AI credits, fast setup |
+| [MyClaw.ai](#myclawai) | Managed | $9/mo | No | Partial | Cheapest dedicated managed |
 | [RunClaw.ai](#runclawai) | Managed | ~$13/mo | No | Yes | Transparent managed (Hetzner DE) |
 | [OpenClaw Cloud](#openclaw-cloud) | Managed | $19/mo | Free model | Yes | Free trial, own URL |
 | [ClawHosters](#clawhosters) | Managed VPS | €19/mo | — | Yes | GDPR, German servers |
