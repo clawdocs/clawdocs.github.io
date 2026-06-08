@@ -47,6 +47,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'guides/basic-usage',
         'guides/channels',
+        'guides/custom-channels',
         'guides/soul-md',
         'guides/skill-development',
         'guides/skill-workshop',
