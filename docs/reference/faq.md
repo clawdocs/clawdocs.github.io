@@ -90,13 +90,14 @@ Yes, using [local models](/guides/local-models) via Ollama or vLLM. No API key o
 
 ### Which LLM should I use?
 
-| Use Case | Recommendation |
-|----------|---------------|
+| Your priority | Recommendation |
+|--------------|---------------|
 | Best quality | Claude Opus 4.8 |
-| Good balance | Claude Sonnet 4.6 or GPT-4o |
-| Cheapest cloud | DeepSeek V3.2 or Gemini 2.5 Flash (via OpenRouter) |
-| Free (local) | Qwen3 72B or Llama 3.3 70B via Ollama |
-| Coding tasks | Claude Opus 4.8 or Claude Sonnet 4.6 |
+| Best balance | Claude Sonnet 4.6 |
+| Cheapest cloud | DeepSeek V3.2 (~$0.40/M tokens via OpenRouter) |
+| Free (local) | Qwen3 32B via Ollama |
+
+See the **[Model Selection Guide](/guides/model-selection)** for detailed recommendations by use case, budget, and hardware.
 
 ## Technical
 
