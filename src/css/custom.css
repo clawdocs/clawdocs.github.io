@@ -41,24 +41,7 @@
   --ifm-background-color: #1c1917;
 }
 
-/* Hero gradient - crimson to dark */
-.hero--primary {
-  background: linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #1c1917 100%);
-  color: #fff;
-}
-
-.hero--primary .hero__title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-}
-
-.hero--primary .hero__subtitle {
-  font-size: 1.25rem;
-  opacity: 0.9;
-  max-width: 600px;
-  margin: 0 auto;
-}
+/* Hero — styles moved to index.module.css */
 
 /* Code blocks */
 .prism-code {

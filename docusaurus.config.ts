@@ -138,36 +138,40 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Learn',
+          title: 'Get Started',
           items: [
             {label: 'Introduction', to: '/getting-started/introduction'},
             {label: 'Installation', to: '/getting-started/installation'},
             {label: 'Quick Start', to: '/getting-started/quick-start'},
-            {label: 'Architecture', to: '/architecture/overview'},
+            {label: 'First 7 Days', to: '/guides/first-7-days'},
+            {label: 'Model Selection', to: '/guides/model-selection'},
           ],
         },
         {
           title: 'Guides',
           items: [
-            {label: 'Channels & Integrations', to: '/guides/channels'},
-            {label: 'Skill Development', to: '/guides/skill-development'},
-            {label: 'Heartbeat System', to: '/guides/heartbeat'},
-            {label: 'Security Hardening', to: '/security/hardening'},
+            {label: 'MCP Servers', to: '/guides/mcp-servers'},
+            {label: 'Custom Channels', to: '/guides/custom-channels'},
+            {label: 'Plugin System', to: '/guides/plugin-system'},
+            {label: 'Workboard', to: '/guides/workboard'},
+            {label: 'Advanced Recipes', to: '/guides/recipes/advanced-recipes'},
           ],
         },
         {
           title: 'Community',
           items: [
-            {label: 'GitHub', href: 'https://github.com/openclaw/openclaw'},
+            {label: 'OpenClaw GitHub', href: 'https://github.com/openclaw/openclaw'},
             {label: 'Discord', href: 'https://discord.gg/openclaw'},
             {label: 'ClawHub', href: 'https://openclaw.ai/clawhub'},
+            {label: 'Contribute to Docs', href: 'https://github.com/clawdocs/clawdocs.github.io'},
           ],
         },
         {
           title: 'More',
           items: [
+            {label: 'Architecture', to: '/architecture/overview'},
+            {label: 'Security', to: '/security/overview'},
             {label: 'Changelog', href: 'https://github.com/openclaw/openclaw/releases'},
-            {label: 'Contribute to these docs', href: 'https://github.com/clawdocs/clawdocs.github.io'},
             {label: 'Official Site', href: 'https://openclaw.ai'},
           ],
         },
