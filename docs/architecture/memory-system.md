@@ -77,17 +77,21 @@ You can also instruct the agent:
 
 ## Memory Configuration
 
-```yaml title="~/.openclaw/config.yml"
-memory:
-  enabled: true
-  path: "~/.openclaw/memory"
-  max_context_tokens: 2000   # Max tokens loaded per conversation
-  auto_save: true             # Save after every conversation
-  categories:
-    - preferences
-    - contacts
-    - projects
-    - learnings
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "memory": {
+    "enabled": true,
+    "path": "~/.openclaw/memory",
+    "max_context_tokens": 2000,   // Max tokens loaded per conversation
+    "auto_save": true,             // Save after every conversation
+    "categories": [
+      "preferences",
+      "contacts",
+      "projects",
+      "learnings"
+    ]
+  }
+}
 ```
 
 ## Privacy Notes

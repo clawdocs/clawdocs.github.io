@@ -186,10 +186,13 @@ All ClawHub skill uploads are now scanned:
 
 For maximum security, disable skill installation completely:
 
-```yaml title="~/.openclaw/config.yml"
-skills:
-  allow_install: false
-  allow_clawhub: false
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "skills": {
+    "allow_install": false,
+    "allow_clawhub": false
+  }
+}
 ```
 
 ---

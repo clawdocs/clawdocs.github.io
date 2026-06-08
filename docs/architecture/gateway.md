@@ -92,15 +92,18 @@ On shutdown, the Gateway:
 
 ## Configuration
 
-Gateway settings in `~/.openclaw/config.yml`:
+Gateway settings in `~/.openclaw/openclaw.json`:
 
-```yaml
-gateway:
-  port: 18789
-  host: "127.0.0.1"  # Bind to localhost only
-  max_connections: 10
-  log_level: "info"   # debug, info, warn, error
-  pid_file: "~/.openclaw/gateway.pid"
+```json5
+{
+  "gateway": {
+    "port": 18789,
+    "host": "127.0.0.1",  // Bind to localhost only
+    "max_connections": 10,
+    "log_level": "info",   // debug, info, warn, error
+    "pid_file": "~/.openclaw/gateway.pid"
+  }
+}
 ```
 
 :::danger

@@ -23,18 +23,22 @@ The Brain is the LLM that interprets requests and decides what to do.
 
 ### Configuration
 
-```yaml title="~/.openclaw/config.yml"
-brain:
-  provider: "anthropic"
-  model: "claude-opus-4-6"
-  api_key: "${ANTHROPIC_API_KEY}"  # Or set env var
-  temperature: 0.7
-  max_tokens: 4096
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "brain": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-6",
+    "api_key": "${ANTHROPIC_API_KEY}",  // Or set env var
+    "temperature": 0.7,
+    "max_tokens": 4096,
 
-  # Fallback if primary provider is down
-  fallback:
-    provider: "openai"
-    model: "gpt-4o"
+    // Fallback if primary provider is down
+    "fallback": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    }
+  }
+}
 ```
 
 ### How the Brain Works
@@ -64,29 +68,38 @@ The Hands execute what the Brain decides to do.
 
 By default, commands run with the same permissions as the user who started OpenClaw:
 
-```yaml title="~/.openclaw/config.yml"
-hands:
-  shell:
-    enabled: true
-    timeout: 30000  # ms, per command
-    allowed_commands: []  # Empty = all allowed
-    blocked_commands:
-      - "rm -rf /"
-      - "shutdown"
-      - "reboot"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "hands": {
+    "shell": {
+      "enabled": true,
+      "timeout": 30000,  // ms, per command
+      "allowed_commands": [],  // Empty = all allowed
+      "blocked_commands": [
+        "rm -rf /",
+        "shutdown",
+        "reboot"
+      ]
+    }
+  }
+}
 ```
 
 ### Browser Automation
 
 OpenClaw includes a headless Chromium instance for web tasks:
 
-```yaml title="~/.openclaw/config.yml"
-hands:
-  browser:
-    enabled: true
-    headless: true
-    timeout: 60000
-    allowed_domains: []  # Empty = all allowed
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "hands": {
+    "browser": {
+      "enabled": true,
+      "headless": true,
+      "timeout": 60000,
+      "allowed_domains": []  // Empty = all allowed
+    }
+  }
+}
 ```
 
 :::tip
@@ -97,16 +110,18 @@ Set `headless: false` during development to watch the browser in action.
 
 For production deployments, you can isolate the Hands:
 
-```yaml title="~/.openclaw/config.yml"
-hands:
-  sandbox:
-    enabled: true
-    type: "docker"  # or "firejail" on Linux
-    image: "openclaw/sandbox:latest"
-    network: false  # Disable network in sandbox
-    writable_paths:
-      - "~/.openclaw/memory"
-      - "/tmp/openclaw"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "hands": {
+    "sandbox": {
+      "enabled": true,
+      "type": "docker",  // or "firejail" on Linux
+      "image": "openclaw/sandbox:latest",
+      "network": false,  // Disable network in sandbox
+      "writable_paths": [
+        "~/.openclaw/memory",
+        "/tmp/openclaw"
+      ]
 ```
 
 ## Brain-Hands Communication

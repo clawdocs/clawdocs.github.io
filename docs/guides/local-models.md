@@ -32,13 +32,17 @@ ollama pull codellama:34b   # Good for coding tasks
 
 ### Configure OpenClaw
 
-```yaml title="~/.openclaw/config.yml"
-brain:
-  provider: "local"
-  local:
-    endpoint: "http://localhost:11434"
-    model: "llama3.1:70b"
-    type: "ollama"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "brain": {
+    "provider": "local",
+    "local": {
+      "endpoint": "http://localhost:11434",
+      "model": "llama3.1:70b",
+      "type": "ollama"
+    }
+  }
+}
 ```
 
 Restart the gateway:
@@ -60,13 +64,17 @@ vllm serve meta-llama/Llama-3.1-70B-Instruct \
   --port 8000
 ```
 
-```yaml title="~/.openclaw/config.yml"
-brain:
-  provider: "local"
-  local:
-    endpoint: "http://localhost:8000/v1"
-    model: "meta-llama/Llama-3.1-70B-Instruct"
-    type: "openai-compatible"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "brain": {
+    "provider": "local",
+    "local": {
+      "endpoint": "http://localhost:8000/v1",
+      "model": "meta-llama/Llama-3.1-70B-Instruct",
+      "type": "openai-compatible"
+    }
+  }
+}
 ```
 
 ## Hardware Requirements
@@ -86,18 +94,22 @@ For the best experience without a GPU, use **quantized models** (Q4_K_M or Q5_K_
 
 Use local models for cheap tasks and cloud models for complex ones:
 
-```yaml title="~/.openclaw/config.yml"
-brain:
-  provider: "anthropic"
-  model: "claude-opus-4-6"
-
-  # Use local model for heartbeat and simple tasks
-  heartbeat_override:
-    provider: "local"
-    local:
-      endpoint: "http://localhost:11434"
-      model: "llama3.1:8b"
-      type: "ollama"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "brain": {
+    "provider": "anthropic",
+    "model": "claude-opus-4-6",
+    // Use local model for heartbeat and simple tasks
+    "heartbeat_override": {
+      "provider": "local",
+      "local": {
+        "endpoint": "http://localhost:11434",
+        "model": "llama3.1:8b",
+        "type": "ollama"
+      }
+    }
+  }
+}
 ```
 
 This gives you the best of both worlds: zero-cost heartbeat with full-power reasoning when needed.

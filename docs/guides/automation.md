@@ -112,16 +112,25 @@ OpenClaw can receive and send webhooks for event-driven automation.
 
 Trigger agent actions from external events:
 
-```yaml title="~/.openclaw/config.yml"
-webhooks:
-  incoming:
-    enabled: true
-    secret: "your-webhook-secret"
-    endpoints:
-      - path: /deploy-alert
-        message: "A deployment just completed: {{body}}"
-      - path: /error-alert
-        message: "Production error detected: {{body}}"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "webhooks": {
+    "incoming": {
+      "enabled": true,
+      "secret": "your-webhook-secret",
+      "endpoints": [
+        {
+          "path": "/deploy-alert",
+          "message": "A deployment just completed: {{body}}"
+        },
+        {
+          "path": "/error-alert",
+          "message": "Production error detected: {{body}}"
+        }
+      ]
+    }
+  }
+}
 ```
 
 External services send a POST to `http://localhost:18789/webhook/<path>` with the webhook secret, and the agent processes the message.
@@ -130,13 +139,21 @@ External services send a POST to `http://localhost:18789/webhook/<path>` with th
 
 Have OpenClaw notify external services when events occur:
 
-```yaml title="~/.openclaw/config.yml"
-webhooks:
-  outgoing:
-    - event: "agent.task.completed"
-      url: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
-    - event: "security.alert"
-      url: "https://your-monitoring.example.com/alerts"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  "webhooks": {
+    "outgoing": [
+      {
+        "event": "agent.task.completed",
+        "url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+      },
+      {
+        "event": "security.alert",
+        "url": "https://your-monitoring.example.com/alerts"
+      }
+    ]
+  }
+}
 ```
 
 ---
