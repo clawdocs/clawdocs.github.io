@@ -163,19 +163,18 @@ Route by topic using separate channels:
 
 ---
 
-## Agent Teams (RFC)
+## Workboard Orchestration
 
-[RFC: Agent Teams](https://github.com/openclaw/openclaw/discussions/10036) proposes coordinated multi-agent orchestration — a feature not yet shipped but under active discussion.
+As of **v2026.6.1**, the [Workboard](/guides/workboard) provides the official orchestration layer for multi-agent coordination:
 
-**Current limitation:** The existing `sessions_spawn` pattern creates sub-agents that operate in isolation and report only to their parent.
+- **Kanban-style task board** — create cards, assign to agents, track progress
+- **Automatic dispatch** — scan for ready cards and start agent workers
+- **Agent tools** — agents can claim cards, create sub-tasks, and link dependencies autonomously
+- **Lifecycle sync** — cards automatically move between states as linked sessions progress
 
-**Proposed features:**
-- Direct inter-agent communication (teammates talk to each other)
-- Shared task lists with dependencies
-- Collaborative problem-solving
-- New `team_*` and `task_*` tools
+The Workboard replaces the need for external workflow tools when coordinating work across multiple agents on the same Gateway.
 
-**Why not external orchestration?** The RFC argues that external workflow engines add complexity mismatch, network latency, and context loss since agent context doesn't serialize well.
+See the full [Workboard Guide](/guides/workboard) for setup, configuration, and recipes.
 
 ---
 
