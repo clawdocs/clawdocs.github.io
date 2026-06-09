@@ -64,6 +64,7 @@ const sidebars: SidebarsConfig = {
         'guides/memory-systems',
         'guides/api-webhooks',
         'guides/automation',
+        'guides/lobster-workflows',
         'guides/webclaw',
         'guides/cicd-testing',
         'guides/monitoring',
