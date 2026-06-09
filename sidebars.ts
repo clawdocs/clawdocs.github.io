@@ -69,6 +69,7 @@ const sidebars: SidebarsConfig = {
         'guides/cicd-testing',
         'guides/monitoring',
         'guides/performance-tuning',
+        'guides/video-generation',
         'guides/voice-multimodal',
         'guides/deployment-options',
         'guides/hosting-providers',
