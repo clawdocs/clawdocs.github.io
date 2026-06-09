@@ -2,6 +2,7 @@
 sidebar_position: 2
 title: Configuration
 description: Complete reference for ~/.openclaw/openclaw.json — every section and setting explained
+keywords: [openclaw, openclaw config, openclaw.json, settings, configuration reference, json5, config file]
 ---
 
 # Configuration Reference

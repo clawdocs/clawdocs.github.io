@@ -2,6 +2,7 @@
 sidebar_position: 5
 title: Troubleshooting & Debugging
 description: Diagnose and fix OpenClaw issues — gateway, channels, LLM, MCP, plugins, memory, skills, performance, and more
+keywords: [openclaw, openclaw troubleshooting, fix, debug, openclaw not working, common errors, diagnostics]
 ---
 
 # Troubleshooting & Debugging

@@ -2,6 +2,7 @@
 sidebar_position: 6
 title: FAQ
 description: Frequently asked questions about OpenClaw — setup, cost, security, troubleshooting, and ecosystem
+keywords: [openclaw, openclaw faq, frequently asked questions, openclaw cost, is openclaw free, setup, help]
 ---
 
 # Frequently Asked Questions

@@ -2,6 +2,7 @@
 sidebar_position: 1
 title: Contributing to These Docs
 description: How to contribute to the ClaweDocs community documentation
+keywords: [openclaw, contributing, documentation, help, community docs, how to contribute, open source]
 ---
 
 # Contributing to These Docs

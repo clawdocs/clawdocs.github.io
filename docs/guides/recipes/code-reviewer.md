@@ -2,6 +2,7 @@
 sidebar_position: 2
 title: "Recipe: Code Reviewer"
 description: Use OpenClaw to automatically review pull requests and monitor CI
+keywords: [openclaw, code review, automated review, pull request, code quality, ci monitoring, github integration]
 ---
 
 # Recipe: Code Reviewer

@@ -50,7 +50,7 @@ function HomepageHeader() {
 
 function StatsBar() {
   const stats = [
-    {value: '40+', label: 'Guides'},
+    {value: '70+', label: 'Guides'},
     {value: '50+', label: 'Channels'},
     {value: '32k+', label: 'MCP Servers'},
     {value: '10,700+', label: 'Skills on ClawHub'},

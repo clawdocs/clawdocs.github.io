@@ -2,6 +2,7 @@
 sidebar_position: 3
 title: Gateway API
 description: WebSocket message protocol for the OpenClaw Gateway control plane
+keywords: [openclaw, openclaw api, websocket api, gateway api, rest api, control plane, message protocol]
 ---
 
 # Gateway API

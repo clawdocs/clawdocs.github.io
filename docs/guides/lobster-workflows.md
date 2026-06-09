@@ -2,6 +2,7 @@
 sidebar_position: 15
 title: Lobster Workflows
 description: Build composable, typed automation pipelines with Lobster — OpenClaw's official workflow shell
+keywords: [openclaw, lobster, workflow engine, automation pipeline, yaml workflow, typed pipeline]
 ---
 
 # Lobster Workflows

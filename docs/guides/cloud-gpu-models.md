@@ -2,6 +2,7 @@
 sidebar_position: 10
 title: Cloud GPU & Self-Hosted Models
 description: Run your own LLMs on cloud GPUs with RunPod, Vast.ai, and inference-as-a-service providers — costs, configuration, and model recommendations
+keywords: [openclaw, openclaw cloud gpu, runpod, self-hosted llm, vllm cloud]
 ---
 
 # Cloud GPU & Self-Hosted Models

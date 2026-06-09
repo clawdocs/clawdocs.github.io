@@ -2,6 +2,7 @@
 sidebar_position: 3
 title: Brain & Hands
 description: How OpenClaw separates reasoning (LLM) from execution (shell, files, browser) — model routing, prompt assembly, tool permissions, and sandboxing
+keywords: [openclaw, brain, llm integration, execution, tool use, model routing, sandboxing, prompt assembly]
 ---
 
 # Brain & Hands

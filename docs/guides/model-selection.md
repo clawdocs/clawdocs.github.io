@@ -2,6 +2,7 @@
 sidebar_position: 3
 title: Model Selection Guide
 description: Which LLM to use with OpenClaw — by use case, budget, and deployment type, with provider comparison and routing strategies
+keywords: [openclaw, openclaw model, which model, claude vs gpt, model comparison, cheapest model]
 ---
 
 # Model Selection Guide

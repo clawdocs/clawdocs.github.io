@@ -2,6 +2,7 @@
 sidebar_position: 8
 title: Deployment Options
 description: Compare ways to deploy OpenClaw — bare metal, Docker, Kubernetes, Cloudflare Workers, 1Panel, Coolify, and more
+keywords: [openclaw, deploy, docker, kubernetes, cloud hosting, self-host]
 ---
 
 # Deployment Options

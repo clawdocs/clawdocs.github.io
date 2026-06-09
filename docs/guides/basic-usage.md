@@ -2,6 +2,7 @@
 sidebar_position: 1
 title: Basic Usage
 description: Everyday patterns for working with OpenClaw — CLI commands, slash commands, sessions, memory, execution approval, and power-user tips
+keywords: [openclaw, openclaw usage, openclaw commands, how to use openclaw, cli chat, slash commands]
 ---
 
 # Basic Usage

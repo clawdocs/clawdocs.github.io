@@ -2,6 +2,7 @@
 sidebar_position: 12
 title: Performance Tuning
 description: Optimize your OpenClaw agent for speed, cost, and efficiency — model routing, token reduction, caching, and resource management
+keywords: [openclaw, performance, optimization, reduce tokens, speed up, cost reduction]
 ---
 
 # Performance Tuning

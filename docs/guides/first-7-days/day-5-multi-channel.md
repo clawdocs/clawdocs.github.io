@@ -2,6 +2,7 @@
 sidebar_position: 6
 title: "Day 5: Be Everywhere"
 description: "Connect multiple chat platforms and route messages between them"
+keywords: [openclaw, multi-channel, whatsapp, telegram setup, discord bot, cross-channel, chat platforms]
 ---
 
 # Day 5: Be Everywhere

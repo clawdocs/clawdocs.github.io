@@ -2,6 +2,7 @@
 sidebar_position: 16
 title: Automation & Integrations
 description: Cron jobs, webhooks, CI/CD integration, GitHub Actions, and connecting OpenClaw to external services
+keywords: [openclaw, openclaw automation, cron, automate tasks, scheduled jobs]
 ---
 
 # Automation & Integrations

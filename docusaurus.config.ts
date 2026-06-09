@@ -3,7 +3,7 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'OpenClaw Docs',
+  title: 'OpenClaw Docs — Community Documentation for the Open-Source AI Agent',
   tagline: 'The community-driven documentation for OpenClaw — your autonomous AI agent',
   favicon: 'img/favicon.ico',
 
@@ -11,6 +11,7 @@ const config: Config = {
   baseUrl: '/',
   organizationName: 'clawdocs',
   projectName: 'clawdocs.github.io',
+  trailingSlash: false,
 
   onBrokenLinks: 'warn',
 
@@ -29,6 +30,51 @@ const config: Config = {
     locales: ['en'],
   },
 
+  headTags: [
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'robots',
+        content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+      },
+    },
+    {
+      tagName: 'script',
+      attributes: {
+        type: 'application/ld+json',
+      },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'OpenClaw Docs',
+        url: 'https://clawdocs.org',
+        description: 'Community documentation for OpenClaw, the open-source autonomous AI agent with 377,000+ GitHub stars.',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: 'https://clawdocs.org/search?q={search_term_string}',
+          'query-input': 'required name=search_term_string',
+        },
+      }),
+    },
+    {
+      tagName: 'script',
+      attributes: {
+        type: 'application/ld+json',
+      },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'ClawDocs',
+        url: 'https://clawdocs.org',
+        logo: 'https://clawdocs.org/img/logo.svg',
+        sameAs: [
+          'https://github.com/clawdocs/clawdocs.github.io',
+          'https://discord.gg/openclaw',
+        ],
+      }),
+    },
+  ],
+
   presets: [
     [
       'classic',
@@ -37,10 +83,17 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/clawdocs/clawdocs.github.io/tree/gh-pages/',
           routeBasePath: '/',
+          showLastUpdateTime: true,
         },
         blog: false,
         theme: {
           customCss: './src/css/custom.css',
+        },
+        sitemap: {
+          lastmod: 'date',
+          changefreq: 'weekly',
+          priority: 0.5,
+          filename: 'sitemap.xml',
         },
       } satisfies Preset.Options,
     ],
@@ -50,9 +103,15 @@ const config: Config = {
     image: 'img/social-card.png',
 
     metadata: [
-      {name: 'keywords', content: 'openclaw, ai agent, autonomous agent, clawdbot, moltbot, documentation, self-hosted ai'},
-      {name: 'description', content: 'Comprehensive documentation for OpenClaw, the open-source autonomous AI agent. Installation guides, architecture deep-dives, security hardening, skill development, and more.'},
+      {name: 'keywords', content: 'openclaw, ai agent, autonomous agent, open source ai, clawdbot, moltbot, self-hosted ai, ai automation, openclaw documentation, openclaw guide, openclaw tutorial, openclaw setup, openclaw installation'},
+      {name: 'description', content: 'Comprehensive documentation for OpenClaw, the open-source autonomous AI agent with 377k+ stars. Installation, guides, architecture, security, and 70+ pages of production recipes.'},
       {property: 'og:type', content: 'website'},
+      {property: 'og:site_name', content: 'OpenClaw Docs'},
+      {property: 'og:image:width', content: '1200'},
+      {property: 'og:image:height', content: '630'},
+      {name: 'twitter:card', content: 'summary_large_image'},
+      {name: 'twitter:site', content: '@openclaw'},
+      {name: 'twitter:image', content: 'https://clawdocs.org/img/social-card.png'},
     ],
 
     colorMode: {
@@ -152,8 +211,8 @@ const config: Config = {
           items: [
             {label: 'MCP Servers', to: '/guides/mcp-servers'},
             {label: 'Custom Channels', to: '/guides/custom-channels'},
+            {label: 'Lobster Workflows', to: '/guides/lobster-workflows'},
             {label: 'Plugin System', to: '/guides/plugin-system'},
-            {label: 'Workboard', to: '/guides/workboard'},
             {label: 'Advanced Recipes', to: '/guides/recipes/advanced-recipes'},
           ],
         },
@@ -162,6 +221,7 @@ const config: Config = {
           items: [
             {label: 'OpenClaw GitHub', href: 'https://github.com/openclaw/openclaw'},
             {label: 'Discord', href: 'https://discord.gg/openclaw'},
+            {label: 'Reddit r/OpenClaw', href: 'https://reddit.com/r/OpenClaw'},
             {label: 'ClawHub', href: 'https://openclaw.ai/clawhub'},
             {label: 'Contribute to Docs', href: 'https://github.com/clawdocs/clawdocs.github.io'},
           ],
@@ -171,6 +231,7 @@ const config: Config = {
           items: [
             {label: 'Architecture', to: '/architecture/overview'},
             {label: 'Security', to: '/security/overview'},
+            {label: 'FAQ', to: '/reference/faq'},
             {label: 'Changelog', href: 'https://github.com/openclaw/openclaw/releases'},
             {label: 'Official Site', href: 'https://openclaw.ai'},
           ],
