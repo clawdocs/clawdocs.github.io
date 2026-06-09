@@ -2,6 +2,7 @@
 sidebar_position: 1
 title: "First 7 Days with OpenClaw"
 description: "Go from first install to power user in 7 bite-sized guides — each takes under an hour"
+keywords: [openclaw, tutorial, getting started, learn openclaw, beginner guide, first week, onboarding]
 ---
 
 # First 7 Days with OpenClaw

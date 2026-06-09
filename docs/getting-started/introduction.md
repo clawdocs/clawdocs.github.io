@@ -2,6 +2,7 @@
 sidebar_position: 1
 title: Introduction
 description: What is OpenClaw and why it matters — the open-source autonomous AI agent with 377k+ stars
+keywords: [openclaw, what is openclaw, openclaw overview, openclaw features, open source ai agent, autonomous ai agent, openclaw introduction, ai agent framework]
 ---
 
 # Introduction to OpenClaw

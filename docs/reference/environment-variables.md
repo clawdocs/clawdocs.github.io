@@ -2,6 +2,7 @@
 sidebar_position: 4
 title: Environment Variables
 description: All environment variables that configure OpenClaw behavior — API keys, gateway, channels, browser, voice, Lobster, and deployment
+keywords: [openclaw, openclaw env vars, environment variables, api keys, OPENCLAW_PORT, configuration, env config]
 ---
 
 # Environment Variables

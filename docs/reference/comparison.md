@@ -2,6 +2,7 @@
 sidebar_position: 9
 title: Comparison
 description: How OpenClaw compares to Auto-GPT, CrewAI, LangChain, Open Interpreter, Devin, Claude Code, Cursor, Copilot, n8n, and other AI agent frameworks
+keywords: [openclaw, openclaw vs, alternative, comparison, devin, cursor, copilot, autogpt]
 ---
 
 # Comparison

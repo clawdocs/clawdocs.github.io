@@ -2,6 +2,7 @@
 sidebar_position: 12
 title: Cost Management
 description: Control OpenClaw spending — horror stories, cost breakdowns, optimization strategies, monitoring tools, and a documented 97% cost reduction
+keywords: [openclaw, openclaw cost, reduce cost, save money, api cost, token optimization]
 ---
 
 # Cost Management

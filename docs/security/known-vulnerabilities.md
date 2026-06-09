@@ -2,6 +2,7 @@
 sidebar_position: 3
 title: Known Vulnerabilities
 description: CVEs, security incidents, advisories, and the full security timeline for OpenClaw — from one-click RCE to 135,000 exposed instances
+keywords: [openclaw, openclaw cve, openclaw vulnerability, security issues, cve-2026-25253, security advisory, remote code execution]
 ---
 
 # Known Vulnerabilities

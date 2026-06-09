@@ -2,6 +2,7 @@
 sidebar_position: 2
 title: Contributing to OpenClaw
 description: How to contribute to the OpenClaw project itself
+keywords: [openclaw, openclaw development, contribute to openclaw, open source, pull request, community, github]
 ---
 
 # Contributing to OpenClaw

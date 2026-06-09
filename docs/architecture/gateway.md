@@ -2,6 +2,7 @@
 sidebar_position: 2
 title: The Gateway
 description: The central long-running process — wire protocol, authentication, internal components, daemon management, and security
+keywords: [openclaw, gateway, websocket, port 18789, control plane, daemon, wire protocol]
 ---
 
 # The Gateway

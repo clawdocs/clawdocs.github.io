@@ -2,6 +2,7 @@
 sidebar_position: 14
 title: Migration Guide
 description: Upgrading from Clawdbot or Moltbot to OpenClaw, version upgrade paths, and configuration migration
+keywords: [openclaw, migration, upgrade, migrate version, breaking changes]
 ---
 
 # Migration Guide

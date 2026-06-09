@@ -2,6 +2,7 @@
 sidebar_position: 7
 title: "Day 6: Build Your Own"
 description: "Create custom skills, set up cron jobs, and explore multi-agent workflows"
+keywords: [openclaw, advanced, power user, custom skills, multi-agent, cron jobs, skill development]
 ---
 
 # Day 6: Build Your Own

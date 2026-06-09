@@ -2,6 +2,7 @@
 sidebar_position: 3
 title: Quick Start
 description: Get OpenClaw running and talking to you in under 5 minutes — from install to first conversation
+keywords: [openclaw, openclaw getting started, openclaw tutorial, openclaw quick start, openclaw first steps, how to use openclaw, openclaw beginner guide]
 ---
 
 # Quick Start

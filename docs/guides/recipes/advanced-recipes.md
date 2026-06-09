@@ -2,6 +2,7 @@
 sidebar_position: 10
 title: Advanced Recipes
 description: Production-grade setups — multi-agent DevOps, RAG pipelines, Home Assistant, server monitoring, content pipelines, and voice control
+keywords: [openclaw, advanced recipes, production setup, advanced automation, multi-agent, rag pipeline, devops]
 ---
 
 # Advanced Recipes

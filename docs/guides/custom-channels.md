@@ -2,6 +2,7 @@
 sidebar_position: 10
 title: Custom Channels
 description: Build custom channel adapters for OpenClaw — connect your agent to any messaging platform, webhook, or API
+keywords: [openclaw, openclaw custom channel, channel adapter, build integration, typescript sdk]
 ---
 
 # Custom Channels

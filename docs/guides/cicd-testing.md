@@ -2,6 +2,7 @@
 sidebar_position: 22
 title: CI/CD & Testing
 description: Test skills, validate agents, and build deployment pipelines for OpenClaw
+keywords: [openclaw, ci cd, testing, github actions, deployment pipeline, automated testing]
 ---
 
 # CI/CD & Testing

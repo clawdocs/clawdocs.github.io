@@ -2,6 +2,7 @@
 sidebar_position: 13
 title: "SOUL.md Guide"
 description: "How to write, customize, and secure your OpenClaw agent's identity file — the most important file in the ecosystem"
+keywords: [openclaw, openclaw soul, personality, agent identity, customization, soul.md]
 ---
 
 # SOUL.md Guide

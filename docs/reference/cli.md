@@ -2,6 +2,7 @@
 sidebar_position: 1
 title: CLI Reference
 description: Complete reference for all OpenClaw CLI commands and flags
+keywords: [openclaw, openclaw cli, commands, openclaw chat, terminal, cli reference, command line]
 ---
 
 # CLI Reference
