@@ -13,6 +13,30 @@ This guide covers the full landscape: skills, MCP servers, rendering APIs, produ
 
 ---
 
+## Quick vs Full: Choosing Your Approach
+
+OpenClaw has **two paths** for video generation — pick the one that fits your need:
+
+| | **`video_generate` tool** | **Remotion** |
+|---|---|---|
+| **Setup** | None — built-in tool, one call | Node.js project, React, FFmpeg |
+| **Best for** | Quick clips, one-off demos, simple prompts | Branded content, templates, recurring series |
+| **Control** | Prompt-only — you describe, AI generates | Full creative control — React components, animations, layouts |
+| **Customization** | Limited to what the AI model produces | Unlimited — any React code, custom fonts, charts, 3D |
+| **Reproducibility** | Each generation is unique | Deterministic — same props = same video |
+| **Cost** | Per-generation API cost | Free local rendering + optional API costs for assets |
+| **Example** | `"Make a 5-second hello world clip"` | Templated TikTok series, data dashboards, branded intros |
+
+**Start with `video_generate`** if you just want a quick video from a text prompt — no setup needed:
+
+```
+openclaw chat "Generate a 5-second video of a hello world animation"
+```
+
+**Use Remotion** when you need templates, branding, recurring content, or pixel-perfect control. The rest of this guide covers the Remotion path.
+
+---
+
 ## Why Remotion?
 
 [Remotion](https://remotion.dev) is a React-based framework for creating videos programmatically. Instead of dragging timelines in a video editor, you write React components that render frame-by-frame into MP4, WebM, or GIF files.
