@@ -986,16 +986,25 @@ websocat ws://100.x.y.z:18789?token=your-token
 
 ### Cloudflare Tunnel
 
-Zero-config HTTPS tunnel:
+For quick testing, a zero-config quick tunnel needs no account or DNS setup:
 
 ```bash
-# On your VPS
+cloudflared tunnel --url http://localhost:18789
+```
+
+For production, create a named tunnel on your own domain (requires a Cloudflare account):
+
+```bash
+# On your VPS — authenticate first, then create and route the tunnel
+cloudflared tunnel login
 cloudflared tunnel create openclaw
 cloudflared tunnel route dns openclaw agent.example.com
 
-# Config
+# Run it
 cloudflared tunnel run --url ws://localhost:18789 openclaw
 ```
+
+The tunnel provides transport encryption only — keep gateway token auth enabled.
 
 ---
 
