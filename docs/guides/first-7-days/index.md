@@ -13,13 +13,13 @@ This series takes you from first conversation to power user in 7 steps. Each "da
 
 | Day | What You'll Learn | Time |
 |-----|------------------|------|
-| [**Day 1: Make It Yours**](day-1-make-it-yours) | Personalize your bot's identity and have your first real conversation | 30 min |
-| [**Day 2: Your Daily Driver**](day-2-daily-driver) | Put it to work — summaries, research, file management | 30 min |
-| [**Day 3: Set It Free**](day-3-automation) | Automate tasks with the heartbeat — morning briefings, monitoring | 45 min |
-| [**Day 4: Supercharge It**](day-4-skills) | Install community skills from ClawHub | 30 min |
-| [**Day 5: Be Everywhere**](day-5-multi-channel) | Connect multiple platforms and route between them | 45 min |
-| [**Day 6: Build Your Own**](day-6-power-moves) | Create custom skills, set up cron jobs, go multi-agent | 60 min |
-| [**Day 7: Lock It Down**](day-7-production) | Security hardening, cost optimization, monitoring | 45 min |
+| [**Day 1: Make It Yours**](./day-1-make-it-yours.md) | Personalize your bot's identity and have your first real conversation | 30 min |
+| [**Day 2: Your Daily Driver**](./day-2-daily-driver.md) | Put it to work — summaries, research, file management | 30 min |
+| [**Day 3: Set It Free**](./day-3-automation.md) | Automate tasks with the heartbeat — morning briefings, monitoring | 45 min |
+| [**Day 4: Supercharge It**](./day-4-skills.md) | Install community skills from ClawHub | 30 min |
+| [**Day 5: Be Everywhere**](./day-5-multi-channel.md) | Connect multiple platforms and route between them | 45 min |
+| [**Day 6: Build Your Own**](./day-6-power-moves.md) | Create custom skills, set up cron jobs, go multi-agent | 60 min |
+| [**Day 7: Lock It Down**](./day-7-production.md) | Security hardening, cost optimization, monitoring | 45 min |
 
 :::tip
 **Already past the basics?** Jump to whatever day matches your level. Each guide stands alone.
