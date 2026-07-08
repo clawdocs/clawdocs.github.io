@@ -70,6 +70,38 @@ openclaw --version
 
 ---
 
+## June 2026 Advisory Batch (June 30, 2026)
+
+On June 30, 2026, the OpenClaw project batch-published **~45 GitHub security advisories** (roughly 33 High and 12 Moderate severity). This was a coordinated disclosure of issues that had already been patched in the v2026.6.6–v2026.6.8 releases earlier in June — not a wave of new zero-days. If you are on **v2026.6.8 or later**, you are covered.
+
+### Notable Advisories
+
+| Advisory | Issue | CVSS | Affected | Fixed In |
+|----------|-------|------|----------|----------|
+| [GHSA-7vrr-rp4x-4g76](https://github.com/openclaw/openclaw/security/advisories/GHSA-7vrr-rp4x-4g76) | Plugin install commands could allow non-owner persistence | 8.8 (High) | — | v2026.6.6–6.8 window |
+| [GHSA-52xj-c9p8-78cv](https://github.com/openclaw/openclaw/security/advisories/GHSA-52xj-c9p8-78cv) | MCP loopback could expose owner-only tools to non-owner runs | 8.3 (High) | v2026.5.20 – < v2026.6.6 | v2026.6.6 |
+| [GHSA-jhfx-v2j8-x3m6](https://github.com/openclaw/openclaw/security/advisories/GHSA-jhfx-v2j8-x3m6) | OpenAI-compatible HTTP model overrides could miss admin authorization | 7.6 (High) | ≤ v2026.6.6 | v2026.6.8 |
+| [GHSA-wgq8-x5wm-g4rw](https://github.com/openclaw/openclaw/security/advisories/GHSA-wgq8-x5wm-g4rw) | Plugin install wrappers could skip install policy | Moderate | — | v2026.6.6–6.8 window |
+
+The full batch covers MCP loopback privilege exposure, plugin-install persistence and policy bypasses, and missing admin authorization on model overrides. Browse the complete list at [github.com/openclaw/openclaw/security/advisories](https://github.com/openclaw/openclaw/security/advisories).
+
+### v2026.6.11 Security Hardening
+
+The v2026.6.11 release (June 30, 2026) added two further security fixes:
+
+- **Control UI DOMPurify update** ([GHSA-cmwh-pvxp-8882](https://github.com/advisories/GHSA-cmwh-pvxp-8882)) — the bundled sanitizer was updated to a patched DOMPurify release, mitigating `ALLOWED_ATTR` pollution via `setConfig()` (PR #95691)
+- **Lookalike package-source rejection** — trusted OpenClaw package sources now reject lookalike sibling paths (e.g., trusting `/artifactory/openclaw` no longer admits `/artifactory/openclaw-malicious`)
+
+### Mitigation
+
+```bash
+# Upgrade to v2026.6.8 or later (ideally the latest stable)
+npm update -g openclaw
+openclaw --version
+```
+
+---
+
 ## Gateway Authentication Bypass (JFrog)
 
 JFrog published "[Giving OpenClaw the Keys to Your Kingdom](https://jfrog.com/blog/giving-openclaw-the-keys-to-your-kingdom-read-this-first/)" revealing that **93.4% of publicly reachable OpenClaw instances had critical authentication bypass vulnerabilities**.
@@ -374,6 +406,9 @@ When these findings were reported to creator Peter Steinberger, his response was
 | Feb 9 | Follow-up: 135,000+ exposed instances, 42,665 on Shodan | **Critical** |
 | Feb 9 | JFrog: 93.4% of exposed instances have auth bypass | **Critical** |
 | Feb 9 | Gartner: "Unacceptable cybersecurity risk" published | — |
+| Jun 12 | v2026.6.6 released — security-hardening release (140+ PRs) | Mitigation |
+| Jun 30 | ~45 security advisories batch-published (MCP loopback, plugin-install bypasses, model-override auth) — most patched in v2026.6.6–v2026.6.8 | **High** |
+| Jun 30 | v2026.6.11 released — DOMPurify fix (GHSA-cmwh-pvxp-8882), lookalike package-source rejection | Mitigation |
 
 ---
 

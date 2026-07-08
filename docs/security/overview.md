@@ -119,7 +119,7 @@ All of this abuses intended capabilities — no software vulnerability required.
 
 For those who want to go deeper than the 5 quick steps:
 
-- [ ] **Update to the latest stable release** (currently v2026.6.1) — patches critical RCE and many subsequent security improvements
+- [ ] **Update to the latest stable release** (currently v2026.6.11) — patches critical RCE, the [June 30, 2026 advisory batch](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026) (fixed in v2026.6.6–v2026.6.8), and many subsequent security improvements
 - [ ] **Bind gateway to localhost** — never expose port 18789
 - [ ] **Enable authentication** — token or password mode
 - [ ] **Set `trustedProxies`** — if behind any reverse proxy

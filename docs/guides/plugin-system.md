@@ -9,7 +9,11 @@ keywords: [openclaw, plugins, gateway plugin, extend openclaw, plugin developmen
 
 Plugins extend OpenClaw at the gateway level. Where [skills](/guides/skill-development) teach agents new capabilities via Markdown, plugins add infrastructure — new channels, storage backends, orchestration layers, and monitoring hooks.
 
-The plugin architecture matured significantly in **v2026.5.28–v2026.6.1** with externalized official plugins, a SQLite-backed install index, the SecretRef credential contract, and standardized lifecycle hooks.
+The plugin architecture matured significantly in **v2026.5.28–v2026.6.1** with externalized official plugins, a SQLite-backed install index, the SecretRef credential contract, and standardized lifecycle hooks. **v2026.6.11** added plugin install/repair tooling; note that references to former root `skills/...` paths must now live inside the relevant plugin directory.
+
+:::caution Security advisories
+The [June 30, 2026 advisory batch](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026) included two plugin-install flaws: [GHSA-7vrr-rp4x-4g76](https://github.com/openclaw/openclaw/security/advisories/GHSA-7vrr-rp4x-4g76) (High, CVSS 8.8 — install commands could allow non-owner persistence) and [GHSA-wgq8-x5wm-g4rw](https://github.com/openclaw/openclaw/security/advisories/GHSA-wgq8-x5wm-g4rw) (Moderate — install wrappers could skip install policy). Both are patched in current releases; run v2026.6.8 or later.
+:::
 
 ---
 

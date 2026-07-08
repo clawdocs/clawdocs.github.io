@@ -303,6 +303,10 @@ openclaw channel add slack
 # ✓ Slack connected via Socket Mode
 ```
 
+:::info
+**v2026.6.11** added a Slack **relay mode**, alongside a batch of channel-reliability fixes (misplaced replies, stuck sends, reconnects) covering Google Chat DM routing, Discord/Telegram reply threading, Feishu voice replies, and iMessage turn consolidation.
+:::
+
 ### Configuration
 
 ```json5 title="~/.openclaw/openclaw.json"

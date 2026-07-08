@@ -21,7 +21,7 @@ For community-built tools, projects, and alternatives, see the [Ecosystem & Comm
 | **GitHub** | [github.com/openclaw/openclaw](https://github.com/openclaw/openclaw) | Source code (377k+ stars, 79k forks) |
 | **Documentation** | [docs.openclaw.ai](https://docs.openclaw.ai) | Official docs |
 | **ClawHub** | [github.com/openclaw/clawhub](https://github.com/openclaw/clawhub) | Skill marketplace (8,900 stars, 10,700+ skills) |
-| **Releases** | [GitHub Releases](https://github.com/openclaw/openclaw/releases) | Changelog, downloads (latest: v2026.6.1) |
+| **Releases** | [GitHub Releases](https://github.com/openclaw/openclaw/releases) | Changelog, downloads (latest stable: v2026.6.11) |
 | **Issues** | [GitHub Issues](https://github.com/openclaw/openclaw/issues) | Bug reports, feature requests (7,900+ open) |
 | **Security** | [Security Advisories](https://github.com/openclaw/openclaw/security/advisories) | Vulnerability reports, CVEs |
 | **Lobster** | [github.com/openclaw/lobster](https://github.com/openclaw/lobster) | Official workflow shell (440 stars) |

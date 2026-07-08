@@ -15,6 +15,10 @@ As of mid-2026, the MCP ecosystem has **32,600+ servers** exposing **229,800+ to
 MCP is the recommended integration path for most use cases. Before building a custom [plugin](/guides/plugin-system) or [skill](/guides/skill-development), check if an MCP server already exists for what you need.
 :::
 
+:::caution Security advisory
+Versions v2026.5.20 through v2026.6.5 had a High-severity flaw ([GHSA-52xj-c9p8-78cv](https://github.com/openclaw/openclaw/security/advisories/GHSA-52xj-c9p8-78cv), CVSS 8.3) where the MCP loopback could expose owner-only tools to non-owner runs. Patched in v2026.6.6 — see the [June 2026 advisory batch](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026).
+:::
+
 ---
 
 ## What MCP Provides

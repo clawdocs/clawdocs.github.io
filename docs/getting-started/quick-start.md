@@ -82,7 +82,7 @@ openclaw gateway
 You should see:
 
 ```
-🦞 OpenClaw Gateway v2026.6.1
+🦞 OpenClaw Gateway v2026.6.11
    WebSocket control plane: ws://localhost:18789
    Heartbeat interval: 30m
    Model: claude-sonnet-4-6
