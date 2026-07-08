@@ -87,10 +87,11 @@ The full batch covers MCP loopback privilege exposure, plugin-install persistenc
 
 ### v2026.6.11 Security Hardening
 
-The v2026.6.11 release (June 30, 2026) added two further security fixes:
+The v2026.6.11 release (June 30, 2026) added further security fixes:
 
 - **Control UI DOMPurify update** ([GHSA-cmwh-pvxp-8882](https://github.com/advisories/GHSA-cmwh-pvxp-8882)) — the bundled sanitizer was updated to a patched DOMPurify release, mitigating `ALLOWED_ATTR` pollution via `setConfig()` (PR #95691)
 - **Lookalike package-source rejection** — trusted OpenClaw package sources now reject lookalike sibling paths (e.g., trusting `/artifactory/openclaw` no longer admits `/artifactory/openclaw-malicious`)
+- **ClawHub client DoS hardening** — oversized or stalled marketplace responses during skill discovery and install checks are now terminated before exhausting memory (PR #95226)
 
 ### Mitigation
 
@@ -261,7 +262,7 @@ ClawHub was **open by default** — the only requirement to publish was a GitHub
 
 1. **VirusTotal integration** (v2026.2.6+) — SHA-256 hashing checked on upload, Code Insight (Gemini-powered) analyzes full packages
 2. **Daily re-scanning** — Active skills re-scanned to detect skills that become malicious after initial upload
-3. **Community reporting** — Skills with 3+ unique reports are auto-hidden
+3. **Community reporting** — Skills are auto-hidden after 4 unique abuse reports (originally 3)
 4. **Built-in code safety scanner** — Static analysis for suspicious patterns
 5. **Verdicts system** — Benign (auto-approved), Suspicious (warning shown), Malicious (immediately blocked)
 
@@ -406,7 +407,9 @@ When these findings were reported to creator Peter Steinberger, his response was
 | Feb 9 | Follow-up: 135,000+ exposed instances, 42,665 on Shodan | **Critical** |
 | Feb 9 | JFrog: 93.4% of exposed instances have auth bypass | **Critical** |
 | Feb 9 | Gartner: "Unacceptable cybersecurity risk" published | — |
+| Jun 1 | NVIDIA SkillSpector partnership — AI-assisted skill screening added to ClawScan | Mitigation |
 | Jun 12 | v2026.6.6 released — security-hardening release (140+ PRs) | Mitigation |
+| Jun 23 | Unit 42: five malicious skills evaded ClawHub scanning (infostealers, scanner evasion via 22 MB padding, Solana front-running); all removed | **High** |
 | Jun 30 | ~45 security advisories batch-published (MCP loopback, plugin-install bypasses, model-override auth) — most patched in v2026.6.6–v2026.6.8 | **High** |
 | Jun 30 | v2026.6.11 released — DOMPurify fix (GHSA-cmwh-pvxp-8882), lookalike package-source rejection | Mitigation |
 

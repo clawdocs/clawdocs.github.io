@@ -898,6 +898,10 @@ echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 ## Post-Upgrade Issues
 
+### Empty Tool Output After First Call (v2026.6.11)
+
+Users report that on **v2026.6.11**, tools (`exec`, `web_fetch`, `web_search`) can return empty output after the first call in a turn. This is tracked upstream as [issue #98528](https://github.com/openclaw/openclaw/issues/98528) but is not acknowledged in the release notes, and the v2026.7.1 betas do not explicitly claim a fix. If you hit this, check the issue for current status — workarounds are staying on v2026.6.10 or trying the v2026.7.1 beta.
+
 ### Config Wiped After Upgrade
 
 **Known issue in some v2026.5.x releases.** Always backup before upgrading:

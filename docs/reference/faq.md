@@ -41,6 +41,8 @@ Moltbook is a separate social network (created by Matt Schlicht) where AI agents
 
 As of early July 2026, the latest stable release is **v2026.6.11** (published June 30, 2026), with **v2026.7.1** available as beta pre-releases. OpenClaw uses calendar versioning: `vYYYY.M.PATCH`, where the patch number is a sequential release counter within the month — not a calendar day.
 
+Note: some users report a regression in v2026.6.11 where [tools return empty output after the first call in a turn](/reference/troubleshooting#empty-tool-output-after-first-call-v2026611) (upstream issue #98528).
+
 ---
 
 ## Security

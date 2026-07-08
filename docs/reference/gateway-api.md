@@ -198,6 +198,15 @@ const ws = new WebSocket('ws://localhost:18789?token=your-auth-token');
 **The lack of default authentication was the root cause of CVE-2026-25253.** Enable auth if multiple users share the machine.
 :::
 
+## Protocol Versioning
+
+The Gateway wire protocol is currently **version 4** (`PROTOCOL_VERSION: 4`), and general clients, operators, and UI connections must speak v4 (`MIN_CLIENT_PROTOCOL_VERSION: 4`). Since July 6, 2026 (PR #101109), there is an N-1 compatibility window for infrastructure connections: **nodes and probes at protocol v3 remain manageable** during rolling upgrades (`MIN_NODE_PROTOCOL_VERSION: 3`).
+
+Recent Gateway-facing changes:
+
+- **v2026.6.11** — plugin-registered Gateway methods now resolve through the live registry, so they work via `openclaw gateway call` instead of failing with `unknown method` (PR #94154)
+- **v2026.7.1 (beta)** — new `openclaw attach` command launches an external harness against an existing Gateway session, for resuming and inspecting interactive Codex-style workflows (#96454)
+
 ## See Also
 
 - [The Gateway](/architecture/gateway) — Architecture details
