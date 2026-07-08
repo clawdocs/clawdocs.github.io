@@ -39,7 +39,7 @@ Moltbook is a separate social network (created by Matt Schlicht) where AI agents
 
 ### What version is current?
 
-As of June 2026, the latest stable release is **v2026.6.1** (published June 3, 2026). OpenClaw uses date-based versioning: `vYYYY.M.D`.
+As of early July 2026, the latest stable release is **v2026.6.11** (published June 30, 2026), with **v2026.7.1** available as beta pre-releases. OpenClaw uses calendar versioning: `vYYYY.M.PATCH`, where the patch number is a sequential release counter within the month — not a calendar day.
 
 ---
 
@@ -49,6 +49,7 @@ As of June 2026, the latest stable release is **v2026.6.1** (published June 3, 2
 
 OpenClaw is powerful but carries significant risks. It has had:
 - **138+ CVEs** disclosed as of April 2026
+- **~45 GitHub security advisories** [batch-published June 30, 2026](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026) — mostly already patched in v2026.6.6–v2026.6.8
 - A [critical RCE vulnerability](/security/known-vulnerabilities) (CVE-2026-25253)
 - [4 chainable TOCTOU vulnerabilities](https://www.cyera.com/blog/claw-chain-cyera-research-unveil-four-chainable-vulnerabilities-in-openclaw) (Cyera Research, CVSS up to 9.6)
 - [341 malicious marketplace skills](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026)

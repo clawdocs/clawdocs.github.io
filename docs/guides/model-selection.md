@@ -28,6 +28,20 @@ OpenClaw is model-agnostic — it works with 30+ bundled provider plugins coveri
 
 ---
 
+## Recently Added Model Support (June–July 2026)
+
+Model catalog additions in recent releases, per the [official changelog](https://github.com/openclaw/openclaw/blob/main/CHANGELOG.md):
+
+| Version | What was added |
+|---------|----------------|
+| **v2026.6.6** | Claude Fable 5 (adaptive thinking); OpenRouter OAuth onboarding |
+| **v2026.6.7** | Kimi K2.7 Code |
+| **v2026.6.8** | GLM-5.2 and Claude Haiku 4.5 catalog entries, with normalized provider-qualified IDs across OpenRouter and Google Vertex |
+| **v2026.6.11** | Gemini 3.5 Flash (full 1,048,576-token context); Ollama Cloud `glm-5.2:cloud` (1M context, reasoning, tools); Xiaomi Token Plan `mimo-v2.5` / `mimo-v2.5-pro` (up to 128K output tokens); fix for OpenRouter short DeepSeek V4 model IDs (`model_not_found` from a duplicated provider prefix) |
+| **v2026.7.1** (beta) | OpenAI GPT-5.6 model family; bundled ClawRouter provider plugin (credential-scoped dynamic model discovery, OpenAI-compatible plus native Anthropic/Gemini transports, budget reporting); Ollama inference-node auto-discovery |
+
+---
+
 ## By Use Case
 
 ### Heartbeat (runs every 30 min — cost adds up)
