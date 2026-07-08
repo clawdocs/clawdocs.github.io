@@ -17,10 +17,18 @@ const config: Config = {
 
   future: {
     v4: true,
+    // Not opted into the rspack-based Faster pipeline yet; requires the
+    // @docusaurus/faster package and a separate migration pass.
+    faster: false,
   },
 
   markdown: {
     mermaid: true,
+    // v4: true disables mdx1Compat by default, but these docs rely on
+    // explicit heading IDs ({#anchor}) in many pages.
+    mdx1Compat: {
+      headingIds: true,
+    },
   },
 
   themes: ['@docusaurus/theme-mermaid'],

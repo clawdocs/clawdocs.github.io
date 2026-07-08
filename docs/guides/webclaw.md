@@ -10,7 +10,7 @@ keywords: [openclaw, webclaw, web client, browser frontend, web ui, react fronte
 [WebClaw](https://github.com/ibelick/webclaw) is a community-built, browser-based chat interface for OpenClaw. It connects to your Gateway over WebSockets and provides a clean, modern UI for interacting with your agent from any device with a browser.
 
 :::info
-WebClaw is currently in **beta** (637 stars, 5 contributors). It is a third-party project and not maintained by the OpenClaw team. The repository was last updated March 17, 2026.
+WebClaw is currently in **beta** (~639 stars, 5 contributors). It is a third-party project and not maintained by the OpenClaw team. As of July 2026 it has had no commits, tags, or releases since March 17, 2026 — development appears stalled (the npm package remains at v0.1.1 from February 2026). Consider [PinchChat](#pinchchat-alternative-frontend) if you need an actively maintained frontend.
 :::
 
 ---

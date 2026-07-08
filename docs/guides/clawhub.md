@@ -323,15 +323,16 @@ openclaw clawhub publish ./my-skill/SKILL.md --update
 - Name must be unique on ClawHub (slug format: `^[a-z0-9][a-z0-9-]*$`)
 - Must pass automated security scanning (VirusTotal + code analysis)
 - Must include at least one usage example in the Markdown body
-- GitHub account must be at least one week old
+- GitHub account must be at least **14 days old** (raised from one week; confirmed by the project creator)
 - Bundle under 50 MB, text-only files
 
 ### What Happens After Publishing
 
 1. **Validation** — Token, metadata, name, version, and files are checked
-2. **Security scan** — VirusTotal + code pattern analysis runs automatically
-3. **Hold period** — New releases may be held from install surfaces until review completes
-4. **Available** — Once cleared, the skill appears in search and can be installed
+2. **Staged publish** (July 2026+) — Publishes are held behind a prepublication worker and scanned before finalization
+3. **Security scan** — VirusTotal + code pattern analysis + ClawScan runs automatically
+4. **Hold period** — New releases may be held from install surfaces until review completes; scan-held/blocked releases stay visible to their owners but are hidden from public catalogs
+5. **Available** — Once cleared, the skill appears in search and can be installed
 
 If validation fails, nothing is published and you get an error explaining why.
 
@@ -382,6 +383,17 @@ The malicious skills deployed multiple attack types:
 
 100% of confirmed malicious skills contained malicious code, while 91% also employed prompt injection techniques.
 
+### Unit 42 Findings (June 2026)
+
+On June 23, 2026, Palo Alto Networks' Unit 42 published research identifying **five malicious skills that evaded ClawHub's scanning** during their February–May 2026 analysis:
+
+- **Two macOS infostealers** with command-and-control connectivity (linked to cluw and Atomic macOS Stealer)
+- **`omnicogg`** — a scanner-evasion skill using 22 MB of file padding to exceed content-analysis size limits
+- **`money-radar`** — runtime affiliate-link injection
+- **`letssendit`** — an agentic Solana front-running skill
+
+OpenClaw banned the publisher accounts and deleted all five skills. The takeaway: scanning keeps improving (see below), but evasion keeps pace — always review skill source before installing.
+
 ### Broader Quality Issues
 
 Snyk's ToxicSkills audit found problems beyond just intentionally malicious skills:
@@ -393,8 +405,12 @@ Snyk's ToxicSkills audit found problems beyond just intentionally malicious skil
 
 **Automated scanning:**
 - **VirusTotal integration** (v2026.2.6+) — All skills scanned on upload, periodic re-scanning
+- **NVIDIA SkillSpector** (June 1, 2026 partnership) — Static checks plus AI-assisted semantic analysis in the ClawScan pipeline, producing Clean/Suspicious/Malicious verdicts, along with Skill Cards for provenance
+- **Staged publishing** (July 2026+) — Publishes held behind prepublication checks before finalization
 - **Code pattern analysis** — Checks declared frontmatter vs actual behavior, flags mismatches
 - **Metadata validation** — Detects undeclared environment variables and binary dependencies
+
+**Moderation:** Signed-in users can report skills; a skill is auto-hidden after **4 unique abuse reports**, and moderators can hide, restore, or ban.
 
 **Community tools:**
 - **[Clawdex](https://koisecurity.com/clawdex)** (7.1k downloads) — Pre-installation scanning against Koi's malicious skills database
