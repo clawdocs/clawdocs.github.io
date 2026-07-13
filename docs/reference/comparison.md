@@ -15,7 +15,7 @@ How does OpenClaw compare to other AI agent frameworks, coding assistants, and a
 
 | Framework | Stars | Type | Free? | Messaging | Local | Multi-Agent | Security |
 |-----------|-------|------|-------|-----------|-------|-------------|----------|
-| **OpenClaw** | 183k | Standalone agent | Yes (MIT) | 50+ platforms | Yes | Via config | Critical issues |
+| **OpenClaw** | 377k | Standalone agent | Yes (MIT) | 50+ platforms | Yes | Via config | Critical issues |
 | **Auto-GPT** | 182k | Agent platform | Yes (OSS) | No | Yes | Limited | Moderate |
 | **CrewAI** | ~34k | Framework | Yes (OSS) | No | N/A | Core focus | Good |
 | **LangChain** | ~61k | Framework | Yes (OSS) | No | N/A | Via LangGraph | Enterprise |
@@ -110,7 +110,7 @@ Multi-agent framework modeled on a software company (PM, architect, engineer rol
 | **Approach** | Software company simulation | Personal assistant |
 | **Agents** | PM → Architect → Engineer → QA | Single agent with skills |
 | **Best for** | Generating entire software projects from one-line requirements | General-purpose automation |
-| **Stars** | ~58k | 183k |
+| **Stars** | ~58k | 377k |
 
 ---
 
@@ -150,7 +150,7 @@ Free, open-source coding agent positioned as "Claude Code but free."
 
 | | Goose | OpenClaw |
 |---|---|---|
-| **Stars** | ~27k | 183k |
+| **Stars** | ~27k | 377k |
 | **Focus** | Coding | General-purpose |
 | **MCP tools** | 3,000+ | 50+ integrations |
 | **Pricing** | Free | Free |
@@ -166,7 +166,7 @@ Traditional workflow automation vs AI-native approach.
 
 | | n8n | Zapier | OpenClaw |
 |---|---|---|---|
-| **Stars/Users** | 174k stars | 8,000+ integrations | 183k stars |
+| **Stars/Users** | 174k stars | 8,000+ integrations | 377k stars |
 | **Approach** | Visual workflow builder | Pre-built triggers/actions | Natural language |
 | **AI capability** | Adding (LangChain node) | Adding (AI actions) | Native |
 | **Predictability** | High (deterministic) | High (deterministic) | Lower (LLM-driven) |
@@ -182,7 +182,7 @@ Traditional workflow automation vs AI-native approach.
 
 ## What Makes OpenClaw Unique
 
-Despite being newer than most competitors, OpenClaw has 183k+ GitHub stars. Its unique advantages:
+Despite being newer than most competitors, OpenClaw has 377k+ GitHub stars. Its unique advantages:
 
 1. **Messaging-first interface** — No other major agent lets you control it from WhatsApp, Telegram, Discord, and Slack natively
 2. **Persistent memory** — Remembers preferences and context across weeks (unlike ChatGPT or most competitors)
