@@ -855,11 +855,12 @@ Use a private tunnel for remote access. Never expose the gateway directly.
 
 ### Cloudflare Zero Trust Tunnel
 
-1. Install cloudflared: `apt install cloudflared`
-2. Create tunnel: `cloudflared tunnel create openclaw`
-3. Configure tunnel to point to `http://localhost:18789`
-4. Add Cloudflare Access policies with email-based authentication
-5. Enable Service Tokens for API access
+1. Install cloudflared from [Cloudflare's package repository](https://pkg.cloudflare.com/) (it is not in the stock Ubuntu/Debian repos), or download the `.deb` from [GitHub releases](https://github.com/cloudflare/cloudflared/releases)
+2. Authenticate: `cloudflared tunnel login`
+3. Create tunnel: `cloudflared tunnel create openclaw`
+4. Configure tunnel to point to `http://localhost:18789`
+5. Add Cloudflare Access policies with email-based authentication
+6. Enable Service Tokens for API access
 
 The server has **no open ports** and cannot be found on the public internet.
 
