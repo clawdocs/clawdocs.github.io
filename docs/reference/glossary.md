@@ -137,7 +137,7 @@ Ultra-lightweight OpenClaw alternative — core functionality in ~4,000 lines of
 
 ### OpenClaw
 
-Free, open-source autonomous AI agent that runs locally, connecting LLMs to your files, shell, browser, and messaging apps. 183,000+ GitHub stars as of February 2026. Created by Peter Steinberger. Previously named [Clawdbot](#clawdbot) and [Moltbot](#moltbot). MIT licensed.
+Free, open-source autonomous AI agent that runs locally, connecting LLMs to your files, shell, browser, and messaging apps. 377,000+ GitHub stars as of June 2026. Created by Peter Steinberger. Previously named [Clawdbot](#clawdbot) and [Moltbot](#moltbot). MIT licensed.
 
 ### Orchestrator
 
