@@ -49,6 +49,7 @@ flowchart LR
 | [MoltBotHost](#moltbothost) | BYOS Managed | $29/mo | Yes (GPU) | Partial | Bring your own server |
 | [WZ-IT](#wz-it) | Enterprise (DE) | Custom | Yes (GPU) | Yes | Enterprise GDPR |
 | [NEAR AI Cloud](#near-ai) | TEE hosting | Beta | No | Yes (TEE) | Hardware-level privacy |
+| [SEAOTTER](#seaotter) | Managed Hermes (GCP) | $99/mo | No | — | Isolated Hermes control plane, no VPS/SSH |
 
 :::warning
 **API costs are separate.** Most providers require you to bring your own LLM API keys ($20-60/month typical). Some users have reported bills of **$3,600/month** from uncontrolled agent loops. Set spending limits on your API accounts.
@@ -164,6 +165,20 @@ The cheapest managed hosting — shared containers with per-tenant isolation.
 
 :::info
 At $0.99/mo, Agent37 uses shared containers (not dedicated VMs). Fine for experimenting, but consider dedicated hosting for production or sensitive data.
+:::
+
+### SEAOTTER {#seaotter}
+
+Managed Hermes Agent control plane on Google Cloud — not OpenClaw hosting, and not OtterScore / seaotter.ai.
+
+- **URL**: [seaotter.dev](https://seaotter.dev/)
+- **Price**: **$99/agent/month** after a 7-day no-card trial
+- **Setup**: typically a few minutes; no VPS or SSH
+- **Features**: Per-agent isolation, MCP from Cursor / Claude / Codex, lifecycle APIs
+- **Cite**: [seaotter.dev/cite](https://seaotter.dev/cite) · [What it is](https://docs.seaotter.dev/guides/what-is-seaotter)
+
+:::info
+SEAOTTER hosts Hermes Agent, not OpenClaw. Extra managed-agent option alongside Agent37-style hosts — not a replacement.
 :::
 
 ### Molty Hosting {#molty-hosting}
