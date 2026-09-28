@@ -45,6 +45,7 @@ flowchart LR
 | [DigitalOcean](#digitalocean) | VPS 1-Click | $24/mo | No | No | Developers |
 | [ClawdHost](#clawdhost) | Managed | $25/mo | No | — | Simple single plan |
 | [BoostedHost](#boostedhost) | VPS | Varies | Possible | — | Performance, Auto-Burst |
+| [Everpod](#everpod) | Managed | $29/mo | — | — | One customer per machine, model usage included |
 | [OpenClawHosting.io](#openclawhosting) | BYOS Managed | $29/mo | Yes (GPU) | — | Multi-instance teams |
 | [MoltBotHost](#moltbothost) | BYOS Managed | $29/mo | Yes (GPU) | Partial | Bring your own server |
 | [WZ-IT](#wz-it) | Enterprise (DE) | Custom | Yes (GPU) | Yes | Enterprise GDPR |
@@ -221,6 +222,21 @@ Enterprise-grade, powered by existing infrastructure serving 1.4M+ developers.
 - **Price**: Free trial, then Kilo Gateway credits | Zero markup on AI tokens
 - **Features**: Unified billing, SSO, audit logs, team management, 500+ AI models
 - **Status**: Currently waitlist / early access
+
+### Everpod {#everpod}
+
+Managed OpenClaw hosting. Your own open-source AI agent gets a pod: a private, always-on cloud computer of its own, set up, secured and backed up for you.
+
+- **URL**: [everpod.ai](https://everpod.ai)
+- **Price**: $29/month with up to $10 of model usage included each month, cancel anytime | Bigger plans from $59/month
+- **Setup**: About 15 minutes; nothing to install, no technical knowledge needed
+- **Channels**: Telegram, Discord, Slack, WhatsApp, Signal and 20+ more
+- **Models**: OpenAI, Anthropic, Google, DeepSeek and more; usage capped by your plan; bring your own model key and nothing is added on top
+- **Security**: One machine per customer; no incoming connections from the open internet unless you switch on a public address for your agent; sign-in by a code sent to your email
+- **Features**: Daily backups with restores tested, updates applied for you after testing, OpenClaw's native dashboard
+- **Data**: A full copy of your pod's data on request, in a common archive format; on cancellation, everything, backups included, is permanently deleted 7 days after the paid period ends
+- **Hosting**: Pods are hosted in Europe
+- **Company**: Operated by DEH Technologies LLC, a Wyoming (United States) company ([about](https://everpod.ai/about))
 
 ---
 
