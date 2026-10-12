@@ -27,6 +27,7 @@ flowchart LR
 | Provider | Type | From | Local LLMs | GDPR | Best For |
 |----------|------|------|-----------|------|----------|
 | [Oracle Cloud](#oracle-cloud) | Free VPS | **$0/mo** | Yes | No | Free hosting with Ollama |
+| [Aplite](#aplite) | Managed | Free / $20/mo | No | Yes (EU) | Free plan, no API key, markdown workspace + approvals |
 | [Agent37](#agent37) | Managed (shared) | $0.99/mo | No | — | Cheapest managed |
 | [LumaDock](#lumadock) | VPS template | $1.99/mo | Possible | — | Budget VPS |
 | [Hetzner](#hetzner) | DIY VPS | ~$4/mo | Yes | Yes | Best value self-host |
@@ -221,6 +222,30 @@ Enterprise-grade, powered by existing infrastructure serving 1.4M+ developers.
 - **Price**: Free trial, then Kilo Gateway credits | Zero markup on AI tokens
 - **Features**: Unified billing, SSO, audit logs, team management, 500+ AI models
 - **Status**: Currently waitlist / early access
+
+### Aplite {#aplite}
+
+Managed OpenClaw with a workspace on top. Each workspace is a standard OpenClaw runtime in its own container, set up from the browser in about a minute; models come through a metered account, so no API key is needed.
+
+- **URL**: [aplite.ai/docs/openclaw](https://aplite.ai/docs/openclaw)
+- **Pricing**:
+
+| Plan | Price | Features |
+|------|-------|----------|
+| Free | $0 | 1 agent, the full workspace, 300 welcome credits; the workspace sleeps between uses |
+| Pro | $20/mo | 2,000 credits/mo, 6 agents, always-on, schedules/triggers/chains, 5 published sites |
+| Power | $50/mo | 6,000 credits/mo, 20 agents, agent browser (headless Chromium), 15 published sites, doubled resources |
+
+- **Setup**: About a minute — no server, no config files, no device pairing by hand
+- **Channels**: Browser chat and Telegram (bot token from @BotFather); results can also be delivered to email or into a note
+- **Models**: Any model from the catalog (Anthropic, OpenAI, Google, DeepSeek and more via OpenRouter), picked per agent; prepaid credits, 1 credit = 1¢, cost shown per answer. No API key needed — BYOK is not supported
+- **Local LLMs**: No
+- **Features**: A markdown workspace the agents read and write, scheduled routines and triggers (paid plans), an approval queue for file edits and anything leaving the workspace, pages published at a link, a curated skills catalog
+- **Security**: One container per workspace with its own storage and network; no shell or raw `openclaw.json` access — agents, skills and models are configured in the browser
+- **Data**: Notes and agent files are plain `.md`; any note downloads as a file
+- **Hosting**: Germany (netcup, Nuremberg); operated by PIKsolution OÜ, Tallinn, Estonia (EU)
+- **Trade-offs**: Catalog models only, OpenClaw releases arrive after the provider has tested them, no arbitrary packages on the server — see [what differs from self-hosting](https://aplite.ai/docs/openclaw)
+- **Status**: Independent service, not affiliated with the OpenClaw project
 
 ---
 
