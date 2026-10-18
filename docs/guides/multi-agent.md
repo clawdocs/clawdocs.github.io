@@ -1,145 +1,134 @@
 ---
 last_update:
   date: 2026-10-18
+verified_with: 2026.10.4
 title: Multi-Agent Workflows
-description: Running multiple OpenClaw agents with distinct personalities, routing rules, coordination patterns, and orchestration tools
-keywords: [openclaw, multi-agent, multiple agents, agent fleet, orchestration, parallel agents]
+description: Running multiple OpenClaw agents with separate workspaces, routing bindings, delegation, Workboard coordination, and per-agent heartbeats and automations
+keywords: [openclaw, multi-agent, multiple agents, agent fleet, orchestration, bindings, agents.entries]
 ---
 
 # Multi-Agent Workflows
 
-OpenClaw supports running multiple agents within a single gateway, each with its own identity, workspace, memory, and channel bindings. This guide covers configuration, routing, inter-agent communication, orchestration tools, production patterns, fleet management, and cost optimization.
+One Gateway process can host several isolated agents. Each has its own workspace, state directory and session store, and inbound messages reach the right agent through **bindings**. This page covers the roster format, routing, delegation between agents, Workboard coordination, heartbeats and automations per agent, cost, and isolation. The official reference is [Multi-agent routing](https://docs.openclaw.ai/concepts/multi-agent).
 
-:::tip Key insight
-Anthropic's research shows that an Opus lead with Sonnet subagents outperforms a single Opus agent by 90.2% on complex tasks. Multi-agent isn't just about scale — it's about **specialization** and **parallel coverage**.
+:::tip When multi-agent helps
+Anthropic reported that a lead agent with parallel sub-agents (Claude Opus 4 lead, Claude Sonnet 4 sub-agents) beat a single Opus 4 agent by 90.2% on its internal research eval, at the price of far more tokens ([Anthropic, "How we built our multi-agent research system"](https://www.anthropic.com/engineering/multi-agent-research-system)). That result is for breadth-first research tasks. For a personal assistant, two or three agents split by channel or persona is usually enough.
 :::
 
 ---
 
 ## Architecture
 
-Each agent is a fully isolated "brain" with:
-- Its own **workspace** (SOUL.md, AGENTS.md, USER.md, TOOLS.md, MEMORY.md)
-- Its own **state directory** (auth profiles, model registry)
-- Its own **session store** (chat history, routing state)
-- Optionally its own **LLM model** and provider
+Each agent (`agentId`) has its own:
 
-All agents share a single gateway process and port.
+- **Workspace**: `AGENTS.md`, `SOUL.md`, `USER.md`, `IDENTITY.md`, `MEMORY.md`, daily notes. It is the default working directory, not a sandbox.
+- **State directory** (`agentDir`, default `~/.openclaw/agents/<agentId>/agent`): auth profiles, model registry.
+- **Session store**: chat history and routing state in `<agentDir>/openclaw-agent.sqlite`.
+- Optionally its own model, tool policy, sandbox and heartbeat.
+
+All agents share one Gateway process and port.
 
 ```
-                     ┌─── Agent "alex" ──── Workspace + Memory + Model
+                     ┌─── Agent "alex" ──── workspace + agentDir + sessions
                      │
-Gateway (port 18789) ├─── Agent "mia"  ──── Workspace + Memory + Model
+Gateway (port 18789) ├─── Agent "mia"  ──── workspace + agentDir + sessions
                      │
-                     └─── Agent "coder" ─── Workspace + Memory + Model
-                     
-  ▲ Incoming messages routed by bindings (channel, peer, account)
+                     └─── Agent "coder" ─── workspace + agentDir + sessions
+
+  ▲ Inbound messages routed by bindings (channel, accountId, peer, guild/team)
 ```
 
-### Recent Multi-Agent Improvements
-
-| Version | Feature | Impact |
-|---------|---------|--------|
-| v2026.4.19 | Per-session nested agent scoping | Long-running agent no longer blocks other sessions |
-| v2026.5.22 | Scoped sub-agent bootstrap context | Sub-agents only get AGENTS.md + TOOLS.md by default (saves tokens) |
-| v2026.6.1 | Workboard orchestration primitives | Kanban-style agent coordination with dependency tracking |
-| v2026.6.1 | Internal namespaces | Scoped agent/global sessions for tool dispatch isolation |
+:::warning Never share `agentDir`
+Two agents pointing at the same `agentDir` collide on auth and session state. Give each agent its own, or leave it unset and use the default path.
+:::
 
 ---
 
 ## Configuration
 
-### Defining Agents
+### Defining Agents {#defining-agents}
+
+The quickest route is the CLI, which creates the workspace and `agentDir` and can add a binding:
+
+```bash
+openclaw agents add work --workspace ~/.openclaw/workspace-work --model anthropic/claude-sonnet-5-5
+openclaw agents add personal --bind telegram
+openclaw agents list --bindings
+```
+
+In config, agents are a **keyed map** under `agents.entries`. A roster with more than one agent needs `ownership: "explicit"`, and `agents.defaults.systemAgent.agentId` names the agent that owns unbound traffic and system work:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "agents": {
-    "defaults": {
-      "model": "claude-sonnet-4-6"
+  agents: {
+    ownership: "explicit",
+    defaults: {
+      model: "anthropic/claude-sonnet-5-5",
+      systemAgent: { agentId: "alex" },
     },
-    "list": [
-      {
-        "id": "alex",
-        "workspace": "~/.openclaw/workspace-alex",
-        "model": "claude-opus-4-8"
+    entries: {
+      alex: {
+        workspace: "~/.openclaw/workspace-alex",
+        model: "anthropic/claude-opus-5-5",
       },
-      {
-        "id": "mia",
-        "workspace": "~/.openclaw/workspace-mia",
-        "model": "claude-haiku-4-5-20251001"
-      }
-    ]
-  }
+      mia: {
+        workspace: "~/.openclaw/workspace-mia",
+        model: "anthropic/claude-haiku-5-5",
+      },
+    },
+  },
+  bindings: [
+    {
+      agentId: "alex",
+      match: { channel: "whatsapp", accountId: "*", peer: { kind: "direct", id: "+15551230001" } },
+    },
+    { agentId: "mia", match: { channel: "telegram", accountId: "*" } },
+    { agentId: "alex", match: { channel: "whatsapp", accountId: "*" } },
+  ],
 }
 ```
 
-`agents.defaults` sets baseline settings for all agents. Individual entries in `agents.list` override specific fields.
+`agents.defaults` sets the baseline; each `agents.entries.<id>` overrides fields for that agent. Explicit per-agent lists such as `skills` replace the default rather than merging.
 
-### Channel Bindings
+:::note Migrating from `agents.list`
+The old `agents.list: [{ id, ... }]` array is retired and fails validation. `openclaw doctor --fix` converts it to `agents.entries`, adds `ownership: "explicit"` and writes explicit bindings for accounts that used to fall through to the first agent. Back up the config first and review the result with `openclaw agents list --bindings`.
+:::
 
-Bindings route incoming messages to specific agents based on channel, account, peer, or space:
+### Channel Bindings {#channel-bindings}
 
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "bindings": [
-    {
-      "agentId": "alex",
-      "match": {
-        "channel": "whatsapp",
-        "peer": { "kind": "direct", "id": "+15551230001" }
-      }
-    },
-    {
-      "agentId": "mia",
-      "match": {
-        "channel": "telegram"
-      }
-    },
-    {
-      "agentId": "alex",
-      "match": {
-        "channel": "whatsapp",
-        "accountId": "personal"
-      }
-    }
-  ]
-}
-```
+A binding maps an inbound message to an agent by `channel`, `accountId`, `peer` (`kind: "direct" | "group" | "channel"`), and optionally `guildId`, `teamId` or Discord `roles`. Rules (see [Agent bindings](https://docs.openclaw.ai/concepts/agent-bindings)):
 
-**Binding rules:**
-- **Most specific wins** — peer matches take priority over channel-wide matches
-- **Deterministic** — same input always routes to the same agent
-- If multiple accounts exist for a channel, use `accountId` to distinguish
-- Unmatched messages go to the default agent
+- **Most specific wins.** Exact peer beats guild/team, which beats account, which beats channel-wide.
+- **First match wins within a tier**, so put peer bindings above channel-wide rules.
+- **All listed fields must match** (AND).
+- **Omitting `accountId` matches only the channel's default account.** Use `accountId: "*"` for every account on the channel.
+- With several agents and no matching binding, the message goes to `agents.defaults.systemAgent.agentId` if set; otherwise it is not dispatched.
+- Bindings route; they are not access control. DM pairing and allowlists are still set per channel account.
 
-### Per-Agent Identity
+### Per-Agent Identity {#per-agent-identity}
 
-Each agent gets its own workspace with distinct identity files:
+Each workspace holds its own identity files:
 
 | File | Purpose |
 |------|---------|
-| **SOUL.md** | Internal personality — values, tone, boundaries |
-| **IDENTITY.md** | External presentation — name, emoji, avatar |
-| **AGENTS.md** | Task instructions — what the agent should do |
-| **USER.md** | User context — who the agent serves |
-| **TOOLS.md** | Capabilities — which tools are available |
-| **MEMORY.md** | Persistent knowledge — what the agent remembers |
+| **SOUL.md** | Personality, values, tone, boundaries |
+| **IDENTITY.md** | Name, emoji, avatar |
+| **AGENTS.md** | Operating instructions; the only file sub-agents receive |
+| **USER.md** | Who the agent serves |
+| **MEMORY.md** | Durable facts the agent and Dreaming maintain |
 
-**Pattern:** Share a common AGENTS.md for operating rules, give each agent a unique SOUL.md for personality.
+`openclaw agents set-identity` updates name, theme, emoji or avatar. See the [SOUL.md guide](/guides/soul-md).
 
-### Separate Instances (Alternative)
+### Separate Instances (Alternative) {#separate-instances-alternative}
 
-For full isolation (different ports, different processes):
+For a hard boundary (separate processes, ports, credentials), run a second Gateway under its own profile instead of a second agent:
 
 ```bash
-# Instance 1 (work)
-OPENCLAW_PORT=18789 OPENCLAW_HOME=~/.openclaw-work openclaw gateway
-
-# Instance 2 (personal)
-OPENCLAW_PORT=18790 OPENCLAW_HOME=~/.openclaw-personal openclaw gateway
+openclaw --profile work onboard
+openclaw --profile work gateway install --port 19789
 ```
 
-This provides stronger isolation but requires managing two processes.
+A profile uses its own state directory (`~/.openclaw-work`). You can also set `OPENCLAW_STATE_DIR`, `OPENCLAW_CONFIG_PATH` and `OPENCLAW_GATEWAY_PORT` directly. See [Multiple gateways](https://docs.openclaw.ai/gateway/multiple-gateways).
 
 ---
 
@@ -147,329 +136,250 @@ This provides stronger isolation but requires managing two processes.
 
 ### Work + Personal Agents
 
-Route work contacts to a professional agent, personal contacts to a casual one:
+Route Slack and Teams to a work agent, WhatsApp and Telegram to a personal one:
 
-```json5
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "agents": {
-    "list": [
-      {
-        "id": "work",
-        "workspace": "~/.openclaw/workspace-work"
-      },
-      {
-        "id": "personal",
-        "workspace": "~/.openclaw/workspace-personal"
-      }
-    ]
+  agents: {
+    ownership: "explicit",
+    defaults: { systemAgent: { agentId: "personal" } },
+    entries: {
+      work: { workspace: "~/.openclaw/workspace-work" },
+      personal: { workspace: "~/.openclaw/workspace-personal" },
+    },
   },
-  "bindings": [
-    { "agentId": "work", "match": { "channel": "slack" } },
-    { "agentId": "work", "match": { "channel": "teams" } },
-    { "agentId": "personal", "match": { "channel": "whatsapp" } },
-    { "agentId": "personal", "match": { "channel": "telegram" } }
-  ]
+  bindings: [
+    { agentId: "work", match: { channel: "slack", accountId: "*" } },
+    { agentId: "work", match: { channel: "msteams", accountId: "*" } },
+    { agentId: "personal", match: { channel: "whatsapp", accountId: "*" } },
+    { agentId: "personal", match: { channel: "telegram", accountId: "*" } },
+  ],
 }
 ```
 
-Give each agent a distinct [SOUL.md](/guides/soul-md) — professional tone for work, casual for personal.
+Give each agent a distinct `SOUL.md`: professional for work, casual for personal.
 
 ### Model Routing by Agent
 
-Assign different models based on agent role and cost tolerance:
+Set the model per agent with provider-qualified refs. Expensive models go to agents that need reasoning; cheap ones to triage:
 
-```json5
+| Role | Model | Why |
+|------|-------|-----|
+| Lead / orchestrator | `anthropic/claude-opus-5-5` | Planning, delegation, synthesis |
+| Specialist worker | `anthropic/claude-sonnet-5-5` | Balance of capability and cost |
+| Triage, reviewer, heartbeat | `anthropic/claude-haiku-5-5` | Fast and cheap |
+| Background checks | `ollama/<model>` | Local, no per-token cost |
+
+### Orchestrator-Worker Pattern {#orchestrator-worker-pattern}
+
+The built-in team preset creates a coordinator (chief of staff) plus researcher, writer and reviewer, each with its own workspace and role contract in `AGENTS.md`:
+
+```bash
+openclaw agents team create --non-interactive
+openclaw agent --agent coordinator --message "Research the options and draft a recommendation."
+```
+
+The equivalent hand-written roster: the lead may delegate to the three specialists, and the specialists may not delegate further.
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "agents": {
-    "list": [
-      { "id": "thinker", "model": "claude-opus-4-8" },
-      { "id": "responder", "model": "claude-haiku-4-5-20251001" },
-      { "id": "coder", "model": "claude-sonnet-4-6" }
-    ]
-  }
+  agents: {
+    ownership: "explicit",
+    defaults: {
+      model: "anthropic/claude-sonnet-5-5",
+      systemAgent: { agentId: "lead" },
+    },
+    entries: {
+      lead: {
+        workspace: "~/.openclaw/workspace-lead",
+        model: "anthropic/claude-opus-5-5",
+        subagents: {
+          allowAgents: ["researcher", "writer", "reviewer"],
+          delegationMode: "prefer",
+        },
+      },
+      researcher: { workspace: "~/.openclaw/workspace-researcher", subagents: { allowAgents: [] } },
+      writer: { workspace: "~/.openclaw/workspace-writer", subagents: { allowAgents: [] } },
+      reviewer: {
+        workspace: "~/.openclaw/workspace-reviewer",
+        model: "anthropic/claude-haiku-5-5",
+        subagents: { allowAgents: [] },
+      },
+    },
+  },
 }
 ```
 
-### Specialist Agents
-
-Route by topic using separate channels:
-
-| Agent | Channel | SOUL.md Focus |
-|-------|---------|---------------|
-| `coder` | GitHub, CLI | Code review, debugging, PRs |
-| `assistant` | WhatsApp, iMessage | Calendar, reminders, messages |
-| `researcher` | Discord, Telegram | Web research, summaries |
-| `homelab` | Home Assistant | Smart home automation |
-
-### Orchestrator-Worker Pattern
-
-The pattern Anthropic uses in their own multi-agent research system: one lead agent (expensive, capable) coordinates specialist workers (cheaper, focused):
-
-```json5
-{
-  "agents": {
-    "list": [
-      {
-        "id": "lead",
-        "model": "claude-opus-4-8",
-        "workspace": "~/.openclaw/workspace-lead"
-      },
-      {
-        "id": "researcher",
-        "model": "claude-sonnet-4-6",
-        "workspace": "~/.openclaw/workspace-researcher"
-      },
-      {
-        "id": "writer",
-        "model": "claude-sonnet-4-6",
-        "workspace": "~/.openclaw/workspace-writer"
-      },
-      {
-        "id": "reviewer",
-        "model": "claude-haiku-4-5-20251001",
-        "workspace": "~/.openclaw/workspace-reviewer"
-      }
-    ]
-  }
-}
-```
-
-The lead decomposes tasks, delegates to specialists, and synthesizes results. Workers store output in external systems (files, git) and pass lightweight references back — avoiding context window bloat.
-
-**Scaling rules** (from Anthropic's research):
-- Simple queries: 1 agent, 3-10 tool calls
-- Moderate tasks: 2-4 subagents in parallel
-- Complex work: 10+ subagents with dependency coordination
+`delegationMode: "prefer"` is prompt guidance, not a scheduler. Have workers write large output to files or git and hand back a short reference, so the lead's context does not fill up. See [`openclaw agents team create`](https://docs.openclaw.ai/cli/agents) and [Parallel specialist lanes](https://docs.openclaw.ai/concepts/parallel-specialist-lanes).
 
 ---
 
 ## Inter-Agent Communication
 
-### File-Based Messaging
+| Mechanism | What it does | Reference |
+|-----------|--------------|-----------|
+| Sub-agents (`sessions_spawn`) | Start a background run, optionally as another configured agent listed in `subagents.allowAgents`; results announce back to the requester | [Sub-agents](https://docs.openclaw.ai/tools/subagents) |
+| `sessions_send` | Run a turn in another session on the same Gateway and optionally wait for the reply. Governed by `tools.agentToAgent` (on by default; restrict with `allow`, or set `enabled: false`) | [Session tools](https://docs.openclaw.ai/concepts/session-tool) |
+| Swarm | Fan out sub-agents from a Code Mode script with structured results and bounded concurrency | [Swarm](https://docs.openclaw.ai/tools/swarm) |
+| Workboard | Shared cards with dependencies, claims and run history | [below](#workboard-orchestration) |
+| Shared files | Agents read and write a common directory. Simple, but no locking or notification | — |
+| `openclaw agent --agent <id>` | Run one turn for a named agent from a script | [Agent send](https://docs.openclaw.ai/tools/agent-send) |
 
-The simplest pattern: agents communicate through shared files.
+Sub-agent sessions receive only `AGENTS.md`, not `SOUL.md`, `IDENTITY.md`, `USER.md` or `MEMORY.md`. Put anything a worker must follow in `AGENTS.md`.
 
-```bash
-# Agent "lead" writes a task
-echo '{"task": "Review PR #42", "priority": "high"}' > ~/.openclaw/shared/inbox-reviewer.json
+### Workboard Messaging {#workboard-messaging}
 
-# Agent "reviewer" checks its inbox via heartbeat
-cat ~/.openclaw/shared/inbox-reviewer.json
-```
-
-This is how Claude Code's built-in Agent Teams work: a shared task list with file-locking to prevent race conditions, plus a mailbox system where teammates message each other by name.
-
-### Workboard Messaging
-
-The Workboard provides structured inter-agent communication through card-based coordination:
+From the terminal, an operator can create and move cards (the Workboard plugin must be enabled):
 
 ```bash
-# Lead creates a task card for the researcher
-openclaw workboard create --title "Research competitor pricing" \
-  --assign researcher \
-  --parent card-001
-
-# Researcher claims and works on it
-openclaw workboard claim card-002
-
-# Researcher marks complete — lead gets notified via lifecycle sync
-openclaw workboard update card-002 --status done
+openclaw workboard create "Research competitor pricing" --agent researcher --priority high
+openclaw workboard list --status ready
+openclaw workboard move 7f4a2c10 --status done
 ```
 
-### MCP-Based Communication
+Claiming, linking parent and child cards, and completing are agent tools (`workboard_claim`, `workboard_link`, `workboard_complete`), not CLI subcommands.
 
-Agents can call each other's skills through MCP:
+### MCP-Based Communication {#mcp-based-communication}
 
-```json5 title="Lead agent's config"
-{
-  "mcp": {
-    "servers": {
-      "researcher-agent": {
-        "command": "ssh",
-        "args": ["user@server", "openclaw", "mcp", "serve", "--agent", "researcher"]
-      }
-    }
-  }
-}
-```
+`openclaw mcp serve` exposes OpenClaw **channel conversations** over MCP to an MCP client. It does not export one agent's skills as tools and has no `--agent` flag. For agent-to-agent delegation on one Gateway, use sub-agents or `sessions_send`. See [`openclaw mcp`](https://docs.openclaw.ai/cli/mcp).
 
-The lead agent can now invoke the researcher's skills as MCP tools — effectively delegating work through a structured protocol.
+### ClawTeam Communication {#clawteam-communication}
 
-### ClawTeam Communication
-
-[ClawTeam-OpenClaw](https://github.com/win4r/ClawTeam-OpenClaw) (1,396 stars) provides purpose-built inter-agent messaging:
-
-- **Point-to-point inboxes** — send messages directly to a specific agent
-- **Broadcast** — send to all agents simultaneously
-- **File-based transport** (default) — JSON files in `~/.clawteam/`, no server required
-- **ZeroMQ transport** (optional) — P2P for high-throughput, low-latency messaging
+[ClawTeam-OpenClaw](https://github.com/win4r/ClawTeam-OpenClaw) (community, 1,464 stars, last push 2026-07-03, as of 2026-10-18) spawns workers in git worktrees and gives them file-based inboxes:
 
 ```bash
-# Send a message to a specific agent
-clawteam send --to researcher "Analyze the Q2 earnings report"
-
-# Broadcast to all agents
-clawteam broadcast "Stand-up: report your status"
-
-# Check inbox
-clawteam inbox --agent lead
+clawteam inbox send my-team leader "Auth done. All tests passing."
+clawteam inbox broadcast my-team "Stand-up: report your status"
+clawteam inbox peek
 ```
+
+See [ClawTeam-OpenClaw](#clawteam-openclaw) below for installation.
 
 ---
 
 ## Workboard Orchestration
 
-The [Workboard](/guides/workboard) (v2026.6.1+) is OpenClaw's official orchestration layer for multi-agent coordination.
+[Workboard](/guides/workboard) is a bundled plugin, disabled by default, that tracks work as cards. Enable it with `openclaw plugins enable workboard`. Upstream references: [plugin](https://docs.openclaw.ai/plugins/workboard), [CLI](https://docs.openclaw.ai/cli/workboard).
 
-### Card Lifecycle
+### Card Lifecycle {#card-lifecycle}
+
+Statuses: `triage`, `backlog`, `todo`, `scheduled`, `ready`, `running`, `review`, `blocked`, `done`.
 
 ```
-todo → running → review → done
-         ↓
-      blocked
+triage/backlog → todo → ready → running → review → done
+                                   ↓
+                                blocked
 ```
 
-- **todo** — Ready for work, waiting to be claimed
-- **running** — Agent has claimed and is working on it
-- **review** — Work complete, pending verification
-- **done** — Verified and finished
-- **blocked** — Waiting on a dependency
+- A child card linked to parents stays in `todo` until every parent is `done`. Dispatch then promotes it to `ready`.
+- While a card is running, it follows its linked session: active → `running`, completed → `review`, failed, killed, timed out or aborted → `blocked`.
+- Moving a card to `review`, `blocked` or `done` by hand stops that auto-sync.
 
-### Agent Coordination Tools
+### Agent Coordination Tools {#agent-coordination-tools}
 
-Agents interact with the Workboard autonomously during execution:
+Card tools are **optional plugin tools**. With the plugin enabled, an agent sees only the `workboard_sessions_board_*` tools until you allow the rest:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    ownership: "explicit",
+    defaults: { systemAgent: { agentId: "main" } },
+    entries: {
+      main: {
+        workspace: "~/.openclaw/workspace",
+        tools: { alsoAllow: ["workboard"] },
+      },
+      coder: { workspace: "~/.openclaw/workspace-coder" },
+    },
+  },
+  plugins: { entries: { workboard: { enabled: true } } },
+}
+```
+
+Workers that Workboard starts from a card get `workboard_heartbeat`, `workboard_complete` and `workboard_block` for that card automatically.
 
 | Tool | Purpose |
 |------|---------|
-| `workboard_list` | List cards with claim state |
-| `workboard_read` | Read card details + worker context |
-| `workboard_create` | Create cards with parent/child relationships |
-| `workboard_claim` | Claim a card for this agent |
-| `workboard_link` | Link cards into dependency chains |
-| `workboard_heartbeat` | Refresh claim during long runs |
-| `workboard_runs` | Return persisted run history |
-| `workboard_dispatch` | Promote dependency-ready children, start workers |
-| `workboard_reassign` | Move a card to a different agent |
-| `workboard_promote` | Promote a card to a higher priority |
+| `workboard_list` / `workboard_read` | List cards; read one card with worker context |
+| `workboard_create` / `workboard_decompose` | Create a card; fan a parent card out into linked children |
+| `workboard_link` | Link a parent to a child (child waits until the parent is done) |
+| `workboard_claim` / `workboard_release` | Claim a card (moves it to `running`); release it |
+| `workboard_complete` / `workboard_block` | Finish with a summary and proof, or block with a reason |
+| `workboard_promote` / `workboard_reassign` / `workboard_reclaim` | Recover or hand off stuck work |
+| `workboard_dispatch` | Nudge dependency promotion and stale-claim cleanup; does **not** launch workers |
 
-### Dispatch Workflow
+### Dispatch Workflow {#dispatch-workflow}
 
-The dispatch cycle runs automatically:
-1. Promote dependency-ready children to `todo`
-2. Block expired claims (stale agents)
-3. Claim next available card
-4. Start worker for the card
-5. Track completion and update lifecycle
+Dispatch is triggered, not continuous: run `openclaw workboard dispatch`, use the dashboard, or the `/workboard` slash command. One pass promotes dependency-ready children to `ready`, blocks expired claims, and starts worker runs: at most 3 per pass by default (`--max-starts`), and only one card per owner or agent.
 
-### Autonomous Sub-Tasks
-
-An orchestrator agent creates cards, specialist agents claim and execute, and the Workboard tracks everything:
+### Autonomous Sub-Tasks {#autonomous-sub-tasks}
 
 ```
-Lead Agent                   Workboard                  Specialist Agents
+Lead agent                   Workboard                  Specialist agents
     │                            │                            │
     ├── create card ────────────►│                            │
     │   "Research competitors"   │◄── claim ──────────────────┤ researcher
-    │                            │                            │
-    ├── create card ────────────►│                            │
-    │   "Write report"           │   (blocked by research)    │
-    │   blocked-by: research     │                            │
-    │                            │                            │
-    │                            │◄── done ───────────────────┤ researcher
-    │                            │── auto-unblock ───────────►│
+    ├── create + link card ─────►│                            │
+    │   "Write report"           │   (todo until parent done) │
+    │                            │◄── complete ───────────────┤ researcher
+    │                            │── dispatch: child → ready  │
     │                            │◄── claim ──────────────────┤ writer
-    │                            │                            │
-    │◄── notify ─────────────────│◄── done ───────────────────┤ writer
+    │◄── notify ─────────────────│◄── complete ───────────────┤ writer
 ```
 
-### Self-Organizing Heartbeat
+### Self-Organizing Heartbeat {#self-organizing-heartbeat}
 
-Add a Workboard check to each agent's heartbeat:
+Do not put a Workboard checklist in `HEARTBEAT.md`; that file is no longer read. Make it an automation job owned by the agent:
 
-```markdown title="HEARTBEAT.md"
-## Workboard Check
-
-Every 2 hours:
-1. Check for blocked cards you own — investigate and unblock
-2. Check for unclaimed cards matching your skills — claim and start
-3. Report status of in-progress cards
+```bash
+openclaw automations add "every 2h" \
+  "Check the Workboard for blocked cards you own and unclaimed cards that match your role. Unblock or claim, then report status." \
+  --name workboard-sweep --agent coder --session isolated
 ```
 
 ---
 
 ## Orchestration Tools
 
-### Mission Control
+These are community projects, not part of OpenClaw. Read their code and install scripts before you run them, and run them against a test Gateway first.
 
-[Mission Control](https://github.com/abhi1693/openclaw-mission-control) (4,032 stars) is a centralized operations and governance platform for running OpenClaw across teams and organizations.
+### Mission Control {#mission-control}
 
-- **Hierarchical orchestration** — organizations, board groups, boards, tasks, tags
-- **Gateway-aware** — connect and manage remote execution environments from one interface
-- **Distributed runtime** — operate remote gateways without changing operator workflow
-- **Real deployments** — documented at scale with 5 master instances and 10+ satellite agents on AWS
+`abhi1693/openclaw-mission-control` is **archived** (last push 2026-08-06; its README says the project moved to Wardn AI). Do not deploy it for new setups.
+
+### ClawTeam-OpenClaw {#clawteam-openclaw}
+
+[ClawTeam-OpenClaw](https://github.com/win4r/ClawTeam-OpenClaw) (1,464 stars as of 2026-10-18; last push 2026-07-03) is a Python CLI where a leader agent spawns workers into git worktrees, with inboxes, a task board and a cost view.
+
+:::warning Install from the repo
+The project README warns that `pip install clawteam` installs a different upstream version and `npm install -g clawteam` is an unrelated package. Install from a clone:
 
 ```bash
-# Install
-git clone https://github.com/abhi1693/openclaw-mission-control
-cd openclaw-mission-control && docker compose up -d
+git clone https://github.com/win4r/ClawTeam-OpenClaw.git
+cd ClawTeam-OpenClaw
+pip install -e .
+```
+:::
+
+```bash
+clawteam team spawn-team my-team -d "Build the auth module" -n leader
+clawteam spawn --team my-team --agent-name alice --task "Implement OAuth2 flow"
+clawteam board show        # terminal kanban
+clawteam board serve --port 8080
+clawteam board cost        # token and cost view
 ```
 
-Best for: **teams and organizations** running multiple gateways across environments.
+### Antfarm {#antfarm}
 
-### ClawTeam-OpenClaw
-
-[ClawTeam-OpenClaw](https://github.com/win4r/ClawTeam-OpenClaw) (1,396 stars, 27 contributors, 453 tests) provides a complete multi-agent framework:
-
-**Communication:**
-- Point-to-point inboxes and broadcast messaging
-- File-based transport (default) or ZeroMQ P2P
-- Shared kanban task board with dependency chains
-
-**Fleet Monitoring:**
-- Terminal kanban: `clawteam board show`
-- Auto-refreshing dashboard: `clawteam board live`
-- Tiled tmux views: `clawteam board attach`
-- Web UI: `clawteam board serve`
-
-**Cost Management:**
-- Real-time cost dashboard (token/cost by agent, model, and task)
-- Per-agent model assignment with 7-level priority chain
-- Cost tiers: strong / balanced / cheap
-
-**Resilience:**
-- Circuit breaker patterns (healthy/degraded/open tri-state)
-- Retry with exponential backoff
-- Zombie detection and idle worker identification
-- Shutdown approval workflows
-
-Best for: **production teams** needing fleet monitoring, cost tracking, and inter-agent messaging.
-
-### Antfarm
-
-[Antfarm](https://github.com/snarktank/antfarm) orchestrates multi-agent workflows with zero external infrastructure. It installs from GitHub, not npm: the `antfarm` package on npm is an unrelated project, so do not `npx antfarm`. Follow the install steps in the [Antfarm README](https://github.com/snarktank/antfarm#install), and read its install script before running it.
-
-- **YAML-defined teams** — plain Markdown and YAML configuration
-- **SQLite state tracking** at `~/.openclaw/antfarm/antfarm.db`
-- **Cron scheduling** with staggered 15-minute intervals
-- **Three bundled workflows:**
-
-| Workflow | Agents | Purpose |
-|----------|--------|---------|
-| `feature-dev` | 7 | Full feature development pipeline |
-| `security-audit` | 7 | Security review and remediation |
-| `bug-fix` | 6 | Bug triage, fix, and verification |
-
-Each agent runs in a fresh session with clean context — no context window bloat. Memory persists through git history and progress files.
-
-Best for: **solo developers** wanting deterministic multi-agent workflows with no setup.
+[Antfarm](https://github.com/snarktank/antfarm) (2,496 stars as of 2026-10-18; no push since 2026-02-26) installs YAML-defined agent teams (`feature-dev`, `security-audit`, `bug-fix`) into OpenClaw, with cron polling. It installs from GitHub, not npm: the `antfarm` package on npm is an unrelated project, so do not `npx antfarm`. Follow the install steps in the [Antfarm README](https://github.com/snarktank/antfarm#install) and read its install script before running it. It predates OpenClaw 2.0's keyed `agents.entries` roster, so check what it writes to your config and run `openclaw doctor` afterwards.
 
 ### ClawDeck & ClawController
 
-[ClawDeck](https://clawdeck.io/) and [ClawController](https://www.clawcontroller.com/) are commercial dashboards providing visual agent management and monitoring.
+[ClawDeck](https://clawdeck.io/) and [ClawController](https://www.clawcontroller.com/) are commercial dashboards. Not reviewed here.
 
-### DigitalOcean Elastic Scaling
+### DigitalOcean App Platform
 
-[DigitalOcean App Platform](https://www.digitalocean.com/blog/openclaw-digitalocean-app-platform) offers elastic scaling for multiple OpenClaw agents with safe defaults and no infrastructure management.
+[DigitalOcean App Platform](https://www.digitalocean.com/blog/openclaw-digitalocean-app-platform) hosts OpenClaw with managed scaling. Not reviewed here.
 
 ---
 
@@ -477,403 +387,214 @@ Best for: **solo developers** wanting deterministic multi-agent workflows with n
 
 ### Multi-Agent DevOps Pipeline
 
-Three agents coordinate through the Workboard:
-
-```json5
-{
-  "agents": {
-    "list": [
-      {
-        "id": "reviewer",
-        "workspace": "~/.openclaw/workspace-reviewer",
-        "model": "claude-opus-4-8"
-      },
-      {
-        "id": "tester",
-        "workspace": "~/.openclaw/workspace-tester",
-        "model": "claude-sonnet-4-6"
-      },
-      {
-        "id": "deployer",
-        "workspace": "~/.openclaw/workspace-deployer",
-        "model": "claude-haiku-4-5-20251001"
-      }
-    ]
-  },
-  "bindings": [
-    { "agentId": "reviewer", "match": { "channel": "discord", "peer": { "kind": "space", "id": "code-review" } } },
-    { "agentId": "tester", "match": { "channel": "slack", "peer": { "kind": "space", "id": "ci-cd" } } },
-    { "agentId": "deployer", "match": { "channel": "slack", "peer": { "kind": "space", "id": "deployments" } } }
-  ]
-}
-```
-
-**Flow:** New PR detected by reviewer's heartbeat → creates Workboard card → reviewer analyzes code → tester claims test card → deployer claims deploy card (blocked until tests pass).
-
-### Research Pipeline
-
-```
-Researcher (Sonnet) → Writer (Sonnet) → Editor (Haiku)
-     │                    │                  │
-     ├── Web search       ├── Draft report   ├── Grammar check
-     ├── Source analysis   ├── Citations      ├── Fact verification
-     └── Claim extraction  └── Formatting     └── Final output
-```
-
-Each agent runs in parallel where possible, with the Workboard tracking dependencies.
+A reviewer, tester and deployer, each bound to its own Slack or Discord channel (`peer: { kind: "channel", id: "<channel id>" }`), coordinated through Workboard cards: the reviewer creates a test card and a deploy card linked to it, so the deploy card waits in `todo` until tests are `done`. A reviewer automation (`openclaw automations add "*/15 * * * *" "Check for new PRs…" --agent reviewer`) starts the flow. Keep the deployer behind exec approvals.
 
 ### Customer Support Fleet
 
-```json5
+A cheap triage agent bound to the support channel classifies messages and hands off to specialists with `sessions_send` or sub-agents. Keep untrusted-input agents sandboxed with a narrow tool list:
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "agents": {
-    "list": [
-      { "id": "triage", "model": "claude-haiku-4-5-20251001" },
-      { "id": "technical", "model": "claude-sonnet-4-6" },
-      { "id": "billing", "model": "claude-haiku-4-5-20251001" },
-      { "id": "escalation", "model": "claude-opus-4-8" }
-    ]
+  agents: {
+    ownership: "explicit",
+    defaults: { systemAgent: { agentId: "personal" } },
+    entries: {
+      personal: { workspace: "~/.openclaw/workspace-personal" },
+      support: {
+        workspace: "~/.openclaw/workspace-support",
+        model: "anthropic/claude-haiku-5-5",
+        sandbox: { mode: "all", scope: "agent" },
+        tools: {
+          allow: ["read", "sessions_send"],
+          deny: ["exec", "write", "edit", "apply_patch", "browser"],
+        },
+      },
+    },
   },
-  "bindings": [
-    { "agentId": "triage", "match": { "channel": "intercom" } }
-  ]
+  bindings: [
+    { agentId: "support", match: { channel: "slack", accountId: "*", peer: { kind: "channel", id: "C0123SUPPORT" } } },
+    { agentId: "personal", match: { channel: "telegram", accountId: "*" } },
+  ],
 }
 ```
 
-The triage agent classifies incoming messages and routes to specialists. Only complex escalations hit the expensive Opus model.
-
-### Virtual Company
-
-Multiple specialized teams coordinated through a leader agent:
-
-| Team | Agent | Model | Focus |
-|------|-------|-------|-------|
-| Dev | `coder` | Sonnet 4.6 | Code, PRs, bugs |
-| Marketing | `marketer` | Haiku 4.5 | Content, social media |
-| Ops | `ops` | Haiku 4.5 | Monitoring, alerts |
-| Lead | `lead` | Opus 4.8 | Strategy, coordination |
-
-The lead agent uses shared memory (via PowerMem or ClawTeam) for cross-agent context.
+See [Multi-agent sandbox and tools](https://docs.openclaw.ai/tools/multi-agent-sandbox-tools).
 
 ---
 
-## Memory: Shared vs Isolated
+## Memory: Shared vs Isolated {#memory-shared-vs-isolated}
 
-By default, each agent has **completely isolated memory** — separate SQLite search index, separate Markdown memory files in its workspace.
+By default each agent has isolated memory: its own `MEMORY.md`, daily notes and search index in its own workspace. Built-in memory does not search another agent's corpus. Plugin-owned stores follow the plugin's config and are **not** split automatically.
 
-### When to Share Memory
+| Need | Approach |
+|------|----------|
+| Agents keep their own context | Default |
+| Shared reference material | Put it in a shared directory and add it to each agent's `memory.search.extraPaths` |
+| Separate Memory Wiki per agent | `plugins.entries.memory-wiki.config.vault.scope: "agent"` ([Memory Wiki](https://docs.openclaw.ai/plugins/memory-wiki)) |
+| External shared memory | Third-party systems; see [Memory Systems](/guides/memory-systems) |
 
-| Scenario | Approach |
-|----------|----------|
-| Agents need their own context | Default isolated memory |
-| Agents need to share facts | Shared filesystem directory |
-| Agents need cross-context search | PowerMem (hybrid + graph memory) |
-| Team-wide managed memory | Mem0 (managed platform) |
-| Token-efficient shared memory | memU (3-layer filesystem) |
+PowerMem has been renamed [PowerContext](https://github.com/oceanbase/powercontext) (`oceanbase/powercontext`, 1,337 stars as of 2026-10-18). It advertises multi-agent memory isolation and sharing; not tested here.
 
-### Shared Directory Pattern
+Dreaming (memory consolidation) runs as one sweep with one `frequency`. The Control UI agent selector changes which agent you view, not its schedule.
 
-The simplest approach — agents read/write to a common directory:
+---
 
-```json5
+## Heartbeats and Automations per Agent {#heartbeat-cost-multiplication}
+
+Heartbeat config lives at `agents.defaults.heartbeat` and `agents.entries.<id>.heartbeat`. **If any agent has a `heartbeat` block, only those agents run heartbeats.** Each heartbeat is a full agent turn, so three agents every 30 minutes means 144 turns a day.
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "agents": {
-    "list": [
-      {
-        "id": "researcher",
-        "workspace": "~/.openclaw/workspace-researcher"
+  agents: {
+    ownership: "explicit",
+    defaults: {
+      systemAgent: { agentId: "lead" },
+      heartbeat: {
+        every: "1h",
+        activeHours: { start: "07:00", end: "23:00", timezone: "Europe/Berlin" },
+        model: "anthropic/claude-haiku-5-5",
+        isolatedSession: true,
       },
-      {
-        "id": "writer",
-        "workspace": "~/.openclaw/workspace-writer"
-      }
-    ]
-  }
+    },
+    entries: {
+      lead: {
+        workspace: "~/.openclaw/workspace-lead",
+        heartbeat: { every: "30m" },
+      },
+      worker: { workspace: "~/.openclaw/workspace-worker" },
+    },
+  },
 }
 ```
 
-```bash
-# Both agents have access to a shared output directory
-mkdir -p ~/.openclaw/shared/research-output
+Here only `lead` runs heartbeats, every 30 minutes, between 07:00 and 23:00, on Haiku, in a fresh session each time. `worker` has no heartbeat block, so it runs none. `every: "0m"` disables an agent's heartbeat.
 
-# Researcher writes findings
-# Writer reads findings to create reports
+Recurring checks are automation jobs, scheduled per agent with `--agent`:
+
+```bash
+openclaw automations add "0 8 * * 1-5" "Summarize overnight alerts" --name morning-ops --agent lead --session isolated
+openclaw automations list --all
 ```
 
-### PowerMem for Multi-Agent
-
-PowerMem explicitly supports multi-agent memory governance:
-- Isolation between agents by default
-- Cross-agent collaboration when configured
-- Graph-based relationships between memories
-- Hybrid search (vector + keyword + graph)
-
-### Dreaming Per Agent
-
-v2026.6.1 allows scheduling Dreaming (memory consolidation) independently per agent. Each agent can consolidate on its own schedule without affecting others.
+:::note Migrating from HEARTBEAT.md
+`HEARTBEAT.md` is retired. `openclaw doctor --fix` imports each workspace's file into that agent's monitor scratch and converts legacy `tasks:` entries into automation jobs. A legacy bare `interval` number is read as **minutes**, so `interval: 1800` becomes a 30-hour job; check `openclaw automations list --all` after migrating. See [Heartbeat](/guides/heartbeat) and [Automation](/guides/automation).
+:::
 
 ---
 
-## Fleet Monitoring
-
-### Built-In Monitoring
+## Fleet Monitoring {#fleet-monitoring}
 
 ```bash
-# Check all agents
-openclaw status
-
-# Per-agent health
-openclaw channel status --agent alex
-openclaw channel status --agent mia
-
-# Gateway-wide metrics
-openclaw stats tokens --period 7
-```
-
-### ClawTeam Fleet Dashboard
-
-For visual fleet monitoring at scale:
-
-```bash
-# Terminal kanban — see all agents and their current cards
-clawteam board show
-
-# Auto-refreshing dashboard
-clawteam board live
-
-# Tiled tmux view — one pane per agent
-clawteam board attach
-
-# Web UI
-clawteam board serve --port 8080
-```
-
-### Mission Control at Scale
-
-For organizations running multiple gateways:
-
-```
-Mission Control Dashboard
-├── Gateway: VPS-1 (US East)
-│   ├── Agent: coder (active, 3 tasks)
-│   ├── Agent: reviewer (idle)
-│   └── Agent: ops (heartbeat running)
-├── Gateway: VPS-2 (EU West)
-│   ├── Agent: support-eu (active, 12 conversations)
-│   └── Agent: translator (idle)
-└── Gateway: VPS-3 (APAC)
-    └── Agent: support-apac (active, 8 conversations)
-```
-
-### Health Check Patterns
-
-Add multi-agent health checks to the lead agent's heartbeat:
-
-```markdown title="Lead agent's HEARTBEAT.md"
-## Fleet Health Check
-
-1. Check each agent's channel connectivity
-2. Verify Workboard has no stale claimed cards (older than 1 hour)
-3. Check for zombie agents (high memory, no recent activity)
-4. Report fleet status to Telegram
-5. Alert on any disconnected channels or failed agents
+openclaw status                       # gateway, channels, agents
+openclaw agents list --bindings       # roster and routing
+openclaw channels status --probe      # channel connectivity and credentials
+openclaw sessions --all-agents --active 60
+openclaw automations list --all       # all jobs, including disabled ones
 ```
 
 ---
 
-## Cost Optimization
+## Cost Optimization {#cost-optimization}
 
-Multi-agent setups use approximately **15x more tokens** than standard chat. Cost management is critical.
+Anthropic measured agents using about 4x the tokens of a chat, and multi-agent systems about 15x ([same source](https://www.anthropic.com/engineering/multi-agent-research-system)). The main levers:
 
-### The Token Multiplier
+- **Model tiering:** set `model` per agent (table above).
+- **Fewer heartbeats:** give heartbeat blocks only to agents that need them, lengthen `every`, set `activeHours`, use a cheap `heartbeat.model` and `isolatedSession: true`.
+- **Small worker context:** sub-agents already get only `AGENTS.md`; keep it short.
 
-| Setup | Relative Cost |
-|-------|--------------|
-| Single agent, standard chat | 1x |
-| Single agent, agentic mode | 4x |
-| Multi-agent system | ~15x |
-
-### Model Tiering
-
-The biggest lever: assign the right model to each agent's role.
-
-```json5
-{
-  "agents": {
-    "list": [
-      { "id": "lead", "model": "claude-opus-4-8" },
-      { "id": "worker-1", "model": "claude-sonnet-4-6" },
-      { "id": "worker-2", "model": "claude-sonnet-4-6" },
-      { "id": "monitor", "model": "claude-haiku-4-5-20251001" },
-      { "id": "heartbeat-bot", "model": "local/qwen3:14b" }
-    ]
-  }
-}
-```
-
-| Role | Recommended Model | Why |
-|------|------------------|-----|
-| Lead / orchestrator | Opus | Complex reasoning, delegation decisions |
-| Specialist worker | Sonnet | Good balance of capability and cost |
-| Triage / routing | Haiku | Fast, cheap, good enough for classification |
-| Monitoring / heartbeat | Local (Ollama) | Free, runs 24/7 |
-
-### Bootstrap Context Scoping
-
-Since v2026.5.22, sub-agents only receive AGENTS.md and TOOLS.md by default — not SOUL.md, USER.md, memory, or other files. This prevents token waste on context that workers don't need.
-
-To include additional files for a specific sub-agent, explicitly attach them in the delegation.
-
-### Heartbeat Cost Multiplication
-
-Each agent with a heartbeat sends its full context every cycle. Three agents with 30-minute heartbeats = 144 heartbeat cycles per day.
-
-**Mitigations:**
-- Route all heartbeats to a cheap/local model via `heartbeat_override`
-- Stagger heartbeat intervals (agent 1 at :00, agent 2 at :20, agent 3 at :40)
-- Disable heartbeat for agents that don't need autonomous monitoring
-- Use quiet hours on all agents
-
-```json5
-{
-  "agents": {
-    "list": [
-      {
-        "id": "lead",
-        "heartbeat": { "interval": 3600 }
-      },
-      {
-        "id": "worker",
-        "heartbeat": { "enabled": false }
-      },
-      {
-        "id": "monitor",
-        "heartbeat": {
-          "interval": 1800,
-          "quiet_hours": { "start": "23:00", "end": "07:00" }
-        }
-      }
-    ]
-  }
-}
-```
-
-### Cost Tracking
+Track spend per agent:
 
 ```bash
-# Per-agent token usage
-openclaw stats tokens --agent lead --period 7
-openclaw stats tokens --agent worker-1 --period 7
-
-# ClawTeam cost dashboard (by agent, model, and task)
-clawteam costs show
-clawteam costs show --by agent
-clawteam costs show --by model
+openclaw gateway usage-cost --agent lead --days 7
+openclaw gateway usage-cost --all-agents --days 30
+openclaw status --usage
 ```
 
-### Budget Example
-
-| Agent | Model | Heartbeat | Monthly Cost |
-|-------|-------|-----------|-------------|
-| Lead (Opus) | $15/M tokens | 1/hour | ~$180 |
-| 2x Workers (Sonnet) | $9/M tokens | disabled | ~$60 each (on demand) |
-| Monitor (Haiku) | $3/M tokens | 1/30min | ~$45 |
-| Heartbeat bot (local) | $0 | 1/30min | $0 |
-| **Total** | | | **~$345/month** |
-
-vs. single Opus agent doing everything: ~$500+/month with worse performance.
+In chat, `/usage cost` shows a local cost summary. See [Usage tracking](https://docs.openclaw.ai/concepts/usage-tracking) and [Cost Management](/guides/cost-management).
 
 ---
 
-## Security Considerations
+## Security Considerations {#security-considerations}
 
-Multi-agent setups multiply the attack surface:
+More agents means more attack surface:
 
-- Each agent with shell access can execute commands as your user
-- Compromised agents can potentially access other agents' workspaces unless isolated
-- Channel bindings route messages automatically — a compromised channel can reach the wrong agent
-- SOUL.md is the #1 attack vector (persistent personality hijacking)
+- Every agent with exec runs commands as your OS user. A workspace is the default working directory, **not** a sandbox: absolute paths reach the rest of the host.
+- Cross-agent session access (`tools.agentToAgent`) is on by default. A compromised agent can message others.
+- A compromised or misrouted channel can reach the wrong agent through a broad binding.
+- `SOUL.md` and `AGENTS.md` are persistent instructions and a target for prompt injection.
 
-### Mitigations
+### Mitigations {#mitigations}
 
-- Use separate `OPENCLAW_HOME` directories for sensitive vs non-sensitive agents
-- Restrict shell access per agent where possible
-- Use [sandbox mode](/security/hardening) for agents handling untrusted input
-- Monitor each agent's [SOUL.md](/guides/soul-md#security) for unauthorized modifications
-- Make identity files read-only: `chmod 444 SOUL.md AGENTS.md`
-- v2026.6.1 internal namespaces provide scoped isolation between agents
-
-### Bootstrap Context Security
-
-Since v2026.5.22, sub-agents don't receive SOUL.md, USER.md, or customer runbooks by default. This prevents sensitive main-agent context from leaking into worker sessions — a significant security improvement for multi-agent setups.
+- Keep exec approvals on and use [sandboxing](https://docs.openclaw.ai/gateway/sandboxing) (`sandbox.mode: "all"`) for agents that handle untrusted input. See [Security Hardening](/security/hardening).
+- Restrict tools per agent with `tools.allow` / `tools.deny`.
+- Limit agent-to-agent access with `tools.agentToAgent.allow`, or disable it with `enabled: false`.
+- Use a separate Gateway profile for agents that must never share a process or credentials.
+- Keep workspaces in git so changes to identity files show up in `git diff`. File permissions are a weak guard: an agent with shell access can change them back.
 
 ---
 
 ## Choosing an Orchestration Approach
 
-| Approach | Best For | Complexity | Cost |
-|----------|----------|-----------|------|
-| **Channel bindings** | Simple routing (work vs personal) | Low | None |
-| **Workboard** | Task coordination within one gateway | Medium | Built-in |
-| **Antfarm** | Deterministic YAML-defined workflows | Medium | Free |
-| **ClawTeam** | Fleet management with messaging and monitoring | High | Free |
-| **Mission Control** | Multi-gateway enterprise orchestration | High | Free |
-| **Separate instances** | Maximum isolation | Low | Multiple processes |
+| Approach | Best for | Complexity |
+|----------|----------|-----------|
+| **Channel bindings** | Splitting by channel, account or contact | Low |
+| **Team preset / sub-agents** | A lead that delegates bounded work | Low |
+| **Workboard** | Tracked tasks with dependencies on one Gateway | Medium |
+| **ClawTeam** (community) | Worktree-based coding swarms with a board UI | High |
+| **Separate profiles** | Hard isolation between personas | Low, two processes |
 
-**Start simple:** Channel bindings with 2-3 agents cover most use cases. Add Workboard when you need task coordination. Add ClawTeam or Mission Control only when managing 5+ agents or multiple gateways.
+Start with bindings and two or three agents. Add the team preset or Workboard when you need delegation or tracking.
 
 ---
 
 ## Quick Start: Your First Multi-Agent Setup
 
+```bash
+openclaw agents add assistant --workspace ~/.openclaw/workspace-assistant --bind telegram
+openclaw agents add coder --workspace ~/.openclaw/workspace-coder --model anthropic/claude-sonnet-5-5 --bind discord
+```
+
+An equivalent hand-written config:
+
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "agents": {
-    "defaults": {
-      "model": "claude-sonnet-4-6"
+  agents: {
+    ownership: "explicit",
+    defaults: {
+      model: "anthropic/claude-sonnet-5-5",
+      systemAgent: { agentId: "assistant" },
     },
-    "list": [
-      {
-        "id": "assistant",
-        "workspace": "~/.openclaw/workspace-assistant"
-      },
-      {
-        "id": "coder",
-        "workspace": "~/.openclaw/workspace-coder",
-        "model": "claude-sonnet-4-6"
-      }
-    ]
+    entries: {
+      assistant: { workspace: "~/.openclaw/workspace-assistant" },
+      coder: { workspace: "~/.openclaw/workspace-coder" },
+    },
   },
-  "bindings": [
-    { "agentId": "assistant", "match": { "channel": "telegram" } },
-    { "agentId": "coder", "match": { "channel": "discord" } }
-  ]
+  bindings: [
+    { agentId: "assistant", match: { channel: "telegram", accountId: "*" } },
+    { agentId: "coder", match: { channel: "discord", accountId: "*" } },
+  ],
 }
 ```
 
+Edit each workspace's `SOUL.md` and `AGENTS.md`, then restart and verify:
+
 ```bash
-# Create workspaces
-mkdir -p ~/.openclaw/workspace-assistant ~/.openclaw/workspace-coder
-
-# Give each agent a personality
-echo "You are a friendly personal assistant." > ~/.openclaw/workspace-assistant/SOUL.md
-echo "You are a senior software engineer." > ~/.openclaw/workspace-coder/SOUL.md
-
-# Start the gateway — both agents run on one process
-openclaw start
+openclaw gateway restart
+openclaw agents list --bindings
+openclaw channels status --probe
 ```
 
 ---
 
 ## See Also
 
-- [Workboard Guide](/guides/workboard) — Detailed Workboard setup and recipes
-- [SOUL.md Guide](/guides/soul-md) — Giving each agent a distinct personality
-- [Architecture Overview](/architecture/overview) — How the gateway orchestrates agents
-- [Channels & Integrations](/guides/channels) — Connecting messaging platforms
-- [API & Webhooks](/guides/api-webhooks) — Programmatic agent control
-- [Performance Tuning](/guides/performance-tuning) — Model routing and cost reduction
-- [Cost Management](/guides/cost-management) — Multi-agent cost implications
-- [Memory Systems Compared](/guides/memory-systems) — Choosing memory for multi-agent setups
-- [Monitoring & Observability](/guides/monitoring) — Fleet health checks and alerting
-- [Security Hardening](/security/hardening) — Sandboxing and isolation
+- [Multi-agent routing (official)](https://docs.openclaw.ai/concepts/multi-agent) and [Agent bindings](https://docs.openclaw.ai/concepts/agent-bindings)
+- [Workboard Guide](/guides/workboard)
+- [SOUL.md Guide](/guides/soul-md)
+- [Heartbeat](/guides/heartbeat) and [Automation](/guides/automation)
+- [Architecture Overview](/architecture/overview)
+- [Channels & Integrations](/guides/channels)
+- [Cost Management](/guides/cost-management)
+- [Memory Systems Compared](/guides/memory-systems)
+- [Monitoring & Observability](/guides/monitoring)
+- [Security Hardening](/security/hardening)

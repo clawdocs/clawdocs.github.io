@@ -1,530 +1,354 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Heartbeat Guide
-description: Practical recipes and configuration for OpenClaw's autonomous heartbeat system — structured tasks, cost optimization, and advanced patterns
-keywords: [openclaw, openclaw heartbeat, autonomous tasks, background tasks, scheduled tasks, cron]
+description: How OpenClaw's heartbeat works in v2026.10 — agents.defaults.heartbeat, monitor scratch, automation jobs for recurring checks, cost control, and migrating from HEARTBEAT.md
+keywords: [openclaw, openclaw heartbeat, monitor scratch, automations, activeHours, HEARTBEAT.md migration]
 ---
 
 # Heartbeat Guide
 
-The heartbeat transforms OpenClaw from a reactive chatbot into a proactive agent that works while you're away. This guide covers setup, recipes, cost control, and advanced patterns.
+The heartbeat is a periodic agent turn in the main session. It lets the agent notice things that need your attention and stay quiet otherwise. Since OpenClaw 2.0 (v2026.8.1) it is one kind of [automation](/guides/automation): the scheduler that runs your cron jobs also runs the heartbeat.
+
+Two points shape everything on this page:
+
+- **Heartbeat has one cadence per agent.** "Check email every 30 minutes" and "brief me at 8am" are not heartbeat tasks. Each is its own automation job with its own schedule and run history.
+- **`HEARTBEAT.md` is retired.** OpenClaw no longer creates or reads it. The heartbeat's checklist now lives in the **monitor scratch**, a small text record in the state database. See [Migrating from HEARTBEAT.md](#migrating-from-heartbeatmd).
+
+The official reference is [Heartbeat](https://docs.openclaw.ai/gateway/heartbeat). This guide summarises it, adds recipes, and flags the gotchas.
 
 ---
 
-## How Heartbeat Works
+## How heartbeat works
 
-The heartbeat fires on a timer (default `every: "30m"`; it becomes `1h` when the Anthropic provider uses OAuth/token auth, including Claude CLI reuse, and you have not set `heartbeat.every` yourself) and executes the tasks defined in your `HEARTBEAT.md` file.
+1. You configure `agents.defaults.heartbeat` (or `agents.entries.<id>.heartbeat`) in `openclaw.json`.
+2. The Gateway keeps one system-owned automation job per heartbeat-enabled agent. It shows up in `openclaw cron list --all` as `Heartbeat (<agent-id>)`. Edit the config, not this job.
+3. On each tick, the agent gets one turn in its main session. The prompt is the default heartbeat prompt plus the monitor scratch, if any.
+4. If nothing needs attention, the agent replies `NO_REPLY` (or calls the `heartbeat_respond` tool with `notify: false`) and nothing is sent. Otherwise the alert goes to the delivery target, which by default is the owner's direct message.
 
-### Lifecycle
+Defaults worth knowing:
 
-1. **Timer fires** — the gateway triggers a heartbeat cycle
-2. **Tasks load** — OpenClaw reads `~/.openclaw/HEARTBEAT.md`
-3. **Execution** — each task runs in the main session (not a background process)
-4. **Response** — results are sent to your configured channels or suppressed via `HEARTBEAT_OK`
-5. **Wait** — timer resets for the next cycle
+| Setting | Default |
+|---|---|
+| Cadence (`every`) | `30m`; `1h` when Anthropic auth resolves to OAuth/token (including Claude CLI reuse) and you have not set `every` |
+| Delivery (`target`) | `owner`: the first concrete entry in `commands.ownerAllowFrom`, then a channel `allowFrom`. Never a group |
+| Timeout | `agents.defaults.timeoutSeconds` if set, otherwise the cadence capped at 600 seconds |
+| Active hours | None (runs around the clock) |
 
-:::info
-The heartbeat runs in your **main session**, sharing context with your primary conversation. This means heartbeat tasks can reference memories, recent conversations, and session state.
-:::
-
----
-
-## Quick Setup
-
-```bash
-# Create your heartbeat file
-vim ~/.openclaw/HEARTBEAT.md
-
-# Restart the gateway to pick up changes
-openclaw gateway restart
-
-# Test immediately (doesn't wait for timer)
-openclaw heartbeat --now
-
-# Dry run (shows what would happen)
-openclaw heartbeat --dry-run
-```
+Heartbeats only run when automations run. With `cron.enabled: false` or `OPENCLAW_SKIP_CRON=1`, the Gateway logs a warning and skips scheduled heartbeats. There is no fallback timer.
 
 ---
 
-## Heartbeat File Formats
+## Quick setup {#quick-setup}
 
-### Simple Format (Markdown)
-
-The original format — write tasks as Markdown headings and bullet points:
-
-```markdown title="~/.openclaw/HEARTBEAT.md"
-## Email Triage (every heartbeat)
-- Check Gmail for new unread emails
-- Flag emails from VIPs: boss@company.com, cto@company.com
-- Send me a WhatsApp summary of flagged emails
-- Mark promotional emails as read
-
-## System Health (hourly)
-- Check disk usage, alert if any partition > 85%
-- Check Docker container health
-- Monitor RAM usage, alert if > 90%
-```
-
-### Structured Format (since v2026.3.10)
-
-The structured format gives you fine-grained control over each task's name, interval, and prompt:
-
-```markdown title="~/.openclaw/HEARTBEAT.md"
----
-tasks:
-  - name: email-triage
-    interval: 1800
-    prompt: |
-      Check Gmail for unread emails. Flag anything from boss@company.com
-      or cto@company.com. Send a WhatsApp summary of flagged emails.
-      Mark promotional emails as read.
-
-  - name: system-health
-    interval: 3600
-    prompt: |
-      Check disk usage on all partitions, alert if any exceeds 85%.
-      Verify Docker containers are healthy. Monitor RAM, alert if > 90%.
-
-  - name: github-watch
-    interval: 900
-    prompt: |
-      Check github.com/myorg/myrepo for new issues and PRs since last check.
-      Categorize issues as bug/feature/question. Alert on failing CI.
----
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | string | Unique task identifier (used in logs and stats) |
-| `interval` | number | Seconds between runs (overrides global interval) |
-| `prompt` | string | The instruction to execute each cycle |
-
-With structured tasks, each task runs on its own timer. A 15-minute GitHub check and a 1-hour system health check coexist without conflict.
-
----
-
-## HEARTBEAT_OK — Suppressing Noise
-
-Most heartbeat cycles find nothing noteworthy. By default, the agent reports back every cycle, which creates noise. The `HEARTBEAT_OK` mechanism solves this.
-
-When a heartbeat task finds nothing to report, the agent responds with `HEARTBEAT_OK` instead of a full message. This response is:
-
-- Suppressed from channel output (you won't see it on WhatsApp/Slack/Discord)
-- Logged for debugging (visible in `openclaw logs`)
-- Controlled by `ackMaxChars` — responses shorter than this threshold are treated as "OK"
+Set the cadence and tell OpenClaw who the owner is:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "heartbeat": {
-    "ackMaxChars": 300
-  }
-}
-```
-
-The default `ackMaxChars` is **300 characters**. If the agent's response is under 300 characters and contains no alert keywords, it's suppressed. Raise the threshold to suppress more, lower it to see more.
-
-### Visibility Controls
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "heartbeat": {
-    "showOk": false,
-    "showAlerts": true,
-    "useIndicator": true
-  }
-}
-```
-
-| Setting | Default | Effect |
-|---------|---------|--------|
-| `showOk` | `false` | Show routine "all clear" messages |
-| `showAlerts` | `true` | Show alert/warning messages |
-| `useIndicator` | `true` | Show a status dot in connected clients |
-
----
-
-## Recipes
-
-### Email Triage
-
-```markdown title="~/.openclaw/HEARTBEAT.md"
-## Email Triage (every heartbeat)
-- Check Gmail for new unread emails
-- Flag emails from VIPs: boss@company.com, cto@company.com
-- For flagged emails: send me a WhatsApp summary immediately
-- For other emails: batch into a digest
-- Mark promotional emails as read automatically
-```
-
-One user reported processing **15,000 emails** with this pattern.
-
-### GitHub Monitor
-
-```markdown
-## GitHub Monitor (every heartbeat)
-- Check github.com/myorg/myrepo for new issues and PRs
-- For issues: categorize as bug/feature/question based on content
-- For PRs: check if CI passed, summarize the diff
-- Alert me on Discord if any CI is failing on main branch
-```
-
-### System Health
-
-```markdown
-## System Health (hourly)
-- Check disk usage on all partitions, alert if > 85%
-- Check if Docker containers are healthy
-- Monitor RAM usage, alert if > 90%
-- Check SSL certificate expiry for mysite.com, alert if < 14 days
-```
-
-### News & Research
-
-```markdown
-## Morning Briefing (daily at 8am)
-- Top 5 Hacker News stories relevant to AI and TypeScript
-- Weather forecast for San Francisco
-- My Google Calendar events for today
-- Any new releases of packages I depend on (check package.json)
-```
-
-### Financial Monitoring
-
-```markdown
-## Financial (every 2 hours during market hours)
-- Check my portfolio watchlist: AAPL, GOOGL, MSFT
-- Alert me if any stock moves more than 3% in either direction
-- Daily summary at market close
-```
-
-### Deployment Monitor
-
-```markdown
-## Deploy Watch (every 15 minutes)
-- Check https://staging.myapp.com/health for HTTP 200
-- Check https://api.myapp.com/health for HTTP 200
-- If any endpoint is down, immediately alert on Slack #incidents
-- Check response times — alert if p95 > 500ms
-- Monitor error rate in the last 15 minutes from /metrics endpoint
-```
-
-### Slack Digest
-
-```markdown
-## Slack Digest (every 2 hours)
-- Scan #engineering, #incidents, #deployments for new messages
-- Summarize any threads with > 5 replies
-- Flag any @here or @channel mentions
-- Compile into a single digest and send to my DM
-```
-
-### Social Media Monitor
-
-```markdown
-## Brand Monitor (every 4 hours)
-- Search Twitter/X for mentions of "mycompany" or "myproduct"
-- Search Hacker News for mentions of my company
-- Check Reddit r/myproduct for new posts
-- Summarize sentiment (positive/negative/neutral)
-- Alert immediately on any negative viral thread (> 50 engagement)
-```
-
-### Smart Home
-
-```markdown
-## Home Automation (hourly)
-- Check Hue lights — turn off any that have been on > 8 hours
-- Check thermostat — set to 68F if no motion detected for 2 hours
-- Evening routine at sunset: turn on porch lights, dim living room to 40%
-- Check security camera feed for motion alerts since last check
-```
-
-### Code Quality
-
-```markdown
-## Code Health (daily at 6am)
-- Run the test suite for ~/projects/main-app
-- Check for outdated npm dependencies (npm outdated)
-- Look for new TODO/FIXME/HACK comments added yesterday
-- Run linter and report any new warnings
-- Summarize in a Slack message to #dev-daily
-```
-
----
-
-## Cost Optimization
-
-Heartbeat is the biggest cost driver in OpenClaw — it runs 24/7, every 30 minutes by default. That's 48 cycles per day, each consuming tokens.
-
-### The Cost Levers
-
-| Lever | Effect | Savings |
-|-------|--------|---------|
-| **Cheaper model** | Route heartbeat to Haiku or local | 80-100% |
-| **Longer interval** | 60 min instead of 30 min | 50% |
-| **Quiet hours** | No heartbeat 10pm-7am | 33% |
-| **`isolatedSession`** | Reduce context from 100K to 2-5K tokens | 95% per cycle |
-| **`lightContext`** | Skip memory/history loading | 50-80% per cycle |
-
-### isolatedSession
-
-By default, heartbeat runs in the main session with full context (up to 100K tokens). Enable `isolatedSession` to run heartbeat in a minimal context window of 2-5K tokens:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "heartbeat": {
-    "isolatedSession": true
-  }
-}
-```
-
-This is the single most impactful cost reduction. The tradeoff: heartbeat tasks can't reference your conversation history or recently discussed topics.
-
-### lightContext
-
-Skip loading memory and history into the heartbeat context:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "heartbeat": {
-    "lightContext": true
-  }
-}
-```
-
-:::caution
-`lightContext` has been reported as broken across several v2026.x releases. Test with `openclaw heartbeat --dry-run` after enabling to verify it works with your version.
-:::
-
-### Model Tiering
-
-Route heartbeat to the cheapest model that can handle your tasks:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "heartbeat": {
-    "model": "claude-haiku-4-5-20251001"
-  }
-}
-```
-
-Or use a local model for zero cost:
-
-```json5
-{
-  "heartbeat": {
-    "model": "ollama/qwen3:14b"
-  }
-}
-```
-
-### Quiet Hours
-
-Disable heartbeat while you sleep:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "heartbeat": {
-    "quiet_hours": {
-      "start": "22:00",
-      "end": "07:00"
-    }
-  }
-}
-```
-
-### Cost Comparison
-
-| Configuration | Monthly Cost (approximate) |
-|--------------|--------------------------|
-| Default (Opus, 30min, 24/7) | ~$450-1,200 |
-| Sonnet, 30min, 24/7 | ~$90-240 |
-| Haiku, 30min, 24/7 | ~$15-45 |
-| Haiku, 60min, quiet hours | ~$5-15 |
-| Local model, 30min, 24/7 | $0 (electricity only) |
-| Haiku + isolatedSession + quiet hours | ~$2-8 |
-
----
-
-## Multi-Agent Heartbeat
-
-When running multiple agents, you can assign heartbeat tasks to specific agents:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "agents": {
-    "list": [
-      {
-        "id": "monitor",
-        "model": "ollama/qwen3:14b",
-        "heartbeat": {
-          "tasks": ["system-health", "deploy-watch"]
-        }
+  commands: {
+    // Your own account on a channel; heartbeat alerts go here by default
+    ownerAllowFrom: ["telegram:123456789"],
+  },
+  agents: {
+    defaults: {
+      heartbeat: {
+        every: "30m",
+        isolatedSession: true, // fresh session each run: far fewer tokens
+        lightContext: true,    // skip workspace bootstrap files
+        activeHours: { start: "07:00", end: "22:00" },
       },
-      {
-        "id": "researcher",
-        "model": "claude-haiku-4-5-20251001",
-        "heartbeat": {
-          "tasks": ["news-briefing", "brand-monitor"]
-        }
-      }
-    ]
-  }
+    },
+  },
 }
 ```
 
-This pairs well with structured tasks — each agent handles tasks that match its model's capabilities. A local model handles simple health checks; a cloud model handles tasks requiring web search.
-
-### Routing Priority
-
-Heartbeat tasks route using the same 8-tier priority system as regular messages:
-
-1. Tasks assigned to a specific agent go to that agent
-2. Unassigned tasks go to the primary agent
-3. If the primary agent is busy, tasks queue (they don't skip)
-
----
-
-## Advanced Patterns
-
-### Conditional Heartbeat
-
-Make tasks trigger only when conditions are met:
-
-```markdown title="~/.openclaw/HEARTBEAT.md"
-## Deploy Gate (every 15 minutes)
-- Only run during business hours (9am-6pm weekdays)
-- Check if there are approved PRs waiting to deploy
-- If staging tests pass and it's not a deploy freeze, auto-merge to main
-- Skip on Fridays after 3pm (deploy freeze)
-```
-
-### Chained Tasks
-
-One task's output feeds the next:
-
-```markdown
-## Security Scan (daily at 2am)
-- Run npm audit on ~/projects/main-app
-- If any critical vulnerabilities found:
-  - Check if a fix is available
-  - If yes: create a branch, update the package, run tests
-  - If tests pass: open a PR with the fix
-  - If tests fail: create an issue with the audit details
-  - Alert on Slack #security regardless
-```
-
-### Dreaming Mode
-
-Combine heartbeat with Dreaming for creative/reflective tasks. In Dreaming mode, the agent runs self-directed exploration during idle heartbeats:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "heartbeat": {
-    "dreaming": {
-      "enabled": true,
-      "idle_threshold": 3,
-      "tasks": [
-        "Review recent code changes for potential improvements",
-        "Update documentation if any public APIs changed",
-        "Look for patterns across recent conversations that could become skills"
-      ]
-    }
-  }
-}
-```
-
-`idle_threshold` sets how many consecutive `HEARTBEAT_OK` cycles (no real work) before dreaming tasks activate. This keeps dreaming from consuming resources during busy periods.
-
----
-
-## Debugging
+Or set the owner from the CLI (the value is a JSON array, even with one entry):
 
 ```bash
-# See what the heartbeat is doing
-openclaw logs --filter heartbeat --follow
-
-# Run one heartbeat manually
-openclaw heartbeat --now
-
-# Dry run (shows what would happen without executing)
-openclaw heartbeat --dry-run
-
-# Check heartbeat stats
-openclaw stats heartbeat
-
-# Show last 10 heartbeat results
-openclaw logs --filter heartbeat --last 10
-
-# Filter heartbeat logs by task name
-openclaw logs --filter "heartbeat:email-triage" --follow
-
-# Check heartbeat timing
-openclaw stats heartbeat --timing
+openclaw config set commands.ownerAllowFrom '["telegram:123456789"]'
+openclaw gateway restart
 ```
 
-### Common Log Messages
+Then give the heartbeat a short checklist. Find the monitor's job id, and write the scratch:
 
-| Log Message | Meaning |
-|-------------|---------|
-| `HEARTBEAT_OK` | Cycle completed, nothing to report |
-| `heartbeat: skipped (quiet hours)` | Quiet hours active |
-| `heartbeat: skipped (busy)` | Agent is busy with a user request |
-| `heartbeat: task "X" failed` | A specific task errored — check task logs |
-| `heartbeat: isolatedSession active` | Running with reduced context |
+```bash
+openclaw cron list --all            # find "Heartbeat (main)" and its id
+openclaw cron scratch <jobId> --set "- Anything urgent in my inbox or calendar? Alert me.
+- If a task is blocked, say what is missing."
+```
 
-### Debugging Checklist
+Trigger a heartbeat now instead of waiting for the next tick:
 
-1. **Heartbeat not running?** Check `openclaw gateway status` — gateway must be running
-2. **Tasks not executing?** Run `openclaw heartbeat --dry-run` to verify HEARTBEAT.md parses correctly
-3. **No output?** Check if `HEARTBEAT_OK` is suppressing messages — set `showOk: true` temporarily
-4. **Wrong interval?** Structured tasks use per-task `interval`; simple format uses the global `heartbeat.interval`
-5. **High costs?** Enable `isolatedSession`, switch to Haiku/local model, add quiet hours
+```bash
+openclaw system event --text "Check for urgent follow-ups" --mode now
+openclaw system heartbeat last
+```
+
+There is no `openclaw heartbeat` command and no dry-run mode. `openclaw system heartbeat enable|disable|last` and `openclaw system event` are the manual controls.
+
+:::warning Without an owner there are no heartbeats
+If OpenClaw cannot resolve an owner DM, ambient heartbeat polls are skipped with `reason=no-route` before the model runs. A wildcard-only `allowFrom` does not identify an owner. Set `commands.ownerAllowFrom`, or choose an explicit `target` and `to` (see the [configuration reference](#complete-configuration-reference)).
+:::
 
 ---
 
-## Complete Configuration Reference
+## Monitor scratch {#heartbeat-file-formats}
+
+Each heartbeat job owns a private scratch in the shared state database. When it exists, its text is appended to the heartbeat prompt. Keep it to a few lines: it is read on every tick.
+
+```bash
+openclaw cron scratch <jobId>                       # print it
+openclaw cron scratch <jobId> --set "..."           # replace with exact text
+openclaw cron scratch <jobId> --file checklist.md   # replace from a file (- for stdin)
+openclaw cron scratch <jobId> --unset               # remove it
+```
+
+Writes accept `--expected-revision <n>` to fail rather than overwrite a concurrent edit. Scratch is capped at 256 KiB. The agent can also replace its own scratch during a heartbeat by passing `scratch` to `heartbeat_respond`.
+
+Behaviour to know:
+
+- If scratch exists but is effectively empty (blank lines, comments, headings, empty checklist items), the run is skipped to save a model call (`reason=empty-heartbeat-file`).
+- If there is no scratch at all, the heartbeat still runs with the default prompt, which tells the agent not to invent tasks from old chats.
+- Scratch is prompt context, not a scheduler. Headings like "hourly" or "daily at 8am" in scratch do nothing. Use [automation jobs](#recipes) for anything with its own schedule.
+
+:::danger No secrets in scratch
+Scratch becomes part of the prompt. Do not put API keys, tokens or phone numbers in it.
+:::
+
+### Migrating from HEARTBEAT.md {#migrating-from-heartbeatmd}
+
+If you used `~/.openclaw/workspace/HEARTBEAT.md` (or a per-agent workspace copy) before v2026.8.1, run:
+
+```bash
+openclaw doctor --fix
+```
+
+Doctor creates the monitor rows from `agents.*.heartbeat`, imports each workspace `HEARTBEAT.md` into that agent's monitor scratch, converts a structured `tasks:` block into separate automation jobs, archives the original under the state directory (`backups/heartbeat-migration/`), and deletes the file. After that the runtime reads scratch only.
+
+:::warning Bare `interval` numbers are read as minutes
+The legacy `tasks:` format took a duration string for `interval`. Doctor parses it with minutes as the default unit, so a bare number is **minutes**, not seconds. Older guides (including earlier versions of this site) showed `interval: 1800` meaning 30 minutes; Doctor turns that into a job that runs every **1800 minutes (30 hours)**, and `interval: 900` into every 15 hours. Before running `openclaw doctor --fix`, rewrite every interval with an explicit unit (`30m`, `1h`, `15m`), or fix the jobs afterwards with `openclaw cron edit <jobId> --every 30m`. The same default applies to `agents.defaults.heartbeat.every`: `"30"` means 30 minutes.
+:::
+
+The same migration applies if your config still has a top-level `heartbeat` key. Current OpenClaw refuses that key. Move its settings under `agents.defaults.heartbeat`, renaming as you go: `interval` (seconds) becomes `every` (a duration string such as `"30m"`), and `quiet_hours` becomes `activeHours` with the window inverted: quiet 22:00–07:00 is active `07:00`–`22:00`.
+
+---
+
+## Quiet replies and visibility {#heartbeat_ok--suppressing-noise}
+
+- The agent replies `NO_REPLY` when nothing needs attention, or calls `heartbeat_respond` with `notify: false`. For an alert it returns only the alert text, or calls `heartbeat_respond` with `notify: true` and `notificationText`.
+- `HEARTBEAT_OK` is the legacy acknowledgment. Custom prompts that still return it work: OpenClaw drops the reply when `HEARTBEAT_OK` is at the start or end and the rest is at most 300 characters. That budget is fixed; there is no `ackMaxChars` setting.
+
+Visibility is a channel setting, not a heartbeat setting:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "heartbeat": {
-    // Timing
-    "interval": 1800,                    // seconds between cycles (default: 1800 = 30min)
-    "quiet_hours": {
-      "start": "22:00",                  // stop heartbeat
-      "end": "07:00"                     // resume heartbeat
+  channels: {
+    defaults: {
+      heartbeatVisibility: {
+        showOk: false,      // hide OK acknowledgments (default)
+        showAlerts: true,   // deliver alerts (default)
+        useIndicator: true, // emit UI indicator events (default)
+      },
     },
-
-    // Model & cost
-    "model": "claude-haiku-4-5-20251001", // model override for heartbeat
-    "isolatedSession": true,              // minimal context (2-5K tokens)
-    "lightContext": true,                 // skip memory/history loading
-
-    // Output
-    "ackMaxChars": 300,                   // HEARTBEAT_OK threshold
-    "showOk": false,                      // show routine messages
-    "showAlerts": true,                   // show alert messages
-    "useIndicator": true,                 // status dot in clients
-
-    // Dreaming
-    "dreaming": {
-      "enabled": false,
-      "idle_threshold": 3                 // OK cycles before dreaming starts
-    }
-  }
+  },
 }
 ```
 
+Override per channel (`channels.<channel>.heartbeatVisibility`) or per account (`channels.<channel>.accounts.<id>.heartbeatVisibility`). If all three flags are false, the heartbeat is skipped entirely (`reason=alerts-disabled`).
+
 ---
 
-## See Also
+## Recipes: recurring checks as automations {#recipes}
 
-- [Heartbeat Architecture](/architecture/heartbeat) — How the system works internally
-- [Configuration Reference](/reference/configuration) — All heartbeat settings
-- [Channels](/guides/channels) — Configure where heartbeat alerts go
-- [Cost Management](/guides/cost-management) — Strategies for reducing heartbeat spend
-- [Model Selection](/guides/model-selection) — Choosing the right model for heartbeat
-- [Multi-Agent Guide](/guides/multi-agent) — Running agents with dedicated heartbeat tasks
-- [Automation Guide](/guides/automation) — Broader automation patterns beyond heartbeat
+Each check below is its own automation job. It has its own schedule, can use a cheaper model, and appears in `openclaw cron runs`. `openclaw automations` is an alias of `openclaw cron`, and `create` is an alias of `add`. Positional arguments are the schedule (`"every 30m"`, a cron expression, `"20m"` for one-shot) and the prompt.
+
+| Check | Command |
+|---|---|
+| Email triage | `openclaw automations add "every 30m" "Check Gmail for unread mail from my VIP list. Summarise anything urgent; otherwise reply NO_REPLY." --name email-triage --session isolated --announce --channel telegram --to "123456789"` |
+| GitHub monitor | `openclaw automations add "every 1h" "List new issues and PRs in myorg/myrepo since the last run and flag any failing CI on main." --name github-watch --session isolated --announce --channel discord --to "channel:123456789012345678"` |
+| Morning briefing | `openclaw automations add "0 8 * * *" "Brief me on today's calendar, weather and top AI news." --name morning-brief --tz "America/New_York" --session isolated --announce --channel telegram --to "123456789"` |
+| System health | `openclaw automations add "every 1h" --name system-health --command "df -h / && docker ps --format '{{.Names}} {{.Status}}'" --announce --channel telegram --to "123456789"` |
+| Weekday code health | `openclaw automations add "0 6 * * 1-5" "Run the test suite in ~/projects/main-app and report new failures." --name code-health --session isolated --model anthropic/claude-sonnet-5-5 --announce --channel slack --to "channel:C1234567890"` |
+
+Notes:
+
+- `--session isolated` runs each job in a fresh session. Use `--session main --system-event "..."` when a reminder should land in the main conversation instead.
+- `--command` runs a shell command on the Gateway host with no model call; its output is delivered as-is.
+- Keep cron expressions inside waking hours (as in `0 8 * * *`) instead of relying on heartbeat `activeHours`, which applies only to the heartbeat and to jobs Doctor migrated from `tasks:`.
+- Manage jobs with `openclaw cron list --all`, `openclaw cron disable <jobId>`, `openclaw cron enable <jobId>`, `openclaw cron run <jobId> --wait` and `openclaw cron rm <jobId>`.
+
+:::warning Approvals and sandboxing
+Recipes like these give an unattended agent email, shell or home-device access on a schedule. Keep exec approvals on for anything that writes, limit each job's tools with `--tools`, and treat fetched email and web content as untrusted input. See [Security hardening](/security/hardening).
+:::
+
+More examples and the full flag list: [Automation Guide](/guides/automation) and [Manage automations](https://docs.openclaw.ai/automation/cron-jobs/managing-jobs).
+
+---
+
+## Cost optimization {#cost-optimization}
+
+Each heartbeat is a full agent turn. At the 30-minute default that is 48 turns a day per agent, before any automation jobs.
+
+| Lever | Setting | Effect |
+|---|---|---|
+| Isolated session | `isolatedSession: true` | No conversation history in the prompt (upstream: about 100K tokens down to 2–5K per run) |
+| Light context | `lightContext: true` | Skips workspace bootstrap files; monitor scratch is still injected |
+| Cheaper model | `model: "anthropic/claude-haiku-5-5"` or `"ollama/<model>"` | Lower price per run |
+| Longer cadence | `every: "1h"` | Half the runs of `30m` |
+| Active hours | `activeHours: { start: "07:00", end: "22:00" }` | No runs overnight |
+| Small scratch | — | Smaller prompt every tick |
+| Off | `every: "0m"` | Disables the recurring cadence; event-driven wakes still work |
+
+A cost-conscious setup:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    defaults: {
+      heartbeat: {
+        every: "1h",
+        model: "anthropic/claude-haiku-5-5",
+        isolatedSession: true,
+        lightContext: true,
+        activeHours: {
+          start: "07:00",
+          end: "22:00",
+          timezone: "America/New_York", // optional; defaults to agents.defaults.userTimezone, then host time
+        },
+      },
+    },
+  },
+}
+```
+
+`activeHours` is an allow-window: `start` is inclusive, `end` is exclusive, and `24:00` is allowed as an end. Outside the window, ticks are skipped until the next tick inside it. Do not set `start` equal to `end`: that is a zero-width window and the heartbeat never runs.
+
+:::caution Heartbeat model bleed
+Without `isolatedSession`, a heartbeat that switches the main session to a small model can leave that model in place for your next message. A local model with a 32K window can then overflow on a long session. Use `isolatedSession: true`, or pick a heartbeat model with a large enough context window.
+:::
+
+For per-token prices, check your provider's pricing page; this guide does not quote them. See [Cost Management](/guides/cost-management).
+
+---
+
+## Multi-agent heartbeat {#multi-agent-heartbeat}
+
+`agents.defaults.heartbeat` applies to every agent. A `heartbeat` block under `agents.entries.<id>` merges on top of it. If **any** agent has its own `heartbeat` block, **only those agents** run heartbeats.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    ownership: "explicit",
+    defaults: {
+      systemAgent: { agentId: "main" },
+      heartbeat: { every: "30m", isolatedSession: true },
+    },
+    entries: {
+      main: { workspace: "~/.openclaw/workspace" },
+      ops: {
+        workspace: "~/.openclaw/workspace-ops",
+        heartbeat: {
+          every: "1h",
+          target: "telegram",
+          to: "123456789",
+          timeoutSeconds: 45,
+        },
+      },
+    },
+  },
+}
+```
+
+Here only `ops` runs a heartbeat; `main` does not, because it has no block of its own. Give an agent `heartbeat: { every: "0m" }` to turn its recurring cadence off explicitly. Per-agent recurring checks are automation jobs with `--agent <id>`.
+
+Scheduled heartbeats do not queue behind other work. A plain heartbeat poll is skipped and waits for its next tick while the main queue is busy, an automation targets the same agent or session, or that agent has an active run. Bindings and their precedence route inbound messages; they do not affect heartbeats.
+
+Multi-agent setup in general: [Multi-Agent Guide](/guides/multi-agent).
+
+---
+
+## Dreaming is not part of heartbeat {#dreaming-mode}
+
+Memory consolidation ("Dreaming") is a feature of the `memory-core` plugin with its own schedule (`plugins.entries.memory-core.config.dreaming`). It has been on by default since v2026.8.1 and is independent of the heartbeat. See [Dreaming](https://docs.openclaw.ai/concepts/dreaming) and the [Memory Systems guide](/guides/memory-systems).
+
+---
+
+## Debugging {#debugging}
+
+```bash
+# Follow the gateway log
+openclaw logs --follow
+
+# Last heartbeat event and its outcome
+openclaw system heartbeat last --json
+
+# The heartbeat monitor job and its run history
+openclaw cron list --all
+openclaw cron runs <jobId> --limit 10
+openclaw cron runs <jobId> --status skipped
+
+# Validate the config after editing
+openclaw config validate
+```
+
+Common skip reasons:
+
+| Reason | Meaning | Fix |
+|---|---|---|
+| `no-route` | No owner DM or external route to deliver to | Set `commands.ownerAllowFrom`, or `target` + `to` |
+| `empty-heartbeat-file` | Monitor scratch exists but is effectively empty | Add a real line, or `--unset` it |
+| `alerts-disabled` | `showOk`, `showAlerts` and `useIndicator` are all false | Turn one back on |
+| `dm-blocked` | `directPolicy: "block"` suppressed a DM delivery | Use `allow`, or deliver to a non-DM target |
+| `background-work` | The heartbeat started background work without sending an update | Check the task; this is not an all-clear |
+
+Checklist when nothing happens:
+
+1. `openclaw config validate` passes, and the config has no top-level `heartbeat` key.
+2. `openclaw cron list --all` shows an enabled `Heartbeat (<agent>)` job. If not, run `openclaw doctor --fix`.
+3. `cron.enabled` is not `false` and `OPENCLAW_SKIP_CRON` is not set.
+4. `every` is not `"0m"`, and the current time is inside `activeHours`.
+5. An owner route resolves (no `no-route` skips in `openclaw cron runs`).
+6. In a multi-agent setup, the agent you expect actually has a heartbeat block.
+
+---
+
+## Complete configuration reference {#complete-configuration-reference}
+
+The heartbeat schema is strict: only these fields are accepted.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    defaults: {
+      heartbeat: {
+        every: "30m",                // duration; default unit minutes; "0m" disables the cadence
+        activeHours: { start: "07:00", end: "22:00", timezone: "Europe/Berlin" },
+        model: "anthropic/claude-haiku-5-5", // provider/model override for heartbeat runs
+        session: "main",             // session key for the run context
+        target: "owner",             // owner (default) | last | none | <channel id>
+        to: "123456789",             // recipient when target is a channel id
+        accountId: "ops-bot",        // account on a multi-account channel
+        directPolicy: "allow",       // allow (default) | block
+        prompt: "Follow the heartbeat monitor scratch context when provided. If nothing needs attention, reply NO_REPLY.",
+        timeoutSeconds: 120,
+        lightContext: true,
+        isolatedSession: true,
+      },
+    },
+  },
+}
+```
+
+`prompt` replaces the default prompt entirely; it is not merged. The default also reminds the agent that recurring work belongs in automations, so keep that sentence if you write your own. Per-agent overrides use the same fields under `agents.entries.<id>.heartbeat`. Visibility flags live under `channels.*.heartbeatVisibility` (see [above](#heartbeat_ok--suppressing-noise)).
+
+---
+
+## See also
+
+- [Heartbeat Architecture](/architecture/heartbeat): how the monitor fits into the Gateway
+- [Automation Guide](/guides/automation): automation jobs, webhooks and triggers
+- [Multi-Agent Guide](/guides/multi-agent): per-agent heartbeats and jobs
+- [Cost Management](/guides/cost-management): reducing heartbeat spend
+- [Model Selection](/guides/model-selection): choosing a heartbeat model
+- Official docs: [Heartbeat](https://docs.openclaw.ai/gateway/heartbeat), [Automation](https://docs.openclaw.ai/automation), [`openclaw system`](https://docs.openclaw.ai/cli/system), [Timezone](https://docs.openclaw.ai/concepts/timezone)
