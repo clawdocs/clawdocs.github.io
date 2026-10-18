@@ -33,7 +33,7 @@ Hosted providers run their own safety classifiers; a local model does not. Small
 | **Ollama** | `http://127.0.0.1:11434` (no `/v1`) | CLI-first, model library, auto-discovery | `ollama` |
 | **vLLM** | `http://127.0.0.1:8000/v1` | Production, GPU clusters, tensor parallelism | `openai-completions` |
 | **SGLang** | `http://127.0.0.1:30000/v1` | High-throughput serving, RadixAttention | `openai-completions` |
-| **MLX** (`mlx_lm.server`), oMLX | Varies | Apple Silicon | `openai-completions` |
+| **MLX** (`mlx_lm.server`, oMLX) | Varies | Apple Silicon | `openai-completions` |
 | **LiteLLM** / other proxies | Varies | Fronting another API as OpenAI | `openai-completions` |
 | **Custom** | Any URL | Any OpenAI-compatible server | `openai-completions` (default) |
 
@@ -188,7 +188,7 @@ The simplest route is implicit discovery: `export OLLAMA_API_KEY="ollama-local"`
 }
 ```
 
-On a self-hosted endpoint, models you did not list are still discovered; the listed ones keep your settings. Then apply the change:
+In 2026.10.4 a non-empty `models` list selects those models and skips discovery; use `models: []` on an explicit self-hosted endpoint to keep discovery on. (After 2026.10.4, listed models keep their settings and other installed models are still discovered beside them.) Then apply the change:
 
 ```bash
 openclaw config validate
@@ -433,7 +433,7 @@ As with vLLM, an explicit provider uses only the models you list; add `"sglang/*
 
 ## Custom OpenAI-Compatible Providers
 
-Any server that implements the OpenAI Chat Completions API works. The wizard can do this for you: `openclaw onboard`, choose **Custom provider**, and enter the base URL; it lists models from `/v1/models`. By hand:
+Any server that implements the OpenAI Chat Completions API works. The wizard can do this for you: `openclaw onboard`, choose **Custom Provider** (under **More…** when shown), and enter the endpoint compatibility, base URL, optional API key and model ID; setup verifies a real model reply before saving. By hand:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
@@ -604,7 +604,7 @@ Apple Silicon Macs run models from unified memory:
 | M-series Ultra / Max (64-192 GB) | 64-192 GB | Llama 3.3 70B (Q4 or Q8) |
 
 :::tip
-On Apple Silicon, **MLX** (`mlx_lm.server`, or [oMLX](https://docs.openclaw.ai/providers/omlx)) is usually the fastest runtime. Ollama and LM Studio use Metal acceleration automatically.
+On Apple Silicon, **MLX** (`mlx_lm.server`, or oMLX as a custom OpenAI-compatible provider) is usually the fastest runtime. A dedicated [oMLX provider](https://docs.openclaw.ai/providers/omlx) arrives after 2026.10.4. Ollama and LM Studio use Metal acceleration automatically.
 :::
 
 ---
@@ -624,7 +624,7 @@ OpenClaw needs models that handle function calling. Not all local models do this
 | **Mistral Small 3.2 24B** | Moderate | Good | Good | Good balance |
 | **Gemma 4 12B** | Moderate | Good | Moderate | Lightweight option |
 
-These ratings are community experience, not benchmarks. Upstream's [recommended models](https://docs.openclaw.ai/concepts/recommended-models) page and the llama.cpp recipe catalog are the maintained references.
+These ratings are community experience, not benchmarks. The [llama.cpp recipe catalog](https://docs.openclaw.ai/plugins/llama-cpp) is the maintained reference in 2026.10.4; upstream adds a [recommended models](https://docs.openclaw.ai/concepts/recommended-models) page after that release.
 
 :::caution
 Models smaller than about 14B parameters often struggle with multi-step tool calling. For reliable agent behaviour, use 30B+ models or keep a hosted model as a fallback.
