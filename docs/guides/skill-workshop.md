@@ -1,385 +1,247 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Skill Workshop
-description: Create and review skills through a governed proposal queue — with security scanning, versioning, and rollback
-keywords: [openclaw, openclaw skill workshop, proposal queue, skill governance, security scanning, versioning]
+description: How OpenClaw agents write and maintain their own skills — learning modes, proposals, review, storage and limits in v2026.10.4
+keywords: [openclaw, openclaw skill workshop, learned skills, self-learning, skill proposals, /learn]
 ---
 
 # Skill Workshop
 
-Skill Workshop is OpenClaw's governed path for creating and updating workspace skills. Instead of agents writing directly to `SKILL.md` files, they propose skills through a review queue that requires human approval before activation.
+Skill Workshop is where an agent keeps the skills it writes for itself. After hard multi-step work, or when you ask it with `/learn`, the agent can save the procedure as a skill so it does not have to work it out again next time. Depending on the learning mode, those changes either land directly or wait as **proposals** for you to apply.
 
-Introduced in **v2026.6.1**, Skill Workshop adds audit trails, security scanning, hash binding, and rollback to the skill creation process.
+Skills you write by hand (workspace, project, managed, ClawHub, plugin, bundled) are not Workshop skills. Edit those at their source; see [Skill Development](/guides/skill-development).
 
-:::info
-Skill Workshop manages **workspace skills only**. It does not modify bundled skills, plugin skills, ClawHub-installed skills, or system skills.
+The official reference is [Skill Workshop](https://docs.openclaw.ai/tools/skill-workshop) and [Self-learning](https://docs.openclaw.ai/tools/self-learning).
+
+:::info Version note
+This page describes **v2026.10.4**, the current stable release. The upstream `main` branch has already removed the proposal queue: learned skills apply immediately, every change keeps the previous version, and the CLI becomes `openclaw skills workshop list | changes | show | archive | restore`. docs.openclaw.ai may already describe that newer model. When you upgrade to the release that ships it, `openclaw doctor --fix` exports pending proposals and removes the old `approvalPolicy` and `maxPending` settings.
 :::
 
 ---
 
-## Why Skill Workshop?
+## Where Workshop Skills Live
 
-| | Before v2026.6.1 | With Skill Workshop |
-|---|---|---|
-| **Creation** | Agents write directly to `SKILL.md` | Agents propose via `skill_workshop` tool |
-| **Review** | None — skills go live immediately | Mandatory review queue |
-| **Audit trail** | Filesystem history only | Explicit versioning + metadata |
-| **Safety** | Bad skills become permanent | Review gate blocks bad patterns |
-| **Support files** | Manual management | Scanned, hashed, versioned with proposal |
-| **Rollback** | Manual intervention | Metadata-backed recovery |
-| **Governance** | None | Tracked approvals, rejections, quarantines |
+Since 2026.9.3, Workshop skills belong to an **agent**, not to a workspace. Each agent has one writable collection:
+
+```
+~/.openclaw/agents/<agentId>/agent/workshop-skills/<skill-name>/SKILL.md
+```
+
+If you set `agents.entries.<id>.agentDir`, it is `<agentDir>/workshop-skills` instead, and `OPENCLAW_STATE_DIR` moves the whole state directory. A skill one agent learns is not visible to another agent. To share it, copy it into `~/.openclaw/skills` (the managed tier).
+
+Workshop skills load at priority 5, below workspace, project, personal-agent and managed skills and above bundled ones. A same-named skill in a higher root wins. See [Where Skills Live](/guides/skill-development#where-skills-live).
+
+:::tip Review what the agent learns
+In the default `auto` mode, the agent edits its Workshop skills without asking. Run `openclaw skills workshop list` or open **Plugins → Workshop** now and then to see what it has saved, especially for agents that handle shell, email or money.
+:::
 
 ---
 
-## Quick Start
+## Learning Modes
 
-```bash
-# 1. Create a proposal
-openclaw skills workshop propose-create \
-  --name "daily-standup" \
-  --description "Run a daily standup: what I did, what I'll do, blockers" \
-  --proposal ./PROPOSAL.md
+`skills.workshop.autonomous.mode` decides what the agent does on its own:
 
-# 2. Review it
-openclaw skills workshop inspect daily-standup-001
+| Mode | What happens |
+|---|---|
+| `"auto"` (default) | After a substantial finished turn, a background review can create or edit Workshop skills **directly**, using normal file tools rooted in the Workshop directory. A weekly review maintains the collection. Direct edits do not create proposals or rollback snapshots. |
+| `"propose"` | The background review can stage **one pending proposal** per review. Nothing goes live until it is applied. |
+| `"off"` | No background learning. You can still create skills on request or with `/learn`. |
 
-# 3. Apply it (activates the skill)
-openclaw skills workshop apply daily-standup-001
-```
-
-That's the core loop: **propose → review → apply**.
-
----
-
-## Proposal Lifecycle
-
-Every proposal moves through a defined set of states:
-
-```
-             ┌─→ applied (live skill)
-             │
-pending ─────┼─→ rejected
-             │
-             ├─→ quarantined (held for deeper review)
-             │
-             └─→ stale (live skill changed after proposal was created)
-```
-
-| State | Description | Terminal? |
-|-------|-------------|-----------|
-| **Pending** | Created or revised, ready for review | No — can revise, apply, reject, or quarantine |
-| **Applied** | Approved and written to live skill files | Yes |
-| **Rejected** | Declined by operator, with optional reason | Yes |
-| **Quarantined** | Flagged for deeper review (security concerns, etc.) | Yes |
-| **Stale** | Live skill was modified after the proposal was created — hash no longer matches | Yes |
-
-Only **pending** proposals can be revised. Terminal states require creating a new proposal.
-
----
-
-## CLI Commands
-
-### Create a Proposal
-
-```bash
-openclaw skills workshop propose-create \
-  --name "audit-log-parser" \
-  --description "Parse and analyze audit logs for security events" \
-  --proposal ./PROPOSAL.md
-```
-
-Creates a new skill proposal. Fails immediately if a skill with that name already exists (no-clobber protection).
-
-### Update an Existing Skill
-
-```bash
-openclaw skills workshop propose-update <skill-name> \
-  --proposal ./PROPOSAL.md
-```
-
-Creates a proposal to update a live skill. The proposal binds to the skill's current hash — if the skill changes before you apply, the proposal goes stale.
-
-### Add Support Files
-
-Proposals can include templates, scripts, examples, and references:
-
-```bash
-openclaw skills workshop propose-create \
-  --name "config-validator" \
-  --proposal ./my-proposal/PROPOSAL.md \
-  --proposal-dir ./my-proposal
-```
-
-Expected directory structure:
-
-```
-my-proposal/
-├── PROPOSAL.md          # Required: the skill content
-├── assets/              # Media files, icons
-├── examples/            # Usage examples, sample outputs
-├── references/          # Documentation, links
-├── scripts/             # Helper scripts
-└── templates/           # Reusable templates
-```
-
-**Constraints:** max 64 files, 256 KB each, 2 MB total. No executables, no absolute paths, no path traversal, no null bytes.
-
-### Revise a Pending Proposal
-
-```bash
-openclaw skills workshop revise <proposal-id> \
-  --proposal ./PROPOSAL-v2.md
-```
-
-Revises in place — auto-increments the version number and preserves history.
-
-### List Proposals
-
-```bash
-openclaw skills workshop list
-openclaw skills workshop list_quarantine
-```
-
-### Inspect a Proposal
-
-```bash
-openclaw skills workshop inspect <proposal-id>
-```
-
-Shows the full proposal content, revision history, scanner verdicts, and metadata.
-
-### Review Actions
-
-```bash
-# Approve and activate
-openclaw skills workshop apply <proposal-id>
-
-# Decline
-openclaw skills workshop reject <proposal-id> \
-  --reason "Duplicate functionality — use the existing deploy skill"
-
-# Flag for deeper review
-openclaw skills workshop quarantine <proposal-id> \
-  --reason "Suspicious external API calls; needs manual security review"
-```
-
----
-
-## Scanner Gating
-
-When you apply a proposal, OpenClaw reruns security scanning before writing the live skill. Three independent scanners check the skill:
-
-| Scanner | What It Does |
-|---------|-------------|
-| **OpenClaw static analysis** | Built-in pattern matching for known bad patterns |
-| **VirusTotal** | Threat detection against the VirusTotal database |
-| **NVIDIA SkillSpector** | AI-assisted semantic analysis for hidden instructions and risky code paths |
-
-### ClawScan Verdicts
-
-The combined scan produces one of three verdicts:
-
-| Verdict | Meaning | Action |
-|---------|---------|--------|
-| **Clean** | Passed all checks | Safe to apply |
-| **Suspicious** | Unclear disclosure, overbroad authority, risky defaults, or high blast radius | Review carefully before applying |
-| **Malicious** | Confirmed threat | Automatically quarantined |
-
-If the scanner finds critical issues during `apply`, the proposal is automatically moved to **quarantined** instead of being activated.
-
----
-
-## Hash Binding
-
-Update proposals bind to the target skill's current content hash. This prevents conflicts:
-
-- If the live skill changes while a proposal is pending, the proposal becomes **stale**
-- Stale proposals cannot be revised or applied
-- The agent must create a fresh proposal against the new skill state
-
-This guarantees you never accidentally overwrite changes made between proposal creation and review.
-
----
-
-## Rollback
-
-When a proposal is applied, rollback metadata is written **before** the live skill files are modified. If something goes wrong after apply:
-
-1. The rollback record contains the previous skill content and hash
-2. Recovery can restore the pre-apply state
-3. All version history is preserved for audit
-
----
-
-## The `skill_workshop` Agent Tool
-
-Agents interact with Skill Workshop through a dedicated tool — they cannot modify proposals via direct filesystem operations.
-
-```json5
-{
-  "tool": "skill_workshop",
-  "action": "create",       // create, update, revise, list, inspect
-  "name": "skill-name",
-  "description": "Concise description (max 160 bytes)",
-  "content": "Full skill content",
-  "supportFiles": { }       // Optional
-}
-```
-
-By default, agent-initiated `apply`, `reject`, and `quarantine` actions show an approval prompt. Configure this with `approvalPolicy`.
-
----
-
-## Control UI
-
-The dashboard provides two views for reviewing proposals:
-
-### Board View
-
-The full workshop interface:
-- Searchable proposal list filtered by state (pending, applied, rejected, stale, quarantined)
-- Inspectable support file previews
-- Revision diffs showing what changed across versions
-- Scanner verdict display
-
-### Today View
-
-A fast-pass for one-at-a-time decisions:
-- Shows the next pending proposal
-- Presents a focused question: "Should this become part of your skill set?"
-- Accept, reject, or quarantine with one click
-- Moves to the next proposal automatically
-
-Both views support session routing — start a review, hand it off, pick it up later.
-
----
-
-## Configuration
+The default is `auto`, so learning is **on** on a fresh install. If you want every change reviewed before it goes live, switch to `propose`:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "skills": {
-    "workshop": {
-      "approvalPolicy": "pending",    // "pending" (prompt) or "auto" (skip prompt)
-      "maxPending": 50,               // Max pending + quarantined proposals
-      "maxSkillBytes": 40000,         // Proposal body size limit (bytes)
-      "autonomous": {
-        "enabled": false              // Auto-create proposals from conversations
-      }
-    }
-  }
+  skills: {
+    workshop: {
+      autonomous: { mode: "propose" },
+      approvalPolicy: "pending",
+      maxPending: 50,
+      maxSkillBytes: 40000,
+    },
+  },
 }
 ```
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `approvalPolicy` | `"pending"` | `"pending"` requires operator approval for agent-initiated apply/reject/quarantine. `"auto"` skips the prompt. |
-| `maxPending` | `50` | Maximum number of pending + quarantined proposals per workspace. Prevents queue overflow. |
-| `maxSkillBytes` | `40000` | Maximum size of the proposal body in bytes. |
-| `autonomous.enabled` | `false` | When `true`, agents can auto-create proposals from successful conversation turns. Experimental — leave off for most setups. |
+| Setting | Default | Effect |
+|---|---|---|
+| `autonomous.mode` | `"auto"` | `off`, `propose` or `auto`, as above |
+| `approvalPolicy` | `"auto"` | `"auto"` lets the agent apply, reject or quarantine a proposal without asking. `"pending"` requires your approval for those actions. |
+| `maxPending` | `50` | Pending plus quarantined proposals per agent |
+| `maxSkillBytes` | `40000` | Maximum proposal body size in bytes (1,024 to 200,000) |
 
-:::warning
-Set `approvalPolicy: "pending"` in production. The `"auto"` setting should only be used in CI environments, isolated sandboxes, or fully trusted deployments.
+```bash
+openclaw config set skills.workshop.autonomous.mode propose
+openclaw config set skills.workshop.approvalPolicy pending
+openclaw config set skills.workshop.autonomous.mode off
+```
+
+:::note
+`approvalPolicy: "pending"` only matters for proposals. In `auto` mode the background review edits skills directly and never asks. For a reviewed setup you need both `mode: "propose"` and `approvalPolicy: "pending"`.
 :::
+
+The background review uses the same model and provider as the conversation, so it costs tokens. Incognito turns are never reviewed. The review keeps the source session's shell approvals; the Workshop file root is not a shell sandbox.
+
+---
+
+## Creating Skills From Chat
+
+Ask the agent for the skill you want. It calls the `skill_workshop` tool and returns a proposal id:
+
+```text
+Make a skill called morning-catchup that runs my Monday inbox routine.
+Update trip-planning to also check seat maps before booking.
+Show me the morning-catchup proposal.
+Revise it to also flag anything marked urgent.
+Apply the morning-catchup proposal.
+```
+
+`/learn` captures the current conversation, or sources you name, into a matching proposal or live skill:
+
+```text
+/learn
+/learn docs/runbook.md; focus on recovery
+```
+
+`/learn` never applies its result. It stays `pending` until you or the agent apply it.
+
+In the Control UI, **Plugins → Workshop** shows the agent's installed Workshop skills and a **Suggestions** list of pending proposals you can evaluate, revise, apply or reject. **Learn from past conversations** opens a normal session that reviews older work.
+
+---
+
+## Proposals
+
+A proposal is a draft stored as `PROPOSAL.md`, plus any support files. Rules worth knowing:
+
+- **Apply is the only live write.** Create, update and revise never touch the active skill.
+- **No clobber.** Creating a skill that already exists in that agent's Workshop fails. Skills from other sources are never changed.
+- **Hash bound.** An update proposal records the live skill's hash and goes `stale` if the skill changes before apply.
+- **Scanned on apply.** Apply reruns the local security scanner. Critical findings, including literal credentials, block it; warnings are shown but do not.
+- **Recoverable.** Apply writes rollback metadata before touching live files.
+
+```text
+create/update -> pending
+revise        -> pending
+evaluate      -> pending
+apply         -> applied
+reject        -> rejected
+quarantine    -> quarantined
+target change -> stale
+```
+
+Only a `pending` proposal can be revised, applied, rejected or quarantined.
+
+### Proposal content
+
+```markdown title="PROPOSAL.md"
+---
+name: "morning-catchup"
+description: "Daily inbox catch-up: triage, archive, surface, draft, plan"
+status: proposal
+version: "v1"
+date: "2026-10-18T00:00:00.000Z"
+---
+
+# Morning catch-up
+
+1. ...
+```
+
+On apply, Workshop writes `SKILL.md` and drops the proposal-only fields (`status`, `version`, `date`).
+
+### Limits
+
+| Limit | Value |
+|---|---|
+| Name | Lowercase letters, digits and hyphens |
+| Description | 160 bytes |
+| Proposal body | `maxSkillBytes` (default 40,000 bytes) |
+| Autonomous proposal `SKILL.md` | 10,000 characters |
+| Support files | 64 per proposal, 256 KiB each, 2 MiB in total |
+| Support file folders | `assets/`, `examples/`, `references/`, `scripts/`, `templates/` |
+
+Support files with absolute paths, hidden segments, `..` traversal, executable bits, non-UTF-8 text or null bytes are refused.
+
+---
+
+## CLI
+
+```bash
+# Create a proposal for a new skill (or an update to a Workshop skill)
+openclaw skills workshop propose-create \
+  --name morning-catchup \
+  --description "Daily inbox catch-up: triage, archive, surface, draft, plan" \
+  --proposal ./PROPOSAL.md
+openclaw skills workshop propose-create \
+  --name weekly-update \
+  --description "Friday wrap-up: stats, highlights, next week's top three" \
+  --proposal-dir ./weekly-update-proposal
+openclaw skills workshop propose-update trip-planning --proposal ./PROPOSAL.md
+
+# Review
+openclaw skills workshop list
+openclaw skills workshop inspect <proposal-id>
+openclaw skills workshop revise <proposal-id> --proposal ./PROPOSAL.md
+openclaw skills workshop evaluate <proposal-id>
+
+# Close out
+openclaw skills workshop apply <proposal-id>
+openclaw skills workshop reject <proposal-id> --reason "Duplicate"
+openclaw skills workshop quarantine <proposal-id> --reason "Needs security review"
+```
+
+Every subcommand takes `--agent <id>` and `--json`. `evaluate` runs installed plugin evaluators (the `skill_proposal_evaluate` hook) against the exact current draft.
+
+`openclaw skills curator status` reports usage of live Workshop skills and the outcome of collection reviews.
+
+---
+
+## The `skill_workshop` Tool
+
+`skill_workshop` is a built-in agent tool in `tools.profile: "coding"`. With a stricter policy, add it to `tools.allow` or `tools.alsoAllow`. To stop an agent from writing Workshop skills at all, deny it:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  tools: { deny: ["skill_workshop"] },
+}
+```
+
+Sandboxed runs do not get the tool. Use a normal host-side session or the CLI to review proposals. `openclaw doctor` runs a `core/doctor/skill-workshop-tool-policy` check that names the setting hiding the tool.
 
 ---
 
 ## Storage
 
-Proposals live in `~/.openclaw/skill-workshop/`:
+```
+~/.openclaw/
+  state/openclaw.sqlite                       # proposal records, usage, rollback metadata
+  agents/<agentId>/agent/workshop-skills/     # live Workshop skills
+  skill-workshop/proposals/<proposal-id>/
+    generations/<generation-id>/PROPOSAL.md   # each revision, with its support files
+```
 
-```
-skill-workshop/
-├── proposals.json                 # Fast listing index
-└── proposals/
-    └── <proposal-id>/
-        ├── proposal.json          # Canonical proposal record
-        ├── PROPOSAL.md            # Pending skill content
-        ├── rollback.json          # Recovery metadata (written on apply)
-        ├── assets/
-        ├── examples/
-        ├── references/
-        ├── scripts/
-        └── templates/
-```
+Do not edit these directories by hand while the Gateway runs. Upgrades from releases before 2026.9.3 move workspace-owned Workshop skills into the agent collection on startup or with `openclaw doctor --fix`. Skills that were symlinked into a workspace stay where they are, and their proposals go stale.
 
 ---
 
-## Practical Examples
+## Troubleshooting
 
-### Agent-Driven Skill Creation
-
-Ask your bot to create a skill through chat:
-
-```
-Create a skill called "pr-review" that reviews GitHub pull requests.
-It should check for: code style, security issues, test coverage,
-and documentation. Output a structured review with severity levels.
-```
-
-The agent calls `skill_workshop` with `action: create` → you see it in the proposal queue → review and apply from the dashboard or CLI.
-
-### Iterative Refinement
-
-```bash
-# Agent creates initial proposal
-# You inspect it
-openclaw skills workshop inspect pr-review-001
-
-# Not quite right — ask the agent to revise
-# "Revise the pr-review skill to also check for breaking API changes"
-
-# Agent calls skill_workshop with action: revise
-# Version auto-increments, full history preserved
-
-# Happy with v3 — apply it
-openclaw skills workshop apply pr-review-001
-```
-
-### Bulk Review with Today View
-
-If your agents have been busy creating proposals:
-
-1. Open the dashboard → **Skill Workshop** → **Today View**
-2. Review each proposal one by one
-3. Apply the good ones, reject duplicates, quarantine anything suspicious
-4. Each decision takes seconds
-
-### Security Audit of Existing Skills
-
-```bash
-# Verify a skill against ClawHub's security database
-openclaw skills verify deploy-helper --card
-
-# Review all quarantined proposals
-openclaw skills workshop list_quarantine
-```
-
----
-
-## Best Practices
-
-**For production setups:**
-- Keep `approvalPolicy: "pending"` — always review before activating
-- Leave `autonomous.enabled: false` unless you specifically need auto-proposals
-- Review scanner verdicts before applying — don't ignore "Suspicious" findings
-- Check support files for sensitive data or executables
-- Keep skill descriptions clear and under 160 bytes
-- Don't delete quarantined proposals without logging why
-
-**For skill authors:**
-- Write clear, single-purpose skills — one skill, one job
-- Include examples in the `examples/` directory
-- Test your skill as a proposal before applying to production
-- Use the revision workflow instead of creating new proposals for the same skill
+| Problem | Fix |
+|---|---|
+| `Skill proposal description is too large` | Shorten `description` to 160 bytes or less |
+| `Skill proposal content is too large` | Shorten the body, or raise `skills.workshop.maxSkillBytes` |
+| `Target skill changed after proposal creation` | Revise the proposal against the current skill, or create a new one |
+| `Proposal scan failed` | Inspect the scanner findings, then revise or quarantine |
+| Proposal missing from `list` | Check `--agent` and `OPENCLAW_STATE_DIR` |
+| Agent cannot call `skill_workshop` | Sandboxed run, or tool policy hides it; see above |
+| Agent changes skills without asking | Mode is `auto`; switch to `propose` and set `approvalPolicy: "pending"` |
 
 ---
 
 ## See Also
 
-- [Skill Development](/guides/skill-development) — Writing skills from scratch
-- [ClawHub](/guides/clawhub) — Browsing and installing community skills
-- [Skill Verification](/security/skill-verification) — Security review before installation
-- [Security Overview](/security/overview) — The broader threat model
-- [Workboard](/guides/workboard) — Orchestrating agent work with the Kanban board
+- [Skill Development](/guides/skill-development): writing skills by hand
+- [ClawHub](/guides/clawhub): installing and publishing community skills
+- [Security hardening](/security/hardening): tool policy, sandboxing, approvals
+- Upstream: [Skill Workshop](https://docs.openclaw.ai/tools/skill-workshop), [Self-learning](https://docs.openclaw.ai/tools/self-learning), [`openclaw skills workshop`](https://docs.openclaw.ai/cli/skills)

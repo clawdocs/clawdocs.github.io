@@ -295,7 +295,7 @@ Skill location and skill visibility are separate. Use allowlists to choose which
 - `ownership: "explicit"` is required once you list more than one agent.
 - No `agents.defaults.skills`: every eligible skill is visible.
 - An agent without `skills` inherits the default list. A non-empty list replaces it entirely. `[]` means no skills.
-- Learned Workshop skills bypass these allowlists. Archive or reject them in the Workshop to hide them.
+- Review [Workshop](/guides/skill-workshop) skills separately; they live in the agent's own collection.
 
 ---
 
