@@ -208,7 +208,7 @@ Port precedence: `--port` > `OPENCLAW_GATEWAY_PORT` > `gateway.port` > `18789`. 
 
 ### Transport security
 
-- Plaintext `ws://` is accepted only for loopback, private IPs, `.local` hostnames, and Tailnet `*.ts.net` hosts.
+- Plaintext `ws://` is accepted only for loopback, private (RFC 1918), link-local and CGNAT addresses, `.local` hostnames, and Tailnet `*.ts.net` hosts.
 - Everything else requires `wss://` (TLS).
 - Browser SSRF to private networks is blocked by default.
 
