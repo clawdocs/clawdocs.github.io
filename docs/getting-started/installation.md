@@ -57,7 +57,7 @@ pnpm add -g --allow-build=openclaw openclaw@latest
 openclaw onboard --install-daemon
 ```
 
-Bun (1.4.3+) works too: see [Bun](https://docs.openclaw.ai/install/bun).
+Bun 1.4+ works too (Node stays the primary runtime): see [Bun](https://docs.openclaw.ai/install/bun).
 
 :::tip Permission errors on `npm install -g`
 Do not use `sudo npm`. Point npm's global prefix at a directory you own (for example `npm config set prefix ~/.npm-global` and add `~/.npm-global/bin` to `PATH`), or use the installer script. See [Node setup](https://docs.openclaw.ai/install/node).
@@ -105,7 +105,7 @@ pnpm add --global "openclaw@link:$PWD"
 openclaw onboard --install-daemon
 ```
 
-`pnpm ui:build` builds the Control UI; skip it and the dashboard will not load. On a server that only runs OpenClaw, `pnpm build:runtime` is a lighter build. Development workflow: [Setup](https://docs.openclaw.ai/start/setup).
+`pnpm ui:build` builds the Control UI; skip it and the dashboard will not load. Development workflow: [Setup](https://docs.openclaw.ai/start/setup).
 
 ## Raspberry Pi
 
