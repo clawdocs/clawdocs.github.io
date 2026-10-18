@@ -1,57 +1,280 @@
 {
   "_comment": "Install targets that docs may tell readers to run. Keys are package names; a trailing * matches a prefix. 'denied' wins over the allowlists. Verified 2026-10-18 with `npm view <pkg> maintainers repository.url` / PyPI JSON. Add an entry only after checking the publisher matches the project the page links to.",
   "npm": {
-    "openclaw": { "maintainers": ["steipete", "vincentkoc"], "repository": "github.com/openclaw/openclaw" },
-    "@openclaw/*": { "maintainers": ["steipete", "vincentkoc"], "repository": "github.com/openclaw/openclaw", "note": "official plugin scope; see denied for names that do not exist" },
-    "clawhub": { "maintainers": ["steipete"], "repository": "github.com/openclaw/clawhub" },
-    "@clawdbot/lobster": { "maintainers": ["steipete", "josh-clawdbot"], "repository": "github.com/openclaw/lobster" },
-    "@henrikrexed/openclaw-otel-observability": { "maintainers": ["herded"], "repository": "github.com/henrikrexed/openclaw-observability-plugin" },
-    "@xquik/tweetclaw": { "maintainers": ["burakbayir"], "repository": "github.com/Xquik-dev/tweetclaw" },
-    "webclaw": { "maintainers": ["ibelick"], "repository": "github.com/ibelick/webclaw" },
-    "@modelcontextprotocol/inspector": { "maintainers": ["jspahrsummers", "pcarleton", "fweinberger", "thedsp", "ochafik-ant", "cliffhall"], "repository": "github.com/modelcontextprotocol/inspector" },
-    "@modelcontextprotocol/sdk": { "maintainers": ["jspahrsummers", "pcarleton", "fweinberger", "thedsp", "ochafik-ant"], "repository": "github.com/modelcontextprotocol/typescript-sdk" },
-    "@modelcontextprotocol/server-filesystem": { "maintainers": ["jspahrsummers", "pcarleton", "fweinberger", "thedsp", "ochafik-ant", "cliffhall"], "repository": "github.com/modelcontextprotocol/servers" },
-    "@modelcontextprotocol/server-github": { "maintainers": ["jspahrsummers", "thedsp", "ashwin-ant"], "note": "official but archived reference server" },
-    "@modelcontextprotocol/server-brave-search": { "maintainers": ["jspahrsummers", "thedsp", "ashwin-ant"], "note": "official but archived reference server" },
-    "@modelcontextprotocol/server-gdrive": { "maintainers": ["jspahrsummers", "thedsp", "ashwin-ant"], "note": "official but archived reference server" },
-    "@modelcontextprotocol/server-postgres": { "maintainers": ["jspahrsummers", "thedsp", "ashwin-ant"], "note": "official but archived reference server" },
-    "@modelcontextprotocol/server-puppeteer": { "maintainers": ["jspahrsummers", "thedsp", "ashwin-ant"], "note": "official but archived reference server" },
-    "remotion": { "maintainers": ["jonny"], "repository": "github.com/remotion-dev/remotion" },
-    "@remotion/*": { "maintainers": ["jonny"], "repository": "github.com/remotion-dev/remotion" },
-    "create-video": { "maintainers": ["jonny"], "repository": "github.com/remotion-dev/remotion" },
-    "remotion-media-mcp": { "maintainers": ["stephengpope"], "repository": "github.com/stephengpope/remotion-media-mcp" },
-    "skills": { "maintainers": ["rauchg", "quuu"], "repository": "github.com/vercel-labs/skills" },
-    "wscat": { "maintainers": ["einaros", "lpinca", "3rdeden"], "repository": "github.com/websockets/wscat" },
-    "http-echo-server": { "maintainers": ["watson"], "repository": "github.com/watson/http-echo-server" },
-    "express": { "maintainers": ["wesleytodd", "jonchurch", "ctcpip", "ulisesgascon", "sheplu"], "repository": "github.com/expressjs/express" },
-    "typescript": { "maintainers": ["microsoft1es", "typescript-bot"], "repository": "github.com/microsoft/TypeScript" },
-    "tsx": { "maintainers": ["hirokiosame"], "repository": "github.com/privatenumber/tsx" },
-    "@types/*": { "maintainers": ["types"], "repository": "github.com/DefinitelyTyped/DefinitelyTyped" }
+    "openclaw": {
+      "maintainers": [
+        "steipete",
+        "vincentkoc"
+      ],
+      "repository": "github.com/openclaw/openclaw"
+    },
+    "@openclaw/*": {
+      "maintainers": [
+        "steipete",
+        "vincentkoc"
+      ],
+      "repository": "github.com/openclaw/openclaw",
+      "note": "official plugin scope; see denied for names that do not exist"
+    },
+    "clawhub": {
+      "maintainers": [
+        "steipete"
+      ],
+      "repository": "github.com/openclaw/clawhub"
+    },
+    "@clawdbot/lobster": {
+      "maintainers": [
+        "steipete",
+        "josh-clawdbot"
+      ],
+      "repository": "github.com/openclaw/lobster"
+    },
+    "@henrikrexed/openclaw-otel-observability": {
+      "maintainers": [
+        "herded"
+      ],
+      "repository": "github.com/henrikrexed/openclaw-observability-plugin"
+    },
+    "@xquik/tweetclaw": {
+      "maintainers": [
+        "burakbayir"
+      ],
+      "repository": "github.com/Xquik-dev/tweetclaw"
+    },
+    "webclaw": {
+      "maintainers": [
+        "ibelick"
+      ],
+      "repository": "github.com/ibelick/webclaw"
+    },
+    "@modelcontextprotocol/inspector": {
+      "maintainers": [
+        "jspahrsummers",
+        "pcarleton",
+        "fweinberger",
+        "thedsp",
+        "ochafik-ant",
+        "cliffhall"
+      ],
+      "repository": "github.com/modelcontextprotocol/inspector"
+    },
+    "@modelcontextprotocol/sdk": {
+      "maintainers": [
+        "jspahrsummers",
+        "pcarleton",
+        "fweinberger",
+        "thedsp",
+        "ochafik-ant"
+      ],
+      "repository": "github.com/modelcontextprotocol/typescript-sdk"
+    },
+    "@modelcontextprotocol/server-filesystem": {
+      "maintainers": [
+        "jspahrsummers",
+        "pcarleton",
+        "fweinberger",
+        "thedsp",
+        "ochafik-ant",
+        "cliffhall"
+      ],
+      "repository": "github.com/modelcontextprotocol/servers"
+    },
+    "@modelcontextprotocol/server-github": {
+      "maintainers": [
+        "jspahrsummers",
+        "thedsp",
+        "ashwin-ant"
+      ],
+      "note": "official but archived reference server"
+    },
+    "@modelcontextprotocol/server-brave-search": {
+      "maintainers": [
+        "jspahrsummers",
+        "thedsp",
+        "ashwin-ant"
+      ],
+      "note": "official but archived reference server"
+    },
+    "@modelcontextprotocol/server-gdrive": {
+      "maintainers": [
+        "jspahrsummers",
+        "thedsp",
+        "ashwin-ant"
+      ],
+      "note": "official but archived reference server"
+    },
+    "@modelcontextprotocol/server-postgres": {
+      "maintainers": [
+        "jspahrsummers",
+        "thedsp",
+        "ashwin-ant"
+      ],
+      "note": "official but archived reference server"
+    },
+    "@modelcontextprotocol/server-puppeteer": {
+      "maintainers": [
+        "jspahrsummers",
+        "thedsp",
+        "ashwin-ant"
+      ],
+      "note": "official but archived reference server"
+    },
+    "remotion": {
+      "maintainers": [
+        "jonny"
+      ],
+      "repository": "github.com/remotion-dev/remotion"
+    },
+    "@remotion/*": {
+      "maintainers": [
+        "jonny"
+      ],
+      "repository": "github.com/remotion-dev/remotion"
+    },
+    "create-video": {
+      "maintainers": [
+        "jonny"
+      ],
+      "repository": "github.com/remotion-dev/remotion"
+    },
+    "remotion-media-mcp": {
+      "maintainers": [
+        "stephengpope"
+      ],
+      "repository": "github.com/stephengpope/remotion-media-mcp"
+    },
+    "skills": {
+      "maintainers": [
+        "rauchg",
+        "quuu"
+      ],
+      "repository": "github.com/vercel-labs/skills"
+    },
+    "wscat": {
+      "maintainers": [
+        "einaros",
+        "lpinca",
+        "3rdeden"
+      ],
+      "repository": "github.com/websockets/wscat"
+    },
+    "http-echo-server": {
+      "maintainers": [
+        "watson"
+      ],
+      "repository": "github.com/watson/http-echo-server"
+    },
+    "express": {
+      "maintainers": [
+        "wesleytodd",
+        "jonchurch",
+        "ctcpip",
+        "ulisesgascon",
+        "sheplu"
+      ],
+      "repository": "github.com/expressjs/express"
+    },
+    "typescript": {
+      "maintainers": [
+        "microsoft1es",
+        "typescript-bot"
+      ],
+      "repository": "github.com/microsoft/TypeScript"
+    },
+    "tsx": {
+      "maintainers": [
+        "hirokiosame"
+      ],
+      "repository": "github.com/privatenumber/tsx"
+    },
+    "@types/*": {
+      "maintainers": [
+        "types"
+      ],
+      "repository": "github.com/DefinitelyTyped/DefinitelyTyped"
+    },
+    "@brave/brave-search-mcp-server": {
+      "maintainers": [
+        "brave.com",
+        "brianbondy"
+      ],
+      "repository": "github.com/brave/brave-search-mcp-server"
+    },
+    "zod": {
+      "maintainers": [
+        "colinhacks"
+      ],
+      "repository": "github.com/colinhacks/zod"
+    }
   },
   "pypi": {
-    "vllm": { "note": "pypi; github.com/vllm-project/vllm" },
-    "sglang": { "note": "pypi; github.com/sgl-project/sglang" },
-    "openai-whisper": { "note": "pypi; github.com/openai/whisper" },
-    "edge-tts": { "note": "pypi; github.com/rany2/edge-tts" },
-    "mcp": { "note": "pypi; github.com/modelcontextprotocol/python-sdk" },
-    "cognee": { "note": "pypi; github.com/topoteretes/cognee" },
-    "mcp-server-sqlite": { "note": "pypi; official (archived) MCP reference server" }
+    "vllm": {
+      "note": "pypi; github.com/vllm-project/vllm"
+    },
+    "sglang": {
+      "note": "pypi; github.com/sgl-project/sglang"
+    },
+    "openai-whisper": {
+      "note": "pypi; github.com/openai/whisper"
+    },
+    "edge-tts": {
+      "note": "pypi; github.com/rany2/edge-tts"
+    },
+    "mcp": {
+      "note": "pypi; github.com/modelcontextprotocol/python-sdk"
+    },
+    "cognee": {
+      "note": "pypi; github.com/topoteretes/cognee"
+    },
+    "mcp-server-sqlite": {
+      "note": "pypi; official (archived) MCP reference server"
+    },
+    "mcp-server-git": {
+      "note": "pypi; github.com/modelcontextprotocol/servers (src/git)"
+    },
+    "mcp-server-fetch": {
+      "note": "pypi; github.com/modelcontextprotocol/servers (src/fetch)"
+    }
   },
   "clawhub": {},
   "denied": {
     "npm": {
-      "openclaw-observability": { "reason": "unrelated publisher; the plugin is @henrikrexed/openclaw-otel-observability" },
-      "clawd": { "reason": "not an OpenClaw package" },
-      "antfarm": { "reason": "not an OpenClaw package" },
-      "moltbot": { "reason": "frozen legacy name; install openclaw" },
-      "clawdbot": { "reason": "frozen legacy name; install openclaw" },
-      "clawd_migrate": { "reason": "not published on npm; anyone could register it" },
-      "@anthropic/mcp-*": { "reason": "scope is not Anthropic's MCP packages; use @modelcontextprotocol/*" },
-      "@openclaw/channel-*": { "reason": "does not exist; channel plugins are @openclaw/<channel> (e.g. @openclaw/matrix)" },
-      "@openclaw/sdk": { "reason": "does not exist on npm" },
-      "@supermemory/mcp-server": { "reason": "does not exist on npm" },
-      "workboard": { "reason": "unscoped name is unrelated; Workboard is a bundled plugin (openclaw plugins enable workboard)" },
-      "tsc": { "reason": "stub package, not the TypeScript compiler; use npx -p typescript tsc" }
+      "openclaw-observability": {
+        "reason": "unrelated publisher; the plugin is @henrikrexed/openclaw-otel-observability"
+      },
+      "clawd": {
+        "reason": "not an OpenClaw package"
+      },
+      "antfarm": {
+        "reason": "not an OpenClaw package"
+      },
+      "moltbot": {
+        "reason": "frozen legacy name; install openclaw"
+      },
+      "clawdbot": {
+        "reason": "frozen legacy name; install openclaw"
+      },
+      "clawd_migrate": {
+        "reason": "not published on npm; anyone could register it"
+      },
+      "@anthropic/mcp-*": {
+        "reason": "scope is not Anthropic's MCP packages; use @modelcontextprotocol/*"
+      },
+      "@openclaw/channel-*": {
+        "reason": "does not exist; channel plugins are @openclaw/<channel> (e.g. @openclaw/matrix)"
+      },
+      "@openclaw/sdk": {
+        "reason": "does not exist on npm"
+      },
+      "@supermemory/mcp-server": {
+        "reason": "does not exist on npm"
+      },
+      "workboard": {
+        "reason": "unscoped name is unrelated; Workboard is a bundled plugin (openclaw plugins enable workboard)"
+      },
+      "tsc": {
+        "reason": "stub package, not the TypeScript compiler; use npx -p typescript tsc"
+      }
     }
   }
 }
