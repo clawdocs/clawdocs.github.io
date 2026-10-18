@@ -1,0 +1,33 @@
+name: Link check
+
+# Weekly external link check of docs/**/*.md. Report only: results go to the
+# job summary; the job does not fail.
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lychee:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          # Site-relative links (/guides/...) are checked by the Docusaurus
+          # build (onBrokenLinks); here we only check http(s) links.
+          args: >-
+            --no-progress
+            --scheme https --scheme http
+            --exclude-all-private
+            --exclude '^https?://([a-z0-9-]+\.)?example\.(com|org)'
+            --max-concurrency 8
+            --accept '200..=299,403,429'
+            'docs/**/*.md'
+          fail: false
+          jobSummary: true
