@@ -128,6 +128,8 @@ openclaw gateway start
 
 Doctor needs exclusive access to the state database. With the Gateway running, `doctor --fix` exits with `GatewayStateOwnerContentionError` and changes nothing.
 
+Doctor only imports into an empty scratch. If the heartbeat already has different scratch, or you cleared it with `--unset`, Doctor warns and leaves `HEARTBEAT.md` where it is; copy what you need with `openclaw cron scratch <jobId> --file ~/.openclaw/workspace/HEARTBEAT.md`.
+
 Doctor creates the monitor rows from `agents.*.heartbeat`, imports each workspace `HEARTBEAT.md` into that agent's monitor scratch, converts a structured `tasks:` block into separate automation jobs, archives the original under the state directory (`backups/heartbeat-migration/`), and deletes the file. After that the runtime reads scratch only.
 
 :::warning Bare `interval` numbers are read as minutes

@@ -9,6 +9,20 @@ gateway_start
 # How heartbeat works: one system-owned job per agent
 run -e 'Heartbeat \(main\)' "openclaw cron list --all"
 
+capture jobId "openclaw cron list --all --json" '(j.jobs||j).find(x=>/Heartbeat \(main\)/.test(x.displayName||x.name||"")).id'
+
+# Migrating from HEARTBEAT.md (page section after "Monitor scratch"). Run first:
+# Doctor leaves the file alone once the scratch has been set or unset.
+setup "write a legacy HEARTBEAT.md" "printf '# Heartbeat\n\n- Check whether the nightly backup finished.\n' > ~/.openclaw/workspace/HEARTBEAT.md"
+skip "openclaw gateway stop" "stops the installed service; CI stops its foreground Gateway instead"
+gateway_stop
+run "openclaw doctor --fix"
+skip "openclaw gateway start" "starts the installed service; CI starts its foreground Gateway instead"
+gateway_start
+setup -e '^ok$' "HEARTBEAT.md was removed from the workspace" "test ! -e ~/.openclaw/workspace/HEARTBEAT.md && echo ok"
+setup -e 'nightly backup' "its text is now the monitor scratch" "openclaw cron scratch <jobId>"
+setup -e '^ok$' "the original was archived under backups/heartbeat-migration/" "ls ~/.openclaw/backups/heartbeat-migration/ | grep -q . && echo ok"
+
 # Quick setup
 config_block 1
 run "openclaw config set commands.ownerAllowFrom '[\"telegram:123456789\"]'"
@@ -26,17 +40,6 @@ setup "write checklist.md" "printf -- '- If a task is blocked, say what is missi
 run "openclaw cron scratch <jobId> --file checklist.md"
 setup -e 'blocked' "scratch now holds the file" "openclaw cron scratch <jobId>"
 run "openclaw cron scratch <jobId> --unset"
-
-# Migrating from HEARTBEAT.md: a legacy file is imported into scratch
-setup "write a legacy HEARTBEAT.md" "printf '# Heartbeat\n\n- Check whether the nightly backup finished.\n' > ~/.openclaw/workspace/HEARTBEAT.md"
-skip "openclaw gateway stop" "stops the installed service; CI stops its foreground Gateway instead"
-gateway_stop
-run "openclaw doctor --fix"
-skip "openclaw gateway start" "starts the installed service; CI starts its foreground Gateway instead"
-gateway_start
-setup -e '^ok$' "HEARTBEAT.md was removed from the workspace" "test ! -e ~/.openclaw/workspace/HEARTBEAT.md && echo ok"
-setup -e 'nightly backup' "its text is now the monitor scratch" "openclaw cron scratch <jobId>"
-setup -e '^ok$' "the original was archived under backups/heartbeat-migration/" "ls ~/.openclaw/backups/heartbeat-migration/ | grep -q . && echo ok"
 
 # Quiet replies and visibility
 config_block 2
