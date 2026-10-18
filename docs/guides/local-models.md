@@ -296,7 +296,7 @@ Give each host its own provider ID with `api: "ollama"`. Each provider has its o
   agents: {
     defaults: {
       model: {
-        primary: "ollama-fast/gemma4:12b",
+        primary: "ollama-fast/qwen3.5:9b",
         fallbacks: ["ollama-large/qwen3.5:27b"],
       },
     },
@@ -307,7 +307,7 @@ Give each host its own provider ID with `api: "ollama"`. Each provider has its o
         baseUrl: "http://gpu-server-1:11434",
         apiKey: "ollama-local",
         api: "ollama",
-        models: [{ id: "gemma4:12b", name: "gemma4:12b", contextWindow: 32768 }],
+        models: [{ id: "qwen3.5:9b", name: "qwen3.5:9b", contextWindow: 32768 }],
       },
       "ollama-large": {
         baseUrl: "http://gpu-server-2:11434",
@@ -622,7 +622,7 @@ OpenClaw needs models that handle function calling. Not all local models do this
 | **DeepSeek-R1-Distill-Qwen-32B** | Moderate | Good | Excellent | Reasoning-heavy tasks |
 | **Llama 3.3 70B** | Good | Good | Good | Needs a big GPU |
 | **Mistral Small 3.2 24B** | Moderate | Good | Good | Good balance |
-| **Gemma 4 12B** | Moderate | Good | Moderate | Lightweight option |
+| **Gemma 4 E4B / 26B** | Moderate | Good | Moderate | Lightweight option |
 
 These ratings are community experience, not benchmarks. The [llama.cpp recipe catalog](https://docs.openclaw.ai/plugins/llama-cpp) is the maintained reference in 2026.10.4; upstream adds a [recommended models](https://docs.openclaw.ai/concepts/recommended-models) page after that release.
 

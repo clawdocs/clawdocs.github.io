@@ -52,7 +52,7 @@ Skill names are scoped to their publisher: `@alice/meeting-notes` and `@bob/meet
 
 ### Other directories
 
-- [skills.sh](https://skills.sh): an Agent Skills directory across agents. OpenClaw installs from it with `openclaw skills install skills-sh:owner/repo/slug`. These entries are marked **Not scanned by ClawHub**.
+- [skills.sh](https://skills.sh): an Agent Skills directory across agents. OpenClaw installs from it with `openclaw skills install skills-sh:owner/repo/slug`. OpenClaw marks these installs **Not scanned by ClawHub**.
 - [VoltAgent/awesome-openclaw-skills](https://github.com/VoltAgent/awesome-openclaw-skills): a large community list. Inclusion is not a security review.
 - [clawskills.sh](https://clawskills.sh): a third-party discovery site, unrelated to skills.sh.
 
@@ -164,7 +164,7 @@ For CI, ClawHub ships a reusable GitHub Actions workflow; see [CI/CD & Testing](
 
 ### After you publish
 
-Publishes are staged: since 2026-10-13 every skill version and package release is held as pending behind pre-publication checks, and a scanner failure or timeout leaves it unpublished rather than letting it through ([clawhub PR #3947](https://github.com/openclaw/clawhub/pull/3947)). The checks are static analysis, VirusTotal, SkillSpector, Tencent A.I.G and ClawScan risk analysis; the release appears in search once it clears. Releases that are held or blocked stay visible to their owner. Download the scan report for a blocked version with:
+A new release stays pending until it clears ClawHub's pre-publication checks (see [What ClawHub checks today](#what-clawhub-checks-today)), then appears in search. Releases that are held or blocked stay visible to their owner. Download the scan report for a blocked version with:
 
 ```bash
 clawhub scan download my-skill --version 1.0.1 --output report.zip
@@ -176,96 +176,21 @@ Skills the agent writes for itself go through [Skill Workshop](/guides/skill-wor
 
 ## Security
 
-### The ClawHavoc incident (February 2026)
+### Incident history {#the-clawhavoc-incident-february-2026}
 
-Koi Security audited all 2,857 skills then on ClawHub and flagged 341 as malicious, 335 of them from one campaign it named **ClawHavoc** ([The Hacker News](https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html), [SC Media](https://www.scworld.com/news/openclaw-agents-targeted-with-341-malicious-clawhub-skills), [eSecurity Planet](https://www.esecurityplanet.com/threats/hundreds-of-malicious-skills-found-in-openclaws-clawhub/)). The skills posed as crypto wallet trackers, Polymarket bots, YouTube tools and Google Workspace integrations, often under typosquatted names. Most told the user to run a fake "Prerequisites" step that installed **Atomic macOS Stealer (AMOS)**. Windows users were sent a password-protected ZIP containing a keylogger.
-
-Around the same time, Snyk's **ToxicSkills** study scanned 3,984 skills from ClawHub and skills.sh and found at least one security flaw in 36.8% of them, a critical issue in 13.4%, and 76 confirmed malicious payloads ([Snyk](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub)).
-
-### Unit 42 findings (June 2026)
-
-On 23 June 2026, Palo Alto Networks Unit 42 reported five malicious skills that had passed ClawHub's scanning between February and May 2026 ([Unit 42](https://unit42.paloaltonetworks.com/openclaw-ai-supply-chain-risk/)):
-
-- **Two macOS infostealers** with command-and-control connectivity
-- **`omnicogg`**, which hid an AMOS dropper in `README.md` and padded the file with 22 MB of junk to get past scanner size limits. Both VirusTotal and ClawScan returned clean.
-- **`money-radar`**, a fake financial adviser that injected affiliate links at runtime
-- **`letssendit`**, an agentic Solana front-running skill
-
-The publisher accounts were banned and the skills removed. The lesson stands: scanning catches a lot, and attackers design around it.
+In February 2026 Koi Security flagged 341 of the 2,857 skills then on ClawHub as malicious, 335 of them from one campaign (**ClawHavoc**) that used a fake "Prerequisites" step to install the Atomic macOS Stealer. In June 2026 Palo Alto Networks Unit 42 reported five more malicious skills that had passed ClawHub's scanning, including one that padded `README.md` with 22 MB of junk to get past scanner size limits ([Unit 42](https://unit42.paloaltonetworks.com/openclaw-ai-supply-chain-risk/)). Scanning catches a lot, and attackers design around it. The full history is in [Known Vulnerabilities](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026).
 
 ### What ClawHub checks today
 
-Each release gets a security audit on its skill page, combining ([Security audits](https://docs.openclaw.ai/clawhub/security-audits)):
-
-- **NVIDIA SkillSpector** findings
-- **Tencent A.I.G** findings on agent instructions. Because A.I.G cannot inspect Python bytecode, ClawHub rejects skills containing `.pyc`, `.pyo` or `.pyd` files.
-- **ClawScan** risk analysis, which asks whether the name, description, declared permissions and actual content line up, using the OWASP Agentic Skills Top 10 as a lens
-- **VirusTotal** and static analysis results, shown as detail pages
+Since 2026-10-13 every new skill version and package release is held as **pending** until the TruffleHog and ClawScan pre-publication checks pass on that exact artifact. A malicious verdict blocks the release; a scanner failure or timeout leaves it unpublished ([clawhub PR #3947](https://github.com/openclaw/clawhub/pull/3947)). The skill's security audit page then combines results from NVIDIA SkillSpector, Tencent A.I.G, ClawScan, VirusTotal and static analysis ([Security audits](https://docs.openclaw.ai/clawhub/security-audits)). Because A.I.G cannot inspect Python bytecode, ClawHub rejects skills containing `.pyc`, `.pyo` or `.pyd` files.
 
 Signed-in users can report a skill with the **Report skill** button. Reports never hide a skill automatically; moderators review them ([ClawHub moderation spec](https://github.com/openclaw/clawhub/blob/main/specs/security-moderation.md)). The old auto-hide rule was withdrawn after GHSA-5jj4-m8c9-gwcq showed that four ordinary accounts could hide any skill, official ones included.
 
-OpenClaw itself also has a local code-safety scanner (since 2026.2.6), and `openclaw skills install` refuses releases ClawHub has marked malicious or blocked.
-
-### Third-party tools
-
-- [Clawdex by Koi](https://clawhub.ai/wearekoi/skills/clawdex) (`@wearekoi/clawdex`): a skill that checks other skills against Koi's malicious-skills database before you install them. Koi is now part of Palo Alto Networks.
-- [Snyk agent-scan](https://github.com/snyk/agent-scan): an open-source security scanner for AI agents, MCP servers and agent skills (formerly `mcp-scan`).
-
-### Red flags
-
-Avoid skills that contain:
-
-- `curl | bash` or `wget | bash`, or a "prerequisites" step that downloads and runs something
-- Base64-encoded strings or zero-width Unicode characters
-- Very large files with little content (padding to evade scanners)
-- Hardcoded URLs to unknown domains
-- Reads of `~/.ssh`, `~/.aws`, browser profiles, wallets or other credential paths
-- Environment variables that do not fit the skill's purpose
-- `chmod 777`, or instructions to edit `SOUL.md` or agent config
+On the OpenClaw side, `openclaw skills install` refuses releases ClawHub has marked malicious or blocked, and `openclaw security audit --deep` runs the local code-safety scanner over installed skills. Red flags to look for when reading a skill, and third-party scanners, are in [Skill Verification](/security/skill-verification#3-review-the-source).
 
 ### Locking down installs
 
-There is no setting that switches ClawHub off. To control what can be installed, use `security.installPolicy`: a trusted local command that OpenClaw runs before every skill or plugin install or update (ClawHub, skills.sh, git, local, uploads, dependency installers). It answers `allow`, `warn` or `block`, and installs fail closed if it cannot answer.
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  security: {
-    installPolicy: {
-      enabled: true,
-      targets: ["skill", "plugin"],
-      exec: {
-        source: "exec",
-        command: "/usr/local/bin/openclaw-install-policy",
-        timeoutMs: 10000,
-        trustedDirs: ["/usr/local/bin"],
-      },
-    },
-  },
-}
-```
-
-The command reads one JSON request on stdin and writes one decision on stdout:
-
-```js title="/usr/local/bin/openclaw-install-policy"
-#!/usr/bin/env node
-let input = "";
-process.stdin.on("data", (c) => (input += c));
-process.stdin.on("end", () => {
-  const req = JSON.parse(input);
-  const decision =
-    req.targetType === "skill"
-      ? { protocolVersion: 1, decision: "block", reason: "skill installs are disabled on this host" }
-      : { protocolVersion: 1, decision: "allow" };
-  process.stdout.write(JSON.stringify(decision));
-});
-```
-
-The file must be a regular file owned by a trusted user with restricted permissions. `openclaw doctor --deep` runs a test request against it. See [Operator install policy](https://docs.openclaw.ai/tools/skills-config#operator-install-policy-security-installpolicy) for the full request and response format.
-
-Two more controls:
-
-- `skills.allowBundled: ["github", "weather"]` limits which **bundled** skills are eligible.
-- `agents.defaults.skills` and `agents.entries.<id>.skills` limit which skills each agent can see. See [Skill Development](/guides/skill-development#which-agent-sees-which-skill).
+There is no setting that switches ClawHub off. `security.installPolicy` runs a trusted local command before every skill or plugin install or update (ClawHub, skills.sh, git, local, uploads, dependency installers); it answers `allow`, `warn` or `block`, and installs fail closed if it cannot answer. `skills.allowBundled` limits which bundled skills are eligible, and `agents.defaults.skills` / `agents.entries.<id>.skills` limit which skills each agent sees. Config and caveats: [Skill Verification](/security/skill-verification#restrict-or-block-installs) and upstream [Operator install policy](https://docs.openclaw.ai/tools/skills-config#operator-install-policy-security-installpolicy).
 
 ### Reporting
 
@@ -296,16 +221,16 @@ clawhub whoami
 clawhub search "query"
 clawhub explore [--sort downloads]
 clawhub inspect @owner/slug [--files] [--file <path>] [--versions]
-clawhub uninstall @owner/slug
-clawhub list
-clawhub pin <slug> [--reason <text>]
-clawhub unpin <slug>
+clawhub --workdir <dir> uninstall @owner/slug   # <dir>: agent workspace, or ~/.openclaw for --global
+clawhub --workdir <dir> list
+clawhub --workdir <dir> pin <slug> [--reason <text>]
+clawhub --workdir <dir> unpin <slug>
 clawhub skill publish <dir> [--dry-run] [--version <v>] [--owner <handle>] [--categories <slugs>]
 clawhub sync --all [--dry-run] [--bump minor]
 clawhub scan download <slug> --version <v>
 ```
 
-Full reference: [ClawHub CLI](https://docs.openclaw.ai/clawhub/cli) and [`openclaw skills`](https://docs.openclaw.ai/cli/skills).
+Full reference: [ClawHub CLI](https://docs.openclaw.ai/clawhub/cli), [`openclaw skills`](https://docs.openclaw.ai/cli/skills) and the site [CLI Reference](/reference/cli#skills-plugins-and-mcp).
 
 ---
 

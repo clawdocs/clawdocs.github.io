@@ -9,7 +9,7 @@ keywords: [openclaw, deploy, docker, kubernetes, cloud hosting, self-host]
 
 # Deployment Options
 
-OpenClaw runs as one Gateway process with its state in `~/.openclaw/`. Every option below is a different way to supervise that process and keep that directory. This page compares them and points to the official guide for each. Commands were checked against OpenClaw 2026.10.4.
+OpenClaw runs as one Gateway process with its state in `~/.openclaw/`. Every option below is a different way to supervise that process and keep that directory. This page compares them and points to the official guide for each.
 
 ## Quick Comparison
 
@@ -26,7 +26,7 @@ OpenClaw runs as one Gateway process with its state in `~/.openclaw/`. Every opt
 | [Managed hosting](#managed-hosting) | Easiest | Non-technical users | Varies |
 
 :::danger Never expose an unauthenticated Gateway
-The Gateway listens on port 18789. Keep it on loopback and reach it over an SSH tunnel or Tailscale, or put it behind token/password auth and a firewall. Since 2.0 the installer refuses network installs that would expose OpenClaw without auth. See [Security Hardening](/security/hardening) and the upstream [network exposure](https://docs.openclaw.ai/gateway/security/network-exposure) guide. Whatever you deploy, the agent can run shell commands on that host; review approvals and sandboxing before connecting channels.
+The Gateway listens on port 18789. Keep it on loopback and reach it over an SSH tunnel or Tailscale, or put it behind token/password auth and a firewall. Gateway auth is on by default: onboarding generates a token, and with no valid auth configured the Gateway refuses connections. See [Security Hardening](/security/hardening) and the upstream [network exposure](https://docs.openclaw.ai/gateway/security/network-exposure) guide. Whatever you deploy, the agent can run shell commands on that host; review approvals and sandboxing before connecting channels.
 :::
 
 ## Local service {#local-service}
@@ -151,15 +151,13 @@ kubectl port-forward svc/openclaw 18789:18789 -n openclaw
 
 Read the generated token with `kubectl get secret openclaw-secrets -n openclaw -o jsonpath='{.data.OPENCLAW_GATEWAY_TOKEN}' | base64 -d`. For a local test cluster, `./scripts/k8s/create-kind.sh` creates one with Kind. Upstream describes these manifests as a starting point, not a production deployment. Use `/healthz` and `/readyz` (or `/startupz`) for probes.
 
-:::warning Archived Helm chart
-The community chart [serhanekicii/openclaw-helm](https://github.com/serhanekicii/openclaw-helm) was **archived** in May 2026 and its chart repository URL no longer resolves. Do not start new deployments on it. Its example `gateway.host` and `brain.provider` keys are not OpenClaw config keys; the real setting is `gateway.bind` (`loopback`, `lan`, `tailnet`, `auto` or `custom`).
-:::
+Community Helm charts (one of them archived) are listed in [Ecosystem](/reference/ecosystem#helm-charts). If you copy values from one, note that `gateway.host` and `brain.provider` are not OpenClaw keys; the real setting is `gateway.bind` (`loopback`, `lan`, `tailnet`, `auto` or `custom`).
 
 ## Cloudflare Containers (Moltworker) {#moltworker}
 
 Upstream now has its own **experimental** Cloudflare template in [`scripts/cloudflare`](https://github.com/openclaw/openclaw/tree/main/scripts/cloudflare). It runs one Gateway in a Cloudflare Container (`standard-2`, one instance) behind a Worker and Durable Object, and replicates the SQLite databases to R2 with Litestream. Litestream protects the databases, not the whole state directory, so read the limits section of the [Cloudflare guide](https://docs.openclaw.ai/install/cloudflare) before you use production credentials.
 
-[Moltworker](https://github.com/cloudflare/moltworker) (cloudflare/moltworker, Apache-2.0, about 9,900 stars as of 2026-10-18) is the earlier Cloudflare Sandbox port. Its README calls it "a proof of concept … not officially supported", and it has had no commits since May 2026. It needs the Workers Paid plan ($5/month) plus container compute; see its README for the cost estimate. Prefer the upstream template for new deployments.
+[Moltworker](/reference/ecosystem#moltworker) is Cloudflare's earlier proof-of-concept port, unmaintained since May 2026. Prefer the upstream template for new deployments.
 
 ## 1Panel {#1panel}
 
@@ -180,7 +178,7 @@ To install OpenClaw: open the panel, go to **App Store**, search for **OpenClaw*
 
 ## Coolify {#coolify}
 
-[Coolify](https://coolify.io) is a self-hosted PaaS with an OpenClaw entry in its service catalog; see the [Coolify OpenClaw docs](https://coolify.io/docs/services/openclaw). A separate community integration, [essamamdani/openclaw-coolify](https://github.com/essamamdani/openclaw-coolify) (about 150 stars, last push August 2026), adds a Docker sidecar proxy, Cloudflare Tunnel, SearXNG and pre-installed dev tools. Its build needs roughly 13 GB of free disk for the Docker build cache.
+[Coolify](https://coolify.io) is a self-hosted PaaS with an OpenClaw entry in its service catalog; see the [Coolify OpenClaw docs](https://coolify.io/docs/services/openclaw). Community Coolify templates and images are listed in [Ecosystem](/reference/ecosystem#deployment-tools).
 
 ## DigitalOcean {#digitalocean}
 
@@ -205,14 +203,7 @@ The Ansible install uses a system unit, so on those hosts `sudo systemctl status
 
 ## Managed Hosting {#managed-hosting}
 
-Many third-party services host OpenClaw for you. See the **[Hosting Providers guide](/guides/hosting-providers)** for a comparison. A few examples (prices change; check each site):
-
-- [Agent37](https://www.agent37.com) — low-cost shared containers
-- [MyClaw.ai](https://myclaw.ai) — budget managed plans
-- [WZ-IT](https://wz-it.com/en/managed-open-source/) — German managed open-source hosting
-- [Clowd.bot](https://clowd.bot) — pay per launch
-
-RunClaw.ai, listed here before, did not respond on 2026-10-18.
+Many third-party services host OpenClaw for you. The [Hosting Providers guide](/guides/hosting-providers) compares them.
 
 :::warning
 With managed hosting, your conversations, credentials and data pass through a third party's infrastructure, and that party controls the host the agent runs commands on. Review the provider's privacy policy and how it handles upgrades. Self-hosting gives you full control over your data.

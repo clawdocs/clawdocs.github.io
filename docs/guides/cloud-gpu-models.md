@@ -49,7 +49,7 @@ Prices are approximate on-demand list prices **as of 2026-10-18**, taken from ea
 | [**RunPod**](https://www.runpod.io/pricing) | A100 80GB | 80 GB | $1.19-$1.79 | ~$870-$1,310 | 70B quantized, 32B full precision |
 | [**RunPod**](https://www.runpod.io/pricing) | H100 80GB | 80 GB | $1.99-$3.99 | ~$1,450-$2,910 | PCIe vs SXM, community vs secure |
 | [**Lambda**](https://lambda.ai/pricing) | A100 40GB | 40 GB | $1.99 | ~$1,450 | Simple pricing |
-| [**Lambda**](https://lambda.ai/pricing) | H100 80GB | 80 GB | $3.29 PCIe / $4.29 SXM | ~$2,400 / ~$3,130 | |
+| [**Lambda**](https://lambda.ai/pricing) | H100 80GB | 80 GB | $3.29 PCIe / $3.99-$4.29 SXM | ~$2,400 / ~$2,910-$3,130 | |
 | [**Vast.ai**](https://vast.ai/pricing) | Various | Various | Marketplace (live) | Varies | Auction/marketplace model, usually cheapest, less predictable |
 | [**CoreWeave**](https://www.coreweave.com/pricing) | A100 / H100 | 80 GB | See pricing page | | Enterprise, InfiniBand |
 | [**AMD Developer Cloud**](https://devcloud.amd.com/) | MI300X | 192 GB | See site | | Check the site for current credit offers |
@@ -126,7 +126,7 @@ These providers host open-weight models behind an API. You pay per token; there 
 | [**Together AI**](https://www.together.ai/pricing) | Bundled `together` provider | `TOGETHER_API_KEY` | Llama, DeepSeek, Kimi, GLM and more |
 | [**Fireworks AI**](https://fireworks.ai/pricing) | Official plugin `@openclaw/fireworks-provider` | `FIREWORKS_API_KEY` | Open-weight models and routers |
 | [**OpenRouter**](https://openrouter.ai) | Bundled `openrouter` provider; refs `openrouter/<author>/<slug>` | `OPENROUTER_API_KEY` | One key, many upstream providers |
-| [**Hugging Face**](https://huggingface.co/pricing) | Provider page upstream | `HF_TOKEN` | See [Hugging Face](https://docs.openclaw.ai/providers/huggingface) |
+| [**Hugging Face**](https://huggingface.co/pricing) | Bundled `huggingface` provider | `HF_TOKEN` or `HUGGINGFACE_HUB_TOKEN` | Routes to many inference providers; see [Hugging Face](https://docs.openclaw.ai/providers/huggingface) |
 | [**Modal**](https://modal.com/pricing) | Custom provider | your key | Serverless GPUs running your own vLLM |
 
 Per-token prices differ per model and change often, so check the linked pricing pages. OpenClaw's usage view shows the cost estimates it applies (`openclaw gateway usage-cost`).
@@ -256,23 +256,13 @@ TabbyAPI uses ExLlamaV2/V3 for speed on RTX 3090/4090 with EXL2/GPTQ quantized m
 
 ## OpenClaw Configuration Notes
 
-### Where things live
-
-| File | Purpose |
-|------|---------|
-| `~/.openclaw/openclaw.json` | Providers, models, agents, Gateway config |
-| `~/.openclaw/.env` | API keys and other secrets (keep it `600`) |
-
 ### Key rules
 
-| Rule | Detail |
-|------|--------|
-| `baseUrl` | OpenAI-compatible servers usually end in `/v1`. Ollama's native API must **not** have `/v1`. Copy the URL from the provider's docs |
-| `api` | Optional on custom providers (defaults to `openai-completions`); use `openai-responses` only if the server supports `/v1/responses` |
-| `models` | An array of `{ id, name, ... }`; `id` is provider-local, with no provider prefix |
-| Env substitution | `${ENV_VAR}` works in config values |
-| Model refs | Select models as `provider-id/model-id` |
-| Context window | Keep `contextWindow` at or below the server's `--max-model-len` |
+- `baseUrl`: OpenAI-compatible servers usually end in `/v1`; Ollama's native API must **not**. Copy it from the provider's docs.
+- `api`: optional on custom providers (defaults to `openai-completions`). Use `openai-responses` only if the server supports `/v1/responses`.
+- `models[].id` is provider-local, with no provider prefix; you select it as `provider-id/model-id`.
+- Keep `contextWindow` at or below the server's `--max-model-len`.
+- Put keys in `~/.openclaw/.env` (mode `600`) and reference them as `${ENV_VAR}`.
 
 ### How OpenClaw picks a model
 
@@ -357,10 +347,10 @@ For a full model selection guide covering cloud, local and hybrid setups, see th
 - **DeepSeek-R1-Distill-Qwen-32B** for planning and reasoning-heavy work
 - **Qwen 2.5 Coder 32B** for code-heavy work
 
-These are community experience, not benchmarks. The [llama.cpp recipes](https://docs.openclaw.ai/plugins/llama-cpp) are the maintained reference in 2026.10.4; upstream adds a [recommended models](https://docs.openclaw.ai/concepts/recommended-models) page after that release.
+These are community experience, not benchmarks. Upstream's [llama.cpp page](https://docs.openclaw.ai/plugins/llama-cpp) has maintained model recipes.
 
 :::warning
-**Avoid models under about 8B parameters** for agent work. They hallucinate tool calls and lose track of multi-step tasks. Test real tasks before you make an open model your default; the best results with OpenClaw still come from frontier hosted models.
+**Models under about 14B parameters often struggle with multi-step tool calling**, and those under 8B hallucinate tool calls. For reliable agent work use 30B+ or keep a hosted fallback. Test real tasks before you make an open model your default; the best results with OpenClaw still come from frontier hosted models.
 :::
 
 ---

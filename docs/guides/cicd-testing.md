@@ -292,12 +292,11 @@ The skills watcher picks up skill changes on the next agent turn; config changes
 openclaw backup create --verify --output ~/Backups
 openclaw update --dry-run
 openclaw update --yes
-openclaw doctor --fix
-openclaw config validate
+openclaw doctor --lint
 openclaw channels status --probe
 ```
 
-`openclaw update` rehearses the update, restarts the Gateway, and rolls back if the post-update doctor fails. Run `openclaw doctor --fix` after every upgrade: releases retire config keys and Doctor migrates them. To roll back by hand, restore the backup and install the previous version with `openclaw update --tag <version>`.
+`openclaw update` runs the Doctor migrations the new release needs, restarts the Gateway and verifies it. If verification fails, it rolls back to the previous package and config automatically **only when no database schema changed** (a schema-neutral update); otherwise it keeps the new version and its recovery artifacts and reports what to do ([Rollback and recovery](https://docs.openclaw.ai/install/updating/rollback-and-recovery)). Installing an older version does not reverse migrations, so the reliable way back after a migrating update is to restore the verified backup with its matching release. `openclaw update --tag <version>` only works while the older release can still read your state.
 
 ### Docker
 
@@ -327,29 +326,7 @@ The image already has a `HEALTHCHECK` on `/healthz` (liveness). Use `/startupz` 
 
 ## Triggering the Agent From CI
 
-To have a pipeline wake an agent (for example, "summarize this failed build"), enable Gateway HTTP hooks with a dedicated token:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  hooks: {
-    enabled: true,
-    token: "${OPENCLAW_HOOKS_TOKEN}",
-    path: "/hooks",
-    allowedAgentIds: ["main"],
-    allowRequestSessionKey: false,
-  },
-}
-```
-
-```bash
-curl -fsS https://agent.example.com/hooks/agent \
-  -H "Authorization: Bearer $OPENCLAW_HOOKS_TOKEN" \
-  -H 'Content-Type: application/json' \
-  -H "Idempotency-Key: build-$GITHUB_RUN_ID" \
-  --data '{"message":"Build failed on main. Summarize the log at the attached URL.","agentId":"main","deliver":true}'
-```
-
-An HTTP 200 means the run was admitted, not that it finished. Expose the Gateway only over HTTPS or a private network, never as plain HTTP on the internet. Treat the message as untrusted input to the agent. See [Inbound webhooks](https://docs.openclaw.ai/automation/cron-jobs/webhooks) and [API & Webhooks](/guides/api-webhooks).
+To have a pipeline wake an agent ("summarize this failed build"), enable Gateway HTTP hooks with their own token and `curl` the `/hooks/agent` endpoint from the job, using the run ID as the `Idempotency-Key`. Config, a GitHub Actions example and the security notes are in [API & Webhooks](/guides/api-webhooks#github-actions). Treat the message as untrusted input to the agent, and reach the Gateway only over HTTPS or a private network.
 
 For scheduled checks on the agent host itself, use an [Automation](/guides/automation) job, for example `openclaw cron add "0 2 * * *" "Run the nightly health checklist" --name nightly-check`.
 
@@ -371,7 +348,7 @@ For scheduled checks on the agent host itself, use an [Automation](/guides/autom
 
 - [ ] `openclaw backup create --verify`
 - [ ] Release notes read; `openclaw update --dry-run`
-- [ ] `openclaw doctor --fix` and `openclaw config validate` after the update
+- [ ] `openclaw doctor --lint` after the update; a verified backup kept until you have checked the upgrade
 - [ ] `openclaw channels status --probe` shows channels back
 
 ---
