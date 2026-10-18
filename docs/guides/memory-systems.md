@@ -190,6 +190,8 @@ None of these is maintained by the OpenClaw project. Star counts and last-push d
 | [**PowerContext**](#powermem) | 1,337 | 2026-10 | Context service (formerly PowerMem) | Server / API |
 | [**Cognee**](#cognee) | 32,464 | 2026-10 | Knowledge graph memory | MCP / SDK |
 | [**Letta**](#letta) | 25,175 | 2026-09 | Stateful agent framework | SDK |
+| [**GBrain**](#gbrain) | 30,970 | 2026-10 | Agent "brain": knowledge pages, ingestion, scheduled consolidation | ClawHub bundle plugin / MCP |
+| [**agentmemory**](#agentmemory) | 29,640 | 2026-10 | Persistent memory server for coding agents | Native OpenClaw plugin (connector) / MCP |
 
 ---
 
@@ -321,6 +323,26 @@ MemPalace's published benchmark numbers were disputed after launch. Evaluate it 
 
 - **Repo:** [letta-ai/letta](https://github.com/letta-ai/letta)
 - **Integration:** SDK, plus a desktop development environment
+
+---
+
+### GBrain {#gbrain}
+
+**An opinionated agent "brain"** by Garry Tan: a store of pages about people, companies and ideas that the agent fills from meetings, email and other sources, with scheduled jobs that enrich and consolidate it overnight. The README describes it as the memory behind the author's own OpenClaw and Hermes deployments, and is candid that the always-on server setup is the costly path (an 8 GB+ server plus model tokens).
+
+- **Repo:** [garrytan/gbrain](https://github.com/garrytan/gbrain), MIT, created 2026-04-05; latest release v0.60.299.0 on 2026-10-18 (GitHub API)
+- **Integration:** per its README, a ClawHub bundle plugin (the repo ships `openclaw.plugin.json`) or an MCP server registered with OpenClaw; see its [OpenClaw guide](https://github.com/garrytan/gbrain/blob/master/docs/mcp/OPENCLAW.md). clawdocs has not tested it.
+- **Fit:** users who want the agent to build a large, curated knowledge base, not just recall past chats
+
+---
+
+### agentmemory {#agentmemory}
+
+**A local memory server for AI coding agents** (Claude Code, Codex, Copilot CLI, Cursor, Hermes, OpenClaw and any MCP client) that captures sessions and recalls them later.
+
+- **Repo:** [rohitg00/agentmemory](https://github.com/rohitg00/agentmemory), Apache-2.0, created 2026-02-25; latest release v0.9.30 on 2026-10-06 (GitHub API)
+- **Integration:** per its README, a connector installs a native OpenClaw plugin and skills, takes the memory slot and enables conversation access; replacing another memory plugin needs `--force`. MCP tools are opt-in. See its [OpenClaw setup](https://github.com/rohitg00/agentmemory/tree/main/integrations/openclaw). clawdocs has not tested it.
+- **Fit:** people who use several coding agents and want one memory shared between them
 
 ---
 
