@@ -1,215 +1,172 @@
 ---
 last_update:
-  date: 2026-07-08
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Gateway API
-description: WebSocket message protocol for the OpenClaw Gateway control plane
+description: Summary of the OpenClaw Gateway protocol v4 (WebSocket frames, handshake, auth) and the HTTP endpoints, with links to the official protocol docs
 keywords: [openclaw, openclaw api, websocket api, gateway api, rest api, control plane, message protocol]
 ---
 
 # Gateway API
 
-The Gateway exposes a WebSocket API on port 18789 (default) for programmatic control.
+The Gateway serves a WebSocket control plane and a small set of HTTP endpoints on one port (`18789` by default, loopback only). The Control UI, the CLI, the desktop and mobile apps, and nodes all use the same protocol. This page summarises it so you know what exists; the [official protocol docs](https://docs.openclaw.ai/gateway/protocol) are the reference.
 
-## Connecting
+:::tip Use the client library
+Unless you are writing a client in another language, do not hand-roll the handshake. The official TypeScript packages are [`@openclaw/gateway-client`](https://www.npmjs.com/package/@openclaw/gateway-client) and [`@openclaw/gateway-protocol`](https://www.npmjs.com/package/@openclaw/gateway-protocol) (both published from the openclaw/openclaw repo, v2026.10.4). For one-off calls from a shell, use `openclaw gateway call`. See [Building a Gateway client](https://docs.openclaw.ai/gateway/clients).
+:::
 
-```typescript
-const ws = new WebSocket('ws://localhost:18789');
+## Calling methods from the CLI
 
-ws.on('open', () => {
-  console.log('Connected to OpenClaw Gateway');
-});
+`openclaw gateway call` connects with your configured credentials, sends one request and prints the response:
 
-ws.on('message', (data) => {
-  const msg = JSON.parse(data.toString());
-  console.log(msg.type, msg.payload);
-});
+```bash
+openclaw gateway call health --json
+openclaw gateway call status --json
+openclaw gateway call cron.list --params '{}' --json
 ```
 
-## Message Format
+This is the easiest way to explore methods before writing code.
 
-All messages follow this structure:
+## WebSocket protocol (v4)
 
-```typescript
-interface GatewayMessage {
-  type: string;           // Message type
-  id?: string;            // Optional correlation ID
-  payload: object;        // Type-specific data
-  timestamp: string;      // ISO 8601 timestamp
-}
-```
+### Framing
 
-## Client → Gateway Messages
+- Text frames with JSON payloads.
+- The first client frame **must** be a `connect` request; anything else is rejected.
+- Three frame shapes:
+  - Request: `{ type: "req", id, method, params }`
+  - Response: `{ type: "res", id, ok, payload | error }`
+  - Event: `{ type: "event", event, payload, seq?, stateVersion? }`
+- Before the handshake completes, frames are capped at 64 KiB. After it, follow `hello-ok.policy.maxPayload` (25 MiB by default) and `policy.maxBufferedBytes` (50 MiB).
+- Malformed JSON closes the socket with code `1007`.
 
-### `chat`
+Reference: [Transport and framing](https://docs.openclaw.ai/gateway/protocol/transport).
 
-Send a message to the agent.
+### Handshake
 
-```json
+1. The Gateway sends a `connect.challenge` event with a `nonce` and `ts`.
+2. The client sends a `connect` request: `minProtocol` / `maxProtocol` (both `4` for operator clients), `client` info, `role` (`operator` or `node`), requested `scopes`, `auth` (for example `{ token }`) and, for paired devices, a `device` block that signs the nonce with the device's Ed25519 key.
+3. The Gateway replies with a `res` whose payload is `hello-ok`: negotiated `protocol`, `server` info, the available `features.methods` and `features.events`, a state `snapshot`, the granted `auth.role` and `auth.scopes`, and `policy` limits.
+
+{/* snippet:skip Gateway wire frame, not openclaw.json */}
+```json title="connect request (abridged)"
 {
-  "type": "chat",
-  "id": "msg-001",
-  "payload": {
-    "text": "What files are in my home directory?",
-    "context": {},
-    "options": {
-      "model": "claude-opus-4-6",
-      "no_memory": false
-    }
+  "type": "req",
+  "id": "1",
+  "method": "connect",
+  "params": {
+    "minProtocol": 4,
+    "maxProtocol": 4,
+    "client": { "id": "my-script", "version": "0.1.0", "platform": "linux", "mode": "operator" },
+    "role": "operator",
+    "scopes": ["operator.read", "operator.write"],
+    "auth": { "token": "<gateway token>" }
   }
 }
 ```
 
-### `heartbeat_trigger`
+The connect deadline is 30 seconds in total. Device-auth errors carry `error.details.code` (for example `DEVICE_AUTH_NONCE_MISMATCH`). Reference: [Handshake and roles](https://docs.openclaw.ai/gateway/protocol/handshake), [Auth](https://docs.openclaw.ai/gateway/protocol/auth).
 
-Trigger an immediate heartbeat.
+### Methods and events
 
-```json
+After `hello-ok`, the client sends `req` frames and receives `res` frames plus events. A few methods you will meet early:
+
+| Method | Purpose |
+|--------|---------|
+| `health`, `status` | Gateway and channel health |
+| `chat.send`, `chat.abort` | Send a user message to a session; cancel a run |
+| `sessions.*` | List, create, send to and steer sessions |
+| `config.get`, `config.set`, `config.patch`, `config.apply` | Read and write config (writes need `operator.admin`) |
+| `tools.catalog`, `tools.invoke` | Inspect and invoke tools under tool policy |
+| `exec.approval.resolve` | Answer a pending exec approval |
+| `device.pair.list`, `device.pair.approve` | Device pairing |
+| `node.list`, `node.describe`, `node.invoke` | Paired nodes |
+| `wake`, `last-heartbeat`, `set-heartbeats` | Heartbeat control |
+
+The live list for your Gateway is in `hello-ok.features.methods`; the full catalog is in [RPC methods](https://docs.openclaw.ai/gateway/protocol/rpc-methods).
+
+`chat.send` is a closed object: `sessionKey`, `message` and `idempotencyKey` are required, and unknown fields such as `text` are rejected. Reuse the same `idempotencyKey` when retrying after a transport failure.
+
+{/* snippet:skip Gateway wire frame, not openclaw.json */}
+```json title="chat.send request"
 {
-  "type": "heartbeat_trigger",
-  "payload": {
-    "dry_run": false
+  "type": "req",
+  "id": "2",
+  "method": "chat.send",
+  "params": {
+    "sessionKey": "main",
+    "message": "What is on my calendar today?",
+    "idempotencyKey": "7f9c2b1e-0d3a-4c55-9a51-2f6c1d0e8b44"
   }
 }
 ```
 
-### `status`
+Replies stream as `chat` events (display-ready updates with `state: "delta"`, then a final state) and `agent` events (assistant text in `data.delta`, tool activity). Subscribe to one of the two text streams for a display, not both, or you will duplicate output. Reference: [Events](https://docs.openclaw.ai/gateway/protocol/rpc-bootstrap-and-events).
 
-Request gateway status.
+### Scopes
 
-```json
-{
-  "type": "status",
-  "payload": {}
-}
-```
+Operator connections are limited by scopes: `operator.read` (status, lists, logs), `operator.write` (send messages, invoke tools), `operator.admin` (config changes, updates, high-risk approvals), plus narrower ones such as `operator.approvals` and `operator.pairing`. Request only what your client needs. Reference: [Operator scopes](https://docs.openclaw.ai/gateway/operator-scopes).
 
-### `skill_invoke`
+### Versioning
 
-Directly invoke a skill.
+The protocol is **version 4**. Operator and UI clients must include v4 in their `minProtocol`..`maxProtocol` range. Nodes and lightweight probes get an N-1 window and may still connect at v3 during rolling upgrades. Reference: [Versioning](https://docs.openclaw.ai/gateway/protocol/versioning). Protocol-affecting changes are listed in the [upstream changelog](https://github.com/openclaw/openclaw/tree/main/CHANGELOG).
 
-```json
-{
-  "type": "skill_invoke",
-  "payload": {
-    "skill": "email-assistant",
-    "args": "check for urgent emails"
-  }
-}
-```
+## HTTP endpoints
 
-## Gateway → Client Messages
+All on the same port as the WebSocket.
 
-### `response`
+| Endpoint | Default | Auth | Purpose |
+|----------|---------|------|---------|
+| `GET /healthz` (`/health`) | on | none | Liveness: the HTTP server is up |
+| `GET /startupz` | on | none | Startup has settled; ignores channel health |
+| `GET /readyz` | on | none | Deep readiness, including channel accounts |
+| `/` and `/chat` | on | Gateway auth over the WebSocket | Control UI and web chat |
+| `POST /tools/invoke` | on | Bearer | Invoke one tool under tool policy |
+| `POST /v1/chat/completions`, `GET /v1/models` | **off** | Bearer | OpenAI-compatible chat, runs a normal agent turn |
+| `POST /v1/responses` | **off** | Bearer | OpenResponses-compatible API |
 
-Agent response to a chat message.
-
-```json
-{
-  "type": "response",
-  "id": "msg-001",
-  "payload": {
-    "text": "Here are the files in your home directory:\n...",
-    "tool_calls": [],
-    "tokens_used": 1250
-  }
-}
-```
-
-### `tool_call`
-
-Notification that a tool is being executed.
-
-```json
-{
-  "type": "tool_call",
-  "payload": {
-    "tool": "shell",
-    "args": {"command": "ls ~"},
-    "status": "executing"
-  }
-}
-```
-
-### `tool_result`
-
-Result of a tool execution.
-
-```json
-{
-  "type": "tool_result",
-  "payload": {
-    "tool": "shell",
-    "output": "Desktop\nDocuments\nDownloads\n...",
-    "exit_code": 0
-  }
-}
-```
-
-### `error`
-
-Error response.
-
-```json
-{
-  "type": "error",
-  "payload": {
-    "code": "AUTH_REQUIRED",
-    "message": "Authentication required for this operation"
-  }
-}
-```
-
-### `heartbeat_status`
-
-Result of a heartbeat cycle.
-
-```json
-{
-  "type": "heartbeat_status",
-  "payload": {
-    "result": "HEARTBEAT_OK",
-    "actions_taken": 0,
-    "tokens_used": 450
-  }
-}
-```
-
-## Authentication
-
-By default, the Gateway trusts all localhost connections. For additional security:
+Enable the OpenAI-compatible endpoints in config:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "gateway": {
-    "auth": {
-      "enabled": true,
-      "token": "${OPENCLAW_AUTH_TOKEN}"
-    }
-  }
+  gateway: {
+    http: {
+      endpoints: {
+        chatCompletions: { enabled: true },
+        responses: { enabled: true },
+      },
+    },
+  },
 }
 ```
 
-Include the token in the WebSocket URL:
+With `token` or `password` auth, HTTP callers send `Authorization: Bearer <token-or-password>`. That bearer is treated as **full operator access** to the Gateway, so do not hand it to a third-party app you would not give a shell to. Select an agent with `model: "openclaw/<agentId>"`. References: [OpenAI chat completions](https://docs.openclaw.ai/gateway/openai-http-api), [OpenResponses](https://docs.openclaw.ai/gateway/openresponses-http-api), [Tools invoke](https://docs.openclaw.ai/gateway/tools-invoke-http-api), [Health checks](https://docs.openclaw.ai/gateway/health#http-probes).
 
-```typescript
-const ws = new WebSocket('ws://localhost:18789?token=your-auth-token');
+## Authentication
+
+Gateway auth is **required by default**; onboarding generates a token. `gateway.auth.mode` is `token`, `password`, `trusted-proxy` (an identity-aware reverse proxy) or `none` (explicit opt-out, loopback only). A non-loopback bind without auth is refused at startup.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  gateway: {
+    bind: "loopback",
+    auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" },
+  },
+}
 ```
 
-:::danger
-**The lack of default authentication was the root cause of CVE-2026-25253.** Enable auth if multiple users share the machine.
+- WebSocket clients send the token in `connect.params.auth.token`, never in the URL.
+- HTTP clients send `Authorization: Bearer <token>`.
+- `OPENCLAW_GATEWAY_TOKEN` and `OPENCLAW_GATEWAY_PASSWORD` are read natively, so you can also leave `gateway.auth.token` unset and export the variable.
+- Paired devices (Control UI in a browser, apps) get a per-device token after approval with `openclaw devices approve`. Loopback connections are approved automatically.
+- `openclaw dashboard` opens the Control UI with your token in the URL fragment (`#token=`), which does not reach server logs. A `?token=` query parameter is only a legacy bootstrap fallback.
+
+:::danger Keep tokens out of URLs
+CVE-2026-25253 (fixed in v2026.1.29) was a token leak: the Control UI accepted a `gatewayUrl` from a query string and auto-connected, sending the token to an attacker's server. Do not put tokens in query strings, and do not expose the port without auth. See [Network exposure](https://docs.openclaw.ai/gateway/security/network-exposure) and [Security Hardening](/security/hardening).
 :::
 
-## Protocol Versioning
+## See also
 
-The Gateway wire protocol is currently **version 4** (`PROTOCOL_VERSION: 4`), and general clients, operators, and UI connections must speak v4 (`MIN_CLIENT_PROTOCOL_VERSION: 4`). Since July 6, 2026 (PR #101109), there is an N-1 compatibility window for infrastructure connections: **nodes and probes at protocol v3 remain manageable** during rolling upgrades (`MIN_NODE_PROTOCOL_VERSION: 3`).
-
-Recent Gateway-facing changes:
-
-- **v2026.6.11** — plugin-registered Gateway methods now resolve through the live registry, so they work via `openclaw gateway call` instead of failing with `unknown method` (PR #94154)
-- **v2026.7.1 (beta)** — new `openclaw attach` command launches an external harness against an existing Gateway session, for resuming and inspecting interactive Codex-style workflows (#96454)
-
-## See Also
-
-- [The Gateway](/architecture/gateway) — Architecture details
-- [Configuration](/reference/configuration) — Gateway config options
-- [Security Hardening](/security/hardening) — Securing the API
+- [The Gateway](/architecture/gateway): how the Gateway fits into OpenClaw
+- [Configuration](/reference/configuration): `gateway` config section
+- [Gateway protocol](https://docs.openclaw.ai/gateway/protocol) (official)
