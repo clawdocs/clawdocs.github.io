@@ -188,18 +188,9 @@ Whichever you run, an agent with shell, files, email or browser access needs app
 
 ---
 
-## Contributing a variant
-
-1. Document clearly what works and what does not compared with OpenClaw.
-2. State your security model, especially for embedded and IoT builds.
-3. Add the project to a maintained list such as [rohitg00/awesome-openclaw](https://github.com/rohitg00/awesome-openclaw) (560 stars) or [vincentkoc/awesome-openclaw](https://github.com/vincentkoc/awesome-openclaw) (146 stars, last push 2026-04-20).
-4. Consider MCP compatibility for interoperability.
-
----
-
 ## See also
 
-- [Ecosystem](/reference/ecosystem): tools, clients and hosting
+- [Ecosystem](/reference/ecosystem#lightweight-alternatives): the short index of these projects, plus community tools, clients and hosting
 - [Installation](/getting-started/installation): standard OpenClaw setup
 - [Local Models](/guides/local-models): running models on your own hardware
 - [Security Overview](/security/overview): threat model and hardening
