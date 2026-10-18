@@ -19,7 +19,8 @@ Figures on this page (stars, versions, issue counts) are from `gh api` **as of 2
 
 | Resource | Link | Notes |
 |----------|------|-------|
-| **Website** | [openclaw.ai](https://openclaw.ai) | Install scripts and downloads |
+| **Website** | [openclaw.ai](https://openclaw.ai) | Install scripts, downloads and the [blog](https://openclaw.ai/blog) |
+| **Foundation** | [openclaw.org](https://www.openclaw.org) | The OpenClaw Foundation: [people](https://www.openclaw.org/people), [donors](https://www.openclaw.org/donors), [press](https://www.openclaw.org/press) |
 | **GitHub** | [openclaw/openclaw](https://github.com/openclaw/openclaw) | 392k stars, 82k forks |
 | **Documentation** | [docs.openclaw.ai](https://docs.openclaw.ai) | The reference docs |
 | **ClawHub** | [clawhub.ai](https://clawhub.ai) ([repo](https://github.com/openclaw/clawhub), 9.5k stars) | Skill and plugin registry |
@@ -31,11 +32,19 @@ Figures on this page (stars, versions, issue counts) are from `gh api` **as of 2
 
 ### Foundation and sponsors
 
-OpenClaw is developed by the [OpenClaw Foundation](https://openclaw.org), an independent 501(c)(3) that employs the core team and signs releases. Per the upstream README, donors include Amazon, Lobster Computer Company, Offline Holdings, OpenAI, Red Hat and the University of Michigan, with infrastructure support from Blacksmith, Convex, GitHub, NVIDIA and Vercel. "OpenAI is a donor, not an owner."
+OpenClaw is developed by the [OpenClaw Foundation](https://www.openclaw.org), an independent 501(c)(3) that employs the core team and signs releases. The Foundation was announced on 2026-07-08 by Dave Morin and Peter Steinberger ([Introducing the OpenClaw Foundation](https://openclaw.ai/blog/introducing-openclaw-foundation)). As of 2026-10-18, its [people page](https://www.openclaw.org/people) lists Dave Morin as Chairperson and Vincent Koc as Chief Architect.
+
+Donor lists differ by source. Per the upstream README at v2026.10.4, donors include Amazon, Lobster Computer Company, Offline Holdings, OpenAI, Red Hat and the University of Michigan, with infrastructure support from Blacksmith, Convex, GitHub, NVIDIA and Vercel. "OpenAI is a donor, not an owner." The Foundation's [donors page](https://www.openclaw.org/donors) (2026-10-18) names Microsoft, NVIDIA, Offline Holdings, OpenAI, Red Hat and the University of Michigan.
+
+Press and media inquiries go to **press@openclaw.org** ([press page](https://www.openclaw.org/press)).
 
 ---
 
 ## Community spaces
+
+### Forum
+
+[community.openclaw.ai](https://community.openclaw.ai) is the official Discourse forum, linked from openclaw.ai. It is new and small: 90 users and 119 topics on 2026-10-18 ([about.json](https://community.openclaw.ai/about.json)). Use it for longer-form questions that would scroll away on Discord.
 
 ### Discord
 
@@ -51,6 +60,10 @@ Community roles (moderation, help, Reddit, events) are documented at [openclaw/c
 |-----------|-------------|
 | [r/OpenClaw](https://www.reddit.com/r/OpenClaw/) | Main subreddit: discussion, help, showcases |
 | r/Clawdbot | Legacy subreddit from the original project name |
+
+### Official social accounts
+
+Linked from [openclaw.ai](https://openclaw.ai) and [openclaw.org](https://www.openclaw.org) as of 2026-10-18: [X @openclaw](https://x.com/openclaw), [YouTube @OpenClawYT](https://www.youtube.com/@OpenClawYT), [TikTok @open_claw](https://www.tiktok.com/@open_claw), [Instagram openclaw_org](https://www.instagram.com/openclaw_org/) and [LinkedIn](https://www.linkedin.com/company/the-openclaw-foundation). Accounts not linked from those sites are unofficial.
 
 ### GitHub
 
