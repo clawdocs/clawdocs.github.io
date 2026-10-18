@@ -1,581 +1,550 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Basic Usage
-description: Everyday patterns for working with OpenClaw — CLI commands, slash commands, sessions, memory, execution approval, and power-user tips
-keywords: [openclaw, openclaw usage, openclaw commands, how to use openclaw, cli chat, slash commands]
+description: Everyday patterns for working with OpenClaw — talking to your agent from the Control UI, TUI and CLI, slash commands, exec approvals, sessions, memory, skills and config
+keywords: [openclaw, openclaw usage, openclaw commands, how to use openclaw, openclaw tui, openclaw agent, slash commands, exec approvals]
 ---
 
 # Basic Usage
 
-This guide covers everything you need to work with OpenClaw day-to-day, from your first chat message through sessions, memory, slash commands, and multi-agent workflows.
+This guide covers what you need day to day: how to talk to your agent, the slash commands, exec approvals, sessions, memory, skills and the config file. It assumes you have run `openclaw onboard` and the Gateway is running (`openclaw gateway status`).
 
 ---
 
-## CLI Chat
+## Talking to Your Agent {#cli-chat}
 
-The main entry point is `openclaw chat`:
+There are four ways in. They all talk to the same Gateway and the same agent.
+
+| Where | Command | Good for |
+|-------|---------|----------|
+| Browser (Control UI) | `openclaw dashboard` | Chat, settings, editing workspace files, approving pairing requests |
+| Terminal UI | `openclaw` or `openclaw tui` | Interactive chat in a terminal |
+| One-shot CLI | `openclaw agent --agent main --message "..."` | Scripts, quick questions |
+| Chat apps | Telegram, Discord, Slack, WhatsApp… | Everyday use from your phone ([channels](/guides/channels)) |
+
+### Terminal UI
 
 ```bash
-# One-shot message
-openclaw chat "What's in my current directory?"
+# Open the TUI on the main session
+openclaw tui
 
-# Interactive session
-openclaw chat
-> What files changed in git today?
-> Summarize the largest one
-> exit
+# Open it and send a first message straight away
+openclaw tui --message "What files changed in git today?"
 ```
 
-### Global Flags
+Type messages and slash commands at the prompt. Press **Ctrl+D** (or type `/exit`) to quit; **Ctrl+C** clears the input, and pressing it twice exits ([TUI](https://docs.openclaw.ai/web/tui)).
+
+`openclaw chat` and `openclaw terminal` also exist, but `chat` is an alias for `openclaw tui --local`, which runs an embedded agent instead of connecting to the Gateway. It takes no message argument: `openclaw chat "hello"` fails with an error.
+
+### One-shot messages
+
+`openclaw agent` sends one turn through the Gateway and prints the reply:
+
+```bash
+openclaw agent --agent main --message "What's in my workspace directory?"
+
+# Pick a model for this run only
+openclaw agent --agent main --model anthropic/claude-opus-5-5 --message "Analyze this architecture decision"
+
+# Machine-readable output
+openclaw agent --agent main --message "List my five largest files" --json
+```
+
+You must pass a session selector: `--agent`, `--session-key`, `--session-id` or `--to`. `--agent main` uses the main agent's main session, so the turn shares context with your TUI and Control UI conversation.
+
+### Global flags
+
+These work on every command (`openclaw --help`):
 
 | Flag | Effect |
 |------|--------|
-| `--dev` | Development mode (verbose logging, local gateway) |
-| `--profile <name>` | Use a named configuration profile |
-| `--container` | Run inside a sandboxed container |
-| `--no-color` | Disable colored output |
-| `--format json\|plain\|md` | Control output format |
-| `--model <id>` | Override the default model for this session |
+| `--dev` | Dev profile: separate state under `~/.openclaw-dev`, Gateway port 19001 |
+| `--profile <name>` | Separate state and config under `~/.openclaw-<name>` (for example a work install) |
+| `--container <name>` | Run the CLI inside an existing Podman/Docker container with that name |
+| `--log-level <level>` | Log level override (`silent` … `trace`) |
+| `--no-color` | Disable ANSI colors |
+| `-V`, `--version` | Print the version |
 
-```bash
-# Use a specific model for one session
-openclaw chat --model claude-opus-4-8 "Analyze this architecture decision"
-
-# Use a named profile
-openclaw chat --profile work "Check my team's PRs"
-```
+There is no global `--model` or `--format` flag. `--model` is an option of `openclaw agent`, and most commands take `--json` for machine-readable output.
 
 ---
 
 ## Setup Commands
 
-Run these after installing to configure OpenClaw for first use:
-
 | Command | Purpose |
 |---------|---------|
-| `openclaw setup` | Interactive first-time setup — API keys, default model, basic config |
-| `openclaw onboard` | Guided walkthrough of features for new users |
-| `openclaw configure` | Edit config file interactively (model, provider, heartbeat, etc.) |
-| `openclaw channels add` | Connect a messaging channel (WhatsApp, Telegram, Discord, Slack) |
+| `openclaw onboard` | Guided setup: verifies model access, writes config, seeds the workspace, and offers channels and skills |
+| `openclaw setup` | Same initialization; also recreates missing workspace files without overwriting existing ones |
+| `openclaw configure` | Targeted wizard for one area later (models, channels, gateway…) |
+| `openclaw channels add` | Connect a chat channel |
+| `openclaw dashboard` | Open the Control UI |
 
 ```bash
-# Full setup from scratch
-openclaw setup
-openclaw channels add whatsapp
 openclaw onboard
+openclaw gateway install      # run the Gateway as a background service
+openclaw channels add         # guided channel setup
+openclaw dashboard
 ```
 
 ---
 
 ## Slash Commands
 
-Inside an interactive session, type `/` followed by a command. These control the session without leaving the conversation:
+Type these in the TUI, the Control UI or any chat channel. `/help` shows a short summary and `/commands` the full catalog ([slash commands](https://docs.openclaw.ai/tools/slash-commands)).
 
-### Session Control
+### Session control
 
-| Command | What It Does |
+| Command | What it does |
 |---------|-------------|
-| `/new` | Start a fresh conversation (clears context) |
-| `/reset` | Reset the agent to default state |
-| `/compact` | Compress conversation history to save tokens |
-| `/restart` | Restart the gateway process |
+| `/new [model]` | Archive the current session and start a fresh one |
+| `/reset` | Reset the current session in place (`/reset soft` keeps the transcript) |
+| `/compact [instructions]` | Compact the conversation context to save tokens |
+| `/stop` | Abort the current run |
+| `/restart` | Restart OpenClaw. Owner-only, and can be disabled with `commands.restart: false` |
 
 ### Inspection
 
-| Command | What It Does |
+| Command | What it does |
 |---------|-------------|
-| `/status` | Show agent state, model, memory usage, active channels |
-| `/usage` | Show token consumption and estimated cost for this session |
-| `/trace` | Show detailed execution trace of the last action |
+| `/status` | Runtime status, uptime, plugin health, provider usage and quota |
+| `/usage off\|tokens\|full\|cost` | Per-reply usage footer, or `cost` for a local cost summary |
+| `/context` | Explain how the context is assembled |
+| `/tools` | Show which tools the agent can use right now |
+| `/whoami` | Show your sender ID |
 
-### Thinking Modes
+### Model and thinking
 
-| Command | What It Does |
+| Command | What it does |
 |---------|-------------|
-| `/think` | Enable extended thinking — the agent reasons step-by-step before answering |
-| `/verbose` | Increase output detail (show tool calls, intermediate steps) |
+| `/model [name]` | Show or switch the model for this session |
+| `/think <level>` | Set the thinking level (`off`, `low`, `medium`, `high`, …) or `default` |
+| `/verbose on\|off\|full` | Show tool calls and intermediate steps (debugging; keep off in groups) |
+| `/trace on\|off` | Toggle plugin trace output |
 
 ### Other
 
-| Command | What It Does |
+| Command | What it does |
 |---------|-------------|
-| `/activation` | Show current activation status and license info |
-| `/help` | List all available slash commands |
-
-```
-> /status
-Agent: active | Model: claude-sonnet-4-6 | Memory: 1,847 tokens
-Channels: whatsapp (connected), discord (connected)
-Heartbeat: running (last: 4m ago, next: 26m)
-
-> /usage
-Session tokens: 12,450 in / 3,200 out
-Estimated cost: $0.05
-
-> /compact
-Compressed 47 messages → 1 summary (saved ~8,200 tokens)
-```
+| `/skill <name> [input]` | Run a skill by name |
+| `/approve <id> <decision>` | Resolve a pending exec approval |
+| `/activation mention\|always` | In a group: reply only when mentioned, or to everything |
 
 ---
 
-## Execution Approval
-
-When OpenClaw needs to run a shell command, make a network request, or modify files, it asks for your approval:
-
-```
-Agent wants to execute:
-  $ rm -rf node_modules && npm install
-
-  [approve] [deny] [approve all similar]
-```
+## Execution Approval {#execution-approval}
 
 :::danger Commands run without asking by default
-By default OpenClaw runs host shell commands **without asking** (`tools.exec.mode` is `full` on the gateway host) and the sandbox is **off** (`agents.defaults.sandbox.mode: "off"`). To review commands before they run, set `openclaw config set tools.exec.mode ask` (or `auto`, which adds an automatic reviewer) and restart the gateway. See the official [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing) docs.
+By default OpenClaw runs host shell commands **without asking**: `tools.exec.mode` resolves to `full` on the Gateway host, and the sandbox is **off**. If your agent reads email, web pages, PRs or anything else you didn't write, a prompt injection can run commands as your user. Turn on approvals and consider the sandbox: [exec approvals](/security/hardening#exec-approvals), [sandboxing](/security/hardening#sandboxing).
 :::
 
-### Approval Modes
-
-Approvals are set with `tools.exec.mode` (there is no `permissions` key; OpenClaw refuses to start with unknown config keys):
-
-```bash
-openclaw config set tools.exec.mode ask
-openclaw approvals get        # shows the effective policy and where it comes from
-openclaw gateway restart
-```
+Approvals are set with `tools.exec.mode`. There is no `permissions` key, and OpenClaw refuses to start with unknown config keys.
 
 | Mode | Behavior |
 |------|----------|
-| `full` (default on the gateway host) | Runs host commands without prompts |
+| `full` (default on the Gateway host) | Runs host commands without prompts |
 | `auto` | Runs allowlisted commands; an automatic reviewer allows, denies or asks you about the rest |
 | `ask` | Runs allowlisted commands; asks you about everything else |
 | `allowlist` | Runs allowlisted commands; silently denies the rest |
-| `deny` | Blocks host commands entirely |
+| `deny` | No host commands at all |
 
-The allowlist lives in the host approvals file, not in `openclaw.json`; see [Exec approvals](https://docs.openclaw.ai/tools/exec-approvals).
+Source: [permission modes](https://docs.openclaw.ai/tools/permission-modes).
 
-The `auto_approve` list lets you whitelist safe commands that skip the prompt. Commands in `always_deny` are blocked even in `auto` mode.
+```bash
+openclaw config set tools.exec.mode ask
+openclaw gateway restart
 
-:::caution
-Only use `"mode": "auto"` on machines where you trust the agent completely. In auto mode, the agent can run any command without asking.
-:::
+openclaw approvals get       # requested policy, host approvals file, effective result
+openclaw exec-policy show    # what the agent's terminal tools can do, in plain words
+```
+
+In `ask` mode, approval prompts reach you in the Control UI or as a chat message with buttons on channels that support them (you can also reply `/approve <id> <decision>`). Choosing "always allow" adds that exact command, in that directory, to the allowlist.
+
+The allowlist lives in the host approvals file, not in `openclaw.json`. You can add entries yourself; patterns are command-name or binary-path globs:
+
+```bash
+openclaw approvals allowlist add "rg"
+openclaw approvals allowlist add "git" --agent main
+openclaw approvals pending   # anything waiting for you
+```
+
+The effective policy is the **stricter** of `openclaw.json` and the approvals file. Allowlisting a binary allows all of its subcommands (`git` includes `git push`), so allowlist only tools you are happy to see run with any arguments. Details: [exec approvals](https://docs.openclaw.ai/tools/exec-approvals).
 
 ---
 
 ## Sessions
 
-Every conversation is a session. Sessions persist across restarts, and you can manage multiple concurrent sessions.
-
-### Session Commands
+Every conversation is a session, stored in the agent's SQLite database. Sessions survive restarts.
 
 ```bash
-# List all sessions
+# Sessions for the default agent
 openclaw sessions list
+openclaw sessions list --active 60      # updated in the last hour
 
-# View history of a specific session
-openclaw sessions history <session-id>
+# Follow what a session is doing
+openclaw sessions tail --follow
+openclaw sessions tail --session-key agent:main:main
 
-# Send a message to a running session
-openclaw sessions send <session-id> "Check on that deployment"
+# Send a message into a specific session
+openclaw agent --session-key agent:main:main --message "Check on that deployment"
 ```
 
-### Session Tools (In-Chat)
+### Session tools (in chat)
 
-Inside a session, OpenClaw exposes session management as tools:
-
-| Tool | Purpose |
-|------|---------|
-| `sessions_list` | List active and recent sessions |
-| `sessions_history` | View messages from another session |
-| `sessions_send` | Send a message to another active session |
-| `sessions.steer` | Redirect the current session's behavior |
+The agent itself can work with sessions through tools such as `sessions_list`, `sessions_history` and `sessions_send` ([session tools](https://docs.openclaw.ai/concepts/session-tool)). To redirect a run that is already in progress, see [steer](https://docs.openclaw.ai/tools/steer).
 
 ```
 > List my active sessions
-Using tool: sessions_list
-You have 3 active sessions:
-  1. main (this one) — started 2h ago
-  2. heartbeat — started 14h ago, last active 12m ago
-  3. researcher — started 45m ago, running task
-
 > Send "status update?" to the researcher session
-Using tool: sessions_send → researcher
-Response: "Analyzed 47 files, found 3 security issues. Writing report now."
 ```
 
-### Session Isolation
+### What a session holds
 
-Each session maintains its own:
-- Conversation history and context
-- Working directory
-- Tool permissions
-- Token budget
+A session holds its own conversation history and context. Tool policy and the workspace belong to the **agent**, not the session. By default all your direct messages, across channels, share the agent's main session; set `session.dmScope: "per-channel-peer"` when other people can message the bot ([sessions](https://docs.openclaw.ai/concepts/session)). Group chats always get their own session.
 
-The heartbeat runs in the main session by default, not in a separate background process. This means heartbeat actions share context with your primary conversation.
+The heartbeat runs in the main session by default, so heartbeat turns share context with your main conversation unless you set `isolatedSession: true`.
 
 ---
 
 ## Memory
 
-OpenClaw has a persistent memory system. Memory survives across sessions and gateway restarts.
+Memory is plain Markdown in the agent workspace (`~/.openclaw/workspace/`):
 
-### Natural Language Memory
+- `MEMORY.md`: curated long-term facts and decisions, loaded at the start of private sessions.
+- `memory/YYYY-MM-DD.md`: daily notes. These are **not** injected every turn; the agent retrieves them with its memory search tool when relevant.
+- `USER.md`: your preferences as directives, loaded every session.
 
-Talk to memory using natural language — no special syntax needed:
+Source: [memory](https://docs.openclaw.ai/concepts/memory), [agent workspace](https://docs.openclaw.ai/concepts/agent-workspace).
+
+### Natural language
 
 ```
 > Remember that the production database is on db.prod.internal:5432
-Saved to memory.
-
 > Remember that deploy freezes happen every Friday after 3pm
-Saved to memory.
-
 > What do you remember about the database?
-I remember: the production database is on db.prod.internal:5432
-
-> Forget about the database location
-Removed from memory.
 ```
 
-### Memory Commands
+You can also open and edit the files directly, or in the Control UI under **Settings → Agents → Files**.
+
+### Memory commands
 
 ```bash
-# View all memories from the CLI
-openclaw memory list
-
-# Search memories
-openclaw memory search "database"
-
-# Clear all memories
-openclaw memory clear
+openclaw memory status            # index and embedding provider status
+openclaw memory status --deep     # also probe the embedding provider
+openclaw memory search "database" # search memory files
+openclaw memory index             # reindex after editing files by hand
+openclaw memory forget --session <id-or-key> --dry-run   # preview deleting memories from a session
 ```
 
-### How Memory Works
-
-- Memories are stored in `~/.openclaw/memory/` as structured files
-- Each message loads relevant memories into context (default: up to 2,000 tokens)
-- Memory retrieval uses semantic search — it finds relevant memories even with different wording
-- You can cap memory loading with `max_context_tokens` in config
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "memory": {
-    "max_context_tokens": 2000,
-    "auto_save": true
-  }
-}
-```
+Deleting a line from `MEMORY.md` removes it from future context; run `openclaw memory index` so search stops returning it. Session transcripts are kept separately.
 
 :::tip
-Memory is great for facts that don't change often: server addresses, team conventions, personal preferences. For ephemeral tasks, use the conversation context instead.
+Memory is good for facts that don't change often: server addresses, team conventions, preferences. Never put secrets in memory files; they are sent to the model provider with the context.
 :::
 
 ---
 
 ## Common Task Patterns
 
-### File Operations
+Each line works as a message in the TUI, the Control UI or a chat app. From a script, wrap it in `openclaw agent --agent main --message "..."`.
 
-```bash
-openclaw chat "Create a .gitignore for a Node.js project in ~/new-project"
-openclaw chat "Find all TODO comments in ~/project/src"
-openclaw chat "Rename all .jpeg files in ~/photos to .jpg"
+### File operations
+
+```
+Create a .gitignore for a Node.js project in ~/new-project
+Find all TODO comments in ~/project/src
+Rename all .jpeg files in ~/photos to .jpg
 ```
 
-### Development Tasks
+### Development
 
-```bash
-openclaw chat "Run the test suite in ~/app and summarize any failures"
-openclaw chat "Review the diff in my current git branch and suggest improvements"
-openclaw chat "Set up a new Express API project with TypeScript in ~/api"
+```
+Run the test suite in ~/app and summarize any failures
+Review the diff in my current git branch and suggest improvements
+Set up a new Express API project with TypeScript in ~/api
 ```
 
 ### Research
 
-```bash
-openclaw chat "What are the top Hacker News stories right now?"
-openclaw chat "Compare the latest pricing for AWS, GCP, and Azure for a small web app"
-openclaw chat "Summarize this paper: https://arxiv.org/abs/2401.12345"
+Web search needs a configured search provider ([web tools](https://docs.openclaw.ai/tools/web)).
+
+```
+What are the top Hacker News stories right now?
+Summarize this paper: https://arxiv.org/abs/2401.12345
 ```
 
-### System Administration
+### System administration
 
-```bash
-openclaw chat "What processes are using the most memory?"
-openclaw chat "Check if ports 3000, 5432, and 6379 are in use"
-openclaw chat "Monitor my disk usage and alert me if any partition is above 90%"
+```
+What processes are using the most memory?
+Check if ports 3000, 5432 and 6379 are in use
 ```
 
-### Git Workflows
+For a recurring check ("alert me if a disk is above 90%"), ask for an automation, or create one with `openclaw cron add`. See [Day 3](/guides/first-7-days/day-3-automation).
 
-```bash
-openclaw chat "Create a branch, fix the typo in README.md, commit, and open a PR"
-openclaw chat "Rebase my feature branch on main and resolve any conflicts"
-openclaw chat "Show me what changed since the last release tag"
+### Git workflows
+
 ```
+Show me what changed since the last release tag
+Create a branch, fix the typo in README.md and commit it
+```
+
+:::caution
+Requests that push, open PRs or rewrite history are unattended writes under the default `full` exec mode. Use `ask` mode, or review before you say "go".
+:::
 
 ---
 
 ## Working with Context
 
-OpenClaw remembers context within a session and across sessions via [memory](/architecture/memory-system):
+Within a session the agent remembers everything said so far:
 
-```bash
-openclaw chat
+```
 > I'm working on the authentication module in ~/project
 > What does the login function do?
 > Refactor it to use JWT instead of sessions
 > Now update the tests to match
 ```
 
-Each message builds on the previous. When context grows large, use `/compact` to compress the history.
+When context grows large, `/compact` summarizes it. Start `/new` for unrelated work.
 
-### Context Tips
+### Context tips
 
-| Technique | When to Use |
+| Technique | When to use |
 |-----------|------------|
-| Start with a path | "I'm working on ~/project/src/auth.ts" — sets the context |
-| Reference files explicitly | "Look at `config.yaml` line 42" — avoids ambiguity |
-| Use `/compact` early | Before context exceeds ~50 messages |
+| Start with a path | "I'm working on ~/project/src/auth.ts" sets the context |
+| Reference files explicitly | "Look at `config.yaml` line 42" avoids ambiguity |
+| Use `/compact` early | When a session has run long and replies slow down |
 | Start `/new` for unrelated work | Prevents cross-contamination between tasks |
 
 ---
 
 ## Piping Input
 
+`openclaw agent` reads the message from a file with `--message-file`. On Linux and macOS, `/dev/stdin` works as that file, so you can build a prompt in the shell and pipe it in:
+
 ```bash
-# Pipe file contents
-cat error.log | openclaw chat "What's causing these errors?"
+# Ask about a log file (prompt + data in one message)
+{ echo "What's causing these errors?"; tail -n 200 error.log; } \
+  | openclaw agent --agent main --message-file /dev/stdin
 
-# Pipe command output
-docker ps | openclaw chat "Which containers are using the most resources?"
+# Review a diff
+{ echo "Review these changes for bugs:"; git diff HEAD~5; } \
+  | openclaw agent --agent main --message-file /dev/stdin
 
-# Pipe JSON
-curl -s https://api.example.com/data | openclaw chat "Summarize this API response"
-
-# Pipe a diff
-git diff HEAD~5 | openclaw chat "Review these changes for bugs"
-
-# Chain with other tools
-openclaw chat "List files over 100MB" | xargs du -sh
+# A prompt kept in a file
+openclaw agent --agent main --message-file ./task.md
 ```
+
+The message limit is 4 MiB.
+
+### `agent exec`: isolated headless runs
+
+`openclaw agent exec` is different: it runs one embedded agent turn **without** the Gateway, in a throwaway state directory, with the current directory as its workspace. It is meant for CI and coding automation, and accepts stdin with `--message-file -`:
+
+```bash
+cat task.md | openclaw agent exec --message-file - --json
+```
+
+Unless your config says otherwise, `agent exec` runs with the sandbox off and the **full** exec policy, scoped to `--cwd`. Use it in a repository you trust, not on untrusted input ([agent exec](https://docs.openclaw.ai/cli/agent)).
 
 ---
 
-## Output Formatting
+## Output
 
-OpenClaw responds in Markdown by default. Control the format:
+Replies are Markdown. For scripts, use `--json` and pick fields with `jq`:
 
 ```bash
-# Get JSON output
-openclaw chat --format json "List my 5 largest files"
+openclaw agent --agent main --message "Write a commit message for my staged changes" --json > reply.json
 
-# Plain text (no markdown)
-openclaw chat --format plain "What time is it?"
-
-# Save to file
-openclaw chat "Generate a project README" > README.md
-
-# Pipe to clipboard (macOS)
-openclaw chat "Write a commit message for my staged changes" | pbcopy
+# Save a reply as a file
+openclaw agent --agent main --message "Generate a project README" > README.md
 ```
+
+Don't pipe model output straight into a shell command (`| xargs`, `| sh`). Read it first.
 
 ---
 
 ## Multi-Step Tasks
 
-For complex tasks, OpenClaw breaks work into steps automatically:
-
-```bash
-openclaw chat "Set up a PostgreSQL database, create a users table, \
-  add seed data, and generate a TypeScript ORM client"
-```
-
-The agent will:
-1. Check if PostgreSQL is installed
-2. Create the database
-3. Write and execute the schema
-4. Insert seed data
-5. Generate the ORM client
-6. Report what it did
-
-### Monitoring Progress
-
-For long-running multi-step tasks, the agent shows progress:
+For larger tasks the agent plans and works through the steps itself:
 
 ```
-Step 1/5: Checking PostgreSQL installation... done
-Step 2/5: Creating database "myapp_dev"... done
-Step 3/5: Applying schema (3 tables, 2 indexes)... done
-Step 4/5: Seeding 100 rows... done
-Step 5/5: Generating Prisma client... done
-
-All steps completed. Database ready at localhost:5432/myapp_dev
+Set up a PostgreSQL database for ~/myapp, create a users table,
+add seed data and generate a TypeScript ORM client
 ```
+
+Watch tool calls as they happen with `/verbose on`, or from another terminal with `openclaw sessions tail --follow`. With `tools.exec.mode: "ask"` you approve each command that isn't allowlisted.
 
 ---
 
 ## Multi-Agent Basics
 
-OpenClaw supports running multiple agents simultaneously. From a user's perspective:
+You can run several isolated agents, each with its own workspace, model, tools and sessions:
 
 ```bash
-# Start a named agent
-openclaw agent start researcher --model claude-opus-4-8
-
-# List running agents
-openclaw agent list
-
-# Send a task to a specific agent
-openclaw agent send researcher "Analyze the competitor landscape"
-
-# View agent output
-openclaw agent logs researcher
+openclaw agents list
+openclaw agents add researcher --model anthropic/claude-opus-5-5
+openclaw agent --agent researcher --message "Analyze the competitor landscape"
+openclaw agents bindings
 ```
 
-### Agent Routing
-
-When multiple agents are running, messages route to the most relevant agent based on priority tiers:
-
-| Priority | Route To |
-|----------|---------|
-| Highest | Agent whose workspace matches the file/topic |
-| Default | The primary agent (your main session) |
-| Heartbeat | Heartbeat tasks run in the main session |
-
-Configure per-agent models to optimize cost:
+Messages reach an agent through **bindings** (deterministic routing rules by channel, account, peer, guild or team), or when you address it with `--agent`. There is no topic-based routing. A roster with more than one agent needs `agents.ownership: "explicit"`:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "agents": {
-    "list": [
-      { "id": "researcher", "model": "claude-opus-4-8" },
-      { "id": "monitor", "model": "ollama/qwen3:14b" },
-      { "id": "worker", "model": "claude-haiku-4-5-20251001" }
-    ]
-  }
+  agents: {
+    ownership: "explicit",
+    defaults: {
+      model: { primary: "anthropic/claude-sonnet-5-5" },
+    },
+    entries: {
+      main: {},
+      researcher: {
+        workspace: "~/.openclaw/workspace-researcher",
+        model: { primary: "anthropic/claude-opus-5-5" },
+      },
+    },
+  },
+  bindings: [
+    // Messages in one Discord channel go to the researcher
+    { agentId: "researcher", match: { channel: "discord", peer: { kind: "channel", id: "222222222222222222" } } },
+  ],
 }
 ```
 
-See [Multi-Agent Guide](/guides/multi-agent) for advanced patterns.
+Older configs with `agents.list` are rejected until `openclaw doctor --fix` migrates them. See the [Multi-Agent Guide](/guides/multi-agent) and [Day 6](/guides/first-7-days/day-6-power-moves).
 
 ---
 
 ## Skills
 
-Skills are reusable task templates that extend what OpenClaw can do:
+Skills are folders with a `SKILL.md` that teach the agent a task. Many ship with OpenClaw (`github`, `weather`, `summarize`, `healthcheck` and more); they only need their CLI tools installed.
 
 ```bash
-# List installed skills
-openclaw skills list
+openclaw skills list              # everything the agent can see
+openclaw skills check             # which skills are ready, and what's missing
+openclaw skills info github
 
-# Run a skill
-openclaw skills run deploy-to-staging
-
-# Install a skill from ClawHub
-openclaw skills install clawdocs/email-digest
+openclaw skills search "email digest"
+openclaw skills verify @owner/<slug> --card   # read the ClawHub verification first
+openclaw skills install @owner/<slug>
 ```
 
-Inside a chat session, invoke skills directly:
+ClawHub skills are installed by owner and slug (`@owner/<slug>`); bare slugs are often ambiguous. Treat a community skill like code you are about to run ([supply chain](/security/hardening#supply-chain)).
+
+In chat, run a skill with `/skill <name>`:
 
 ```
-> /skill deploy-to-staging
-Running skill: deploy-to-staging
-  Building... done
-  Running tests... done
-  Deploying to staging.myapp.com... done
-  Health check passed.
+> /skill github list my open PRs in myorg/myrepo
 ```
 
-See [Skill Development](/guides/skill-development) for creating your own skills.
+See [Day 4](/guides/first-7-days/day-4-skills) and [Skill Development](/guides/skill-development).
 
 ---
 
 ## Configuration Essentials
 
-OpenClaw's configuration lives in `~/.openclaw/`:
+Config and state live in `~/.openclaw/`; the agent's personality and memory live in its workspace:
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `openclaw.json` | Main config — model, provider, heartbeat, permissions |
-| `SOUL.md` | Agent personality and instructions |
-| `HEARTBEAT.md` | Heartbeat task definitions |
-| `memory/` | Persistent memory storage |
-| `skills/` | Installed skills |
+| `~/.openclaw/openclaw.json` | Main config (JSON5): models, channels, tools, heartbeat |
+| `~/.openclaw/.env` | Environment variables the Gateway loads (tokens) |
+| `~/.openclaw/workspace/AGENTS.md` | Operating instructions (required) |
+| `~/.openclaw/workspace/SOUL.md` | Persona and tone |
+| `~/.openclaw/workspace/USER.md` | Your preferences, as directives |
+| `~/.openclaw/workspace/MEMORY.md`, `memory/` | Long-term memory and daily notes |
+| `~/.openclaw/workspace/skills/` | Your own skills |
+| `~/.openclaw/agents/<id>/agent/openclaw-agent.sqlite` | Sessions, transcripts, auth profiles |
 
-### Quick Config Changes
+`HEARTBEAT.md` is retired: heartbeat instructions live in the monitor's scratch, and recurring tasks are automations. If an old workspace still has one, `openclaw doctor --fix` migrates it.
+
+### Changing config
 
 ```bash
-# Open config in your editor
-openclaw configure
-
-# Or edit directly
-vim ~/.openclaw/openclaw.json
+openclaw config file                          # where the active config is
+openclaw config get agents.defaults.model
+openclaw config set tools.exec.mode ask
+openclaw config patch --file ./change.json5 --dry-run
+openclaw config validate
+openclaw configure                            # guided wizard
 ```
 
-### Minimal Config
+You can also edit `openclaw.json` by hand. The Gateway watches it and applies most changes itself; run `openclaw config validate` after every hand edit, because unknown keys or wrong types stop the Gateway from starting.
+
+### Minimal config
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6"
-  }
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+      model: { primary: "anthropic/claude-sonnet-5-5" },
+    },
+  },
 }
 ```
 
-### With All Common Options
+### With common options
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6",
-    "fallback": {
-      "provider": "openrouter",
-      "model": "deepseek/deepseek-v3.2"
-    }
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+      userTimezone: "Europe/Berlin",
+      model: {
+        primary: "anthropic/claude-sonnet-5-5",
+        fallbacks: ["openai/gpt-6-astra"],
+      },
+      heartbeat: {
+        every: "30m",
+        activeHours: { start: "07:00", end: "22:00" },
+      },
+    },
   },
-  "heartbeat": {
-    "interval": 1800,
-    "model": "claude-haiku-4-5-20251001",
-    "quiet_hours": { "start": "22:00", "end": "07:00" }
+  session: { dmScope: "per-channel-peer" },
+  tools: {
+    exec: { mode: "ask" },
+    fs: { workspaceOnly: true },
   },
-  "memory": {
-    "max_context_tokens": 2000
-  }
 }
 ```
 
-After editing the config, restart the gateway:
-
-```bash
-openclaw gateway restart
-```
+More starting points: [configuration examples](https://docs.openclaw.ai/gateway/configuration-examples).
 
 ---
 
 ## CLI Command Reference (Quick)
 
-The full CLI has 50+ subcommands. Here are the ones you'll use most:
+The commands you'll use most. `openclaw --help` lists them all, and every command has `--help`.
 
 | Command | Purpose |
 |---------|---------|
-| `openclaw chat` | Start a conversation |
-| `openclaw setup` | First-time configuration |
-| `openclaw configure` | Edit config interactively |
-| `openclaw gateway start\|stop\|restart` | Manage the gateway |
-| `openclaw channels add\|list\|remove` | Manage channels |
-| `openclaw sessions list\|history\|send` | Session management |
-| `openclaw agent start\|list\|send\|logs` | Multi-agent management |
-| `openclaw heartbeat --now\|--dry-run` | Trigger/test heartbeat |
-| `openclaw memory list\|search\|clear` | Memory management |
-| `openclaw skills list\|run\|install` | Skill management |
-| `openclaw stats` | Usage statistics |
-| `openclaw logs` | View logs |
+| `openclaw` / `openclaw tui` | Terminal chat |
+| `openclaw dashboard` | Open the Control UI |
+| `openclaw agent --agent <id> --message "..."` | One-shot turn through the Gateway |
+| `openclaw onboard` / `setup` / `configure` | Setup wizards |
+| `openclaw status` | Overall health |
+| `openclaw gateway start\|stop\|restart\|status` | Manage the Gateway service |
+| `openclaw channels add\|list\|status\|login\|remove` | Manage chat channels |
+| `openclaw pairing list\|approve` | Approve new DM senders |
+| `openclaw sessions list\|tail` | Inspect sessions |
+| `openclaw agents list\|add\|bindings` | Manage agents |
+| `openclaw cron add\|list\|runs\|rm` | Automations (alias: `openclaw automations`) |
+| `openclaw memory status\|search\|index\|forget` | Memory |
+| `openclaw skills list\|search\|install\|verify\|update` | Skills |
+| `openclaw approvals get` / `openclaw exec-policy show` | Exec approvals |
+| `openclaw config get\|set\|patch\|validate` | Edit config |
+| `openclaw models list` | Available models |
+| `openclaw gateway usage-cost` | Cost summary |
+| `openclaw logs --follow` | Gateway logs |
+| `openclaw doctor` / `openclaw triage` | Diagnose problems |
 | `openclaw update` | Update OpenClaw |
 
-See [CLI Reference](/reference/cli) for the complete list.
+See the [CLI Reference](/reference/cli) and the [upstream CLI docs](https://docs.openclaw.ai/cli).
 
 ---
 
@@ -587,10 +556,10 @@ See [CLI Reference](/reference/cli) for the complete list.
 | State desired output | "Create a JSON config file" not just "set up config" |
 | Provide constraints | "Use Python 3.12, no external dependencies" |
 | Reference past context | "Like the script we made yesterday" |
-| Use one-shot for simple tasks | `openclaw chat "What's my IP?"` |
-| Use interactive for complex work | `openclaw chat` then build up context |
-| Pipe large inputs | `cat bigfile.log \| openclaw chat "Find errors"` |
-| Combine with Unix tools | `openclaw chat --format json "..." \| jq '.results'` |
+| One-shot for simple tasks | `openclaw agent --agent main --message "What's my public IP?"` |
+| Interactive for complex work | `openclaw tui`, then build up context |
+| Pipe large inputs | `{ echo "Find errors:"; cat big.log; } \| openclaw agent --agent main --message-file /dev/stdin` |
+| Use JSON for scripts | `openclaw agent --agent main --message "..." --json \| jq .` |
 
 ---
 
@@ -598,22 +567,25 @@ See [CLI Reference](/reference/cli) for the complete list.
 
 | Problem | Solution |
 |---------|----------|
-| "Gateway not running" | Run `openclaw gateway start` |
-| "Model not found" | Check `openclaw configure` for valid model IDs |
-| Slow responses | Check `/usage` — context may be too large, use `/compact` |
-| Agent won't run commands | Check the effective policy with `openclaw approvals get` |
-| Memory not loading | Verify `~/.openclaw/memory/` exists and has files |
-| Channel disconnected | Run `openclaw channels list` then `openclaw channels add <name>` |
+| "Gateway not running" | `openclaw gateway status`, then `openclaw gateway start` (or `openclaw gateway install` if no service exists) |
+| Gateway won't start after a config edit | `openclaw config validate` names the bad key; `openclaw doctor --fix` migrates old shapes |
+| "Model not found" | `openclaw models list` shows valid model refs (`provider/model`) |
+| Slow or expensive replies | `/usage tokens` and `/context`; then `/compact` or `/new` |
+| Agent won't run commands | `openclaw exec-policy show` and `openclaw approvals get` |
+| Memory search returns nothing | `openclaw memory status --deep`, then `openclaw memory index` |
+| Channel disconnected | `openclaw channels status --probe`; re-link with `openclaw channels login` or `openclaw gateway restart` |
+| Not sure what's wrong | `openclaw triage` runs read-only checks and writes a sanitized diagnosis |
 
 ---
 
 ## See Also
 
 - [Channels & Integrations](/guides/channels) — Use OpenClaw from WhatsApp, Slack, etc.
-- [Heartbeat Guide](/guides/heartbeat) — Set up autonomous background tasks
-- [Skill Development](/guides/skill-development) — Automate recurring tasks
+- [Heartbeat Guide](/guides/heartbeat) — Background check-ins
+- [Skill Development](/guides/skill-development) — Write your own skills
 - [Multi-Agent Guide](/guides/multi-agent) — Run multiple agents
 - [Model Selection](/guides/model-selection) — Choose the right model
 - [SOUL.md Guide](/guides/soul-md) — Customize your agent's personality
+- [Security Hardening](/security/hardening) — Approvals, sandboxing, channel access
 - [CLI Reference](/reference/cli) — All CLI commands and flags
 - [Configuration Reference](/reference/configuration) — All config options
