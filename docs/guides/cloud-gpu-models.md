@@ -121,7 +121,7 @@ These providers host open-weight models behind an API. You pay per token; there 
 
 | Provider | OpenClaw integration | Auth env var | Notes |
 |----------|---------------------|--------------|-------|
-| [**Cerebras**](https://www.cerebras.ai) | Official plugin `@openclaw/cerebras-provider`; default model `cerebras/gpt-oss-120b` | `CEREBRAS_API_KEY` | Very high output speed |
+| [**Cerebras**](https://www.cerebras.ai) | Official plugin `@openclaw/cerebras-provider`; default model `cerebras/gemma-4-31b` (preview); `cerebras/gpt-oss-120b` is the production reasoning model | `CEREBRAS_API_KEY` | Very high output speed |
 | [**Groq**](https://groq.com/pricing) | Official plugin `@openclaw/groq-provider`; suggested `groq/openai/gpt-oss-120b` | `GROQ_API_KEY` | Low latency; also audio transcription |
 | [**Together AI**](https://www.together.ai/pricing) | Bundled `together` provider | `TOGETHER_API_KEY` | Llama, DeepSeek, Kimi, GLM and more |
 | [**Fireworks AI**](https://fireworks.ai/pricing) | Official plugin `@openclaw/fireworks-provider` | `FIREWORKS_API_KEY` | Open-weight models and routers |
@@ -357,7 +357,7 @@ For a full model selection guide covering cloud, local and hybrid setups, see th
 - **DeepSeek-R1-Distill-Qwen-32B** for planning and reasoning-heavy work
 - **Qwen 2.5 Coder 32B** for code-heavy work
 
-These are community experience, not benchmarks. Upstream's [recommended models](https://docs.openclaw.ai/concepts/recommended-models) page and the [llama.cpp recipes](https://docs.openclaw.ai/plugins/llama-cpp) are the maintained references.
+These are community experience, not benchmarks. The [llama.cpp recipes](https://docs.openclaw.ai/plugins/llama-cpp) are the maintained reference in 2026.10.4; upstream adds a [recommended models](https://docs.openclaw.ai/concepts/recommended-models) page after that release.
 
 :::warning
 **Avoid models under about 8B parameters** for agent work. They hallucinate tool calls and lose track of multi-step tasks. Test real tasks before you make an open model your default; the best results with OpenClaw still come from frontier hosted models.

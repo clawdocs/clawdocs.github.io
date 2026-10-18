@@ -93,7 +93,7 @@ When an embedding provider is available, `memory_search` runs two paths in paral
 | MMR | Reorders results to drop near-duplicate snippets |
 
 :::warning Embeddings are remote by default
-OpenClaw uses **OpenAI embeddings by default**, so note content is sent to an embedding API unless you choose otherwise. For local-only operation set `memory.search.provider` to `"local"`, `"ollama"` or `"lmstudio"`, or to `"none"` for keyword-only (FTS) search with no embeddings at all. Other supported providers: Gemini, Voyage, Mistral, Bedrock, DeepInfra, GitHub Copilot, oMLX, and any OpenAI-compatible endpoint. See [Memory search](https://docs.openclaw.ai/concepts/memory-search).
+OpenClaw uses **OpenAI embeddings by default**, so note content is sent to an embedding API unless you choose otherwise. For local-only operation set `memory.search.provider` to `"local"`, `"ollama"` or `"lmstudio"`, or to `"none"` for keyword-only (FTS) search with no embeddings at all. Other supported providers: Gemini, Voyage, Mistral, Bedrock, DeepInfra, GitHub Copilot, and any OpenAI-compatible endpoint (`openai-compatible`). See [Memory search](https://docs.openclaw.ai/concepts/memory-search).
 :::
 
 If you name a provider explicitly and it fails (bad key, network down), `memory_search` reports memory as unavailable rather than silently falling back to keywords. Leaving the provider unset, or using `"local"`, falls back to keyword ranking instead.

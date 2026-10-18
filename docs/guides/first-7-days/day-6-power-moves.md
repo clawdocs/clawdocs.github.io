@@ -267,7 +267,7 @@ openclaw agents bindings
 openclaw gateway restart
 ```
 
-With more than one agent, a message that matches no binding has no default owner, so keep the catch-all `main` bindings for each channel you use ([Multi-agent routing](https://docs.openclaw.ai/concepts/multi-agent)).
+With more than one agent, a message that matches no binding goes to `agents.defaults.systemAgent.agentId`; without that setting it has no owner and is not dispatched. Keep the catch-all `main` bindings anyway, so routing for each channel is explicit ([Multi-agent routing](https://docs.openclaw.ai/concepts/multi-agent)).
 
 ### Agent communication
 

@@ -28,7 +28,7 @@ Prices below are per million input/output tokens, **as of 2026-10-18**. Anthropi
 | Balance of cost and quality | `anthropic/claude-sonnet-5-5` | $2 / $10 |
 | Cheap and fast | `anthropic/claude-haiku-5-5` | $0.10 / $0.50 up to 100K-token prompts; $0.50 / $2.50 above |
 | OpenAI default | `openai/gpt-6-astra` (also the built-in fallback when no model is configured) | See [OpenAI pricing](https://openai.com/api/pricing/) |
-| Google default | `google/gemini-4-argon` | See [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing) |
+| Google default | `google/gemini-3.1-pro-preview` (onboarding default in 2026.10.4; the next release moves to Gemini 4 Argon) | See [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing) |
 | Budget cloud | `deepseek/deepseek-flash` (V4.1 Flash) | About $0.30 / $1.20 at peak hours (OpenClaw's bundled estimate) |
 | Free, local | `ollama/qwen3:32b` or similar | $0 per token, your hardware |
 | One key for many providers | `openrouter/auto` | Pass-through pricing |
@@ -72,7 +72,7 @@ The heartbeat is a scheduled agent turn, every 30 minutes by default. Run it on 
         isolatedSession: true,
         lightContext: true,
       },
-      // Short internal tasks: titles, narration, recaps, summaries
+      // Short internal tasks: titles, progress narration, Activity recaps
       utilityModel: "anthropic/claude-haiku-5-5",
     },
   },
@@ -96,12 +96,12 @@ The heartbeat is a scheduled agent turn, every 30 minutes by default. Run it on 
 | `anthropic/claude-sonnet-5-5` | Good quality per dollar |
 | `anthropic/claude-haiku-5-5` | Cheapest Claude. Text and image input, 1M context. |
 | `openai/gpt-6-luna` | Lower-cost GPT-6 tier; check your account's catalog |
-| `google/gemini-3.8-flash` | Google's bundled Flash model (alias `gemini-flash`) |
+| `google/gemini-3.7-flash` | Newest bundled Gemini Flash model in 2026.10.4. The `gemini-flash` alias still selects `google/gemini-3-flash-preview` |
 | `deepseek/deepseek-flash` | Budget option |
 
 ### Long context
 
-Current Claude models (Fable 5.1, Opus 5.5, Sonnet 5.5, Haiku 5.5) and Opus/Sonnet 4.6 and later have a 1M-token context window; Haiku 4.5 has 200K. `google/gemini-4-argon` has 1,048,576 tokens and DeepSeek V4 models 1M. A large window is not free: every token you send is billed, so keep sessions compact either way.
+Current Claude models (Fable 5.1, Opus 5.5, Sonnet 5.5, Haiku 5.5) and Opus/Sonnet 4.6 and later have a 1M-token context window; Haiku 4.5 has 200K. `google/gemini-3.1-pro-preview` and the Gemini 3.x Flash models have 1,048,576 tokens and DeepSeek V4 models 1M. A large window is not free: every token you send is billed, so keep sessions compact either way.
 
 ### Tool use (agent workloads)
 
@@ -231,7 +231,7 @@ OpenClaw picks a model in this order: the primary, then each fallback in order. 
 | `agents.defaults.model.primary` | Default chat and agent model. A fresh Anthropic setup picks `anthropic/claude-opus-5-5`; with no model configured the built-in fallback is `openai/gpt-6-astra`. |
 | `agents.defaults.model.fallbacks` | Ordered list tried when the primary fails |
 | `agents.defaults.heartbeat.model` | Heartbeat turns |
-| `agents.defaults.utilityModel` | Short internal tasks (titles, narration, recaps, summaries) |
+| `agents.defaults.utilityModel` | Short internal tasks (titles, progress narration, Activity recaps) |
 | `agents.defaults.imageModel` | Used only when the primary cannot accept images |
 | `agents.entries.<id>.model` | Per-agent override |
 
@@ -287,7 +287,7 @@ Custom providers under `models.providers` are merged with the built-in catalog b
 |---|---|---|---|
 | Anthropic | `claude-fable-5-1`, `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5` | 1M | $0.10 / $0.50 (Haiku 5.5) to $10 / $50 (Fable 5.1), [source](https://platform.claude.com/docs/en/about-claude/pricing) |
 | OpenAI | `gpt-6-astra`, `gpt-6-sol`, `gpt-6.1-sol`, `gpt-6-luna`, `gpt-5.6-*` | Varies by model | [openai.com/api/pricing](https://openai.com/api/pricing/) |
-| Google | `gemini-4-argon`, `gemini-3.8-flash` | 1,048,576 (Argon) | [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing) |
+| Google | `gemini-3.1-pro-preview`, `gemini-3.7-flash`, `gemini-3.5-flash-lite` | 1,048,576 | [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing) |
 | DeepSeek | `deepseek-v4-pro`, `deepseek-v4-flash`, `deepseek-flash` | 1M | [DeepSeek pricing](https://api-docs.deepseek.com/quick_start/pricing) |
 | xAI | `grok-4.7` and earlier 4.x | Varies | [xAI pricing](https://docs.x.ai/docs/models) |
 | OpenRouter | `openrouter/auto` or `openrouter/<author>/<slug>` | Varies | Pass-through, [openrouter.ai/models](https://openrouter.ai/models) |
