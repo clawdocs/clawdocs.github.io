@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-07-08
 title: Quick Start
 description: Get OpenClaw running and talking to you in under 5 minutes — from install to first conversation
 keywords: [openclaw, openclaw getting started, openclaw tutorial, openclaw quick start, openclaw first steps, how to use openclaw, openclaw beginner guide]
@@ -316,5 +318,5 @@ You now have a working OpenClaw agent. Here's where to go from here, roughly in 
 | Build integrations | [API & Webhooks](/guides/api-webhooks) |
 
 :::tip
-Join the [OpenClaw Discord](https://discord.gg/openclaw) (~176,000 members) to share setups, ask questions, and find community-built skills. Also check out [r/OpenClaw](https://reddit.com/r/OpenClaw) on Reddit.
+Join the [OpenClaw Discord](https://discord.gg/clawd) (~176,000 members) to share setups, ask questions, and find community-built skills. Also check out [r/OpenClaw](https://reddit.com/r/OpenClaw) on Reddit.
 :::

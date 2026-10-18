@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Memory System
 description: How OpenClaw stores and retrieves persistent context — hybrid search, Dreaming mode, memory plugins, and file structure
 keywords: [openclaw, memory, persistent memory, local storage, markdown memory, hybrid search, dreaming mode]

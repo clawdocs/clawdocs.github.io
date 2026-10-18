@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-10-18
 title: Troubleshooting & Debugging
 description: Diagnose and fix OpenClaw issues — gateway, channels, LLM, MCP, plugins, memory, skills, performance, and more
 keywords: [openclaw, openclaw troubleshooting, fix, debug, openclaw not working, common errors, diagnostics]
@@ -1025,7 +1027,7 @@ openclaw doctor
 openclaw diagnostics > ~/openclaw-debug.txt
 ```
 
-- **Discord:** [discord.gg/openclaw](https://discord.gg/openclaw) — fastest community support
+- **Discord:** [discord.gg/clawd](https://discord.gg/clawd) — fastest community support
 - **GitHub Issues:** [github.com/openclaw/openclaw/issues](https://github.com/openclaw/openclaw/issues) — bug reports and feature requests
 - **FAQ:** [/reference/faq](/reference/faq) — common questions
 

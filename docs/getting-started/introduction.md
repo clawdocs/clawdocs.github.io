@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-10
 title: Introduction to OpenClaw
 sidebar_label: Introduction
 description: What is OpenClaw and why it matters — the open-source autonomous AI agent with 377k+ stars

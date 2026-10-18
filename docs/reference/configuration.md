@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-10
 title: Configuration Reference
 sidebar_label: Configuration
 description: Complete reference for ~/.openclaw/openclaw.json — every section and setting explained

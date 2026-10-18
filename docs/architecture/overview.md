@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Architecture Overview
 description: How OpenClaw's Gateway-centric architecture connects LLMs to your system — request lifecycle, data flow, and design principles
 keywords: [openclaw, architecture, system design, components, gateway, data flow, request lifecycle]

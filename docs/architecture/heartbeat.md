@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Heartbeat System
 description: The autonomous task loop — per-agent scheduling, cost optimization, Dreaming integration, multi-agent coordination, and HEARTBEAT.md patterns
 keywords: [openclaw, heartbeat, autonomous agent, background tasks, cron, scheduling, multi-agent coordination]

@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-07-08
 title: Plugin System
 description: Install, configure, and build OpenClaw plugins — gateway-level extensions for channels, orchestration, and monitoring
 keywords: [openclaw, plugins, gateway plugin, extend openclaw, plugin development]

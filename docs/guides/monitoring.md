@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-10-18
 title: Monitoring & Observability
 description: Monitor your OpenClaw agent in production — metrics, logs, alerts, dashboards, and OpenTelemetry tracing
 keywords: [openclaw, monitoring, observability, metrics, alerting, dashboard]

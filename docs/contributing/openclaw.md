@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Contributing to OpenClaw
 description: How to contribute to the OpenClaw project itself
 keywords: [openclaw, openclaw development, contribute to openclaw, open source, pull request, community, github]
@@ -54,7 +56,7 @@ pnpm dev
 
 ## Community
 
-- **Discord**: [discord.gg/openclaw](https://discord.gg/openclaw)
+- **Discord**: [discord.gg/clawd](https://discord.gg/clawd)
 - **GitHub Discussions**: [github.com/openclaw/openclaw/discussions](https://github.com/openclaw/openclaw/discussions)
 
 ## See Also

@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: "Recipe: Email Assistant"
 description: Build an OpenClaw skill that triages, summarizes, and responds to emails
 keywords: [openclaw, email assistant, gmail automation, email triage, inbox assistant, ai email, automated replies]

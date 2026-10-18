@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-10-18
 title: Migration Guide
 description: Upgrading from Clawdbot or Moltbot to OpenClaw, version upgrade paths, and configuration migration
 keywords: [openclaw, migration, upgrade, migrate version, breaking changes]

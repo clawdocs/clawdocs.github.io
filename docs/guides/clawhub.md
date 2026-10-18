@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-07-08
 title: ClawHub
 description: Browse, install, verify, customize, and publish skills on OpenClaw's community marketplace — 10,700+ skills with security scanning
 keywords: [openclaw, clawhub, openclaw marketplace, install skills, skill store]

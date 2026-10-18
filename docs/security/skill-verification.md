@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Skill Verification
 description: How to review OpenClaw skills for safety before installation — detection tools, red flags, and defense against supply-chain attacks
 keywords: [openclaw, openclaw skill security, clawhub security, malicious skills, skill scanning, supply chain attack, skill verification]

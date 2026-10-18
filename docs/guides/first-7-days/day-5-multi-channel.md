@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: "Day 5: Be Everywhere"
 description: "Connect multiple chat platforms and route messages between them"
 keywords: [openclaw, multi-channel, whatsapp, telegram setup, discord bot, cross-channel, chat platforms]

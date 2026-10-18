@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: "Day 4: Supercharge It"
 description: "Install community skills from ClawHub to extend what your bot can do"
 keywords: [openclaw, skills, install skills, clawhub, skill tutorial, community skills, extend bot]

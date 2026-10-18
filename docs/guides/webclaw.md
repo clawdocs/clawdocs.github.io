@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-07-08
 title: WebClaw Web Client
 description: Set up WebClaw or PinchChat — community browser frontends that connect to your OpenClaw Gateway over WebSockets
 keywords: [openclaw, webclaw, web client, browser frontend, web ui, react frontend]

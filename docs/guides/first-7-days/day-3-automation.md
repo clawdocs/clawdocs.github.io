@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: "Day 3: Set It Free"
 description: "Automate daily tasks with the heartbeat system — morning briefings, monitoring, and proactive alerts"
 keywords: [openclaw, automation, heartbeat setup, cron, scheduled tasks, morning briefing, proactive alerts]

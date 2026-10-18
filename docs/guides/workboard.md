@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Workboard
 description: Orchestrate multi-agent work with the Workboard — a Kanban-style task board built into OpenClaw v2026.6.1+
 keywords: [openclaw, workboard, kanban, task management, agent coordination]

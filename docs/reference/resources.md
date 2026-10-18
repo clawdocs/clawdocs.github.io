@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-07-08
 title: Resources
 description: Official links, community spaces, learning resources, hosting providers, SDKs, and curated collections for OpenClaw
 keywords: [openclaw, openclaw resources, community, learning, tutorials, sdks, hosting]
@@ -35,12 +37,7 @@ OpenAI, GitHub, NVIDIA, Vercel, Blacksmith, and Convex.
 
 ### Discord
 
-The primary community hub with ~176,000 members across two servers:
-
-| Server | Members | Purpose |
-|--------|---------|---------|
-| **Main** | ~176,000 | Primary community, support, announcements |
-| **Backup** | ~16,200 | Fallback space at [discord.gg/openclaw](https://discord.gg/openclaw) |
+The official OpenClaw Discord at [discord.gg/clawd](https://discord.gg/clawd) is the primary community hub for support and announcements. (The `discord.gg/openclaw` invite this page used to list no longer works.)
 
 Key channels include `#help`, `#users-helping-users`, `#showcase`, and `#announcements`.
 
