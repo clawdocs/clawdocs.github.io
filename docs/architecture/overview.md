@@ -138,7 +138,7 @@ Skills are Markdown files — anyone can write them. Channels are plugins — in
 
 ### Transparent
 
-Memory is human-readable Markdown. Config is JSON. The WebSocket protocol uses JSON text frames. Execution approvals show the exact command before running. No black boxes.
+Memory is human-readable Markdown. Config is JSON. The WebSocket protocol uses JSON text frames. When approvals are turned on (`tools.exec.mode` `ask` or `auto`; the default is `full`, with no prompts), they show the exact command before it runs. No black boxes.
 
 ### Security-Conscious
 

@@ -325,12 +325,12 @@ Yes! See [Contributing to OpenClaw](/contributing/openclaw) and [Contributing to
 | Gateway won't start | Check port conflict: `lsof -i :18789` |
 | "Invalid API key" | Verify key format matches provider (Anthropic: `sk-ant-...`) |
 | Heartbeat costing too much | Set `heartbeat.model` to Haiku/local, increase `interval` |
-| Agent won't run commands | Check `permissions.mode` and `tools.exec.security` |
+| Agent won't run commands | Check the effective policy with `openclaw approvals get` |
 | Config wiped after update | Restore from backup; see [recovery steps above](#how-do-i-recover-from-the-v202657-config-wipe) |
 | High memory usage | Update to latest; restart gateway periodically |
 | WhatsApp disconnected | Re-scan QR: `openclaw channels add whatsapp` |
 | Channel messages not arriving | Check `dm.accessPolicy` and `allowedContacts` |
-| Sandbox blocking exec | Set `sandbox.mode: "off"` or `tools.exec.security: "full"` |
+| Sandbox blocking exec | Check what is sandboxed with `openclaw sandbox explain`. Don't switch the sandbox off or grant `full` exec to work around it; adjust the sandbox's [workspace access](https://docs.openclaw.ai/gateway/sandboxing/workspace-access) instead |
 | macOS gateway stops overnight | Maintenance Sleep issue — disable Power Nap in System Settings |
 
 For detailed troubleshooting, see [Troubleshooting](/reference/troubleshooting).

@@ -8,6 +8,10 @@ keywords: [openclaw, email assistant, gmail automation, email triage, inbox assi
 
 # Recipe: Email Assistant
 
+:::danger Read before you run this recipe
+These recipes give an agent real powers (shell, SSH, email, smart-home devices). By default OpenClaw runs host commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off**. Before you try one, turn on approvals (`openclaw config set tools.exec.mode ask`), use a strong model for anything that runs tools unattended, and give the agent only the accounts and devices the recipe needs. Config blocks on this page predate OpenClaw 2.0 and may be rejected; check them with `openclaw config validate`. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
+:::
+
 Build a skill that turns OpenClaw into a powerful email triage and response assistant.
 
 ## The Skill

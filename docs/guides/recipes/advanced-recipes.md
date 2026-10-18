@@ -8,6 +8,10 @@ keywords: [openclaw, advanced recipes, production setup, advanced automation, mu
 
 # Advanced Recipes
 
+:::danger Read before you run this recipe
+These recipes give an agent real powers (shell, SSH, email, smart-home devices). By default OpenClaw runs host commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off**. Before you try one, turn on approvals (`openclaw config set tools.exec.mode ask`), use a strong model for anything that runs tools unattended, and give the agent only the accounts and devices the recipe needs. Config blocks on this page predate OpenClaw 2.0 and may be rejected; check them with `openclaw config validate`. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
+:::
+
 These recipes go beyond the basics. Each is a production-grade setup with full configuration, skill files, and step-by-step instructions.
 
 **Prerequisites:** You should be comfortable with [multi-agent configuration](/guides/multi-agent), the [Workboard](/guides/workboard), and [skill development](/guides/skill-development).

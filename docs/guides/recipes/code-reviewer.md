@@ -8,6 +8,10 @@ keywords: [openclaw, code review, automated review, pull request, code quality, 
 
 # Recipe: Code Reviewer
 
+:::danger Read before you run this recipe
+These recipes give an agent real powers (shell, SSH, email, smart-home devices). By default OpenClaw runs host commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off**. Before you try one, turn on approvals (`openclaw config set tools.exec.mode ask`), use a strong model for anything that runs tools unattended, and give the agent only the accounts and devices the recipe needs. Config blocks on this page predate OpenClaw 2.0 and may be rejected; check them with `openclaw config validate`. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
+:::
+
 Set up OpenClaw to review pull requests, monitor CI pipelines, and catch issues before they merge.
 
 ## The Skill

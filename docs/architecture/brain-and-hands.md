@@ -187,7 +187,7 @@ The Brain can chain multiple tool calls, analyzing each result before deciding t
 
 ### Execution Approval
 
-Before executing commands, the Exec Approval Manager presents them for approval:
+When approvals are turned on (`tools.exec.mode` `ask` or `auto`), the Exec Approval Manager presents commands that are not allowlisted for approval. **The default is `full`: host commands run with no prompt.**
 
 1. Brain emits a `tool_call` with the command
 2. Gateway creates an `exec.approval.request` with canonical argv, cwd, and rawCommand
@@ -305,8 +305,8 @@ For production deployments, isolate the Hands in a container:
 
 | Mode | Behavior |
 |------|----------|
-| **off** | No sandboxing |
-| **non-main** | Sandbox sub-agents only, main agent runs on host |
+| **off** (default) | No sandboxing |
+| **non-main** | Sandbox every session except the agent's main session (group and channel sessions are sandboxed) |
 | **all** | Sandbox everything including the main agent |
 
 ### Workspace Access

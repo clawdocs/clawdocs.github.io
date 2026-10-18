@@ -143,7 +143,11 @@ openclaw chat "Check disk usage and tell me if anything is above 80%"
 
 ### Execution Approval
 
-When OpenClaw needs to run a shell command, it asks for your permission:
+:::danger Commands run without asking by default
+By default OpenClaw runs host shell commands **without asking** (`tools.exec.mode` is `full` on the gateway host) and the sandbox is **off** (`agents.defaults.sandbox.mode: "off"`). To review commands before they run, set `openclaw config set tools.exec.mode ask` (or `auto`, which adds an automatic reviewer) and restart the gateway. See the official [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing) docs.
+:::
+
+With approvals turned on, OpenClaw shows each command that is not already allowlisted before it runs:
 
 ```
 Agent wants to execute:
@@ -152,7 +156,7 @@ Agent wants to execute:
   [approve] [deny] [approve all similar]
 ```
 
-This is the default `ask` mode — you review each command before it runs. You can change this in config later. See [Basic Usage](/guides/basic-usage#execution-approval) for details.
+That is `ask` mode, which you have to turn on. See [Basic Usage](/guides/basic-usage#execution-approval) for details.
 
 ---
 
@@ -279,7 +283,7 @@ If any step fails, check the [Troubleshooting Guide](/reference/troubleshooting)
 | `EACCES permission denied` | npm global install without permissions | Use `sudo npm i -g openclaw` or fix npm permissions |
 | Heartbeat running up costs | Default interval is 30 min with your primary model | Set `heartbeat.model` to a cheap model and increase `heartbeat.interval` |
 | WhatsApp QR expired | QR code has a short timeout | Run `openclaw channels add whatsapp` again and scan quickly |
-| Agent won't run commands | Default `ask` permission mode | Approve the command when prompted, or switch to `auto` mode in config (use with caution) |
+| Agent won't run commands | Approvals or an allowlist are on (`tools.exec.mode` `ask`, `auto`, `allowlist` or `deny`) | Approve the command when prompted; check the effective policy with `openclaw approvals get` |
 
 ---
 

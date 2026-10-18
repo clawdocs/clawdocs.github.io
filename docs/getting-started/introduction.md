@@ -39,7 +39,7 @@ Unlike chatbots that wait for you to type, OpenClaw is an **autonomous agent**:
 - **Autonomous operation** — The [heartbeat system](/architecture/heartbeat) checks for pending tasks every 30 minutes and takes action without prompting
 - **Persistent memory** — Remembers facts, preferences, and context across sessions using local Markdown files
 - **Multi-step reasoning** — Breaks complex tasks into steps, executes them, and reports results
-- **Execution approval** — Asks permission before running shell commands (configurable: ask, auto, or deny)
+- **Execution approval** — Optional review of shell commands via `tools.exec.mode` (`deny`, `allowlist`, `ask`, `auto`, `full`). The default is `full`: commands run without asking until you turn approvals on
 
 ### Integrations
 
