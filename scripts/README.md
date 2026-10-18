@@ -82,6 +82,33 @@ add `name -> { maintainers, repository }` (npm) or `{ note }` (pypi/clawhub).
 A trailing `*` matches a prefix such as `@openclaw/*`. Never allowlist a name
 just because it exists on the registry.
 
+## Security advisory data (`advisories.mjs`)
+
+`/security/known-vulnerabilities` renders its chart, advisory table and
+"minimum safe version" callout from `static/data/openclaw-advisories.json`
+(component: `src/components/AdvisoryTimeline.tsx`). The JSON holds only public
+advisory fields: `generatedAt`, `repo`, and per advisory `ghsa_id`, `cve_id`,
+`severity`, `cvss` (3.1 score, else 4.0, with `cvss_version`), `summary`,
+`published_at`, `patched` (first patched versions of the core package,
+including the old `clawdbot` name), `patched_other` (plugins and apps, as
+`name version`) and `html_url`. One advisory per line keeps diffs readable.
+
+```bash
+# needs `gh` logged in, or GITHUB_TOKEN set; prints a Markdown summary too
+node scripts/advisories.mjs --json static/data/openclaw-advisories.json
+# from a saved dump (JSON array or JSONL) instead of the API
+node scripts/advisories.mjs --file adv.jsonl --json static/data/openclaw-advisories.json
+```
+
+`.github/workflows/advisories.yml` runs this every Monday (and on manual
+dispatch) with the workflow's `GITHUB_TOKEN`. If any advisory changed (a
+`generatedAt`-only change is ignored), it opens or updates a PR from
+`bot/advisories-refresh` via `peter-evans/create-pull-request`. When merging,
+check whether the page's prose (batch sections, the latest release passed to
+`<MinimumSafeVersion latest="...">`) needs updating too. PRs opened with
+`GITHUB_TOKEN` don't trigger other workflows; re-run the snippet check by hand
+or push a commit to the branch if needed.
+
 ## Link check
 
 `.github/workflows/links.yml` runs lychee weekly over external links in
