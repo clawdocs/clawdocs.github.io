@@ -234,7 +234,7 @@ Notes:
 - To also wake the bot on a text pattern (for example `!bot`), add `groupChat.mentionPatterns` to the agent: `agents.entries.main.groupChat.mentionPatterns: ["!bot"]`.
 - There is no per-channel message rate limit setting. Control cost with model choice and by keeping the bot out of busy rooms.
 
-Upstream's channel access guidance, with more examples: [Who can talk to the agent](/security/hardening#channel-access).
+More examples and the reasoning: [Who can talk to the agent](/security/hardening#channel-access) on the hardening page, and upstream's [access control](https://docs.openclaw.ai/gateway/security/access-control).
 
 ---
 

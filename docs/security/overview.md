@@ -9,7 +9,7 @@ keywords: [openclaw, openclaw security, threat model, attack surface, is opencla
 
 # Security Overview
 
-OpenClaw gives an AI agent real access to your machine and your accounts. This page covers what is safe by default, what isn't, and a baseline config to start from. It was checked against OpenClaw v2026.10.4 on 2026-10-18. For the full checklist, see [Security Hardening](/security/hardening).
+OpenClaw gives an AI agent real access to your machine and your accounts. This page covers what is safe by default, what isn't, and a baseline config to start from; [Security Hardening](/security/hardening) has the full checklist. Checked against v2026.10.4 on 2026-10-18.
 
 ---
 
@@ -153,44 +153,15 @@ Every step used intended capabilities. The defences that would have stopped it a
 
 ## Checklist
 
-- [ ] **Run the latest stable release** (v2026.10.4 as of 2026-10-18) and `openclaw plugins update --all`
-- [ ] **Keep `gateway.bind: "loopback"`**; in Docker, publish to `127.0.0.1` only
-- [ ] **Use a token of at least 24 characters**, ideally 64 hex
-- [ ] **Remote access via SSH tunnel, Tailscale Serve or Cloudflare Access**, never an open port
-- [ ] **Set `gateway.trustedProxies`** if any reverse proxy is in front
-- [ ] **Keep DM pairing or allowlists**; mention-gate groups; set `session.dmScope: "per-channel-peer"` if more than one person DMs the bot
-- [ ] **Turn on exec approvals** (`tools.exec.mode: "ask"` or `"auto"`) and **the sandbox** (`agents.defaults.sandbox.mode: "non-main"`)
-- [ ] **Review skills and plugins**: `openclaw skills list`, `openclaw skills verify @owner/<slug>`, `openclaw plugins list`
-- [ ] **Move secrets to SecretRefs** and run `openclaw secrets audit --check`
-- [ ] **Limit when heartbeats run** with `agents.defaults.heartbeat.activeHours`
-- [ ] **Review memory**: `~/.openclaw/workspace/MEMORY.md` and `memory/*.md`
-- [ ] **Watch workspace files** (`SOUL.md`, `AGENTS.md`) for changes you didn't make
-- [ ] **Run `openclaw security audit --deep`** after every change
+The canonical checklist, with a config and a reason for every item, is [Security Hardening](/security/hardening#the-checklist). For a twelve-line version to tick off before connecting a channel, see [Choosing Your Setup](/getting-started/choosing-your-setup#checklist).
 
 ---
 
 ## Community security tools
 
-Third-party projects, listed for reference. **clawdocs has not reviewed their code.** A security tool runs with the same access as the agent, so vet it like any other skill or plugin.
+Third-party scanners and monitors are listed, unreviewed, on [Ecosystem](/reference/ecosystem#security-tools) and in [Skill Verification](/security/skill-verification#third-party-scanning-tools). A security tool runs with the same access as the agent, so vet it like any other skill or plugin.
 
-| Tool | Description |
-|------|-------------|
-| [**ClawSec**](https://github.com/prompt-security/clawsec) | Skill suite: SOUL.md drift detection, advisory monitoring, audit watchdog |
-| [**ClawBands**](https://github.com/SeyZ/clawbands) | Middleware that asks for human approval before dangerous actions |
-| [**Security Monitor**](https://github.com/adibirzu/openclaw-security-monitor) | Monitoring scripts targeting known threat campaigns |
-| [**openclaw-secure**](https://github.com/seomikewaltman/openclaw-secure) | Hardware-gated secret management with pluggable backends |
-| [**Clawdex**](https://koisecurity.com/clawdex) | Koi Security's lookup of skills against its malicious-skills database |
-| [**Cisco Skill Scanner**](https://github.com/cisco-ai-defense/skill-scanner) | Static, dataflow and LLM-based scanning of agent skills |
-
-See the [Ecosystem page](/reference/ecosystem#security-tools) for more.
-
----
-
-## Enterprise assessment
-
-> *"It is not enterprise software. There is no promise of quality, no vendor support, no SLA... it ships without authentication enforced by default."* — Gartner, February 2026
-
-The authentication part of that quote is out of date: current releases require Gateway auth by default and fail closed ([network exposure](https://docs.openclaw.ai/gateway/security/network-exposure)). The rest still describes an open-source project without a vendor. For compliance questions, see [Privacy & Compliance](/guides/privacy-compliance).
+For compliance questions (GDPR, SOC 2, HIPAA, analyst assessments), see [Privacy & Compliance](/guides/privacy-compliance).
 
 ---
 

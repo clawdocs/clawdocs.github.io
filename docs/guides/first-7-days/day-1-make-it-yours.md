@@ -39,7 +39,7 @@ openclaw agent --agent main --message "Who are you?"
 `openclaw tui` also accepts `--message "Who are you?"` to send an opening message. Running `openclaw` with no arguments opens the TUI too. If you connected Telegram during setup, you can message your bot there as well.
 
 :::note Old tutorials
-Some older guides show `openclaw chat "Who are you?"`. That does not work: `openclaw chat` is an alias for `openclaw tui --local` and takes no message argument. Use `openclaw agent --message` for one-shot messages.
+Some older guides show `openclaw chat "Who are you?"`. That fails: `openclaw chat` is `openclaw tui --local`, and a positional argument is a session target, not a message. Use `openclaw agent --message` for one-shot messages, or `openclaw chat --message "..."` to open the local TUI with a first message.
 :::
 
 ---
@@ -97,10 +97,10 @@ Software development, system administration, research, writing.
 I learn the user's stack and preferences over time.
 ```
 
-Start a fresh session so the new file is loaded (type `/new` in the chat, or run):
+Start a fresh session so the new file is loaded: type `/new` in the chat and ask "Who are you?". From the shell, `openclaw agent` reuses the main session, so give it a new session key instead:
 
 ```bash
-openclaw agent --agent main --message "Who are you?"
+openclaw agent --agent main --session-key soul-test --message "Who are you?"
 ```
 
 For deeper customization, see the [SOUL.md Guide](/guides/soul-md) and upstream's [SOUL.md personality guide](https://docs.openclaw.ai/concepts/soul).
@@ -218,10 +218,10 @@ That last one is especially useful — the answer depends on your tool policy an
 
 The model only remembers what is written to disk ([memory](https://docs.openclaw.ai/concepts/memory)). `USER.md` and `MEMORY.md` load at the start of each session; daily notes in `memory/` are searched on demand.
 
-Start a new session (`/new` in chat) and ask:
+Start a new session (`/new` in chat) and ask "What do you know about me?", or from the shell:
 
 ```bash
-openclaw agent --agent main --message "What do you know about me?"
+openclaw agent --agent main --session-key memory-test --message "What do you know about me?"
 ```
 
 The bot should reference your `USER.md` directives and anything it saved during your conversation.

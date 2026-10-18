@@ -134,7 +134,7 @@ openclaw cron add "0 17 * * 5" \
   --tools read,write
 ```
 
-This runs every Friday at 17:00 in the Gateway host's timezone (add `--tz Europe/Berlin` to pin one). The schedule is standard [cron syntax](https://crontab.guru/). For an interval or a one-shot time, use `--every 6h` or `--at 20m` instead. The first argument then becomes the job name and the prompt goes in `--message`.
+This runs every Friday at 17:00 in the Gateway host's timezone (add `--tz Europe/Berlin` to pin one). The schedule is standard [cron syntax](https://crontab.guru/). The positional schedule also takes an interval (`"every 6h"`) or a one-shot time (`"20m"`, or an ISO timestamp).
 
 `--tools` limits the job to the tools it needs. Without it, the job gets the agent's full tool policy, which by default includes running shell commands without approval. Give scheduled jobs the smallest tool list that works ([job payloads](https://docs.openclaw.ai/automation/cron-jobs/payloads)).
 
@@ -146,18 +146,14 @@ openclaw cron add "30 7 * * 1-5" \
   "Search for the latest news in AI and open source and summarise the top 5 stories with links" \
   --name "Morning digest" \
   --tools web_search,web_fetch
-
-# Disk check every 6 hours
-openclaw cron add "0 */6 * * *" \
-  "Run df -h. If any filesystem is above 85% used, tell me which one. Otherwise reply NO_REPLY." \
-  --name "Disk check" \
-  --tools exec
 ```
 
-Results are delivered to the last channel you used. Add `--channel telegram --to <chatId>` to pin a destination, or `--no-deliver` to keep a job's output internal.
+For a check a script can decide, such as disk usage, use a command job instead of giving a model `exec` ([Day 3](./day-3-automation.md#server-health-check)).
+
+Results go to `--channel last` by default, which follows your recent conversation and fails closed if there is none. Add `--channel telegram --to <chatId>` to pin a destination, or `--no-deliver` to keep a job's output internal.
 
 :::warning Jobs run unattended
-A scheduled job that can run shell commands does it with nobody watching. Turn on exec approvals (`tools.exec.mode: "ask"`) and keep prompts specific. See [Security Hardening: exec approvals](/security/hardening#exec-approvals). For backing up OpenClaw itself, use `openclaw backup create` rather than a prompt.
+A scheduled job that can run shell commands does it with nobody watching. Keep `exec` out of `--tools` unless the job needs it, and turn on exec approvals (`tools.exec.mode: "ask"`). With approvals on, an automation's exec request goes to the Control UI or a companion app (never to chat); if none is connected, it is denied. **Always allow** on that card mints a standing grant for that exact job and command ([standing grants](https://docs.openclaw.ai/tools/exec-approvals#standing-grants-for-automations)). See [Security Hardening: exec approvals](/security/hardening#exec-approvals). For backing up OpenClaw itself, use `openclaw backup create` rather than a prompt.
 :::
 
 ### Manage jobs

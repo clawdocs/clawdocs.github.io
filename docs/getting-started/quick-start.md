@@ -13,11 +13,9 @@ keywords: [openclaw, openclaw getting started, openclaw tutorial, openclaw quick
 
 # Quick Start
 
-Get from zero to a working OpenClaw agent in about 5 minutes. The official version of this walkthrough is [Getting started](https://docs.openclaw.ai/start/getting-started).
+From zero to a working agent in about 5 minutes. The official version is [Getting started](https://docs.openclaw.ai/start/getting-started). Not sure which model, channel or host to pick? [Choosing Your Setup](/getting-started/choosing-your-setup) recommends one for each.
 
-Not sure which model, channel or host to pick? [Choosing Your Setup](/getting-started/choosing-your-setup) recommends one for each.
-
-**What you'll have at the end:** a Gateway running as a background service, the Control UI open in your browser, and an agent that can answer questions, read and write files, and run shell commands. Optionally, a chat app on your phone connected to it.
+**At the end you have** a Gateway running as a background service, the Control UI open in your browser, and an agent that can answer questions, read and write files, and run shell commands. Optionally, a chat app on your phone connected to it.
 
 **Prerequisites:**
 - Node.js 24.16+ or 26.1+ (26 recommended; 22, 23 and 25 are unsupported). Check with `node --version`. The installer script installs Node for you if needed.
@@ -107,7 +105,7 @@ openclaw tui
 openclaw agent --agent main --message "What files are in my home directory?"
 ```
 
-`openclaw chat` is a shortcut for `openclaw tui --local`: it runs the agent in-process instead of through the Gateway. To start it with a first message use `openclaw chat --message "..."`. A bare positional argument (`openclaw chat "hi"`) is read as a session target, not a message.
+`openclaw chat` is a shortcut for `openclaw tui --local`: it runs the agent in-process instead of through the Gateway. To start it with a first message use `openclaw chat --message "..."`. `openclaw chat "hi"` fails: a positional argument is a session target, not a message, and local mode rejects targets.
 
 ## Step 5: Try some real tasks
 
@@ -264,35 +262,8 @@ If a step fails, `openclaw triage` collects sanitized diagnostics and can hand t
 
 ## What's next?
 
-### Do these first
+1. Lock it down before you connect channels other people can reach: [Security Hardening](/security/hardening), or the short [secure-by-default checklist](/getting-started/choosing-your-setup#checklist).
+2. Learn the everyday commands: [Basic Usage](/guides/basic-usage).
+3. Follow the [First 7 Days](/guides/first-7-days) path: persona, daily use, automations, skills, channels, multi-agent and production.
 
-| Goal | Guide |
-|---|---|
-| Learn everyday commands | [Basic Usage](/guides/basic-usage) |
-| Lock down security | [Security Hardening](/security/hardening) |
-| Understand the moving parts | [Core Concepts](/getting-started/core-concepts) |
-
-### First week
-
-| Goal | Guide |
-|---|---|
-| Structured learning path | [First 7 Days](/guides/first-7-days) |
-| Customize your agent's personality | [SOUL.md Guide](/guides/soul-md) |
-| Connect messaging channels | [Channels Guide](/guides/channels) |
-| Set up scheduled tasks | [Automation](/guides/automation) |
-
-### Going deeper
-
-| Goal | Guide |
-|---|---|
-| Choose the right model for each task | [Model Selection](/guides/model-selection) |
-| Run without API costs | [Local Models](/guides/local-models) |
-| Find community skills | [ClawHub](/guides/clawhub) |
-| Build your own skills | [Skill Development](/guides/skill-development) |
-| Run multi-agent workflows | [Multi-Agent](/guides/multi-agent) |
-| Keep costs down | [Cost Management](/guides/cost-management) |
-| Build integrations | [API & Webhooks](/guides/api-webhooks) |
-
-:::tip
-Ask questions in the official [OpenClaw Discord](https://discord.gg/clawd), or on [r/OpenClaw](https://reddit.com/r/OpenClaw).
-:::
+Questions go to the official [OpenClaw Discord](https://discord.gg/clawd).

@@ -76,7 +76,7 @@ openclaw config validate
 openclaw gateway restart
 openclaw approvals get        # what exec policy is actually in force
 openclaw security audit --deep
-openclaw security audit --fix # tightens file permissions and safe defaults
+openclaw security audit --fix # file permissions and open group policies only
 openclaw secrets audit --check
 ```
 
@@ -135,15 +135,15 @@ Useful for channel issues, skill runs and automations. Press `Ctrl+C` to stop. `
 
 ### A daily self-check
 
-Make it an automation, not a heartbeat note. This runs at 07:30 every day and only reports problems:
+Make it an automation, not a heartbeat note. This runs at 07:30 every day and only reports problems. It needs `exec` to run the two commands, and nothing else:
 
 ```bash
 openclaw cron add "30 7 * * *" \
   "Run openclaw status --deep and openclaw security audit. If anything is failing, disconnected or flagged, message me a short summary. Otherwise reply NO_REPLY." \
-  --name "Daily self-check" --light-context
+  --name "Daily self-check" --light-context --tools exec
 ```
 
-`openclaw cron list` shows the job id; `openclaw cron runs <jobId>` shows its history.
+With approvals on (you set `ask` above), test it once with `openclaw cron run <jobId> --wait` while the Control UI is open, and choose **Always allow** on each approval card. That mints a standing grant for this job and these exact commands. Any other command the job tries still needs approval, and is denied when no approval client is connected ([standing grants](https://docs.openclaw.ai/tools/exec-approvals#standing-grants-for-automations)). `openclaw cron runs <jobId>` shows its history.
 
 ---
 
@@ -228,7 +228,7 @@ openclaw backup restore ~/Backups/openclaw/<archive>.tar.gz --target ~/openclaw-
 
 `backup restore` verifies the archive and extracts it into a fresh staging directory; it never overwrites your live install. Follow the rollback guide for putting the restored state back with the matching release. `openclaw gateway start` brings the service back up.
 
-If you're stuck, `openclaw triage` runs read-only checks and writes a sanitized diagnosis you can hand to a coding agent or paste into a bug report.
+If you're stuck, `openclaw triage --non-interactive` runs checks without offering a repair agent and writes a sanitized diagnosis you can hand to a coding agent or paste into a bug report.
 
 ---
 

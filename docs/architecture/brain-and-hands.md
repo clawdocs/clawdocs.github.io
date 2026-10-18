@@ -10,8 +10,8 @@ keywords: [openclaw, agent loop, agent runtime, llm integration, tools, exec app
 
 # Agent Runtime and Tools
 
-:::note About the name
-Earlier versions of this page called the model the "Brain" and the tools the "Hands". That is this site's analogy, not an OpenClaw concept, and there is no `brain` or `hands` config key. OpenClaw's own terms are the **agent loop** (runtime), **models**, **tools**, **exec approvals**, the **sandbox**, and **nodes**. This page uses those terms.
+:::note
+"Brain and hands" was this site's old analogy for models and tools. There is no `brain` or `hands` config key; this page uses OpenClaw's own terms.
 :::
 
 In one sentence: the agent loop sends the assembled prompt to a model, the model answers with text and/or tool calls, OpenClaw runs the tools (subject to tool policy, approvals and the sandbox), and feeds the results back until the model gives a final reply.
@@ -35,9 +35,7 @@ Tool calls use the provider's native tool-use format. OpenClaw does not have its
 
 From the CLI, `openclaw agent --message "..."` runs one turn through the Gateway, and `openclaw chat` opens the local terminal UI.
 
-### Bootstrap context
-
-Large bootstrap files are truncated when injected: `agents.defaults.bootstrapMaxChars` (default 20000 per file) and `bootstrapTotalMaxChars` (default 60000). Related keys: `skipBootstrap` (do not create the files) and `skipOptionalBootstrapFiles`. For cheap scheduled turns, `agents.defaults.heartbeat.lightContext` and `isolatedSession` reduce what a heartbeat loads. See [Agent workspace](https://docs.openclaw.ai/concepts/agent-workspace).
+What goes into the prompt, and the bootstrap size limits, are on [Architecture Overview](/architecture/overview#what-goes-into-the-prompt).
 
 ---
 
@@ -222,10 +220,6 @@ Check what applies to a session with `openclaw sandbox explain`. See [Sandboxing
 :::warning
 With the defaults (`tools.exec.mode: "full"`, sandbox `off`), anyone who can message the agent can get commands run on your host. Before you connect channels, set `tools.exec.mode` to `ask` or `allowlist`, restrict who can DM the bot, and consider `sandbox.mode: "non-main"`. See [Security Hardening](/security/hardening).
 :::
-
-### Advisory note
-
-GHSA-9p3r-hh9g-5cmg (critical) was a TOCTOU race in the remote filesystem bridge `readFile`. It affected versions up to 2026.3.28 and was fixed in 2026.3.31; GitHub credits AntAISecurityLab. Stay on a current release; see [Known Vulnerabilities](/security/known-vulnerabilities).
 
 ---
 

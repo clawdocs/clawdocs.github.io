@@ -98,7 +98,7 @@ If you write your own `docker run` or Compose file, get these right:
 - **Health checks:** the image's built-in `HEALTHCHECK` uses `/healthz`. `/readyz` is the deeper, channel-aware probe.
 - Use only `ghcr.io/openclaw/openclaw` or the Docker Hub mirror `openclaw/openclaw`.
 
-On upgrade, the container entrypoint runs `openclaw doctor --fix` against the mounted state before the Gateway starts. Podman, Nix, Kubernetes, Ansible and cloud recipes are listed on the [install index](https://docs.openclaw.ai/install); see also [Deployment Options](/guides/deployment-options).
+The container entrypoint runs `openclaw doctor --fix --non-interactive` against the mounted state each time the Gateway container starts, so an image upgrade migrates state before the Gateway runs. Podman, Nix, Kubernetes, Ansible and cloud recipes are listed on the [install index](https://docs.openclaw.ai/install); see also [Deployment Options](/guides/deployment-options).
 
 ## Method 5: From source (developers)
 
@@ -125,17 +125,9 @@ The installer script starts onboarding for you. Otherwise run:
 openclaw onboard --install-daemon
 ```
 
-Onboarding:
+Onboarding checks your model access with a real request, creates the workspace (`~/.openclaw/workspace`) and `~/.openclaw/openclaw.json` with a generated Gateway token, and with `--install-daemon` installs the Gateway as a service (LaunchAgent on macOS, systemd user service on Linux and WSL2, Scheduled Task on Windows). The [Quick Start](/getting-started/quick-start#step-2-onboard) walks through it. Without `--install-daemon`, install the service later with `openclaw gateway install`.
 
-1. **Sets up model access.** It detects a Claude Code or Codex login or an API key and verifies it with a real request, or walks you through provider setup.
-2. **Creates the workspace** at `~/.openclaw/workspace` and writes `~/.openclaw/openclaw.json`, including a generated Gateway token.
-3. **Installs the Gateway service** (with `--install-daemon`): a LaunchAgent on macOS, a systemd user service on Linux and WSL2, or a Scheduled Task on Windows.
-
-Channels can be added later with `openclaw channels add`. To change things afterwards, use `openclaw configure`. Onboarding reference: [Onboarding (CLI)](https://docs.openclaw.ai/start/wizard).
-
-:::tip
-Without `--install-daemon`, onboarding can leave the Gateway running in the foreground of that terminal. Install the background service any time with `openclaw gateway install`.
-:::
+Change settings afterwards with `openclaw configure`; add channels with `openclaw channels add`. Reference: [Onboarding (CLI)](https://docs.openclaw.ai/start/wizard).
 
 ## Verify installation
 
