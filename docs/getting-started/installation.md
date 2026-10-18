@@ -11,6 +11,8 @@ keywords: [openclaw, openclaw install, openclaw setup, how to install openclaw, 
 
 OpenClaw runs on **macOS**, **Linux** (including 64-bit Raspberry Pi) and **Windows**. Pick one method below. The official reference is [docs.openclaw.ai/install](https://docs.openclaw.ai/install).
 
+Still deciding where to run it? See [Choosing Your Setup](/getting-started/choosing-your-setup#hosting).
+
 ## Prerequisites
 
 - **Node.js 24.16+ or 26.1+** (Node 26 recommended). Node 22, 23 and 25 are unsupported since v2026.9.3 ([Node.js requirements](https://docs.openclaw.ai/install/node)). The installer script provisions a supported Node for you if it is missing.

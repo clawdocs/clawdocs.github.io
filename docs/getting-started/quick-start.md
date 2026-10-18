@@ -11,6 +11,8 @@ keywords: [openclaw, openclaw getting started, openclaw tutorial, openclaw quick
 
 Get from zero to a working OpenClaw agent in about 5 minutes. The official version of this walkthrough is [Getting started](https://docs.openclaw.ai/start/getting-started).
 
+Not sure which model, channel or host to pick? [Choosing Your Setup](/getting-started/choosing-your-setup) recommends one for each.
+
 **What you'll have at the end:** a Gateway running as a background service, the Control UI open in your browser, and an agent that can answer questions, read and write files, and run shell commands. Optionally, a chat app on your phone connected to it.
 
 **Prerequisites:**
