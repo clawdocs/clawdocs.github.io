@@ -38,7 +38,7 @@ This is the easiest way to explore methods before writing code.
   - Response: `{ type: "res", id, ok, payload | error }`
   - Event: `{ type: "event", event, payload, seq?, stateVersion? }`
 - Before the handshake completes, frames are capped at 64 KiB. After it, follow `hello-ok.policy.maxPayload` (25 MiB by default) and `policy.maxBufferedBytes` (50 MiB).
-- Malformed JSON closes the socket with code `1007`.
+- Malformed JSON before the handshake closes the socket; after it, the bad frame is logged and dropped.
 
 Reference: [Transport and framing](https://docs.openclaw.ai/gateway/protocol/transport).
 
@@ -65,7 +65,7 @@ Reference: [Transport and framing](https://docs.openclaw.ai/gateway/protocol/tra
 }
 ```
 
-The connect deadline is 30 seconds in total. Device-auth errors carry `error.details.code` (for example `DEVICE_AUTH_NONCE_MISMATCH`). Reference: [Handshake and roles](https://docs.openclaw.ai/gateway/protocol/handshake), [Auth](https://docs.openclaw.ai/gateway/protocol/auth).
+The pre-auth handshake deadline is 15 seconds (`OPENCLAW_HANDSHAKE_TIMEOUT_MS` can raise it). Device-auth errors carry `error.details.code` (for example `DEVICE_AUTH_NONCE_MISMATCH`). Reference: [Handshake and roles](https://docs.openclaw.ai/gateway/protocol/handshake), [Auth](https://docs.openclaw.ai/gateway/protocol/auth).
 
 ### Methods and events
 
