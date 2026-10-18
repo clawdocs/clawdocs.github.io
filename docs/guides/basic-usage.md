@@ -9,7 +9,7 @@ keywords: [openclaw, openclaw usage, openclaw commands, how to use openclaw, ope
 
 # Basic Usage
 
-This guide covers what you need day to day: how to talk to your agent, the slash commands, exec approvals, sessions, memory, skills and the config file. It assumes you have run `openclaw onboard` and the Gateway is running (`openclaw gateway status`).
+This guide assumes you have run `openclaw onboard` and the Gateway is running (`openclaw gateway status`).
 
 ---
 
@@ -20,7 +20,7 @@ There are four ways in. They all talk to the same Gateway and the same agent.
 | Where | Command | Good for |
 |-------|---------|----------|
 | Browser (Control UI) | `openclaw dashboard` | Chat, settings, editing workspace files, approving pairing requests |
-| Terminal UI | `openclaw` or `openclaw tui` | Interactive chat in a terminal |
+| Terminal UI | `openclaw tui` (bare `openclaw` opens it once setup is complete) | Interactive chat in a terminal |
 | One-shot CLI | `openclaw agent --agent main --message "..."` | Scripts, quick questions |
 | Chat apps | Telegram, Discord, Slack, WhatsApp… | Everyday use from your phone ([channels](/guides/channels)) |
 
@@ -54,20 +54,7 @@ openclaw agent --agent main --message "List my five largest files" --json
 
 You must pass a session selector: `--agent`, `--session-key`, `--session-id` or `--to`. `--agent main` uses the main agent's main session, so the turn shares context with your TUI and Control UI conversation.
 
-### Global flags
-
-These work on every command (`openclaw --help`):
-
-| Flag | Effect |
-|------|--------|
-| `--dev` | Dev profile: separate state under `~/.openclaw-dev`, Gateway port 19001 |
-| `--profile <name>` | Separate state and config under `~/.openclaw-<name>` (for example a work install) |
-| `--container <name>` | Run the CLI inside an existing Podman/Docker container with that name |
-| `--log-level <level>` | Log level override (`silent` … `trace`) |
-| `--no-color` | Disable ANSI colors |
-| `-V`, `--version` | Print the version |
-
-There is no global `--model` or `--format` flag. `--model` is an option of `openclaw agent`, and most commands take `--json` for machine-readable output.
+Global flags such as `--profile`, `--dev` and `--log-level` go before the command; they are listed in the [CLI Reference](/reference/cli#global-flags). There is no global `--model` or `--format` flag: `--model` belongs to `openclaw agent`, and most commands take `--json`.
 
 ---
 
@@ -76,7 +63,7 @@ There is no global `--model` or `--format` flag. `--model` is an option of `open
 | Command | Purpose |
 |---------|---------|
 | `openclaw onboard` | Guided setup: verifies model access, writes config, seeds the workspace, and offers channels and skills |
-| `openclaw setup` | Same initialization; also recreates missing workspace files without overwriting existing ones |
+| `openclaw setup` | Starts a chat, running onboarding first if setup is incomplete; `--baseline` only creates the config, workspace and session folders |
 | `openclaw configure` | Targeted wizard for one area later (models, channels, gateway…) |
 | `openclaw channels add` | Connect a chat channel |
 | `openclaw dashboard` | Open the Control UI |
@@ -517,52 +504,6 @@ More starting points: [configuration examples](https://docs.openclaw.ai/gateway/
 
 ---
 
-## CLI Command Reference (Quick)
-
-The commands you'll use most. `openclaw --help` lists them all, and every command has `--help`.
-
-| Command | Purpose |
-|---------|---------|
-| `openclaw` / `openclaw tui` | Terminal chat |
-| `openclaw dashboard` | Open the Control UI |
-| `openclaw agent --agent <id> --message "..."` | One-shot turn through the Gateway |
-| `openclaw onboard` / `setup` / `configure` | Setup wizards |
-| `openclaw status` | Overall health |
-| `openclaw gateway start\|stop\|restart\|status` | Manage the Gateway service |
-| `openclaw channels add\|list\|status\|login\|remove` | Manage chat channels |
-| `openclaw pairing list\|approve` | Approve new DM senders |
-| `openclaw sessions list\|tail` | Inspect sessions |
-| `openclaw agents list\|add\|bindings` | Manage agents |
-| `openclaw cron add\|list\|runs\|rm` | Automations (alias: `openclaw automations`) |
-| `openclaw memory status\|search\|index\|forget` | Memory |
-| `openclaw skills list\|search\|install\|verify\|update` | Skills |
-| `openclaw approvals get` / `openclaw exec-policy show` | Exec approvals |
-| `openclaw config get\|set\|patch\|validate` | Edit config |
-| `openclaw models list` | Available models |
-| `openclaw gateway usage-cost` | Cost summary |
-| `openclaw logs --follow` | Gateway logs |
-| `openclaw doctor` / `openclaw triage` | Diagnose problems |
-| `openclaw update` | Update OpenClaw |
-
-See the [CLI Reference](/reference/cli) and the [upstream CLI docs](https://docs.openclaw.ai/cli).
-
----
-
-## Tips for Better Results
-
-| Tip | Example |
-|-----|---------|
-| Be specific about paths | "Edit `~/project/src/auth.ts`" not "edit the auth file" |
-| State desired output | "Create a JSON config file" not just "set up config" |
-| Provide constraints | "Use Python 3.12, no external dependencies" |
-| Reference past context | "Like the script we made yesterday" |
-| One-shot for simple tasks | `openclaw agent --agent main --message "What's my public IP?"` |
-| Interactive for complex work | `openclaw tui`, then build up context |
-| Pipe large inputs | `{ echo "Find errors:"; cat big.log; } \| openclaw agent --agent main --message-file /dev/stdin` |
-| Use JSON for scripts | `openclaw agent --agent main --message "..." --json \| jq .` |
-
----
-
 ## Troubleshooting
 
 | Problem | Solution |
@@ -574,7 +515,7 @@ See the [CLI Reference](/reference/cli) and the [upstream CLI docs](https://docs
 | Agent won't run commands | `openclaw exec-policy show` and `openclaw approvals get` |
 | Memory search returns nothing | `openclaw memory status --deep`, then `openclaw memory index` |
 | Channel disconnected | `openclaw channels status --probe`; re-link with `openclaw channels login` or `openclaw gateway restart` |
-| Not sure what's wrong | `openclaw triage` runs read-only checks and writes a sanitized diagnosis |
+| Not sure what's wrong | `openclaw triage --non-interactive` writes a sanitized diagnosis without starting a repair agent; see [Troubleshooting](/reference/troubleshooting) |
 
 ---
 

@@ -324,7 +324,7 @@ Yes. See [Contributing to OpenClaw](/contributing/openclaw) and [Contributing to
 
 ## Troubleshooting Quick Reference
 
-Start with `openclaw status --all`, `openclaw doctor` and `openclaw logs --follow`, or `openclaw triage` for a sanitized diagnosis ([General troubleshooting](https://docs.openclaw.ai/help/troubleshooting)).
+Start with `openclaw status --all`, `openclaw doctor` and `openclaw logs --follow`, or `openclaw triage --non-interactive` for a sanitized diagnosis ([General troubleshooting](https://docs.openclaw.ai/help/troubleshooting)).
 
 | Problem | Quick fix |
 |---------|-----------|

@@ -29,7 +29,7 @@ Healthy output: `openclaw gateway status` shows `Runtime: running`, `Connectivit
 
 Plain `openclaw doctor` (without `--lint` or `--json`) is not read-only: it can copy legacy config and migrate state even without `--fix`. Take a backup before you run it on a broken install.
 
-If you want one bundle to hand to a person or a coding agent, `openclaw triage` writes a sanitized diagnosis and, when the Gateway is reachable, a support archive.
+If you want one bundle to hand to a person, `openclaw triage --non-interactive` writes a sanitized diagnosis and, when the Gateway is reachable, a support archive. Without `--non-interactive`, `triage` goes on to offer a local coding agent (Claude, Codex and others) to attempt repairs.
 
 ---
 
@@ -576,7 +576,7 @@ If you really want a clean install, keep the backup and run `openclaw onboard` a
 ## Getting More Help
 
 ```bash
-openclaw triage                       # sanitized, agent-ready diagnosis
+openclaw triage --non-interactive     # sanitized diagnosis, no repair agent
 openclaw gateway diagnostics export   # payload-free .zip to attach
 openclaw status --all                 # pasteable text report
 ```
