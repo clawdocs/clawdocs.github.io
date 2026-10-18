@@ -1,1384 +1,643 @@
 ---
 last_update:
-  date: 2026-06-11
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Security Hardening
-description: Step-by-step guide to securing OpenClaw for production use — gateway bypass prevention, Docker hardening, reverse proxy configs, prompt injection defense, credential protection, incident response, and operational security
-keywords: [openclaw, openclaw hardening, secure openclaw, production security, lock down, docker hardening, prompt injection defense]
+description: A secure-by-default checklist for self-hosted OpenClaw — loopback bind, gateway auth, remote access, reverse proxies, firewalls, exec approvals, sandboxing, channel access, secrets, supply chain, updates and incident response
+keywords: [openclaw, openclaw hardening, secure openclaw, self-hosting security, reverse proxy, tailscale, exec approvals, sandbox, incident response]
 ---
 
 # Security Hardening
 
-This guide walks through hardening OpenClaw from a default install to a production-ready deployment. Apply Level 1 immediately, Level 2 before any real use, and Level 3 for sensitive environments. Then set up the operational security sections for ongoing protection.
+This is an opinionated checklist for people who run their own OpenClaw Gateway. It was checked against OpenClaw **v2026.10.4** on 2026-10-18. Each section says what to do, shows a config that passes `openclaw config validate`, and links the official docs for the details.
 
-:::danger
-As of February 2026, Shodan scans found **42,665 OpenClaw instances** on the public internet, with **93.4% having critical authentication bypasses** (JFrog). Apply at minimum all Level 1 steps before doing anything else.
+OpenClaw's defaults are already conservative on a normal host install: the Gateway binds to loopback, auth is required, unknown DM senders get a pairing code, and groups are allowlisted ([upstream security index](https://docs.openclaw.ai/gateway/security)). Most hardening is about **not undoing those defaults** when you add remote access, and about tightening two defaults that are open on purpose: host shell commands run without approval, and the sandbox is off.
+
+:::danger Unknown config keys stop the Gateway
+OpenClaw validates `openclaw.json` strictly. Unknown keys, wrong types or invalid values make the Gateway **refuse to start** ([configuration: strict validation](https://docs.openclaw.ai/gateway/configuration)). Many "hardening" snippets on the web use keys that never existed. Check every change before restarting:
+
+```bash
+openclaw config validate
+```
 :::
 
+:::info Trust model
+One Gateway is one trust boundary: a single operator, or a team whose members trust each other. It is not a multi-tenant boundary between people who distrust each other. Anyone who can message a tool-enabled agent shares that agent's tool authority. For mutually untrusted users, run separate Gateways, ideally under separate OS users or hosts ([trust model](https://docs.openclaw.ai/gateway/security/trust-model), [SECURITY.md](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)).
+:::
+
+## The checklist
+
+1. [Run the latest stable release](#updating) and update plugins and skills with it.
+2. [Keep the Gateway on loopback](#bind). Docker users: [publish the port to `127.0.0.1` only](#docker).
+3. [Require a strong token or password](#auth).
+4. [Reach it remotely through an SSH tunnel, Tailscale Serve or Cloudflare Access](#remote-access), never by opening port 18789.
+5. If you must use a [reverse proxy](#configure-trustedproxies-critical-for-reverse-proxies), set `gateway.trustedProxies` and overwrite forwarded headers.
+6. [Firewall the host](#firewall), including the `DOCKER-USER` chain.
+7. [Decide who can talk to the agent](#channel-access): pairing or allowlists, mention-gated groups.
+8. [Turn on exec approvals](#exec-approvals) and [the sandbox](#sandboxing) for anything that reads untrusted input.
+9. [Move secrets out of plaintext](#secrets) and check with `openclaw secrets audit --check`.
+10. [Treat skills and plugins as code you are about to run](#supply-chain).
+11. [Run `openclaw security audit --deep`](#audit) after every change.
+12. Know your [incident response](#incident-response) steps before you need them.
+
 ---
 
-## Level 1: Essential (Do These Immediately)
+## Stay current {#updating}
 
-### Update to Latest Version
+OpenClaw publishes security fixes often: 722 GitHub advisories as of 2026-10-18, 75 of them on a single day (2026-09-11) ([Known Vulnerabilities](/security/known-vulnerabilities)). An old pinned version is the most common avoidable risk.
 
 ```bash
-# Check current version
 openclaw --version
-
-# Update — v2026.1.29+ patches CVE-2026-25253 (one-click RCE)
-npm update -g openclaw
+openclaw update status     # channel, installed version, latest available
+openclaw update            # npm, pnpm or git installs; runs doctor afterwards
+openclaw plugins update --all
+openclaw skills update --all
 ```
 
-Subscribe to [OpenClaw security advisories](https://github.com/openclaw/openclaw/security/advisories) for vulnerability notifications.
+- **Always run the latest stable release.** Do not copy a version number from a blog post or an old guide into `npm install -g openclaw@<version>`.
+- Several fixes ship in separate `@openclaw/*` channel plugins (Slack, Discord, WhatsApp, Matrix and others), so `openclaw update` alone is not enough. Run `openclaw plugins update --all` too. Preview with `--dry-run`.
+- Docker: pin an exact image tag such as `ghcr.io/openclaw/openclaw:2026.10.4` if you want reproducible deploys, but bump it on every release. Use only `ghcr.io/openclaw/openclaw` or `openclaw/openclaw` images ([Docker install](https://docs.openclaw.ai/install/docker)).
+- The `extended-stable` channel trails stable by about a month and never auto-applies ([release channels](https://docs.openclaw.ai/install/development-channels)). If you use it, check each new advisory's patched versions against what you run.
+- Watch the repository for security alerts: on GitHub, **Watch → Custom → Security alerts** on [openclaw/openclaw](https://github.com/openclaw/openclaw/security/advisories).
 
-### Bind Gateway to Localhost
+- Background auto-update for stable package installs is opt-in: `update.auto.enabled: true` (default `false`; [updating](https://docs.openclaw.ai/install/updating)).
+
+## Keep the Gateway on loopback {#bind}
+
+`gateway.bind` controls where the Gateway listens. The default is `"loopback"`. The other values, `"lan"`, `"tailnet"`, `"custom"` and `"auto"`, make it reachable by more clients and must be paired with auth and a firewall ([network exposure](https://docs.openclaw.ai/gateway/security/network-exposure)). There is no `gateway.host` key; use the bind mode names, not IP addresses.
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "gateway": {
-    "host": "127.0.0.1",  // NEVER use 0.0.0.0
-    "port": 18789
-  }
+  gateway: {
+    mode: "local",
+    bind: "loopback",
+    port: 18789,
+  },
 }
 ```
 
-This is the single most important security step. The old default bound to `0.0.0.0`, which is how **40,000+ instances** ended up exposed to the internet.
-
-### Enable Authentication
-
-The gateway supports three auth modes. Token-based is the most robust:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "gateway": {
-    "auth": {
-      "mode": "token"  // or "password"
-    }
-  }
-}
-```
-
-If no token/password is configured, the gateway **refuses WebSocket connections** (fail-closed). The onboarding wizard generates an auth token by default — don't disable it.
-
-### Run the Security Audit
+Fix a drifted bind:
 
 ```bash
-# Basic audit — config and filesystem permissions (read-only, no network)
-openclaw security audit
-
-# Deep audit — adds live WebSocket probe, browser exposure check, plugin validation
-openclaw security audit --deep
-
-# Auto-fix — applies safe fixes, then runs full audit
-openclaw security audit --fix
+openclaw config set gateway.bind loopback
+openclaw gateway restart
 ```
 
-The audit covers **50+ checks across 12 categories** including config validation, filesystem permissions, channel policies, model hygiene, plugin trust, and attack surface analysis.
+Upstream is explicit: the web interface is meant for local use and "is not hardened for public exposure". Do not bind it to a public interface and do not put it behind a public reverse proxy ([SECURITY.md, web interface safety](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)). Public exposure is also out of scope for vulnerability reports.
 
-Auto-fix applies safe defaults only:
-- `chmod 600/700` on state/config/credentials
-- Flips `groupPolicy` from `open` to `allowlist`
-- Sets `logging.redactSensitive` to `"tools"`
+Also turn off mDNS broadcasting you don't need. When the Bonjour plugin is on (it auto-starts on macOS), `full` mode advertises your CLI path and SSH port on the LAN. `minimal` is the default when Bonjour is enabled; `discovery.mdns.mode: "off"` suppresses it ([mDNS discovery](https://docs.openclaw.ai/gateway/security/network-exposure)).
 
-### Restrict Shell Commands
+### Docker: the one exposed default {#docker}
+
+Container images are the exception to loopback-first. The Docker setup script sets `OPENCLAW_GATEWAY_BIND=lan` so that port publishing works, and the upstream `docker-compose.yml` publishes `${OPENCLAW_GATEWAY_PORT:-18789}:18789` on **all host interfaces** ([Docker networking](https://docs.openclaw.ai/install/docker/networking-and-storage)). On a VPS with a public IP that means the Gateway is on the internet, protected only by its token.
+
+Keep `lan` inside the container, but publish to the host's loopback only. In your compose file:
+
+```yaml
+services:
+  openclaw-gateway:
+    ports:
+      - "127.0.0.1:18789:18789"
+```
+
+The same compose file also publishes `18790` and `3978` (Microsoft Teams). Bind those to `127.0.0.1` too, or remove them if you don't use them. Then reach the Gateway through an [SSH tunnel or Tailscale](#remote-access). Host firewalls such as ufw do **not** filter Docker-published ports; see [Docker and ufw](#docker-ufw).
+
+## Require a strong secret {#auth}
+
+Gateway auth is required by default. With no valid token, password or trusted proxy configured, the Gateway refuses WebSocket connections. Startup rejects blank tokens, the strings `undefined` and `null`, and published example placeholders, and the audit warns about secrets shorter than 24 characters ([Gateway WebSocket auth](https://docs.openclaw.ai/gateway/security/network-exposure)).
+
+There are four modes: `token` (recommended), `password`, `trusted-proxy` (an identity-aware proxy such as Cloudflare Access), and `none` (private ingress only; don't use it).
+
+Generate and store a token in one step:
+
+```bash
+openclaw doctor --generate-gateway-token
+openclaw gateway auth-token --show    # copy it to clients
+```
+
+Or keep the token out of `openclaw.json` and read it from the environment, for example from `~/.openclaw/.env` or your service manager:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "hands": {
-    "shell": {
-      "blocked_commands": [
-        "rm -rf",
-        "shutdown",
-        "reboot",
-        "mkfs",
-        "dd",
-        "chmod 777",
-        "curl * | bash",
-        "wget * | bash"
-      ]
-    }
-  }
+  gateway: {
+    auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" },
+  },
 }
 ```
 
----
+A good value comes from `openssl rand -hex 32`. Treat the token as full operator access: anyone holding it can call `/v1/chat/completions`, `/tools/invoke` and every other authenticated route with full operator scopes ([network exposure](https://docs.openclaw.ai/gateway/security/network-exposure)). Don't reuse it as `hooks.token`; the audit flags that.
 
-## Level 2: Recommended
+## Run the security audit {#audit}
 
-### Configure `trustedProxies` (Critical for Reverse Proxies)
+```bash
+openclaw security audit            # config and filesystem, read-only
+openclaw security audit --deep     # adds live Gateway probes and plugin checks
+openclaw security audit --fix      # safe fixes only
+openclaw security audit --json
+```
 
-This is the **most commonly misconfigured setting**. OpenClaw auto-approves connections from `127.0.0.1`. When behind a reverse proxy, ALL requests appear to come from localhost — bypassing authentication entirely.
+`--fix` flips open `groupPolicy` values to `allowlist` and tightens file permissions (`600` files, `700` directories). It does **not** rotate secrets, change bind or auth, disable tools, or remove plugins or skills ([`openclaw security`](https://docs.openclaw.ai/cli/security)). The audit detects drift from safe defaults; it doesn't replace tool policy and sandboxing. The full check catalogue is in [audit checks](https://docs.openclaw.ai/gateway/security/audit-checks), and the fix order is in [running the audit](https://docs.openclaw.ai/gateway/security/running-the-audit).
+
+Before you change remote access, a reverse proxy or DM policy, walk through the upstream [exposure runbook](https://docs.openclaw.ai/gateway/security/exposure-runbook). It has pre-flight and rollback steps.
+
+## Remote access {#remote-access}
+
+Pick one of these. All of them keep `gateway.bind: "loopback"`.
+
+### SSH tunnel (simplest)
+
+```bash
+ssh -N -L 18789:127.0.0.1:18789 user@gateway-host
+```
+
+Then open `http://127.0.0.1:18789/` locally. For the CLI on your laptop, point it at the tunnel ([remote access](https://docs.openclaw.ai/gateway/remote)):
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "gateway": {
-    "bind": "loopback",
-    "trustedProxies": ["127.0.0.1"],
-    "auth": {
-      "mode": "password"
-    }
-  }
+  gateway: {
+    mode: "remote",
+    remote: { url: "ws://127.0.0.1:18789", token: "${OPENCLAW_GATEWAY_TOKEN}" },
+  },
 }
 ```
 
-When `trustedProxies` is set, the gateway uses `X-Forwarded-For` headers for real client IP detection. Without it, **every proxied connection is treated as local**.
+### Tailscale Serve (tailnet only)
 
-**How the bypass works:**
+OpenClaw can configure `tailscale serve` itself. The Gateway stays on `127.0.0.1` and Tailscale provides HTTPS and identity headers ([Tailscale](https://docs.openclaw.ai/gateway/tailscale)):
 
-```mermaid
-flowchart LR
-    ATK["Attacker<br/>(public internet)"] -->|Request| PROXY["Reverse Proxy<br/>(Nginx/Caddy)"]
-    PROXY -->|Forwards to 127.0.0.1| GW["OpenClaw Gateway"]
-    GW -->|Sees source: 127.0.0.1| AUTH["Auth bypassed!<br/>Full access granted"]
-
-    style ATK fill:#ff6b6b,color:#fff
-    style AUTH fill:#ff6b6b,color:#fff
+```json5 title="~/.openclaw/openclaw.json"
+{
+  gateway: {
+    bind: "loopback",
+    tailscale: { mode: "serve" },
+    auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" },
+  },
+}
 ```
 
-### Nginx Hardening
+With Serve, `gateway.auth.allowTailscale` (on by default) lets tailnet users into the Control UI without the token. That trusts the Gateway host itself. If untrusted code can run on that host, set `allowTailscale: false` ([Tailscale Serve identity headers](https://docs.openclaw.ai/gateway/security/network-exposure)).
 
-**Critical**: Strip and re-set forwarding headers. Never pass client-supplied `X-Forwarded-For` directly:
+:::warning Funnel is public
+`tailscale.mode: "funnel"` publishes the Gateway on the **public internet** and requires password auth. Use Serve unless you really need public access.
+:::
 
-```nginx title="/etc/nginx/sites-available/openclaw"
+### Cloudflare Tunnel and Access
+
+`cloudflared` dials out, so no inbound port is opened. The supported setup uses `gateway.auth.mode: "trusted-proxy"` with Cloudflare's identity headers ([Cloudflare Tunnel and Access](https://docs.openclaw.ai/gateway/cloudflare-access), [trusted proxy auth](https://docs.openclaw.ai/gateway/trusted-proxy-auth)):
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  gateway: {
+    bind: "loopback",
+    trustedProxies: ["127.0.0.1"],
+    auth: {
+      mode: "trusted-proxy",
+      trustedProxy: {
+        userHeader: "cf-access-authenticated-user-email",
+        requiredHeaders: ["cf-access-jwt-assertion"],
+        allowLoopback: true,
+      },
+    },
+  },
+}
+```
+
+Know the limits: OpenClaw checks that the Access headers are present; it does **not** verify the Access JWT signature. With `allowLoopback`, any local process can send those headers too, so keep the Gateway port private to the host and run only trusted workloads there. Without this config, a same-host `cloudflared` in front of token auth gets `403 proxy_attribution_required`. CLI and node clients need a Cloudflare Access token; the upstream page shows the `gateway.remote` setup.
+
+### WireGuard or another VPN
+
+Set `gateway.bind: "custom"` with `gateway.customBindHost` set to the VPN interface address (for example `10.8.0.1`), keep token auth on, and firewall the port to the VPN subnet. A non-loopback bind always needs auth ([remote access](https://docs.openclaw.ai/gateway/remote)).
+
+## Reverse proxies {#configure-trustedproxies-critical-for-reverse-proxies}
+
+Prefer the options above. If you still put Nginx or Caddy in front, for example to restrict the Control UI to a VPN range, configure the Gateway to trust only that proxy.
+
+Since [PR #1795](https://github.com/openclaw/openclaw/pull/1795) (January 2026), a request with forwarded headers from an address that is **not** in `gateway.trustedProxies` is not treated as local. With token or password auth, an unconfigured same-host proxy gets `403 proxy_attribution_required` ([reverse proxy configuration](https://docs.openclaw.ai/gateway/security/network-exposure)). So set it:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  gateway: {
+    bind: "loopback",
+    publicOrigin: "https://openclaw.example.com",
+    trustedProxies: ["127.0.0.1"],
+    allowRealIpFallback: false,
+    auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" },
+  },
+}
+```
+
+`publicOrigin` gives the Control UI its allowed browser origin. Avoid `gateway.controlUi.allowedOrigins: ["*"]`. The proxy must **overwrite** `X-Forwarded-For`, not append to it. Otherwise a client can put any address in the header.
+
+### Nginx
+
+```nginx title="/etc/nginx/conf.d/openclaw.conf (included inside http {})"
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
 server {
     listen 443 ssl;
     server_name openclaw.example.com;
+    ssl_certificate     /etc/letsencrypt/live/openclaw.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/openclaw.example.com/privkey.pem;
 
-    ssl_certificate /etc/ssl/certs/openclaw.pem;
-    ssl_certificate_key /etc/ssl/private/openclaw.key;
+    # Only your VPN or office range.
+    allow 100.64.0.0/10;
+    deny  all;
 
-    # CRITICAL: Overwrite (not append) forwarding headers
-    proxy_set_header X-Forwarded-For $remote_addr;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-Proto $scheme;
-
-    # WebSocket support for OpenClaw Gateway
     location / {
         proxy_pass http://127.0.0.1:18789;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
 
-    # Rate limiting
-    limit_req_zone $binary_remote_addr zone=openclaw:10m rate=10r/s;
-    limit_req zone=openclaw burst=20 nodelay;
+        # Keep every proxy_set_header in this block. A location that sets any
+        # proxy_set_header inherits none from the server block.
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-For   $remote_addr;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        $connection_upgrade;
+
+        # WebSockets idle longer than nginx's 60 s default.
+        proxy_read_timeout 1h;
+        proxy_send_timeout 1h;
+        proxy_buffering off;
+    }
 }
 ```
 
-### HAProxy with Brute-Force Protection
+Two common mistakes this avoids. First, `proxy_set_header` lines at `server` level are silently dropped when the `location` defines its own. Second, `$proxy_add_x_forwarded_for` appends the client-supplied header instead of replacing it. `map` and `limit_req_zone` belong in the `http {}` context. Run `nginx -t` before reloading.
 
-HAProxy's official blog recommends using battle-tested HTTP Basic Auth rather than relying on OpenClaw's young authentication code:
+### Caddy
 
-```haproxy title="/etc/haproxy/haproxy.cfg"
-frontend openclaw_frontend
-    bind *:443 ssl crt /etc/ssl/certs/openclaw.pem
+Caddy's `reverse_proxy` handles WebSocket upgrades. It also replaces incoming `X-Forwarded-For` unless you configure Caddy's own `trusted_proxies`.
 
-    # Stick table for brute force protection
-    stick-table type ip size 100k expire 2m store http_req_rate(120s)
-
-    # Track request rates
-    http-request track-sc0 src
-
-    # Block after 5 failed auth attempts in 120s
-    # Returns 401 (not 429) so attackers don't know they're rate-limited
-    http-request deny deny_status 401 \
-        if { sc_http_req_rate(0) gt 5 } !{ http_auth(openclaw_users) }
-
-    # Require Basic Auth
-    acl auth_ok http_auth(openclaw_users)
-    http-request auth realm OpenClaw unless auth_ok
-
-    default_backend openclaw_backend
-
-backend openclaw_backend
-    server openclaw 127.0.0.1:18789
-
-userlist openclaw_users
-    user admin password $6$rounds=...  # SHA-512 hashed
-```
-
-### Caddy Configuration
-
-```caddyfile title="/etc/caddy/Caddyfile"
+```caddy title="/etc/caddy/Caddyfile"
 openclaw.example.com {
-    reverse_proxy localhost:18789 {
-        header_up X-Forwarded-For {remote_host}
-        header_up X-Real-IP {remote_host}
+    @outside not remote_ip 100.64.0.0/10
+    respond @outside 403
+
+    # No path matcher: this covers every path, including the WebSocket.
+    basic_auth {
+        alice $2a$14$REPLACE_WITH_OUTPUT_OF_caddy_hash-password
     }
 
-    basicauth / {
-        admin $2a$14$...  # bcrypt hashed password
-    }
+    reverse_proxy 127.0.0.1:18789
 }
 ```
 
-### Channel Allowlists
+Write `basic_auth` with no matcher, or with `/*`. `basicauth /` (the old spelling, still common in guides) matches **only the root path**. Everything else, including the WebSocket, `/v1/*` and `/tools/invoke`, is left unprotected. Basic auth also uses the `Authorization` header that the Gateway's HTTP bearer auth needs, so CLI, node and HTTP API clients can't pass through it. Use it only for browser access to the Control UI. The `basic_auth` spelling needs Caddy 2.8 or later. Generate the hash with `caddy hash-password`.
 
-Only allow messages from known contacts:
+## Firewall {#firewall}
 
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "channels": {
-    "whatsapp": {
-      "allowed_contacts": [
-        "+1234567890"
-      ]
-    },
-    "telegram": {
-      "allowed_chat_ids": [
-        123456789
-      ]
-    },
-    "discord": {
-      "allowed_guild_ids": [
-        "987654321"
-      ]
-    }
-  }
-}
-```
-
-A bot that accepts messages from anyone on WhatsApp or Telegram is a significant liability. Keep inbound DMs locked down and use mention-gating in group channels.
-
-### Browser Domain Restrictions
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "hands": {
-    "browser": {
-      "allowed_domains": [
-        "github.com",
-        "*.google.com",
-        "news.ycombinator.com"
-      ],
-      "blocked_domains": [
-        "*.bank.com",
-        "*.gov"
-      ]
-    }
-  }
-}
-```
-
-### File System Restrictions
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "hands": {
-    "filesystem": {
-      "writable_paths": [
-        "~/.openclaw",
-        "~/projects",
-        "/tmp/openclaw"
-      ],
-      "readable_paths": [
-        "~"
-      ],
-      "blocked_paths": [
-        "~/.ssh",
-        "~/.gnupg",
-        "~/.aws",
-        "~/.config/gcloud"
-      ]
-    }
-  }
-}
-```
-
----
-
-## Level 3: Production / Sensitive Environments
-
-### Docker Sandboxing
-
-Run OpenClaw in a hardened Docker container with defense-in-depth:
-
-```yaml title="docker-compose.yml"
-version: "3.8"
-services:
-  openclaw:
-    image: openclaw/openclaw:latest
-    user: "1000:1000"                      # Non-root user
-    read_only: true                         # Read-only root filesystem
-    cap_drop:
-      - ALL                                 # Drop all Linux capabilities
-    security_opt:
-      - no-new-privileges:true              # Prevent privilege escalation
-      - seccomp:seccomp-openclaw.json       # Custom seccomp profile
-    tmpfs:
-      - /tmp:rw,noexec,nosuid,size=64M      # Writable temp, no exec
-      - /var/tmp:rw,noexec,nosuid,size=32M
-      - /run:rw,noexec,nosuid,size=16M
-    volumes:
-      - openclaw-data:/home/node/.openclaw:rw
-    environment:
-      - OPENCLAW_GATEWAY_BIND=loopback
-    networks:
-      - openclaw-isolated
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: "2.0"
-    healthcheck:
-      test: ["CMD", "openclaw", "doctor"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-networks:
-  openclaw-isolated:
-    driver: bridge
-    internal: true    # No external internet access
-
-volumes:
-  openclaw-data:
-```
-
-| Measure | Purpose |
-|---------|---------|
-| `user: "1000:1000"` | Non-root; if permission errors on `~/.openclaw`, chown host mounts to uid 1000 |
-| `cap_drop: ALL` | Remove all Linux capabilities |
-| `read_only: true` | Prevent modifications to container filesystem |
-| `no-new-privileges` | Prevent setuid/setgid escalation |
-| `seccomp` profile | Restrict syscalls to minimum required |
-| `internal: true` | No external network access |
-| `tmpfs` with `noexec,nosuid` | Writable temp that prevents binary execution |
-
-### Sandbox Mode for Tool Execution
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "hands": {
-    "sandbox": {
-      "enabled": true,
-      "type": "docker",
-      "image": "openclaw/sandbox:latest",
-      "network": false,          // Default: no egress
-      "read_only_root": true,
-      "writable_paths": [
-        "/workspace"
-      ]
-    }
-  }
-}
-```
-
-The default `docker.network` setting is `"none"` — no outbound access from sandboxed tasks.
-
-### Credential Protection
-
-**By default, `~/.openclaw/credentials/` stores API keys in plaintext.** This is one of the most criticized security issues. OX Security found that credentials are also **backed up when removed** — removing them from the UI does not delete them from the filesystem.
-
-**Recommended approach — use environment variables:**
-
-```bash title="~/.openclaw/env (permissions: 600)"
-ANTHROPIC_API_KEY=sk-ant-xxxxx
-OPENAI_API_KEY=sk-xxxxx
-```
+A loopback-bound Gateway needs no firewall rule. Firewall everything else, and allow SSH **before** you enable the firewall, or you will lock yourself out:
 
 ```bash
-chmod 600 ~/.openclaw/env
+sudo ufw allow OpenSSH
+sudo ufw default deny incoming
+sudo ufw enable
+sudo ufw status verbose
 ```
 
-**Additional protection options:**
+### Docker-published ports bypass ufw {#docker-ufw}
 
-| Method | Details |
-|--------|---------|
-| **OS Keychain** | macOS Keychain, Windows Credential Manager, Linux secret-service |
-| **1Password integration** | With biometric unlock, every secret read requires Touch ID — prompt injection can't bypass biometric |
-| **HashiCorp Vault** | Runtime key injection for enterprise deployments |
-| **[openclaw-secure](https://github.com/seomikewaltman/openclaw-secure)** | Hardware-gated secret management with pluggable backends |
-| **Time-scoped access** | Limit API key access windows (15 min, 60 min, 4 hours) |
-| **Composio Managed Auth** | Agent never handles raw tokens — Composio brokers API calls |
+Published container ports go through Docker's forwarding chains, not the host `INPUT` chain that ufw manages. Enforce rules in `DOCKER-USER`. Upstream's example, appended to `/etc/ufw/after.rules` ([Docker port publishing with UFW](https://docs.openclaw.ai/gateway/security/network-exposure)):
 
-**Best practices:**
-- Use scoped tokens (read-only where possible) instead of full-access tokens
-- Prefer short-lived credentials over long-lived ones
-- Create a separate "agent" credential set, intentionally limited
-- Assume anything the agent can see might eventually leak
+```bash
+*filter
+:DOCKER-USER - [0:0]
+-A DOCKER-USER -m conntrack --ctstate ESTABLISHED,RELATED -j RETURN
+-A DOCKER-USER -s 127.0.0.0/8 -j RETURN
+-A DOCKER-USER -s 10.0.0.0/8 -j RETURN
+-A DOCKER-USER -s 172.16.0.0/12 -j RETURN
+-A DOCKER-USER -s 192.168.0.0/16 -j RETURN
+-A DOCKER-USER -s 100.64.0.0/10 -j RETURN
+-A DOCKER-USER -p tcp --dport 80 -j RETURN
+-A DOCKER-USER -p tcp --dport 443 -j RETURN
+-A DOCKER-USER -m conntrack --ctstate NEW -j DROP
+-A DOCKER-USER -j RETURN
+COMMIT
+```
 
-### Local Models Only
+Add a matching policy in `/etc/ufw/after6.rules` if Docker IPv6 is on. Then check from **another machine**, not from the host itself:
 
-Eliminate all cloud API data exposure:
+```bash
+sudo ufw reload
+sudo iptables -S DOCKER-USER
+nmap -sT -p 1-65535 <public-ip> --open    # run from outside
+```
+
+Only the ports you meant to expose (usually SSH, 80 and 443) should show up. Curling your own IP from the host tests the bind, not the firewall.
+
+## Who can talk to the agent {#channel-access}
+
+Most real incidents are "someone messaged the bot and the bot did what they asked" ([trust model](https://docs.openclaw.ai/gateway/security/trust-model)). The defaults are good: DMs use `dmPolicy: "pairing"`, and groups use `groupPolicy: "allowlist"`. Keep them, or tighten them:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "local",
-    "local": {
-      "endpoint": "http://localhost:11434",
-      "model": "llama3.1:70b",
-      "type": "ollama"
-    }
-  }
+  session: { dmScope: "per-channel-peer" },
+  channels: {
+    telegram: {
+      dmPolicy: "allowlist",
+      allowFrom: ["123456789"],
+      groups: { "*": { requireMention: true } },
+    },
+    discord: {
+      dmPolicy: "pairing",
+      guilds: { "123456789012345678": { requireMention: true } },
+    },
+  },
 }
 ```
 
-### Disable Skill Installation
+- `dmPolicy` is `pairing` (default), `allowlist`, `open` or `disabled`. `open` requires `"*"` in the allowlist, so it can't happen by accident ([access control](https://docs.openclaw.ai/gateway/security/access-control)).
+- Approve pairing requests with `openclaw pairing list <channel>` and `openclaw pairing approve <channel> <code>`. Approvals are stored in `~/.openclaw/credentials/<channel>-allowFrom.json`.
+- `groups` sets per-group defaults and acts as a group allowlist. Use `groupPolicy: "allowlist"` plus `groupAllowFrom` to limit who can trigger the bot inside a group.
+- `session.dmScope: "per-channel-peer"` gives each sender their own DM context. The default `main` shares one session across all DMs, which is fine only when you are the only person who DMs the bot.
+- Use stable IDs, not display names, in allowlists. The `dangerouslyAllowNameMatching` flags turn on name matching; leave them off.
+- Supplemental context (quotes, thread history) is controlled separately by `contextVisibility`.
+- Run the bot on its own phone number for WhatsApp, Signal and Telegram ([hardened baseline](https://docs.openclaw.ai/gateway/security/hardened-baseline)).
+
+## Exec approvals and tool policy {#exec-approvals}
+
+By default, host `exec` runs **without asking**. `tools.exec.mode` resolves to `full` on the Gateway and node hosts ([exec approvals](https://docs.openclaw.ai/tools/exec-approvals)). That is intentional for a single trusted operator, but it means a successful prompt injection can run shell commands as your user.
+
+| `tools.exec.mode` | Behaviour |
+|---|---|
+| `deny` | No host exec at all. |
+| `allowlist` | Only allowlisted commands; misses are silently denied. |
+| `ask` | Allowlisted commands run; a human approves everything else. |
+| `auto` | Like `ask`, but an automatic reviewer allows, denies or escalates misses. Upstream's recommendation for coding agents. |
+| `full` | No ordinary prompts (default on gateway/node hosts). |
+
+Source: [permission modes](https://docs.openclaw.ai/tools/permission-modes).
+
+```bash
+openclaw config set tools.exec.mode ask
+openclaw approvals get        # requested policy, host approvals file, effective result
+openclaw gateway restart
+openclaw exec-policy show
+```
+
+The effective policy is the **stricter** of `tools.exec.*` in `openclaw.json` and the host-local approvals file. If prompts don't behave as you expect, check both. A fuller set of guardrails:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "skills": {
-    "allow_install": false,
-    "allow_clawhub": false
-  }
+  tools: {
+    exec: { mode: "ask", strictInlineEval: true, applyPatch: { workspaceOnly: true } },
+    elevated: { enabled: false },
+    fs: { workspaceOnly: true },
+    sessions: { visibility: "agent" },
+    agentToAgent: { enabled: false },
+  },
 }
 ```
 
-### Audit Logging
+- `strictInlineEval` makes recognized inline-eval forms such as `python -c` and `node -e` need reviewer or human approval, even under `full`.
+- `tools.elevated` is the escape hatch that runs exec outside the sandbox. Keep it off unless you need it ([elevated mode](https://docs.openclaw.ai/tools/elevated)).
+- `tools.fs.workspaceOnly` keeps file tools inside the workspace. Exec can still reach the rest of the filesystem, which is why the sandbox matters.
+- `sessions.visibility` and `agentToAgent` default to Gateway-wide reach. Narrow them when agents have different trust levels.
+
+For an agent that only chats and should never touch the host, upstream's 60-second baseline denies whole tool groups:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "logging": {
-    "audit": {
-      "enabled": true,
-      "path": "~/.openclaw/logs/audit.log",
-      "log_tool_calls": true,
-      "log_memory_writes": true,
-      "log_channel_messages": true
-    }
-  }
+  tools: {
+    profile: "messaging",
+    deny: ["group:automation", "group:runtime", "group:fs", "sessions_spawn", "sessions_send"],
+    exec: { mode: "deny" },
+    elevated: { enabled: false },
+  },
 }
 ```
 
-Audit logs record: user ID + timestamp + action + result + IP. Exportable as CSV/JSON. 90-day retention meets ISO 27001 (configurable up to 365 days).
+Allowlists and approvals are guardrails for operator intent, not a sandbox. Upstream says they don't model every interpreter path. Text blocklists such as "block `rm -rf`" are not a security boundary either ([SECURITY.md](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)). Pair them with the sandbox for anything that reads untrusted input.
 
-### Monitor SOUL.md for Tampering
+## Sandboxing {#sandboxing}
 
-The `SOUL.md` file defines the agent's identity and behavioral boundaries. It is injected into every interaction. Attackers who modify it gain persistent control across all sessions. Use [ClawSec](https://github.com/prompt-security/clawsec) for automated drift detection.
-
----
-
-## MCP Server Hardening
-
-MCP servers extend the agent's capabilities — and its attack surface. Every connected MCP server can potentially read files, execute commands, or access databases.
-
-### Trust Tiers
-
-| Tier | Source | Trust Level | Action |
-|------|--------|-------------|--------|
-| **Official** | `@modelcontextprotocol/*` | High | Use with standard precautions |
-| **Verified Community** | Popular repos, active maintenance | Medium | Review code, restrict tools |
-| **Unknown / New** | Unvetted third-party | Low | Sandbox, restrict heavily |
-
-### Tool Filtering
-
-Never give an MCP server full access. Restrict to only the tools you need:
+The sandbox is **off by default** (`agents.defaults.sandbox.mode: "off"`). Turning it on moves tool execution into a container; the Gateway itself stays on the host ([sandboxing](https://docs.openclaw.ai/gateway/sandboxing)).
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "mcp": {
-    "servers": {
-      "filesystem": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"],
-        "allowed_tools": ["read_file", "list_directory"],
-        "blocked_tools": ["write_file", "delete_file", "move_file"]
+  agents: {
+    defaults: {
+      sandbox: { mode: "non-main", scope: "session", workspaceAccess: "none" },
+    },
+  },
+}
+```
+
+- `non-main` sandboxes every session except the agent's main session, so group and channel sessions always run sandboxed. `all` sandboxes everything ([modes, scope and backend](https://docs.openclaw.ai/gateway/sandboxing/modes-scope-and-backend)).
+- `workspaceAccess` is `none`, `ro` or `rw`.
+- Docker backend defaults: `network: "none"` (no egress), `readOnlyRoot: true`, `capDrop: ["ALL"]`, image `openclaw-sandbox:bookworm-slim` ([Docker backend](https://docs.openclaw.ai/gateway/sandboxing/docker-backend)). Build that image first. OpenClaw fails fast rather than fall back to a plain image ([images and setup](https://docs.openclaw.ai/gateway/sandboxing/images-and-setup)).
+- Inspect the result with `openclaw sandbox explain`. After a config change, run `openclaw sandbox recreate --all`.
+- Tool deny lists apply before the sandbox; sandboxing never brings back a denied tool. `tools.elevated` bypasses the sandbox.
+- Skill secrets (`skills.entries.*.env`, `apiKey`) are injected into the **host** process, not the sandbox.
+- When delegated work must stay sandboxed, call `sessions_spawn` with `sandbox: "require"`.
+
+Per-agent overrides go under `agents.entries.<id>`. For example, a family-facing agent can be fully sandboxed with no shell or file tools:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    entries: {
+      family: {
+        sandbox: { mode: "all", scope: "agent", workspaceAccess: "ro" },
+        tools: { deny: ["group:runtime", "group:fs"], exec: { mode: "deny" } },
       },
-      "database": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-postgres"],
-        "allowed_tools": ["query"],
-        "blocked_tools": ["execute"]
-      }
-    }
-  }
+    },
+  },
 }
 ```
 
-### Credential Scoping
+Upstream says the sandbox "is not a perfect security boundary" but "materially limits filesystem and process access". Code Mode's default `node` executor uses `node:vm`, which is **not** a security boundary. Select `tools.codeMode.executor: "quickjs"` if you use Code Mode with untrusted input ([SECURITY.md, Code Mode executors](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)).
 
-Use environment variable expansion and scoped credentials per server:
+## Workspace files: SOUL.md, AGENTS.md, MEMORY.md {#soulmd-protection}
 
-```json5
-{
-  "mcp": {
-    "servers": {
-      "github": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-github"],
-        "env": {
-          "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN_READONLY}"
-        }
-      }
-    }
-  }
-}
-```
+Bootstrap and memory files live in the workspace, by default `~/.openclaw/workspace/` (`SOUL.md`, `AGENTS.md`, `MEMORY.md`, `memory/*.md`). Upstream treats them as trusted operator state: anyone who can edit them is already inside the trust boundary ([SECURITY.md, workspace memory trust boundary](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)). The practical risk is an agent rewriting its own instructions after a prompt injection.
 
-Create a **read-only** GitHub token for the agent. Never use your personal full-access token.
+- **`chmod 444` does not stop the agent.** It runs as the file's owner, so exec can `chmod` the file back, and an atomic write-via-rename replaces a read-only file whenever the directory is writable. The real controls are the sandbox (`workspaceAccess: "ro"` or `"none"`), `tools.fs.workspaceOnly`, and exec approvals.
+- To track changes, put the **workspace** under git. Don't put `~/.openclaw` itself under git: `openclaw.json` and `credentials/` hold secrets.
+- Look for hidden characters after an incident. This matches zero-width and word-joiner characters in UTF-8:
 
-### Database Security
+  ```bash
+  grep -rnP '[\x{200B}-\x{200D}\x{2060}\x{FEFF}]' ~/.openclaw/workspace/
+  ```
 
-For database MCP servers, create a restricted database user:
+## Secrets {#secrets}
 
-```sql
--- PostgreSQL: read-only agent user
-CREATE ROLE openclaw_agent LOGIN PASSWORD 'strong_random_password';
-GRANT CONNECT ON DATABASE mydb TO openclaw_agent;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO openclaw_agent;
--- Explicitly deny writes
-REVOKE INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public FROM openclaw_agent;
-```
+Assume anything under `~/.openclaw/` can contain secrets ([secrets, storage and logs](https://docs.openclaw.ai/gateway/security/secrets-and-storage)):
 
-### Network Isolation
+| Path | Contents |
+|---|---|
+| `openclaw.json` | Gateway and remote tokens, provider settings, allowlists |
+| `.env` | Global environment file (`$OPENCLAW_STATE_DIR/.env`) |
+| `credentials/` | Channel credentials (for example WhatsApp), pairing allowlists, legacy OAuth imports |
+| `agents/<agentId>/agent/openclaw-agent.sqlite` | Model auth profiles, session rows and transcripts |
+| `state/openclaw.sqlite` | MCP OAuth tokens and other shared state |
+| `secrets.json` | Optional payload for `file` SecretRef providers |
 
-For stdio MCP servers, no network access is needed. For remote MCP servers:
-
-```json5
-{
-  "mcp": {
-    "servers": {
-      "internal-tools": {
-        "url": "https://mcp.internal.company.com/sse",
-        "transport": "sse",
-        "headers": {
-          "Authorization": "Bearer ${MCP_INTERNAL_TOKEN}"
-        }
-      }
-    }
-  }
-}
-```
-
-Only connect to MCP servers on trusted networks. Never expose MCP endpoints to the public internet.
-
-### Pin MCP Server Versions
-
-Avoid `npx -y` pulling latest versions automatically in production:
-
-```json5
-{
-  "mcp": {
-    "servers": {
-      "filesystem": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-filesystem@1.2.3", "/home/user"]
-      }
-    }
-  }
-}
-```
-
-Pin versions and update deliberately after reviewing changelogs.
-
----
-
-## Multi-Agent Isolation
-
-Multi-agent setups multiply the attack surface — every agent with shell access can execute commands as your user, and a compromised agent can access other agents' workspaces.
-
-### Workspace Isolation
-
-Use separate `OPENCLAW_HOME` directories for agents at different trust levels:
-
-```bash
-# Sensitive agent (access to credentials, production systems)
-OPENCLAW_HOME=~/.openclaw-secure openclaw gateway --port 18789
-
-# General agent (untrusted input, public channels)
-OPENCLAW_HOME=~/.openclaw-general openclaw gateway --port 18790
-```
-
-### Bootstrap Context Security
-
-Since v2026.5.22, sub-agents only receive AGENTS.md and TOOLS.md by default. SOUL.md, USER.md, memory, and customer runbooks are excluded from delegated workers. This prevents sensitive main-agent context from leaking into worker sessions.
-
-To verify this is active:
-
-```bash
-# Check version
-openclaw --version  # Must be v2026.5.22+
-```
-
-### Namespace Isolation
-
-Since v2026.6.1, internal namespaces provide scoped agent/global sessions:
-
-```json5
-{
-  "agents": {
-    "list": [
-      {
-        "id": "secure-agent",
-        "namespace": "production",
-        "workspace": "~/.openclaw/workspace-secure"
-      },
-      {
-        "id": "general-agent",
-        "namespace": "general",
-        "workspace": "~/.openclaw/workspace-general"
-      }
-    ]
-  }
-}
-```
-
-Agents in different namespaces have isolated tool dispatch — a compromised general agent cannot invoke production agent tools.
-
-### Per-Agent Shell Restrictions
-
-Apply different shell blocklists per agent role:
-
-```json5
-{
-  "agents": {
-    "list": [
-      {
-        "id": "researcher",
-        "hands": {
-          "shell": { "enabled": false },
-          "browser": { "enabled": true }
-        }
-      },
-      {
-        "id": "coder",
-        "hands": {
-          "shell": {
-            "enabled": true,
-            "blocked_commands": ["rm -rf", "sudo"]
-          }
-        }
-      }
-    ]
-  }
-}
-```
-
----
-
-## SOUL.md Protection
-
-SOUL.md is the #1 attack vector in OpenClaw. It's persistent (survives restarts), authoritative (injected into every interaction), and a single modification gives attackers permanent control.
-
-### Lock File Permissions
-
-```bash
-# Make SOUL.md read-only
-chmod 444 ~/.openclaw/SOUL.md
-chmod 444 ~/.openclaw/AGENTS.md
-chmod 444 ~/.openclaw/IDENTITY.md
-
-# Verify
-ls -la ~/.openclaw/SOUL.md
-# -r--r--r-- 1 user user 2048 Jun 08 12:00 SOUL.md
-```
-
-The agent cannot modify read-only files even if instructed to via prompt injection.
-
-### Git-Based Integrity Monitoring
-
-Track changes to identity files with git:
-
-```bash
-# Initialize git repo for openclaw config
-cd ~/.openclaw && git init
-git add SOUL.md AGENTS.md IDENTITY.md openclaw.json
-git commit -m "Baseline: known-good configuration"
-```
-
-```bash title="check-integrity.sh"
-#!/bin/bash
-cd ~/.openclaw
-
-# Check for unauthorized changes
-if ! git diff --quiet SOUL.md AGENTS.md IDENTITY.md openclaw.json; then
-    echo "WARNING: Identity files modified!"
-    git diff --stat
-    
-    # Alert via Telegram
-    curl -s -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
-      -d "chat_id=${TG_CHAT_ID}" \
-      -d "text=SECURITY ALERT: OpenClaw identity files modified on $(hostname)"
-    
-    # Auto-restore to known-good state
-    git checkout -- SOUL.md AGENTS.md IDENTITY.md
-    echo "Restored to known-good state"
-fi
-```
-
-```bash
-# Run every 5 minutes via cron
-crontab -e
-# */5 * * * * /home/user/check-integrity.sh >> /var/log/openclaw-integrity.log 2>&1
-```
-
-### ClawSec Integration
-
-[ClawSec](https://github.com/prompt-security/clawsec) provides automated drift detection:
-
-```bash
-# Install
-openclaw clawhub install clawsec
-
-# Enable continuous monitoring
-openclaw config set plugins.clawsec.enabled true
-openclaw config set plugins.clawsec.drift_detection true
-openclaw config set plugins.clawsec.auto_restore true
-```
-
-ClawSec detects zero-width Unicode characters, base64 payloads, and obfuscated instructions that attackers inject into SOUL.md (as seen in the ClawHavoc campaign).
-
-### Detection Patterns
-
-Watch for these indicators of SOUL.md tampering:
-
-```bash
-# Check for zero-width characters (injection technique)
-cat -v ~/.openclaw/SOUL.md | grep -P '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'
-
-# Check for base64 encoded payloads
-grep -oP '[A-Za-z0-9+/]{40,}={0,2}' ~/.openclaw/SOUL.md
-
-# Check for suspicious URLs
-grep -oP 'https?://[^\s)]+' ~/.openclaw/SOUL.md
-
-# Check for shell commands hidden in markdown
-grep -i 'curl\|wget\|bash\|eval\|exec\|system(' ~/.openclaw/SOUL.md
-```
-
----
-
-## Plugin Security
-
-### Plugin Allowlist
-
-Only allow explicitly approved plugins:
+- Keep `~/.openclaw` at `700` and files at `600`. `openclaw security audit --fix` does this. Use full-disk encryption, and run the Gateway under a dedicated OS user on shared hosts.
+- The global env file is **`~/.openclaw/.env`**, with a leading dot. A file named `~/.openclaw/env` is never loaded. Provider keys and any `OPENCLAW_*` variable are **blocked** from workspace `.env` files, so a cloned repo can't redirect your credentials.
+- Plaintext in `openclaw.json` or `.env` stays **readable by the agent**. SecretRefs (`env`, `file`, `exec` and `store` sources) reduce that exposure once every credential is migrated ([secrets management](https://docs.openclaw.ai/gateway/secrets), [SecretRef contract](https://docs.openclaw.ai/gateway/secrets/secretref-contract)). Exec providers cover 1Password, Bitwarden, Vault, `pass` and `sops`.
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "plugins": {
-    "allowlist": [
-      "memory-core",
-      "clawsec"
-    ],
-    "sandbox_level": "high"
-  }
+  secrets: {
+    providers: {
+      filemain: { source: "file", path: "~/.openclaw/secrets.json", mode: "json" },
+    },
+  },
+  channels: {
+    telegram: {
+      botToken: { source: "file", provider: "filemain", id: "/telegram/botToken" },
+    },
+  },
 }
 ```
 
-Any plugin not on the allowlist is blocked from loading.
-
-### Sandbox Levels
-
-| Level | Restrictions |
-|-------|-------------|
-| `low` | Full filesystem and network access |
-| `medium` | Limited to plugin directory + declared paths |
-| `high` | No filesystem, no network, no shell — only declared APIs |
-
-### Plugin Audit
-
 ```bash
-# Inspect runtime behavior
-openclaw plugins inspect memory-core --runtime
-
-# Check for updates (may contain security fixes)
-openclaw plugins outdated
-
-# Verify plugin integrity
-openclaw doctor --plugins
+openclaw secrets audit --check     # non-zero exit while plaintext or unresolved refs remain
+openclaw secrets configure         # interactive migration helper
 ```
 
----
+Give the agent its own scoped, short-lived credentials: a read-only GitHub token, a separate email account, a bot number. Don't hand it your personal ones. File logs are written raw with `0600` permissions; add `logging.redactPatterns` for your own token formats, and share `openclaw status --all` (redacted) rather than raw logs.
 
-## Channel Security
+## Skills and plugins {#supply-chain}
 
-### Per-Channel Rate Limiting
+These run with real authority, so review them like code.
 
-Prevent abuse from any single channel:
+**Plugins** load in-process with the Gateway and are trusted code with the Gateway's OS privileges. There are no plugin sandbox levels ([SECURITY.md, plugin trust boundary](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)). Pin the set you trust with `plugins.allow` (ids must be installed; Discord and WhatsApp, for example, are external plugins installed with `openclaw plugins install @openclaw/discord`):
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "telegram": {
-      "max_messages_per_hour": 30,
-      "cooldown_seconds": 5,
-      "require_mention": true,
-      "allowed_chat_ids": [123456789]
-    },
-    "discord": {
-      "max_messages_per_hour": 60,
-      "require_mention": true,
-      "allowed_guild_ids": ["987654321"]
-    },
-    "whatsapp": {
-      "max_messages_per_hour": 20,
-      "allowed_contacts": ["+1234567890"]
-    }
-  }
+  plugins: { allow: ["telegram", "discord"] },
 }
 ```
 
-### Webhook HMAC Validation
+How `openclaw plugins install` resolves names ([install plugins](https://docs.openclaw.ai/cli/plugins/install)):
 
-For custom HTTP channels, always validate webhook signatures:
+- Package names, including `@openclaw/*`, scoped names and `name@version`, install from **ClawHub by default**, with no fallback to npm.
+- Bare official plugin ids such as `discord` follow the official catalog.
+- `npm:<package>` installs from npm, explicitly. Add `--pin` to record the exact resolved version.
+- Arbitrary npm, git, local or marketplace sources warn and ask first. Non-interactive installs need `--force`. `--force` does not bypass `security.installPolicy`.
+- Check what you have with `openclaw plugins list`, `openclaw plugins inspect <id>` and `openclaw plugins doctor`. Remove with `openclaw plugins uninstall <id>`.
 
-```json5
+**Skills** are directories with a `SKILL.md`. Upstream says to treat third-party skills as untrusted code ([skills: security](https://docs.openclaw.ai/tools/skills)). Before installing:
+
+```bash
+openclaw skills verify @owner/<slug>          # ClawHub trust envelope, scanner results
+openclaw skills verify @owner/<slug> --card   # human-readable Skill Card
+openclaw skills install @owner/<slug> --version <version>
+openclaw skills check
+```
+
+Avoid `--force-install`: it installs a pending GitHub-backed skill **before** ClawHub's scan finishes. `skills-sh:`, `git:` and local installs are marked **Not scanned by ClawHub**. The review workflow is on [Skill Verification](/security/skill-verification).
+
+For a hard gate on every skill and plugin install path, use `security.installPolicy`. It runs a trusted local command that can block the install ([operator install policy](https://docs.openclaw.ai/tools/skills-config)):
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "webhooks": {
-    "incoming": {
-      "secret": "${WEBHOOK_SECRET}",
-      "require_hmac": true
-    }
-  }
+  security: {
+    installPolicy: {
+      enabled: true,
+      targets: ["skill", "plugin"],
+      exec: {
+        source: "exec",
+        command: "/usr/local/bin/openclaw-install-policy",
+        args: ["--json"],
+        trustedDirs: ["/usr/local/bin"],
+      },
+    },
+  },
 }
 ```
 
-Reject any webhook POST that doesn't include a valid `X-Webhook-Secret` or HMAC-SHA256 signature.
+With `enabled: true` and no working command, installs are blocked. If you don't want ClawHub installs at all, a policy that always blocks does that. `skills.allowBundled` limits which **bundled** skills are eligible.
 
-### Encryption by Channel
+**MCP servers** run as configured processes or remote endpoints. Limit what each one exposes with `mcp.servers.<name>.toolFilter.include` / `exclude` ([MCP](https://docs.openclaw.ai/tools/mcp)). Prefer servers maintained by the service's own vendor: `@modelcontextprotocol/server-github` and `server-postgres`, for example, are marked "no longer supported" on npm.
 
-Not all channels are equally secure:
+## Prompt injection {#prompt-injection}
 
-| Channel | Encryption | Risk Level |
-|---------|-----------|-----------|
-| Signal | E2E encrypted | Low |
-| WhatsApp | E2E encrypted | Low |
-| Telegram (secret chat) | E2E encrypted | Low |
-| Telegram (regular) | Server-side encrypted | Medium |
-| Discord | TLS in transit | Medium |
-| Slack | TLS in transit | Medium |
-| Matrix (encrypted rooms) | E2E encrypted | Low |
-| WebChat / HTTP | TLS if configured | High without TLS |
+Assume the model can be manipulated. Upstream treats prompt injection by itself as out of scope for vulnerability reports; the boundaries are auth, tool policy, approvals and the sandbox ([prompt injection](https://docs.openclaw.ai/gateway/security/prompt-injection)). In practice:
 
-For sensitive data, prefer E2E encrypted channels. Never send credentials, API keys, or sensitive data over unencrypted channels.
+- Use a strong, current model tier for any agent with tools or that reads hooks, email or web pages. Weaker tiers are easier to inject.
+- Keep `hooks.gmail.allowUnsafeExternalContent` and `hooks.mappings[].allowUnsafeExternalContent` off.
+- Keep the browser SSRF policy strict. It is strict by default; `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork` opens your LAN to the browser tool ([browser control](https://docs.openclaw.ai/gateway/security/browser-control)).
+- Give agents that read untrusted content the `messaging` profile, a sandbox, and no exec.
 
----
+## Monitoring {#monitoring}
 
-## Network Security
-
-### Principle: Never Expose Port 18789
-
-Use a private tunnel for remote access. Never expose the gateway directly.
-
-### Cloudflare Zero Trust Tunnel
-
-1. Install cloudflared from [Cloudflare's package repository](https://pkg.cloudflare.com/) (it is not in the stock Ubuntu/Debian repos), or download the `.deb` from [GitHub releases](https://github.com/cloudflare/cloudflared/releases)
-2. Authenticate: `cloudflared tunnel login`
-3. Create tunnel: `cloudflared tunnel create openclaw`
-4. Configure tunnel to point to `http://localhost:18789`
-5. Add Cloudflare Access policies with email-based authentication
-6. Enable Service Tokens for API access
-
-The server has **no open ports** and cannot be found on the public internet.
-
-### Tailscale (Zero-Config)
-
-OpenClaw has native Tailscale integration:
-- Auto-configures **Tailscale Serve** (tailnet-only) or **Tailscale Funnel** (public HTTPS)
-- Gateway stays bound to loopback
-- Your server gets a private IP (`100.x.x.x`) only your devices can reach
-
-### WireGuard
-
-Bind the gateway to the WireGuard interface IP only. No gateway port is publicly reachable.
-
-### SSH Port Forwarding (Simplest)
+There is no `~/.openclaw/logs/audit.log`. The real sources:
 
 ```bash
-ssh -L 18789:localhost:18789 user@your-server
+openclaw logs --follow                      # Gateway file log, default /tmp/openclaw/openclaw-YYYY-MM-DD.log
+openclaw audit --kind tool_action --limit 50
+openclaw transcripts list
+openclaw transcripts show <session>
+openclaw status --all                       # redacted, pasteable
 ```
 
-Then access OpenClaw at `http://localhost:18789` on your local machine.
+The audit ledger (`logging.audit.enabled`, on by default) lives in the shared state database and is **metadata-only**. It records which agent ran, which tool actions ran, and their outcomes. It never stores prompts, message bodies, tool arguments, URLs or command output ([audit history](https://docs.openclaw.ai/gateway/audit)). If you need content-level logs, the transcripts are the record, so protect them like the database they live in. `openclaw security audit` flags insecure flags under `config.insecure_or_dangerous_flags`; re-run it on a schedule.
 
-### Firewall Rules
+## Incident response {#incident-response}
+
+Based on upstream [operator incident response](https://docs.openclaw.ai/gateway/security/operator-incident-response).
+
+**1. Contain**
 
 ```bash
-# Only allow localhost access to gateway
-sudo ufw deny 18789
-sudo ufw allow from 127.0.0.1 to any port 18789
+openclaw gateway stop
 ```
 
----
+If the macOS app supervises the Gateway, quit the app. Before starting again, set `gateway.bind: "loopback"`, turn off Tailscale Serve or Funnel, switch risky channels to `dmPolicy: "disabled"`, and remove any `"*"` allowlist entries.
 
-## Prompt Injection Defense
-
-### The Architectural Weakness
-
-OpenClaw processes untrusted content (chat messages, skill outputs, external data) **in the same context as user instructions**. There are no hard isolation boundaries. Zenity Labs demonstrated a complete attack chain:
-
-1. **Initial access**: Indirect prompt injection via a Google Document
-2. **Persistence**: Attacker modifies `SOUL.md` to include malicious instructions
-3. **Scheduled persistence**: Creates a Windows scheduled task that re-injects malicious instructions every 2 minutes
-4. **Full compromise**: Deploys a traditional C2 (command-and-control) implant
-
-All of this abuses **intended capabilities** — no software vulnerability required.
-
-### Defense Measures
-
-| Defense | How |
-|---------|-----|
-| **Lock down DMs** | Use pairing/allowlists — don't accept messages from unknown senders |
-| **Mention-gating** | In group chats, require @-mention to trigger the agent |
-| **Treat external content as hostile** | Links, attachments, and pasted instructions from external sources |
-| **Monitor SOUL.md** | ClawSec provides drift detection for unauthorized modifications |
-| **Use strong models** | Anthropic Opus 4.8 is recommended as strongest at recognizing prompt injections |
-| **Sandbox external data** | Don't let the agent process untrusted documents with shell access enabled |
-| **Avoid "always-on" in public rooms** | Bots that listen to all messages are most vulnerable |
-
-### Prompt Injection Detection
-
-Monitor for indicators that injection has occurred:
+**2. Rotate the Gateway secret properly.** Exporting a new shell variable does nothing to a running Gateway. Change the configured secret, then prove the old one is dead:
 
 ```bash
-# Check audit log for unexpected tool calls
-grep "tool_call" ~/.openclaw/logs/audit.log | \
-  grep -v "expected_tool_1\|expected_tool_2" | \
-  tail -20
-
-# Look for SOUL.md modification attempts
-grep -i "soul\|identity\|agents.md" ~/.openclaw/logs/audit.log | \
-  grep -i "write\|modify\|create"
-
-# Check for credential access attempts
-grep -i "ssh\|aws\|gcloud\|credentials\|api_key\|token" ~/.openclaw/logs/audit.log
-
-# Watch for encoded/obfuscated content
-grep -P 'base64|eval|exec|\\x[0-9a-f]{2}' ~/.openclaw/logs/audit.log
+openclaw config set gateway.auth.token "$(openssl rand -hex 32)"
+openclaw gateway restart
+openclaw gateway auth-token --show            # copy to your clients
+openclaw gateway probe --token <old-token>    # should now report an auth failure
 ```
 
-### Honeypot Detection
+If the token comes from `OPENCLAW_GATEWAY_TOKEN`, a SecretRef or `.env`, change it at that source and restart. Changes to process environment only apply after a restart. Then update `gateway.remote.token` on every client machine. Use `gateway.auth.password` and `OPENCLAW_GATEWAY_PASSWORD` the same way in password mode.
 
-Create a canary file that should never be accessed:
+**3. Revoke paired devices you don't recognise.** Paired devices hold their own device tokens:
 
 ```bash
-# Create honeypot file
-echo "CANARY: If this file is accessed, the agent may be compromised" > ~/.openclaw/.canary
-chmod 444 ~/.openclaw/.canary
-
-# Monitor access (add to cron)
-if [ "$(stat -c %X ~/.openclaw/.canary)" != "$LAST_ACCESS" ]; then
-    echo "ALERT: Canary file accessed at $(date)" >> /var/log/openclaw-security.log
-    # Send alert...
-fi
+openclaw devices list
+openclaw devices remove <deviceId>
 ```
 
----
+**4. Rotate everything the agent could reach:** model API keys (in the per-agent SQLite auth store), channel tokens (Slack, Discord, Telegram), WhatsApp credentials, `hooks.token`, MCP OAuth sessions (`openclaw mcp logout <server>`), and any cloud or SSH keys on the host.
 
-## Incident Response Runbook
+**5. Review**
 
-When you suspect a compromise, follow these steps in order.
+- `openclaw logs` and `openclaw audit` for the time window.
+- The transcripts of the affected sessions.
+- Config changes that widened access: `gateway.bind`, `gateway.auth`, DM and group policies, `tools.elevated`, `tools.exec.mode`, plugins.
+- Recently installed skills and plugins. Remove ClawHub skills with `clawhub uninstall @owner/<slug>` (`npm i -g clawhub` first). Remove plugins with `openclaw plugins uninstall <id>`.
+- Workspace files (`SOUL.md`, `AGENTS.md`, `MEMORY.md`) and scheduled jobs (`openclaw cron list`) for persistence.
+- To drop the derived memory index without deleting sessions: `openclaw memory reset --agent <id> --yes`.
 
-### Step 1: Isolate
+**6. Verify and report.** Re-run `openclaw security audit --deep` until no critical findings remain, and scan from outside with `nmap`. Report OpenClaw bugs through a private [GitHub Security Advisory](https://github.com/openclaw/openclaw/security/advisories/new) or `security@openclaw.ai`, and ClawHub issues to [openclaw/clawhub](https://github.com/openclaw/clawhub). Include the timestamp, OS, OpenClaw version, redacted transcript and log tail, and whether the Gateway was exposed beyond loopback.
 
-```bash
-# Stop the gateway immediately
-openclaw stop
+## Isolating people and agents {#isolation}
 
-# If running as a service
-sudo systemctl stop openclaw
+- Agents in one Gateway share one trust boundary. Session ownership, visibility and named operator roles are guardrails, not tenant isolation ([SECURITY.md, shared agents](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)).
+- For real isolation, run another Gateway under another OS user, or on another host. On one machine, use profiles with base ports at least 120 apart ([multiple gateways](https://docs.openclaw.ai/gateway/multiple-gateways)):
 
-# Kill any remaining processes
-pkill -f openclaw
-```
+  ```bash
+  openclaw --profile work onboard
+  openclaw --profile work gateway install --port 19789
+  ```
 
-### Step 2: Preserve Evidence
+- Inside one Gateway, give each agent the least it needs with `agents.entries.<id>.tools` and `agents.entries.<id>.sandbox` ([tool and agent permissions](https://docs.openclaw.ai/gateway/security/tool-permissions)).
 
-```bash
-# Create forensic snapshot before making changes
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-mkdir -p ~/openclaw-incident-$TIMESTAMP
+## Further reading
 
-# Copy all logs
-cp -r ~/.openclaw/logs/ ~/openclaw-incident-$TIMESTAMP/
-
-# Copy current config (may be modified by attacker)
-cp ~/.openclaw/openclaw.json ~/openclaw-incident-$TIMESTAMP/
-
-# Copy identity files
-cp ~/.openclaw/SOUL.md ~/openclaw-incident-$TIMESTAMP/
-cp ~/.openclaw/AGENTS.md ~/openclaw-incident-$TIMESTAMP/
-
-# Copy memory (may contain attacker instructions)
-cp -r ~/.openclaw/memory/ ~/openclaw-incident-$TIMESTAMP/
-
-# Snapshot running processes
-ps aux > ~/openclaw-incident-$TIMESTAMP/processes.txt
-
-# Check for cron jobs added by attacker
-crontab -l > ~/openclaw-incident-$TIMESTAMP/crontab.txt
-
-# Check for scheduled tasks (Windows)
-# schtasks /query /fo LIST /v > incident/scheduled-tasks.txt
-```
-
-### Step 3: Audit
-
-```bash
-# Check SOUL.md for modifications
-cd ~/.openclaw && git diff SOUL.md AGENTS.md
-
-# Check audit log for the attack timeline
-grep -i "error\|denied\|unauthorized\|injection" ~/.openclaw/logs/audit.log | \
-  sort -t' ' -k1,2 | tail -50
-
-# Look for suspicious tool calls
-grep "tool_call" ~/.openclaw/logs/audit.log | \
-  grep -i "curl\|wget\|ssh\|scp\|nc\|ncat\|python\|node\|bash" | \
-  tail -20
-
-# Check for exfiltration patterns (large data sent to unknown hosts)
-grep -i "http\|https\|ftp\|scp" ~/.openclaw/logs/audit.log | \
-  grep -v "api.anthropic.com\|api.openai.com\|localhost"
-
-# Check for memory tampering
-grep "memory_write" ~/.openclaw/logs/audit.log | tail -20
-
-# Check for new or modified skills
-find ~/.openclaw/skills/ -newer ~/.openclaw/openclaw.json -type f
-```
-
-### Step 4: Rotate Credentials
-
-```bash
-# Rotate ALL API keys — assume they've been exfiltrated
-# Anthropic
-# → Go to console.anthropic.com → API Keys → Revoke old → Create new
-
-# OpenAI
-# → Go to platform.openai.com → API keys → Revoke old → Create new
-
-# Any other provider keys
-# → Rotate in their respective dashboards
-
-# Update local credentials
-cat > ~/.openclaw/env << 'ENVEOF'
-ANTHROPIC_API_KEY=sk-ant-NEW-KEY-HERE
-OPENAI_API_KEY=sk-NEW-KEY-HERE
-ENVEOF
-chmod 600 ~/.openclaw/env
-
-# Rotate webhook secrets
-openssl rand -hex 32  # Generate new webhook secret
-
-# Rotate gateway auth token
-export OPENCLAW_AUTH_TOKEN=$(openssl rand -hex 32)
-
-# If SSH keys were accessible, rotate those too
-# ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N ""
-
-# Check for any tokens the agent may have created
-find ~/.openclaw -name "*.token" -o -name "*.key" -o -name "*.secret" 2>/dev/null
-```
-
-### Step 5: Restore
-
-```bash
-# Restore SOUL.md from known-good backup
-cd ~/.openclaw && git checkout -- SOUL.md AGENTS.md IDENTITY.md
-
-# Or restore from manual backup
-cp ~/openclaw-backup/SOUL.md ~/.openclaw/SOUL.md
-
-# Remove any attacker-installed skills
-openclaw skills list  # Review carefully
-openclaw skills remove suspicious-skill-name
-
-# Remove any attacker-installed plugins
-openclaw plugins list
-openclaw plugins remove suspicious-plugin
-
-# Clear potentially poisoned memory
-openclaw memory clear --confirm
-
-# Remove any attacker cron jobs
-crontab -e  # Review and remove unknown entries
-```
-
-### Step 6: Verify and Restart
-
-```bash
-# Lock down identity files
-chmod 444 ~/.openclaw/SOUL.md ~/.openclaw/AGENTS.md
-
-# Run full security audit
-openclaw security audit --deep
-
-# Verify no exposure
-curl http://$(hostname -I | awk '{print $1}'):18789 2>/dev/null && \
-  echo "STILL EXPOSED!" || echo "OK - not accessible externally"
-
-# Restart with monitoring
-OPENCLAW_LOG_LEVEL=debug openclaw start
-
-# Watch logs for the first hour
-openclaw logs --follow
-```
-
-### Step 7: Post-Incident
-
-- Document the timeline, attack vector, and impact
-- Report malicious skills: `openclaw clawhub report <skill-name>`
-- Check [Have I Been Clawned?](https://haveibeenclawned.com/) for known indicators
-- Review and update your hardening configuration
-- Consider enabling additional monitoring (see below)
-
----
-
-## Audit Log Analysis
-
-### Log Location and Format
-
-```bash
-# Default location
-~/.openclaw/logs/audit.log
-
-# Format: timestamp | user | action | detail | result | ip
-# Example:
-# 2026-06-08T12:00:00Z | telegram:123456 | tool_call | shell: git status | ok | 127.0.0.1
-```
-
-### Detecting Attacks
-
-```bash
-# Unauthorized file access attempts
-grep "tool_call.*filesystem" ~/.openclaw/logs/audit.log | \
-  grep -i "ssh\|aws\|credentials\|env\|passwd\|shadow" | \
-  sort -t'|' -k1
-
-# Unusual command patterns (potential exfiltration)
-grep "tool_call.*shell" ~/.openclaw/logs/audit.log | \
-  grep -i "curl.*-d\|wget.*--post\|nc\|ncat\|python.*http" | \
-  tail -20
-
-# Failed authentication attempts (brute force)
-grep -c "AUTH_REQUIRED\|AUTH_INVALID" ~/.openclaw/logs/audit.log
-
-# High-volume message bursts (potential DoS or spam)
-grep "channel_message" ~/.openclaw/logs/audit.log | \
-  awk -F'|' '{print $1}' | \
-  cut -d'T' -f1,2 | cut -d':' -f1,2 | \
-  sort | uniq -c | sort -rn | head -10
-
-# Memory write anomalies (potential poisoning)
-grep "memory_write" ~/.openclaw/logs/audit.log | \
-  awk -F'|' '{print $1, $4}' | tail -20
-```
-
-### Automated Alerting
-
-Add audit monitoring to the agent's heartbeat or a cron job:
-
-```bash title="security-monitor.sh"
-#!/bin/bash
-LOG=~/.openclaw/logs/audit.log
-ALERT_LOG=/var/log/openclaw-alerts.log
-
-# Count suspicious events in the last hour
-HOUR_AGO=$(date -d '1 hour ago' +%Y-%m-%dT%H)
-SUSPICIOUS=$(grep "$HOUR_AGO" "$LOG" | \
-  grep -ci "ssh\|credentials\|passwd\|curl.*-d\|base64\|eval")
-
-if [ "$SUSPICIOUS" -gt 5 ]; then
-    MSG="ALERT: $SUSPICIOUS suspicious events in the last hour on $(hostname)"
-    echo "$(date): $MSG" >> "$ALERT_LOG"
-    
-    # Alert via Telegram
-    curl -s -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
-      -d "chat_id=${TG_CHAT_ID}" \
-      -d "text=$MSG"
-fi
-
-# Check for auth failures
-AUTH_FAILS=$(grep "$HOUR_AGO" "$LOG" | grep -c "AUTH_INVALID")
-if [ "$AUTH_FAILS" -gt 3 ]; then
-    echo "$(date): $AUTH_FAILS auth failures in last hour" >> "$ALERT_LOG"
-fi
-```
-
-```bash
-# Run every 15 minutes
-# */15 * * * * /home/user/security-monitor.sh
-```
-
----
-
-## Secrets Rotation
-
-### Rotation Schedule
-
-| Secret | Rotation Frequency | Method |
-|--------|-------------------|--------|
-| Gateway auth token | Every 90 days | Regenerate with `openssl rand` |
-| LLM API keys | Every 90 days | Provider dashboard |
-| Webhook secrets | Every 90 days | Regenerate + update senders |
-| MCP server tokens | Every 90 days | Per-provider rotation |
-| SSH keys (if accessible) | Every 180 days | `ssh-keygen` |
-
-### Automated Rotation Reminder
-
-```bash title="Add to cron — monthly check"
-#!/bin/bash
-# Check age of credentials
-ENV_FILE=~/.openclaw/env
-if [ -f "$ENV_FILE" ]; then
-    AGE_DAYS=$(( ($(date +%s) - $(stat -c %Y "$ENV_FILE")) / 86400 ))
-    if [ "$AGE_DAYS" -gt 90 ]; then
-        curl -s -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
-          -d "chat_id=${TG_CHAT_ID}" \
-          -d "text=REMINDER: OpenClaw credentials are ${AGE_DAYS} days old. Time to rotate."
-    fi
-fi
-```
-
-### Post-Rotation Checklist
-
-After rotating any secret:
-1. Update `~/.openclaw/env` with new values
-2. Restart the gateway: `openclaw restart`
-3. Verify all channels reconnect: `openclaw channel status`
-4. Verify MCP servers connect: `openclaw mcp status`
-5. Run `openclaw doctor` to confirm health
-6. Update any external systems that use the old secret (webhook senders, CI/CD)
-
----
-
-## Supply Chain Hardening
-
-### Skill Verification
-
-Before installing any skill:
-
-```bash
-# Check security report
-openclaw clawhub info <skill-name>
-
-# Scan with Clawdex (pre-install scanning)
-openclaw clawhub scan <skill-name>
-
-# Install in sandbox first
-openclaw clawhub install <skill-name> --sandbox --no-shell
-
-# Review skill files
-openclaw skills inspect <skill-name>
-```
-
-**Red flags in skills:**
-- `curl | bash` or `wget | bash` patterns
-- Obfuscated code (base64, Unicode tricks)
-- Hardcoded URLs to unknown domains
-- Requests for `~/.ssh`, `~/.aws`, or credential paths
-- `chmod 777` or other permission loosening
-
-### Plugin Verification
-
-```bash
-# Only allow known plugins
-openclaw config set plugins.allowlist '["memory-core", "clawsec"]'
-
-# Inspect before enabling
-openclaw plugins inspect <plugin-name>
-
-# Check for updates
-openclaw plugins outdated
-```
-
-### Dependency Auditing
-
-```bash
-# Check for known vulnerabilities in OpenClaw dependencies
-npm audit --prefix $(which openclaw | xargs dirname)/..
-
-# Pin OpenClaw version in production
-npm install -g openclaw@2026.6.1  # Specific version, not latest
-```
-
----
-
-## Verification
-
-After hardening, verify your configuration:
-
-```bash
-# Run deep security audit
-openclaw security audit --deep
-
-# Verify gateway is not exposed
-curl http://$(hostname -I | awk '{print $1}'):18789 2>/dev/null && \
-  echo "EXPOSED!" || echo "OK - not accessible"
-
-# Check for outdated skills
-openclaw clawhub outdated
-
-# Scan all installed skills
-openclaw security scan --all
-
-# Verify file permissions
-ls -la ~/.openclaw/SOUL.md ~/.openclaw/env ~/.openclaw/openclaw.json
-```
-
-### External Audit Tools
-
-- [Have I Been Clawned?](https://haveibeenclawned.com/) — Free external OpenClaw security audit
-- [SafeClaw Scanner](https://safeclaw.io/secure-openclaw-setup) — Skills security scanner for malicious patterns
-
----
-
-## Security Tools
-
-| Tool | Purpose |
-|------|---------|
-| [**ClawSec**](https://github.com/prompt-security/clawsec) | Security skill suite — SOUL.md drift detection, live recommendations, automated audits, skill integrity verification |
-| [**ClawBands**](https://github.com/SeyZ/clawbands) | Middleware enforcing human-in-the-loop approval before dangerous actions |
-| [**Clawprint**](https://github.com/cyntrisec/clawprint) | Tamper-evident audit trail with SHA-256 hash chain ledger |
-| [**SkillGuard**](https://github.com/bossondehiggs/skillguard) | Skill file scanner for vulnerabilities and malicious patterns |
-| [**openclaw-secure**](https://github.com/seomikewaltman/openclaw-secure) | Hardware-gated secret management with pluggable backends |
-| [**Clawdex**](https://koisecurity.com/clawdex) | Pre-installation skill scanning against Koi Security's malicious skills database |
-
----
-
-## Hardening Checklist
-
-### Level 1 (Do Now)
-
-- [ ] **Update to v2026.1.29+** — patches CVE-2026-25253
-- [ ] **Bind to `127.0.0.1`** — never `0.0.0.0`
-- [ ] **Enable authentication** — token or password mode
-- [ ] **Run `openclaw security audit --deep`** — after every config change
-- [ ] **Set shell command blocklist** — prevent destructive commands
-
-### Level 2 (Before Real Use)
-
-- [ ] **Set `trustedProxies`** — if behind any reverse proxy
-- [ ] **Channel allowlists** — lock down DMs, mention-gate groups
-- [ ] **Browser domain restrictions** — allowlist/blocklist
-- [ ] **Filesystem path restrictions** — block `~/.ssh`, `~/.aws`, etc.
-- [ ] **MCP tool filtering** — restrict to needed tools only
-
-### Level 3 (Production)
-
-- [ ] **Docker: non-root, cap_drop ALL, read_only** — defense in depth
-- [ ] **Use VPN/tunnel for remote access** — Tailscale, Cloudflare, WireGuard
-- [ ] **Protect credentials** — env vars, OS keychain, or Vault
-- [ ] **Monitor SOUL.md** — ClawSec drift detection or git monitoring
-- [ ] **Scan skills** — before installation, always
-- [ ] **Enable audit logging** — with 90+ day retention
-- [ ] **Pin versions** — OpenClaw, MCP servers, plugins
-
-### Operational Security (Ongoing)
-
-- [ ] **Rotate credentials** — every 90 days
-- [ ] **Review audit logs** — weekly or automated alerts
-- [ ] **Run security audit** — after any config or plugin change
-- [ ] **Update OpenClaw** — subscribe to security advisories
-- [ ] **Audit skills and plugins** — quarterly review of installed extensions
-- [ ] **Test incident response** — run through the runbook quarterly
-
----
-
-## See Also
-
-- [Security Overview](/security/overview) — Threat model and attack surfaces
-- [Known Vulnerabilities](/security/known-vulnerabilities) — CVEs and incidents
-- [Skill Verification](/security/skill-verification) — Reviewing skills before installation
-- [Privacy & Compliance](/guides/privacy-compliance) — GDPR, SOC 2, data flows
-- [MCP Servers](/guides/mcp-servers) — MCP security section
-- [Multi-Agent Workflows](/guides/multi-agent) — Multi-agent isolation
-- [Plugin System](/guides/plugin-system) — Plugin security and sandboxing
-- [Custom Channels](/guides/custom-channels) — Channel security and HMAC validation
-- [API & Webhooks](/guides/api-webhooks) — Authentication and rate limiting
-- [Monitoring & Observability](/guides/monitoring) — Health checks and alerting
-- [Configuration Reference](/reference/configuration) — All security settings
+- Upstream: [Security](https://docs.openclaw.ai/gateway/security) · [Hardened baselines](https://docs.openclaw.ai/gateway/security/hardened-baseline) · [Network exposure](https://docs.openclaw.ai/gateway/security/network-exposure) · [Exposure runbook](https://docs.openclaw.ai/gateway/security/exposure-runbook) · [Rate limiting](https://docs.openclaw.ai/gateway/security/rate-limiting) · [Threat model (MITRE ATLAS)](https://docs.openclaw.ai/security/THREAT-MODEL-ATLAS)
+- On this site: [Security Overview](/security/overview) · [Known Vulnerabilities](/security/known-vulnerabilities) · [Skill Verification](/security/skill-verification) · [Privacy & Compliance](/guides/privacy-compliance)
