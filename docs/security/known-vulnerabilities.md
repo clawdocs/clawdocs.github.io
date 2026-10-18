@@ -53,7 +53,7 @@ Also notable from February: [GHSA-g6q9-8fvw-f7rf](https://github.com/openclaw/op
 
 ## September 2026 advisory batch (September 11, 2026) {#september-2026-advisory-batch}
 
-On 2026-09-11 the project published **75 advisories**: 30 High, 40 Medium and 5 Low, none Critical. All were already fixed in releases from **2026.7.1 to 2026.9.3**. Many fixes are in channel plugins (`@openclaw/slack`, `discord`, `whatsapp`, `matrix`, `msteams`, `feishu`, `googlechat`, `line`, `voice-call`), and three are in the iOS app.
+On 2026-09-11 the project published **75 advisories**: 30 High, 40 Medium and 5 Low, none Critical. All were already fixed in releases from **2026.7.1 to 2026.9.3**. Two later CVEs without advisories need 2026.9.4 and 2026.9.5; see [CVEs without a GitHub advisory](#cves-without-ghsa). Many fixes are in channel plugins (`@openclaw/slack`, `discord`, `whatsapp`, `matrix`, `msteams`, `feishu`, `googlechat`, `line`, `voice-call`), and three are in the iOS app.
 
 The High advisories scored 8.0 or more:
 
@@ -79,6 +79,52 @@ The High advisories scored 8.0 or more:
 | [GHSA-9f86-pvv5-rxfw](https://github.com/openclaw/openclaw/security/advisories/GHSA-9f86-pvv5-rxfw) | 8.0 | Escaped newlines could confuse exec allowlist parsing | 2026.8.1 |
 
 Several of these weaken exec allowlists and approvals, which is one reason upstream calls approvals guardrails rather than a sandbox. See [exec approvals and sandboxing](/security/hardening#exec-approvals).
+
+---
+
+## Other OpenClaw components {#other-components}
+
+The counts and chart above cover **openclaw/openclaw** only. As of 2026-10-18, two other repositories in the openclaw organisation have published advisories, and NVD lists a few OpenClaw CVEs that have no GitHub advisory.
+
+### CVEs without a GitHub advisory {#cves-without-ghsa}
+
+VulnCheck issued two CVEs on 2026-09-29 whose fixes come after the September batch, so "fixed in 2026.7.1–2026.9.3" is not the whole floor. Both are fixed in the current stable release.
+
+| CVE | Summary | Fixed in |
+|---|---|---|
+| [CVE-2026-102806](https://nvd.nist.gov/vuln/detail/CVE-2026-102806) | The Gateway's local media-root allowlist let a sandboxed session read sibling sessions' sandboxes and shared workspace directories | 2026.9.5 |
+| [CVE-2026-102807](https://nvd.nist.gov/vuln/detail/CVE-2026-102807) | `mcp.app.view` let `operator.read` tokens run MCP App tools that need `operator.write` | 2026.9.4 |
+| [CVE-2026-94094](https://nvd.nist.gov/vuln/detail/CVE-2026-94094) | Canvas host route buffers a whole file per request, a denial-of-service with a public PoC (VulDB, Low) | **Unconfirmed.** The reporter says it was unfixed in 2026.9.5; clawdocs could not confirm whether 2026.10.4 fixes it. Do not expose the Canvas host to untrusted networks. |
+
+### Windows Node (openclaw-windows-node) {#windows-node}
+
+On 2026-09-03 [openclaw-windows-node](https://github.com/openclaw/openclaw-windows-node/security/advisories) published 8 advisories (6 High, 2 Medium), all fixed in **v2026.7.1-3**. Update the Windows companion app if you run it as a node.
+
+| Advisory | Severity | Summary |
+|---|---|---|
+| [GHSA-fxch-cgcp-4v5h](https://github.com/openclaw/openclaw-windows-node/security/advisories/GHSA-fxch-cgcp-4v5h) | High | `screen.snapshot`, `camera.snap` and `location.get` skipped per-use consent (silent capture) |
+| [GHSA-r3x2-vf2f-vvj8](https://github.com/openclaw/openclaw-windows-node/security/advisories/GHSA-r3x2-vf2f-vvj8), [GHSA-vg38-vjq2-vgvh](https://github.com/openclaw/openclaw-windows-node/security/advisories/GHSA-vg38-vjq2-vgvh) | High | Exec-approval rules missed pipeline `\|` and `$(...)` stages |
+| [GHSA-f32j-8759-w2fp](https://github.com/openclaw/openclaw-windows-node/security/advisories/GHSA-f32j-8759-w2fp), [GHSA-g95v-c9r6-2hmq](https://github.com/openclaw/openclaw-windows-node/security/advisories/GHSA-g95v-c9r6-2hmq) | High | `system.execApprovals.set` accepted wildcard and living-off-the-land allow rules, so a caller could self-grant arbitrary exec |
+| [GHSA-39cf-qcfw-g8pg](https://github.com/openclaw/openclaw-windows-node/security/advisories/GHSA-39cf-qcfw-g8pg) | High | Env-override sanitizer missed `GIT_CONFIG_*`, `DOTNET_STARTUP_HOOKS` and `JAVA_TOOL_OPTIONS` |
+| [GHSA-xxr2-xm56-9cw5](https://github.com/openclaw/openclaw-windows-node/security/advisories/GHSA-xxr2-xm56-9cw5) | Medium | Unbounded multi-frame WebSocket message (memory DoS) |
+| [GHSA-7vch-pmw9-3g4q](https://github.com/openclaw/openclaw-windows-node/security/advisories/GHSA-7vch-pmw9-3g4q) | Medium | `canvas.present` skipped URL risk checks (SSRF to localhost and private networks) |
+
+The records disagree on the last one: NVD's [CVE-2026-101883](https://nvd.nist.gov/vuln/detail/CVE-2026-101883) says Windows Node is affected "through 2026.9.4", while the GitHub advisory says v2026.7.1-3 fixed it. Run the newest Windows Node release.
+
+### ClawHub (openclaw/clawhub) {#clawhub-advisories}
+
+On 2026-09-11 [ClawHub](https://github.com/openclaw/clawhub/security/advisories) published 5 advisories, all Medium on GitHub and all fixed on clawhub.ai the same day. They affect the registry service, not the OpenClaw runtime or the `clawhub` CLI, so there is nothing to update locally.
+
+- [GHSA-5jj4-m8c9-gwcq](https://github.com/openclaw/clawhub/security/advisories/GHSA-5jj4-m8c9-gwcq): four ordinary accounts could hide any skill, official ones included, through coordinated reports. This is why reports no longer auto-hide skills ([CVE-2026-100603](https://nvd.nist.gov/vuln/detail/CVE-2026-100603), rated High by NVD).
+- [GHSA-g3jp-jj55-jrcr](https://github.com/openclaw/clawhub/security/advisories/GHSA-g3jp-jj55-jrcr): the changelog preview could leak quarantined skill content to callers and the AI provider ([CVE-2026-100602](https://nvd.nist.gov/vuln/detail/CVE-2026-100602), rated High by NVD).
+- [GHSA-9558-q4f9-324f](https://github.com/openclaw/clawhub/security/advisories/GHSA-9558-q4f9-324f): former organisation publishers could transfer, delete or restore organisation-owned skills.
+- [GHSA-48gp-hx8w-wjvm](https://github.com/openclaw/clawhub/security/advisories/GHSA-48gp-hx8w-wjvm): SSRF in profile-image fetching.
+- [GHSA-4c7q-g7xf-5628](https://github.com/openclaw/clawhub/security/advisories/GHSA-4c7q-g7xf-5628): the anonymous API quota was shared and drainable.
+
+### ClawScan and third-party plugins {#clawscan-and-plugins}
+
+- **ClawScan** (the skill scanner ClawHub uses) up to 0.1.6 had three scanner-bypass CVEs, fixed in 0.1.7 (2026-09-04): [CVE-2026-91835](https://nvd.nist.gov/vuln/detail/CVE-2026-91835), [CVE-2026-91836](https://nvd.nist.gov/vuln/detail/CVE-2026-91836) and [CVE-2026-110689](https://nvd.nist.gov/vuln/detail/CVE-2026-110689). A public proof of concept for a skill that evades scanners exists, which is another reason to read a skill before installing it ([Skill Verification](/security/skill-verification)).
+- **pinclaw**, a community channel plugin (npm `pinclaw`), through 0.3.0 skips its auth token on `POST /pinclaw/send` and listens on port 18790 on all interfaces, so anyone who can reach it can inject prompts into the agent ([CVE-2026-108757](https://nvd.nist.gov/vuln/detail/CVE-2026-108757), High, 2026-10-11). 0.3.0 is the newest release on npm as of 2026-10-18. Uninstall it or firewall the port.
 
 ---
 
@@ -323,7 +369,10 @@ On January 27, 2026, Anthropic sent a trademark notice about the name "Clawdbot"
 | Apr 16 | Last critical advisory to date (Feishu webhook validation) | **Critical** |
 | Jun 30 | 45 advisories published (33 High, 12 Medium), fixed by v2026.6.9 | High |
 | Jun 30 | v2026.6.11: DOMPurify fix, lookalike package-source rejection | Mitigation |
+| Sep 3 | openclaw-windows-node: 8 advisories (6 High), fixed in v2026.7.1-3 | High |
 | Sep 11 | 75 advisories published (30 High, 40 Medium, 5 Low), fixed in 2026.7.1–2026.9.3 | High |
+| Sep 11 | ClawHub: 5 advisories, fixed on clawhub.ai the same day | Medium |
+| Sep 29 | VulnCheck CVE-2026-102806 and CVE-2026-102807, fixed in 2026.9.5 and 2026.9.4 | Medium |
 | Oct 16 | v2026.10.4, the current stable release as of 2026-10-18 | — |
 
 The "Severity" column only labels advisories. Third-party incidents are not scored.
