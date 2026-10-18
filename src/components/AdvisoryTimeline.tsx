@@ -2,7 +2,7 @@
 //
 // Data: static/data/openclaw-advisories.json, written by
 // `node scripts/advisories.mjs --json static/data/openclaw-advisories.json`
-// and refreshed weekly by .github/workflows/advisories.yml. The JSON is
+// and refreshed by hand (see scripts/README.md). The JSON is
 // imported (not fetched) so the chart and table are in the static HTML.
 // No window access at module scope; everything renders in SSR.
 

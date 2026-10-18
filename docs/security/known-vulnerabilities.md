@@ -11,7 +11,7 @@ import {AdvisoryGenerated, AdvisoryChart, AdvisoryTable, MinimumSafeVersion} fro
 
 # Known Vulnerabilities
 
-A readable record of OpenClaw's published security advisories and the major incidents around it. The advisory chart and table are generated from GitHub's [security advisories API](https://github.com/openclaw/openclaw/security/advisories) by `node scripts/advisories.mjs --json static/data/openclaw-advisories.json` in this site's repository, and a weekly workflow opens a pull request when the data changes. The prose sections below were last checked on 2026-10-18.
+A readable record of OpenClaw's published security advisories and the major incidents around it. The advisory chart and table are generated from GitHub's [security advisories API](https://github.com/openclaw/openclaw/security/advisories) by `node scripts/advisories.mjs --json static/data/openclaw-advisories.json` in this site's repository; the data is refreshed by hand (last on 2026-10-18). The prose sections below were last checked on 2026-10-18.
 
 :::danger[Minimum safe version: the latest stable release]
 As of 2026-10-18 the latest stable release is **v2026.10.4** (published 2026-10-16). Always run the latest stable release, and update plugins with it:
