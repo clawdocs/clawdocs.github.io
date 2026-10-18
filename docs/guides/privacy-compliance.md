@@ -66,6 +66,10 @@ Upstream says to assume anything under `~/.openclaw/` (or `$OPENCLAW_STATE_DIR`)
 | **Gateway logs** | `/tmp/openclaw/openclaw-YYYY-MM-DD.log` | JSONL; known secret patterns masked before writing (best-effort); rotate at 100 MB, five archives kept ([logging](https://docs.openclaw.ai/gateway/logging)) |
 | **Sandbox workspaces** | `~/.openclaw/sandboxes/` | Copies of files the sandbox touched |
 
+:::warning Changing in 2026.10.10 (beta)
+In 2026.10.4, known secret patterns in tool arguments and results are masked before they reach the model and the transcript. 2026.10.10-beta.1 (npm `beta`, 2026-10-15; not in 2026.10.4) removes that masking: tool payloads and `.env` reads are stored and sent to the provider as-is, while logs, support exports and telemetry stay masked ([PR #169063](https://github.com/openclaw/openclaw/pull/169063)). Treat session transcripts as holding credentials, and review your provider's retention terms before upgrading.
+:::
+
 Nothing here is encrypted by OpenClaw. Use full-disk encryption on the Gateway host, keep `~/.openclaw` at `700` and its files at `600`, and on shared machines run the Gateway as a dedicated OS user.
 
 ### Does OpenClaw phone home? {#does-openclaw-phone-home}

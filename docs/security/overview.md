@@ -125,11 +125,15 @@ OpenClaw is built as a personal assistant for one trusted operator, possibly wit
 | **ClawHub skills** | Malicious instructions or code | `openclaw skills verify`, manual review, `security.installPolicy` |
 | **Plugins** | Arbitrary code in the Gateway process | Install only what you trust, `plugins.allow` |
 | **Credentials** | Plaintext in `openclaw.json`, `.env`, `credentials/` | SecretRefs, `openclaw secrets audit --check`, `600`/`700` permissions |
-| **Transcripts and memory** | Private data at rest | Full-disk encryption, tight permissions, pruning |
+| **Transcripts and memory** | Private data at rest, including secrets that tools read (unmasked from 2026.10.10; see below) | Full-disk encryption, tight permissions, pruning |
 | **Browser automation** | SSRF into your LAN, session theft | Strict-by-default `browser.ssrfPolicy` (`allowedHostnames`, `blockedHostnames`) |
 | **LLM provider** | Your prompts and tool output leave the host | Choose a provider and retention terms you accept, or a local model |
 
 Details: [Security Hardening](/security/hardening), upstream [Security](https://docs.openclaw.ai/gateway/security).
+
+:::warning Changing in 2026.10.10 (beta)
+2026.10.10-beta.1 (npm `beta`, 2026-10-15; not in 2026.10.4) stops masking secrets in tool arguments, tool results and `.env` reads before they reach the model, transcripts and the UI. Logs, support exports and telemetry stay masked. On 2026.10.4 masking is still on. Plan for it now by keeping secrets in SecretRefs, not in files the agent reads; see [hardening](/security/hardening) and [PR #169063](https://github.com/openclaw/openclaw/pull/169063).
+:::
 
 ### The Prompt Injection Problem
 

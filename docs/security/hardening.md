@@ -503,7 +503,11 @@ openclaw secrets audit --check     # non-zero exit while plaintext or unresolved
 openclaw secrets configure         # interactive migration helper
 ```
 
-Give the agent its own scoped, short-lived credentials: a read-only GitHub token, a separate email account, a bot number. Don't hand it your personal ones. In v2026.10.4, sensitive-value redaction is always on and masks matching secrets before file-log lines and transcript text are written. It is best-effort pattern matching, so `logging.redactPatterns` for your own token formats is worth adding (it replaces the default string list; built-in structural protections still apply). Share `openclaw status --all` (redacted) rather than raw logs. (Upstream `main` changes this in a later release: file logs become raw `0600` files and redaction moves to log egress.)
+Give the agent its own scoped, short-lived credentials: a read-only GitHub token, a separate email account, a bot number. Don't hand it your personal ones. In v2026.10.4, sensitive-value redaction is always on and masks matching secrets before file-log lines and transcript text are written. It is best-effort pattern matching, so `logging.redactPatterns` for your own token formats is worth adding (it replaces the default string list; built-in structural protections still apply). Share `openclaw status --all` (redacted) rather than raw logs. This masking also covers tool payloads before they reach the model.
+
+:::warning Changing in 2026.10.10 (beta)
+2026.10.10-beta.1 (npm `beta`, 2026-10-15; not in 2026.10.4) removes automatic secret masking of tool payloads. Tool arguments, tool results and `.env` reads keep their original text, credentials included, in model context, transcripts, session history and UI tool events. Log tails, console output, support bundles and telemetry export stay masked; the log files themselves are written raw with `0600` permissions. Before upgrading, assume anything a tool reads will reach your provider and the session store: keep secrets in SecretRefs rather than in files the agent can read, and protect `~/.openclaw` and the log directory like a credentials store ([PR #169063](https://github.com/openclaw/openclaw/pull/169063)).
+:::
 
 ## Skills and plugins {#supply-chain}
 
