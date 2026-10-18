@@ -1,61 +1,96 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: "Recipe: Smart Home"
-description: Control lights, devices, and home automation through OpenClaw
-keywords: [openclaw, smart home, home automation, iot, hue lights, voice control, device management]
+description: Control Philips Hue lights in plain language with the bundled openhue skill, limited to your own DMs and one allowlisted command
+keywords: [openclaw, smart home, home automation, philips hue, openhue, iot control, home assistant]
 ---
 
 # Recipe: Smart Home
 
 :::danger Read before you run this recipe
-These recipes give an agent real powers (shell, SSH, email, smart-home devices). By default OpenClaw runs host commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off**. Before you try one, turn on approvals (`openclaw config set tools.exec.mode ask`), use a strong model for anything that runs tools unattended, and give the agent only the accounts and devices the recipe needs. Config blocks on this page predate OpenClaw 2.0 and may be rejected; check them with `openclaw config validate`. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
+These recipes give an agent real powers (shell, SSH, email, smart-home devices). By default OpenClaw runs host commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off**. Before you try one, turn on approvals (`openclaw config set tools.exec.mode ask`), use a strong model for anything that runs tools unattended, and give the agent only the accounts and devices the recipe needs. Config blocks on this page were checked with `openclaw config validate` on 2026.10.4. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
 :::
 
-Use OpenClaw to control smart home devices through natural language, from any messaging platform.
+Turn lights on and off, dim rooms and set scenes from chat. This recipe covers Philips Hue. For locks, alarms, thermostats and other devices, see the [Home Assistant recipe](/guides/recipes/advanced-recipes), which needs stricter guardrails.
 
 ## The Skill
 
-```markdown title="~/.openclaw/skills/smart-home.md"
----
-name: smart-home
-version: 1.0.0
-description: Natural language smart home control
-trigger: "lights|temperature|thermostat|home|scene"
-tools: [http, chat]
-config:
-  hue_bridge_ip: ""
-  hue_api_key: ""
----
+OpenClaw ships a bundled `openhue` skill that drives the [OpenHue CLI](https://www.openhue.io/cli). There is nothing to write or install from ClawHub. Install the CLI on the Gateway host and pair it with your Hue Bridge:
 
-# Smart Home Control
-
-## Supported Actions
-- Turn lights on/off by room or name
-- Set brightness and color
-- Activate scenes (movie night, reading, sleep)
-- Adjust thermostat
-- Check device status
-
-## Examples
-- "Turn off all lights" → Send OFF to all Hue groups
-- "Set living room to 50% warm white" → Hue API call
-- "Movie night" → Activate movie scene (dim lights, warm colors)
+```bash
+brew install openhue/cli/openhue-cli   # or see openhue.io/cli for other installs
+openhue setup                          # press the button on the Hue Bridge when asked
+openhue get room                       # check it can see your rooms
+openclaw skills info openhue
 ```
+
+`openhue setup` stores the bridge address and key in `~/.openhue/config.yaml`, owned by the OpenHue CLI. Don't copy the key into a skill file, `SOUL.md`, `AGENTS.md` or chat: workspace files are read by the agent and sent to your model provider. The Gateway host must be on the same local network as the bridge.
+
+## Guardrails
+
+Lights are low-stakes, but the pattern is the one to use for any device:
+
+1. **Only you can reach it.** Use an allowlist rather than pairing on the channel you control the house from, and keep the bot out of groups.
+2. **Only the one command runs freely.** Turn exec approvals on, then allowlist `openhue`. OpenHue commands run without a prompt; anything else the agent tries to run waits for your approval.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  tools: {
+    exec: { mode: "ask" }, // allowlisted commands run; everything else asks you
+  },
+  channels: {
+    telegram: {
+      dmPolicy: "allowlist",
+      allowFrom: ["123456789"], // your numeric Telegram user ID
+      groupPolicy: "disabled",  // no group chats
+    },
+  },
+}
+```
+
+```bash
+openclaw config validate
+openclaw approvals allowlist add openhue
+openclaw exec-policy show
+```
+
+More on both: [who can talk to the agent](/security/hardening#channel-access) and [exec approvals](/security/hardening#exec-approvals).
 
 ## Usage
 
-From any connected channel (WhatsApp, Telegram, etc.):
+From your Telegram DM with the bot (or the Control UI):
 
 ```
-You: "Turn off the bedroom lights"
-OpenClaw: Done. Bedroom lights are off.
+You: Turn off the bedroom lights
+Bot: Done. Bedroom is off.
 
-You: "Set the office to bright cool white"
-OpenClaw: Office lights set to 100% brightness, 6500K color temperature.
+You: Set the office to bright cool white
+Bot: Office set to 100% brightness, cool white.
+
+You: Movie mode in the living room
+Bot: Living Room dimmed to 10%.
 ```
+
+Under the hood the skill runs commands such as `openhue set room "Bedroom" --off` and `openhue set room "Office" --on --brightness 100 --temperature 250`.
+
+The skill covers Hue lights, rooms, zones and scenes only. It does not control thermostats, plugs from other brands or TVs.
+
+### Schedules
+
+Lights on a schedule are an automation:
+
+```bash
+openclaw cron add "30 22 * * *" \
+  "Dim the bedroom lights to 20% warm white." \
+  --name "Bedtime lights" --tools exec,read
+```
+
+`--tools exec,read` lets the job run `openhue` (through the allowlist) and read the skill, nothing else.
 
 ## See Also
 
-- [Channels & Integrations](/guides/channels) — Message from any platform
-- [Skill Development](/guides/skill-development) — Building custom integrations
+- [Advanced Recipes: Home Assistant](/guides/recipes/advanced-recipes): more devices, more guardrails
+- [Day 5: Channels](/guides/first-7-days/day-5-multi-channel): `dmPolicy` and allowlists
+- [Skill Development](/guides/skill-development): building your own integrations
