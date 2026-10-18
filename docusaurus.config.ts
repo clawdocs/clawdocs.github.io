@@ -13,7 +13,8 @@ const config: Config = {
   projectName: 'clawdocs.github.io',
   trailingSlash: false,
 
-  onBrokenLinks: 'warn',
+  onBrokenLinks: 'throw',
+  onBrokenAnchors: 'throw',
 
   future: {
     v4: true,
@@ -24,6 +25,9 @@ const config: Config = {
 
   markdown: {
     mermaid: true,
+    hooks: {
+      onBrokenMarkdownLinks: 'throw',
+    },
     // v4: true disables mdx1Compat by default, but these docs rely on
     // explicit heading IDs ({#anchor}) in many pages.
     mdx1Compat: {
