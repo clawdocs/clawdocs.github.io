@@ -63,7 +63,7 @@ Upstream says to assume anything under `~/.openclaw/` (or `$OPENCLAW_STATE_DIR`)
 | **MCP OAuth tokens, audit ledger, shared state** | `~/.openclaw/state/openclaw.sqlite` | |
 | **Configuration** | `~/.openclaw/openclaw.json` | May contain tokens if you put them there |
 | **Global env file** | `~/.openclaw/.env` | Plaintext |
-| **Gateway logs** | `/tmp/openclaw/openclaw-YYYY-MM-DD.log` | Raw records, `0600`; rotate at 100 MB, five archives kept ([logging](https://docs.openclaw.ai/gateway/logging)) |
+| **Gateway logs** | `/tmp/openclaw/openclaw-YYYY-MM-DD.log` | JSONL; known secret patterns masked before writing (best-effort); rotate at 100 MB, five archives kept ([logging](https://docs.openclaw.ai/gateway/logging)) |
 | **Sandbox workspaces** | `~/.openclaw/sandboxes/` | Copies of files the sandbox touched |
 
 Nothing here is encrypted by OpenClaw. Use full-disk encryption on the Gateway host, keep `~/.openclaw` at `700` and its files at `600`, and on shared machines run the Gateway as a dedicated OS user.
@@ -167,7 +167,7 @@ Know the limits:
 - `openclaw memory reset` clears the derived index and embedding cache for an agent without deleting sessions.
 - Don't empty `~/.openclaw/credentials/` as an erasure step. It holds channel logins and pairing lists, and deleting it breaks channels without removing anyone's messages.
 
-By default, `session.maintenance` prunes sessions after **30 days** and caps the store at 5,000 entries (`pruneAfter: "30d"`, `maxEntries: 5000`, `mode: "enforce"`; [session maintenance](https://docs.openclaw.ai/concepts/session)). Shorten it if you keep less:
+By default, `session.maintenance` archives eligible sessions after **30 days** and caps the store at 5,000 unarchived entries (`pruneAfter: "30d"`, `maxEntries: 5000`, `mode: "enforce"`; [session maintenance](https://docs.openclaw.ai/concepts/session)). Archiving keeps the transcript in place and restorable; it is not deletion. Disposable automation sessions (cron, hooks, heartbeat, sub-agents) are deleted at their cutoff. Shorten the window if you keep less, and use `sessions delete` for real removal:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
