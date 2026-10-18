@@ -75,7 +75,7 @@ VirusTotal's AI-based package analysis, which early-2026 reports said [ClawHub](
 
 ### Companion apps
 
-Official native clients: the macOS app (macOS 26.2+), the iOS app on the App Store, the Android app on Google Play, and the [Windows Hub](#windows-hub). See [Platforms](https://docs.openclaw.ai/platforms).
+Official native clients: the macOS app (macOS 15.0+ in v2026.10.4; the next release requires 26.2), the iOS app on the App Store, the Android app on Google Play, and the [Windows Hub](#windows-hub). See [Platforms](https://docs.openclaw.ai/platforms).
 
 ### openclaw.json
 
@@ -231,7 +231,7 @@ The chat surface over the Gateway WebSocket, available in the [Control UI](#cont
 
 ### WebClaw
 
-Third-party browser client for the Gateway ([ibelick/webclaw](https://github.com/ibelick/webclaw), 647 stars). No commits since 2026-03; the built-in [Control UI](#control-ui) covers most of its use. See [WebClaw Guide](/guides/webclaw).
+Third-party browser client for the Gateway ([ibelick/webclaw](https://github.com/ibelick/webclaw), 647 stars). No commits since 2026-03. It only speaks Gateway protocol 3, so it cannot connect to current Gateways; use the built-in [Control UI](#control-ui). See [WebClaw Guide](/guides/webclaw).
 
 ### Windows Hub
 

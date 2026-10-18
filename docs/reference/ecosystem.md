@@ -43,7 +43,7 @@ Star counts, last-push dates and archive status come from `gh api` **as of 2026-
 | **Windows Hub** | 2,158 | Native Windows desktop app (recommended on Windows) | [openclaw/openclaw-windows-node](https://github.com/openclaw/openclaw-windows-node) |
 | **Lobster** | 1,275 | Workflow shell for typed, composable pipelines | [openclaw/lobster](https://github.com/openclaw/lobster) |
 | **openclaw-ansible** | 602 | Hardened install with Tailscale, UFW and Docker | [openclaw/openclaw-ansible](https://github.com/openclaw/openclaw-ansible), [docs](https://docs.openclaw.ai/install/ansible) |
-| **macOS app** | — | Menu bar app, voice wake, node mode; macOS 26.2 or later | [docs](https://docs.openclaw.ai/platforms/macos) |
+| **macOS app** | — | Menu bar app, voice wake, node mode; macOS 15.0 or later | [docs](https://docs.openclaw.ai/platforms/macos) |
 | **iOS and Android apps** | — | Companion nodes, on the App Store and Google Play | [iOS](https://docs.openclaw.ai/platforms/ios), [Android](https://docs.openclaw.ai/platforms/android) |
 
 The old `openclaw/skills` archive repo no longer exists. Use [ClawHub](https://clawhub.ai) to browse skills.
@@ -74,8 +74,12 @@ Started by Scott Hanselman as `shanselman/openclaw-windows-hub`, it now lives at
 
 ### Native apps
 
-- **macOS:** OpenClaw.app needs macOS 26.2 (Tahoe) or later ([docs](https://docs.openclaw.ai/platforms/macos)).
-- **iOS/iPadOS:** on the App Store; needs iOS/iPadOS 26.2 or later ([docs](https://docs.openclaw.ai/platforms/ios)).
+- **macOS:** OpenClaw.app in v2026.10.4 needs macOS 15.0 (Sequoia) or later; Voice Wake and push-to-talk need macOS 26 ([docs](https://docs.openclaw.ai/platforms/macos)).
+- **iOS/iPadOS:** on the App Store; v2026.10.4 targets iOS 18.0 or later ([docs](https://docs.openclaw.ai/platforms/ios)).
+
+:::note
+The next release raises the minimum for both apps to macOS 26.2 (Tahoe) and iOS/iPadOS 26.2. The live upstream pages already show the new minimum.
+:::
 - **Android:** on Google Play, plus a signed APK on some GitHub releases; minSdk 31. It is a companion node and needs a running Gateway ([docs](https://docs.openclaw.ai/platforms/android)).
 
 ---
@@ -88,7 +92,7 @@ The Gateway ships its own Control UI (chat, files, approvals, settings) since th
 
 A browser client that connects to the Gateway over WebSockets.
 
-- 647 stars, MIT, TypeScript. **No push since 2026-03-17**, so it may lag current Gateway releases.
+- 647 stars, MIT, TypeScript. **No push since 2026-03-17.** It only speaks Gateway protocol 3, so it cannot connect to current Gateways (v2026.5.19 and later require protocol 4). Use the built-in [Control UI](https://docs.openclaw.ai/web/control-ui) instead.
 - Repo: [ibelick/webclaw](https://github.com/ibelick/webclaw). Site: [webclaw.dev](https://webclaw.dev). Guide: [WebClaw](/guides/webclaw).
 
 ### PinchChat

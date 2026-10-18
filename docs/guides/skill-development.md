@@ -51,7 +51,7 @@ openclaw skills info git-summary
 openclaw agent --agent main --message "summarize recent git activity in ~/projects/myapp"
 ```
 
-OpenClaw watches skill folders and picks up changes within about a minute. A running session keeps the skill list it started with, so send `/new` in chat (or start a new session) to see a new skill. You can also call it by name: `/git-summary` as a slash command, or `$git-summary` anywhere in a message.
+OpenClaw watches skill folders (`skills.load.watch`, on by default) and refreshes the skill list on the next agent turn after a `SKILL.md` is added or changed, including in a running session. If a change does not show up, send `/new` in chat or restart the Gateway. You can also call it by name: `/git-summary` as a slash command, or `$git-summary` anywhere in a message.
 
 :::warning A test turn is a real turn
 There is no dry-run mode for skills. `openclaw agent --message` runs the agent with its normal tools, so a skill that deletes files or sends messages will do that. Test risky skills in a sandboxed agent or a throwaway workspace. See [Sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
@@ -324,7 +324,7 @@ For a repeatable test with no Gateway and a temporary state directory, use `open
 | Listed but not eligible | A `requires.*` or `os` gate fails | `openclaw skills check` shows which one |
 | Eligible but the agent ignores it | The description does not match how you ask | Rewrite the description; test with `$name` |
 | Agent cannot see it | An agent skill allowlist hides it | Check `agents.defaults.skills` and `agents.entries.<id>.skills` |
-| Edit not picked up | The session keeps its skill snapshot | Send `/new`, or wait about a minute for the watcher |
+| Edit not picked up | Watching is off (`skills.load.watch: false`) or the OS ran out of file watches | Send `/new`, or restart the Gateway |
 | Two skills with the same name | A higher-priority root wins | Rename one, or remove the duplicate |
 | Gates ignored on an old skill | It uses `metadata.clawdbot` | Rename the block to `metadata.openclaw` |
 

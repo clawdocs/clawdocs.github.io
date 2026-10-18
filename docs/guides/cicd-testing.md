@@ -43,8 +43,9 @@ Point OpenClaw at the config in your repository and at empty state:
 env:
   OPENCLAW_CONFIG_PATH: ${{ github.workspace }}/config/openclaw.json
   OPENCLAW_STATE_DIR: ${{ runner.temp }}/openclaw-state
-  OPENCLAW_DISABLE_UPDATE_CHECK: "1"
 ```
+
+GitHub Actions sets `CI=true`, and OpenClaw sends no update check or telemetry when `CI` is set ([telemetry](https://docs.openclaw.ai/gateway/telemetry)). On other runners, set `CI=true` yourself or `update.checkOnStart: false` in the CI config.
 
 Keep secrets out of the committed config. Use `${VAR}` substitution or SecretRefs (`{ source: "env", provider: "default", id: "MY_KEY" }`), so the file validates in CI without real keys.
 
@@ -229,7 +230,6 @@ jobs:
     env:
       OPENCLAW_STATE_DIR: ${{ runner.temp }}/openclaw-state
       OPENCLAW_CONFIG_PATH: ${{ github.workspace }}/config/openclaw.json
-      OPENCLAW_DISABLE_UPDATE_CHECK: "1"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
@@ -284,7 +284,7 @@ Mind the trailing slashes: `skills/` copies the folder's contents. Do not rsync 
 
 For SSH from CI, pin the host key (store the output of `ssh-keyscan agent-host` as a secret and write it to `~/.ssh/known_hosts`). Never use `StrictHostKeyChecking=no`.
 
-Skill changes are picked up within about a minute; config changes that need it trigger a reload, or run `openclaw gateway restart`.
+The skills watcher picks up skill changes on the next agent turn; config changes that need it trigger a reload, or run `openclaw gateway restart`.
 
 ### Upgrade procedure
 

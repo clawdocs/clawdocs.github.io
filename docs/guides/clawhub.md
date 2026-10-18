@@ -77,7 +77,7 @@ openclaw skills install ./path/to/skill --as my-skill
 
 skills.sh entries use `skills-sh:owner/repo/slug`, and git repositories `git:owner/repo` or `git:owner/repo@ref` (with `SKILL.md` at the repo root). `openclaw skills update` only tracks ClawHub installs; reinstall git and local sources to refresh them.
 
-New skills reach new sessions within about a minute. Send `/new` to use one in the current chat.
+The skills watcher picks up a new skill on the next agent turn, including in a running chat. If it does not show up, send `/new`.
 
 ### Release trust
 

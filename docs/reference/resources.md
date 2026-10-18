@@ -149,7 +149,7 @@ Upstream says to use `ghcr.io/openclaw/openclaw` or `openclaw/openclaw` and to "
 | `1panel/openclaw` | 1Panel | Unofficial |
 | `coollabsio/openclaw` | Coolify team | Unofficial |
 | `alpine/openclaw` | Community | Unofficial; last updated 2026-06-21 |
-| `land007/webclaw` | Community | Unofficial WebClaw frontend image |
+| `land007/webclaw` | Community | Unofficial WebClaw frontend image; WebClaw cannot connect to current Gateways |
 
 ### Cloud platforms
 
@@ -223,7 +223,7 @@ For a comparison, see [Memory Systems](/guides/memory-systems).
 |----------|------:|--------|-------|
 | **Control UI** (built in) | — | Official | Served by the Gateway at `http://127.0.0.1:18789/`; chat, files, approvals, settings ([docs](https://docs.openclaw.ai/web/control-ui)) |
 | [Windows Hub](https://github.com/openclaw/openclaw-windows-node) | 2,158 | Official | Native WinUI app ([Ecosystem](/reference/ecosystem#openclaw-windows-hub)) |
-| [WebClaw](https://github.com/ibelick/webclaw) | 647 | No push since 2026-03-17 | [WebClaw Guide](/guides/webclaw) |
+| [WebClaw](https://github.com/ibelick/webclaw) | 647 | No push since 2026-03-17; protocol 3 only, cannot connect to current Gateways (use the Control UI) | [WebClaw Guide](/guides/webclaw) |
 | [PinchChat](https://github.com/MarlBurroW/pinchchat) | 187 | Last push 2026-06-18 | [WebClaw Guide](/guides/webclaw#pinchchat-alternative-frontend) |
 
 ---
@@ -232,8 +232,8 @@ For a comparison, see [Memory Systems](/guides/memory-systems).
 
 | Platform | Status | Notes |
 |----------|--------|-------|
-| **macOS** | Released | OpenClaw.app, macOS 26.2 or later ([docs](https://docs.openclaw.ai/platforms/macos)) |
-| **iOS / iPadOS** | App Store | iOS/iPadOS 26.2 or later ([docs](https://docs.openclaw.ai/platforms/ios)) |
+| **macOS** | Released | OpenClaw.app, macOS 15.0 or later in v2026.10.4 (the next release requires 26.2) ([docs](https://docs.openclaw.ai/platforms/macos)) |
+| **iOS / iPadOS** | App Store | iOS 18.0 or later in v2026.10.4 (the next release requires 26.2) ([docs](https://docs.openclaw.ai/platforms/ios)) |
 | **Android** | Google Play | Companion node, minSdk 31; signed APK on some GitHub releases ([docs](https://docs.openclaw.ai/platforms/android)) |
 | **Windows** | Official | [Windows Hub](https://docs.openclaw.ai/platforms/windows), x64 and ARM64 |
 
