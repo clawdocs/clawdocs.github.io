@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-07-08
 title: MCP Servers
 description: Find, connect, and build MCP servers for OpenClaw — the protocol that powers most integrations
 keywords: [openclaw, openclaw mcp, model context protocol, mcp servers, tools, integrations]

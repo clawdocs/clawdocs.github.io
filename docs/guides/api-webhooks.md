@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-11
 title: API & Webhooks
 description: Integrate OpenClaw with external systems using the WebSocket API, webhook ingress/egress, and HTTP channels
 keywords: [openclaw, openclaw api, webhook, websocket, integration, rest api]

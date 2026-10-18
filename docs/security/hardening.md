@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-11
 title: Security Hardening
 description: Step-by-step guide to securing OpenClaw for production use — gateway bypass prevention, Docker hardening, reverse proxy configs, prompt injection defense, credential protection, incident response, and operational security
 keywords: [openclaw, openclaw hardening, secure openclaw, production security, lock down, docker hardening, prompt injection defense]

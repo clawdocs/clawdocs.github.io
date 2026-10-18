@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-07-08
 title: Frequently Asked Questions
 sidebar_label: FAQ
 description: Frequently asked questions about OpenClaw — setup, cost, security, troubleshooting, and ecosystem

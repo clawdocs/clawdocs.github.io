@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: "Day 2: Your Daily Driver"
 description: "Put OpenClaw to work — summaries, research, file management, and real daily tasks"
 keywords: [openclaw, daily use, everyday tasks, productivity, chat commands, summarize, file management]

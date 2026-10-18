@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Core Concepts
 description: The fundamental building blocks of OpenClaw — Gateway, Brain, Hands, Memory, and Heartbeat
 keywords: [openclaw, openclaw architecture, how openclaw works, openclaw gateway, openclaw brain hands, openclaw core concepts, openclaw heartbeat, openclaw memory system]

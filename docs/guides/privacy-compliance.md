@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Privacy & Compliance
 description: Data flows, GDPR, enterprise compliance (SOC 2, HIPAA), air-gapped deployments, government restrictions, and audit procedures for OpenClaw
 keywords: [openclaw, privacy, gdpr, compliance, data protection, air-gapped]

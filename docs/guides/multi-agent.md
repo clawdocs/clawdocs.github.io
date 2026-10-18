@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-10-18
 title: Multi-Agent Workflows
 description: Running multiple OpenClaw agents with distinct personalities, routing rules, coordination patterns, and orchestration tools
 keywords: [openclaw, multi-agent, multiple agents, agent fleet, orchestration, parallel agents]

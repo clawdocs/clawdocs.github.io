@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: "Day 7: Lock It Down"
 description: "Security hardening, cost optimization, and monitoring for a production-ready setup"
 keywords: [openclaw, production, deploy, hardening, monitoring, security, cost optimization]

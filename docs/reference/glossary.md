@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-10-18
 title: Glossary
 description: Definitions of OpenClaw-specific terms, components, tools, and concepts
 keywords: [openclaw, openclaw glossary, terms, definitions, openclaw terminology, concepts, vocabulary]

@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Lightweight Variants
 description: Alternative OpenClaw implementations — from 678 KB Zig binaries to $5 ESP32 boards to browser-based agents
 keywords: [openclaw, alternative, lightweight, nanoclaw, nanobot, minimal]

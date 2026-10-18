@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Ecosystem & Community Tools
 description: 25+ community-built tools, clients, deployment platforms, security tools, and alternatives in the OpenClaw ecosystem
 keywords: [openclaw, openclaw ecosystem, community projects, tools, integrations, plugins, open source]

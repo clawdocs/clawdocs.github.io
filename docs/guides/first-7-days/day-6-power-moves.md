@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: "Day 6: Build Your Own"
 description: "Create custom skills, set up cron jobs, and explore multi-agent workflows"
 keywords: [openclaw, advanced, power user, custom skills, multi-agent, cron jobs, skill development]

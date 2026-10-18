@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Voice & Multimodal
 description: Add voice control, vision, image analysis, audio handling, and multimodal capabilities to your OpenClaw agent
 keywords: [openclaw, voice, multimodal, speech, vision, image analysis]

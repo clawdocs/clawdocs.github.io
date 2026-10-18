@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-07-08
 title: Security Overview
 description: Secure your OpenClaw setup in 5 steps, understand the threat model, and learn from past incidents
 keywords: [openclaw, openclaw security, threat model, attack surface, is openclaw safe, security overview, ai agent security]

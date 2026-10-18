@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Heartbeat Guide
 description: Practical recipes and configuration for OpenClaw's autonomous heartbeat system — structured tasks, cost optimization, and advanced patterns
 keywords: [openclaw, openclaw heartbeat, autonomous tasks, background tasks, scheduled tasks, cron]

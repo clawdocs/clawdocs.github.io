@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: Memory Systems Compared
 description: Choose the right memory system for your OpenClaw setup — built-in, community plugins, or managed services
 keywords: [openclaw, memory, memory system, persistent context, knowledge base]

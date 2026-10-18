@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: "Recipe: Research Agent"
 description: Build an OpenClaw skill for deep web research and report generation
 keywords: [openclaw, research agent, ai research, automated research, web search, report generation, deep research]

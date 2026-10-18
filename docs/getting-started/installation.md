@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-07-08
 title: Installation
 description: Three ways to install OpenClaw — one-liner, npm, or git clone for developers
 keywords: [openclaw, openclaw install, openclaw setup, how to install openclaw, openclaw docker, openclaw npm, openclaw getting started]

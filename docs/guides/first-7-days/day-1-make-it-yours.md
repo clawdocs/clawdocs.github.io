@@ -1,4 +1,6 @@
 ---
+last_update:
+  date: 2026-06-09
 title: "Day 1: Make It Yours"
 description: "Personalize your OpenClaw bot — name, personality, boundaries, and your first real conversation"
 keywords: [openclaw, setup, personalize, soul.md, first day, customize agent, bot personality]
