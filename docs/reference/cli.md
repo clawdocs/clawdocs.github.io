@@ -189,7 +189,7 @@ See [Security Hardening](/security/hardening) before giving the agent shell, bro
 
 ## Everything else
 
-`acp`, `audit`, `browser`, `clawbot` (legacy), `completion`, `connect`, `database`, `dns`, `docs` (search the live docs), `file-transfer`, `fleet`, `googlemeet`, `promos`, `proxy`, `storage`, `teamsmeetings`, `telemetry`, `transcripts`, `users`, `worker`, `worktrees`, `zoommeetings`. Plugins can add more (for example `workboard`). All are listed in the [command index](https://docs.openclaw.ai/cli).
+`acp`, `audit`, `browser`, `clawbot` (legacy), `completion`, `connect`, `database`, `dns`, `docs` (search the live docs), `file-transfer`, `fleet`, `googlemeet`, `promos`, `proxy`, `storage`, `teamsmeetings`, `telemetry`, `transcripts`, `users`, `worker`, `worktrees`, `zoommeetings`. Plugins can add more (for example `workboard`). All are listed in the [command index](https://docs.openclaw.ai/cli). `fleet` is removed in 2026.10.10 (beta); it is absent from the 2026.10.10-beta.1 command index.
 
 ## Exit codes and JSON errors
 
