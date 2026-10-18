@@ -1,0 +1,53 @@
+name: Snippet gates
+
+# Reports, per page, copy-paste snippets that would not work against the
+# pinned OpenClaw (scripts/openclaw-version.txt): invalid openclaw.json
+# blocks, unknown `openclaw` commands/flags, and install targets missing
+# from scripts/install-allowlist.json. See scripts/README.md.
+#
+# Report only for now. To make it blocking, set the repository variable
+# SNIPPETS_STRICT=1 (Settings > Secrets and variables > Actions > Variables),
+# or run it manually with "strict" ticked.
+
+on:
+  pull_request:
+  push:
+    branches: [gh-pages]
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: Fail the job on any broken snippet
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snippets-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snippets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SNIPPETS_STRICT: ${{ (github.event_name == 'workflow_dispatch' && inputs.strict) && '1' || vars.SNIPPETS_STRICT || '0' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24 # openclaw needs >=24.16
+      - name: Install pinned OpenClaw
+        run: |
+          npm i --prefix tools/openclaw --no-save --ignore-scripts --no-audit --no-fund \
+            "openclaw@$(tr -d '[:space:]' < scripts/openclaw-version.txt)"
+          tools/openclaw/node_modules/.bin/openclaw --version
+      - name: Check snippets
+        run: npm run check:snippets -- --json snippet-report.json
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: snippet-report
+          path: snippet-report.json
+          if-no-files-found: ignore
