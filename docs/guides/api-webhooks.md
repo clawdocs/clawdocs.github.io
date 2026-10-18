@@ -228,7 +228,7 @@ The Gateway's WebSocket protocol is what the CLI, Control UI and native apps use
 1. The client opens the socket. The Gateway sends a `connect.challenge` event with a `nonce` and `ts`.
 2. The client's first frame **must** be a `connect` request:
 
-<!-- snippet:skip: Gateway protocol frame, not openclaw.json -->
+{/* snippet:skip: Gateway protocol frame, not openclaw.json */}
 ```json title="connect request (abridged)"
 {
   "type": "req",

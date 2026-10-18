@@ -323,7 +323,7 @@ Platforms that push over WebSocket or need polling run that client from `registe
 
 Once installed, the channel takes config under its id. The keys are the ones your manifest declares:
 
-<!-- snippet:skip: channels.acme-chat validates only after the example plugin is installed -->
+{/* snippet:skip: channels.acme-chat validates only after the example plugin is installed */}
 ```json5 title="~/.openclaw/openclaw.json"
 {
   channels: {
