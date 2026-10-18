@@ -1,875 +1,386 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: CI/CD & Testing
-description: Test skills, validate agents, and build deployment pipelines for OpenClaw
-keywords: [openclaw, ci cd, testing, github actions, deployment pipeline, automated testing]
+description: Test OpenClaw config, skills and plugins in CI with commands that exist — config validate, skills check, agent exec, security audit — plus safe deploy and upgrade steps
+keywords: [openclaw, ci cd, testing, github actions, config validate, skills check, agent exec]
 ---
 
 # CI/CD & Testing
 
-OpenClaw agents run in production 24/7 — so testing matters. This guide covers the full lifecycle: testing skills locally, scanning for security issues, validating agent behavior, automating deployments, and monitoring in production.
+If you keep your OpenClaw config, skills or plugins in git, CI can catch most mistakes before they reach a running Gateway. This page sticks to commands that exist in v2026.10.4. There is no `openclaw skill test`, no skill dry-run mode, and no `openclaw security scan`; the checks below are what you can actually run.
+
+| What to check | Command | Fails on |
+|---|---|---|
+| Config is valid | `openclaw config validate --json` | `"valid": false` (exit code is 0 either way) |
+| Skills load and are eligible | `openclaw skills check --json` | Skills missing from `eligible` |
+| Config health | `openclaw doctor --lint --json` | Exit 1 when there are findings |
+| Security foot-guns | `openclaw security audit --json` | `summary.critical > 0` |
+| A skill is publishable | `clawhub skill publish <dir> --dry-run` | Non-zero exit |
+| A plugin builds and loads | `openclaw plugins validate`, `npm pack`, `openclaw plugins install npm-pack:...` | Non-zero exit |
+| The agent does the job | `openclaw agent exec --json` | Exit 1 (error) or 2 (timeout) |
+
+Every check here runs without a Gateway. Run them with a throwaway `HOME` and `OPENCLAW_STATE_DIR` so CI never touches real state.
 
 ---
 
-## Testing Skills
+## Setting Up the Runner
 
-### Dry-Run Testing
+OpenClaw needs **Node 24.16+ or 26.1+**. Pin the version you deploy:
 
-Test a skill against a trigger phrase without installing it:
-
-```bash
-# Test a skill file with a sample message
-openclaw skill test ./my-skill.md "trigger phrase here"
-
-# Test an installed skill
-openclaw skill test ~/.openclaw/skills/daily-standup.md "run my standup"
+```yaml
+- uses: actions/setup-node@v6
+  with:
+    node-version: 24
+- name: Install OpenClaw
+  run: npm i -g openclaw@2026.10.4
 ```
 
-The agent processes the message as if it came from a real channel, but doesn't send any replies or execute side effects. You see the full reasoning chain, tool calls, and generated response.
+Point OpenClaw at the config in your repository and at empty state:
 
-### Validation
-
-Check that a skill file has valid frontmatter and structure before deploying:
-
-```bash
-# Validate format and structure
-openclaw clawhub validate ./my-skill.md
+```yaml
+env:
+  OPENCLAW_CONFIG_PATH: ${{ github.workspace }}/config/openclaw.json
+  OPENCLAW_STATE_DIR: ${{ runner.temp }}/openclaw-state
+  OPENCLAW_DISABLE_UPDATE_CHECK: "1"
 ```
 
-This checks:
-- Valid YAML frontmatter (name, version, description, trigger)
-- No syntax errors in the Markdown body
-- Required fields are present
-- Tool references are valid
-
-### Heartbeat Dry-Run
-
-Test your HEARTBEAT.md instructions without executing them:
-
-```bash
-# Preview what the heartbeat would do
-openclaw heartbeat --now --dry-run
-
-# Actually run one heartbeat cycle
-openclaw heartbeat --now
-```
+Keep secrets out of the committed config. Use `${VAR}` substitution or SecretRefs (`{ source: "env", provider: "default", id: "MY_KEY" }`), so the file validates in CI without real keys.
 
 ---
 
-## Security Scanning
-
-### Built-In Scanners
-
-OpenClaw includes static analysis that runs automatically when skills are installed or published:
-
-| Scanner | What It Checks | Since |
-|---------|---------------|-------|
-| **Static analysis** | Pattern matching for known bad patterns | v2026.2.6 |
-| **VirusTotal** | SHA-256 hash check + Code Insight (Gemini-powered) | v2026.2.6 |
-| **Daily re-scan** | Active skills re-scanned for drift | v2026.2.6 |
+## Validating Config
 
 ```bash
-# Scan all installed skills
-openclaw security scan --all
-
-# Scan a specific skill
-openclaw security scan ./skill.md
-
-# Check a ClawHub skill's security report before installing
-openclaw clawhub security-report <skill-name>
-
-# View full source before installing
-openclaw clawhub view <skill-name>
+openclaw config validate --json
 ```
 
-### Third-Party Scanners
-
-| Tool | What It Does |
-|------|-------------|
-| **Clawdex** | Pre-installation check against Koi Security's malicious skills database |
-| **SkillGuard** | File scanner for vulnerability patterns |
-| **SafeClaw Scanner** | Detects prompt injections, backdoors, obfuscated code |
-| **Snyk mcp-scan** | Free Python tool powered by Snyk ML |
-
-### Skill Workshop Gating
-
-The [Skill Workshop](/guides/skill-workshop) (v2026.6.1+) adds a proposal queue with scanner gating:
+The command always exits 0. Read the JSON:
 
 ```bash
-# Create a skill proposal (enters review queue)
-openclaw skills workshop propose-create \
-  --name "deploy-helper" \
-  --description "Assists with deployments" \
-  --proposal ./PROPOSAL.md
-
-# Scanner runs automatically at apply time
-# Verdicts: Clean → applied, Suspicious → quarantined, Malicious → rejected
-
-# Apply after review
-openclaw skills workshop apply <proposal-id>
-
-# Quarantine if suspicious
-openclaw skills workshop quarantine <proposal-id> \
-  --reason "Unexpected external API calls"
+openclaw config validate --json | tee validate.json
+jq -e '.valid' validate.json > /dev/null || { jq '.issues' validate.json; exit 1; }
 ```
 
-Skills that fail scanning are blocked from activation. See the [Skill Workshop guide](/guides/skill-workshop) for the full lifecycle.
+The schema is strict, so typos and invented keys (`skills.allow_install`, `plugins.sandbox_level`, a root `webhooks` block) fail here instead of stopping the Gateway at startup. One exception: entries under `mcp.servers` accept unknown keys, so a wrong key such as `allowed_tools` validates but does nothing. See [MCP Servers](/guides/mcp-servers#filtering-tools).
+
+Then lint for health problems:
+
+```bash
+openclaw doctor --lint --json --severity-min warning
+```
+
+`doctor --lint` is read-only and exits 1 when it reports findings. Some findings (no Gateway token, `gateway.mode` unset) only make sense on the real host. Use `--skip <check-id>` for those, rather than ignoring the exit code.
 
 ---
 
-## Integration Testing
+## Checking Skills
 
-### Testing Agent Responses
+There is no skill linter. `openclaw skills check` loads every skill root the config points at and reports which skills are ready, visible or missing requirements. A broken `SKILL.md` (for example, no `description`) is skipped with a log warning, not an error, so CI has to look for it.
 
-Test how your agent responds to specific inputs:
-
-```bash
-# Single-prompt test (no persistent session)
-openclaw chat "What's the status of the staging deployment?"
-
-# Test with context injection
-openclaw chat --context ./test-data.json "Analyze this data"
-
-# Test without memory (clean slate)
-openclaw chat --no-memory "What do you know about our deployment schedule?"
-```
-
-### Conversation Regression Testing
-
-Create a test script that validates agent behavior across key scenarios:
-
-```bash title="test-agent.sh"
-#!/bin/bash
-set -e
-
-echo "=== Skill Trigger Test ==="
-openclaw skill test ~/.openclaw/skills/deploy-helper.md "deploy to staging"
-
-echo "=== Security Scan ==="
-openclaw security scan --all
-
-echo "=== Health Check ==="
-openclaw doctor
-
-echo "=== Channel Connectivity ==="
-openclaw channel status
-
-echo "=== MCP Server Status ==="
-openclaw mcp status
-
-echo "=== Config Validation ==="
-openclaw config list > /dev/null
-
-echo "All tests passed."
-```
+Point the agent workspace at your repository's skills in a CI-only config:
 
 ```bash
-chmod +x test-agent.sh
-./test-agent.sh
+cat > "$RUNNER_TEMP/ci.json5" <<EOF
+{ agents: { defaults: { workspace: "$GITHUB_WORKSPACE/workspace" } } }
+EOF
+export OPENCLAW_CONFIG_PATH="$RUNNER_TEMP/ci.json5"
 ```
 
-### Testing MCP Servers
+Then fail the job if any skill folder is not eligible:
 
-Verify MCP server connections and tool availability:
-
-```bash
-# Check all MCP servers
-openclaw mcp doctor
-
-# Probe a specific server's tools
-openclaw mcp probe github
-
-# Test a server interactively
-npx @modelcontextprotocol/inspector
+```bash title="scripts/check-skills.sh"
+#!/usr/bin/env bash
+set -euo pipefail
+openclaw skills check --json > skills-check.json 2> skills-check.log
+fail=0
+for dir in workspace/skills/*/; do
+  name=$(basename "$dir")
+  if ! jq -e --arg n "$name" '.eligible | index($n) != null' skills-check.json > /dev/null; then
+    echo "::error file=${dir}SKILL.md::skill '$name' is not eligible"
+    fail=1
+  fi
+done
+if grep -q "Skipping invalid skill" skills-check.log; then
+  grep "Skipping invalid skill" skills-check.log
+  fail=1
+fi
+exit $fail
 ```
 
-### Testing Plugins
+This assumes each folder name matches its `name`, which is the convention. Eligibility depends on the runner: a skill gated on `requires.bins: ["docker"]` or `os: ["darwin"]` is not eligible on a stock Ubuntu runner. Install the binaries in CI, or skip those skills deliberately.
 
-```bash
-# Check plugin health
-openclaw plugins doctor
+`openclaw skills info <name> --json` shows one skill's source, requirements and visibility.
 
-# Inspect a specific plugin's runtime state
-openclaw plugins inspect workboard --runtime
+### Publishing skills from CI {#publishing-skills-from-ci}
 
-# View plugin logs
-openclaw logs --filter plugin --follow
-```
+ClawHub ships a reusable workflow that runs `clawhub skill publish` for every changed skill folder. Dry-run on pull requests, publish on demand:
 
----
-
-## GitHub Actions
-
-### PR Review Bot
-
-Automatically review pull requests with your OpenClaw agent:
-
-```yaml title=".github/workflows/openclaw-review.yml"
-name: OpenClaw PR Review
+```yaml title=".github/workflows/skill-publish.yml"
+name: Skill Publish
 on:
   pull_request:
-    types: [opened, synchronize]
+  workflow_dispatch:
 
 jobs:
-  review:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  dry-run:
+    if: github.event_name == 'pull_request'
+    uses: openclaw/clawhub/.github/workflows/skill-publish.yml@v1
+    with:
+      dry_run: true
 
-      - name: Install OpenClaw
-        run: npm install -g openclaw
-
-      - name: Review PR
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          openclaw chat --once \
-            "Review this pull request. Check for bugs, security issues, \
-             and style. Post your review as a GitHub comment."
+  publish:
+    if: github.event_name == 'workflow_dispatch'
+    uses: openclaw/clawhub/.github/workflows/skill-publish.yml@v1
+    with:
+      dry_run: false
+    secrets:
+      clawhub_token: ${{ secrets.CLAWHUB_TOKEN }}
 ```
 
-:::tip
-Use a **read-only** GitHub token. The agent doesn't need push access to review code.
+`root` defaults to `skills/`; pass `skill_path` for a single skill and `owner` to publish under an organization. Create the token locally with `clawhub login` and `clawhub token`. Locally, the same check is `clawhub skill publish ./skills/my-skill --dry-run`. See [ClawHub CLI](https://docs.openclaw.ai/clawhub/cli).
+
+---
+
+## Testing Plugins
+
+```bash
+npm ci
+npm run build
+openclaw plugins validate --root .
+npm pack --pack-destination "$RUNNER_TEMP"
+openclaw plugins install "npm-pack:$RUNNER_TEMP/myorg-openclaw-my-plugin-1.0.0.tgz" --force
+openclaw plugins inspect my-plugin --runtime --json
+```
+
+Installing the packed tarball catches runtime dependencies left in `devDependencies` and entries that point at `.ts` source. Before publishing, `clawhub package validate .` runs ClawHub's Plugin Inspector offline, and `clawhub package publish . --family code-plugin --dry-run` previews the release. See [Plugin System](/guides/plugin-system#building-a-plugin).
+
+## Testing MCP Servers
+
+```bash
+openclaw mcp doctor --json
+openclaw mcp doctor my-tools --probe --json
+```
+
+`doctor` without `--probe` is static and safe in CI. `--probe` starts or connects to the server, so the runner needs the server's binaries and credentials.
+
+---
+
+## Smoke-Testing the Agent
+
+`openclaw agent exec` runs one agent turn with no Gateway and a temporary state directory, then cleans up. It exits 0 on success, 1 on any error, 2 on timeout, and `--json` prints a stable result envelope.
+
+```bash
+openclaw agent exec \
+  --isolated --auth-env-only \
+  --model anthropic/claude-haiku-5-5 \
+  --cwd "$GITHUB_WORKSPACE/fixtures/sample-repo" \
+  --timeout 300 --json \
+  --message-file tests/summarize-repo.md > result.json
+jq -e '.ok and (.final | test("commit"; "i"))' result.json
+```
+
+- `--isolated` ignores any ambient config; `--config <path>` pins a specific one instead. Both make the run reproducible.
+- `--auth-env-only` uses only provider keys in the environment (for example `ANTHROPIC_API_KEY` from a CI secret).
+- The model's answer varies between runs. Assert on structure or a few key facts, not exact text.
+
+:::danger A smoke test is a real agent turn
+`agent exec` defaults to **no sandbox and full exec permissions**, with file tools limited to `--cwd`. The agent can run any shell command on the runner. Point `--cwd` at a disposable fixture, never at a checkout with secrets, and never run it on untrusted pull request content. If you test against your own config, give it `agents.defaults.sandbox.mode: "all"` and a restrictive tool policy. See [Security hardening](/security/hardening).
 :::
 
-### Skill Validation Pipeline
+---
 
-Validate skills on every push to your skills repository:
+## Security Checks
 
-```yaml title=".github/workflows/validate-skills.yml"
-name: Validate Skills
-on:
-  push:
-    paths:
-      - 'skills/**'
-  pull_request:
-    paths:
-      - 'skills/**'
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install OpenClaw
-        run: npm install -g openclaw
-
-      - name: Validate all skills
-        run: |
-          for skill in skills/*.md; do
-            echo "Validating $skill..."
-            openclaw clawhub validate "$skill"
-          done
-
-      - name: Security scan
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          for skill in skills/*.md; do
-            echo "Scanning $skill..."
-            openclaw security scan "$skill"
-          done
+```bash
+openclaw security audit --json > audit.json
+jq -e '.summary.critical == 0' audit.json > /dev/null || { jq '.findings[] | select(.severity == "critical")' audit.json; exit 1; }
 ```
 
-### Deploy on Merge
+`openclaw security audit` checks config and local state; `--deep` also probes a live Gateway, which you only have on the deploy host. Suppress accepted findings in config with `security.audit.suppressions` (each with a `checkId` and `reason`) rather than in the pipeline.
 
-Automatically deploy your agent when changes merge to main:
+For ClawHub skills you depend on, verify the exact release:
 
-```yaml title=".github/workflows/deploy-agent.yml"
-name: Deploy Agent
+```bash
+openclaw skills verify @owner/slug --version 1.2.3
+```
+
+It exits non-zero when ClawHub marks the release as failed. Third-party scanners such as [Snyk agent-scan](https://github.com/snyk/agent-scan) can scan skills and MCP config too.
+
+---
+
+## A Complete Workflow
+
+```yaml title=".github/workflows/openclaw.yml"
+name: OpenClaw checks
 on:
+  pull_request:
   push:
     branches: [main]
-    paths:
-      - 'config/**'
-      - 'skills/**'
-      - 'HEARTBEAT.md'
-      - 'SOUL.md'
+
+permissions:
+  contents: read
 
 jobs:
-  validate:
+  check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPENCLAW_STATE_DIR: ${{ runner.temp }}/openclaw-state
+      OPENCLAW_CONFIG_PATH: ${{ github.workspace }}/config/openclaw.json
+      OPENCLAW_DISABLE_UPDATE_CHECK: "1"
     steps:
-      - uses: actions/checkout@v4
-      - name: Install OpenClaw
-        run: npm install -g openclaw
-      - name: Validate config
-        run: openclaw clawhub validate config/openclaw.json || true
-      - name: Scan skills
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          for skill in skills/*.md; do
-            openclaw security scan "$skill"
-          done
-
-  deploy:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to server
-        env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-
-          # Sync config and skills
-          rsync -avz -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-            config/ skills/ HEARTBEAT.md SOUL.md \
-            deploy@$DEPLOY_HOST:~/.openclaw/
-
-          # Restart gateway
-          ssh -i ~/.ssh/deploy_key deploy@$DEPLOY_HOST \
-            "openclaw gateway restart"
-```
-
-### Nightly Health Check
-
-Run a full diagnostic suite on a schedule:
-
-```yaml title=".github/workflows/nightly-health.yml"
-name: Nightly Health Check
-on:
-  schedule:
-    - cron: '0 3 * * *'  # 3 AM UTC daily
-
-jobs:
-  health:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Health check
-        env:
-          AGENT_HOST: ${{ secrets.AGENT_HOST }}
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/key
-          chmod 600 ~/.ssh/key
-
-          ssh -i ~/.ssh/key -o StrictHostKeyChecking=no \
-            deploy@$AGENT_HOST "openclaw doctor && openclaw mcp doctor && openclaw plugins doctor"
-
-      - name: Alert on failure
-        if: failure()
-        uses: slackapi/slack-github-action@v1
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
-          payload: '{"text": "OpenClaw health check failed! Check the logs."}'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          node-version: 24
+      - run: npm i -g openclaw@2026.10.4
+
+      - name: Validate config
+        run: |
+          openclaw config validate --json | tee validate.json
+          jq -e '.valid' validate.json > /dev/null
+
+      - name: Security audit
+        run: |
+          openclaw security audit --json > audit.json
+          jq -e '.summary.critical == 0' audit.json > /dev/null
+
+      - name: Check skills
+        run: |
+          cat > "$RUNNER_TEMP/ci.json5" <<EOF
+          { agents: { defaults: { workspace: "$GITHUB_WORKSPACE/workspace" } } }
+          EOF
+          OPENCLAW_CONFIG_PATH="$RUNNER_TEMP/ci.json5" bash scripts/check-skills.sh
 ```
+
+This workflow needs no secrets and runs no model, so it is safe on pull requests from forks. Keep model-backed smoke tests in a separate job that only runs on `push` to your own branches, with the provider key as a secret.
+
+### Example: the clawdocs snippet gate
+
+This site tests its own copy-paste snippets the same way. [`scripts/check-snippets.mjs`](https://github.com/clawdocs/clawdocs.github.io/blob/gh-pages/scripts/check-snippets.mjs) installs the pinned OpenClaw from `scripts/openclaw-version.txt`, then for every page:
+
+- writes each `openclaw.json` block to a temporary directory and runs `openclaw config validate --json`
+- resolves each `openclaw …` command path and flag against `--help`
+- checks every `npx`, `npm i`, `uvx`, `plugins install` and `skills install` target against an allowlist of verified publishers
+
+Every OpenClaw process gets a temporary `HOME`, `OPENCLAW_STATE_DIR` and `OPENCLAW_CONFIG_PATH`; only `--help`, `--version`, `config schema` and `config validate` run, and no Gateway starts. The pattern works for any repository that documents or templates OpenClaw config.
 
 ---
 
-## GitLab CI
+## Deploying
 
-```yaml title=".gitlab-ci.yml"
-stages:
-  - validate
-  - scan
-  - deploy
+### Ship files to the right places
 
-validate-skills:
-  stage: validate
-  image: node:20
-  script:
-    - npm install -g openclaw
-    - for skill in skills/*.md; do openclaw clawhub validate "$skill"; done
-  only:
-    changes:
-      - skills/**
+Config lives in `~/.openclaw/openclaw.json`. Workspace files (`SOUL.md`, `AGENTS.md`, `skills/`) live in the agent workspace, `~/.openclaw/workspace/` by default. Shared skills go in `~/.openclaw/skills/`.
 
-security-scan:
-  stage: scan
-  image: node:20
-  script:
-    - npm install -g openclaw
-    - openclaw security scan --all
-  variables:
-    ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY
-  only:
-    changes:
-      - skills/**
-
-deploy:
-  stage: deploy
-  image: node:20
-  script:
-    - apt-get update && apt-get install -y rsync openssh-client
-    - mkdir -p ~/.ssh
-    - echo "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
-    - chmod 600 ~/.ssh/deploy_key
-    - rsync -avz -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
-        config/ skills/ HEARTBEAT.md SOUL.md
-        deploy@$DEPLOY_HOST:~/.openclaw/
-    - ssh -i ~/.ssh/deploy_key deploy@$DEPLOY_HOST "openclaw gateway restart"
-  only:
-    - main
-  when: manual
+```bash
+rsync -av --delete skills/ deploy@agent-host:~/.openclaw/workspace/skills/
+rsync -av SOUL.md AGENTS.md deploy@agent-host:~/.openclaw/workspace/
 ```
 
----
+Mind the trailing slashes: `skills/` copies the folder's contents. Do not rsync a whole directory into `~/.openclaw/`, which can overwrite `openclaw.json`, credentials and state. Validate config on the host before swapping it in.
 
-## Docker Deployment
+For SSH from CI, pin the host key (store the output of `ssh-keyscan agent-host` as a secret and write it to `~/.ssh/known_hosts`). Never use `StrictHostKeyChecking=no`.
 
-### Basic Docker Compose
+Skill changes are picked up within about a minute; config changes that need it trigger a reload, or run `openclaw gateway restart`.
+
+### Upgrade procedure
+
+```bash
+openclaw backup create --verify --output ~/Backups
+openclaw update --dry-run
+openclaw update --yes
+openclaw doctor --fix
+openclaw config validate
+openclaw channels status --probe
+```
+
+`openclaw update` rehearses the update, restarts the Gateway, and rolls back if the post-update doctor fails. Run `openclaw doctor --fix` after every upgrade: releases retire config keys and Doctor migrates them. To roll back by hand, restore the backup and install the previous version with `openclaw update --tag <version>`.
+
+### Docker
+
+Use the official image `ghcr.io/openclaw/openclaw` (or `openclaw/openclaw`) with a pinned version tag, and mount state at `/home/node/.openclaw`; the image runs as `node`, not root.
 
 ```yaml title="docker-compose.yml"
 services:
   openclaw:
-    image: openclaw/openclaw:latest
+    image: ghcr.io/openclaw/openclaw:2026.10.4
+    restart: unless-stopped
+    volumes:
+      - openclaw-state:/home/node/.openclaw
     ports:
       - "127.0.0.1:18789:18789"
-    volumes:
-      - openclaw-data:/root/.openclaw
-    environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "openclaw", "doctor"]
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:18789/healthz"]
       interval: 30s
-      timeout: 10s
-      retries: 3
-
-volumes:
-  openclaw-data:
-```
-
-### Production-Hardened Docker
-
-```yaml title="docker-compose.prod.yml"
-services:
-  openclaw:
-    image: openclaw/openclaw:latest
-    user: "1000:1000"
-    read_only: true
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    tmpfs:
-      - /tmp:rw,noexec,nosuid,size=64M
-    volumes:
-      - openclaw-data:/home/node/.openclaw:rw
-    environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-    networks:
-      - openclaw-internal
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: "2.0"
-    healthcheck:
-      test: ["CMD", "openclaw", "doctor"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
-
-networks:
-  openclaw-internal:
-    driver: bridge
-
-volumes:
-  openclaw-data:
-```
-
-### Docker with Local Models
-
-```yaml title="docker-compose.local-llm.yml"
-services:
-  openclaw:
-    image: openclaw/openclaw:latest
-    environment:
-      - OPENCLAW_BRAIN_PROVIDER=ollama
-      - OLLAMA_HOST=http://ollama:11434
-    depends_on:
-      ollama:
-        condition: service_healthy
-
-  ollama:
-    image: ollama/ollama:latest
-    volumes:
-      - ollama-models:/root/.ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [gpu]
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 10s
       timeout: 5s
-      retries: 5
-
+      retries: 3
 volumes:
-  ollama-models:
+  openclaw-state:
 ```
 
-### Kubernetes (Helm)
-
-```bash
-helm repo add openclaw https://serhanekicii.github.io/openclaw-helm
-helm install openclaw openclaw/openclaw -f values.yaml
-```
-
-The Helm chart provides:
-- StatefulSet with Chromium sidecar for web scraping
-- Non-root, read-only root filesystems
-- Init containers for auto-installing ClawHub skills
-- ArgoCD and Stakater Reloader compatible
-- Network policies with deny-all-ingress defaults
+The image already has a `HEALTHCHECK` on `/healthz` (liveness). Use `/startupz` for orchestrator startup probes and `/readyz` for channel-aware readiness. Bind the port to localhost and reach it over a tunnel or Tailscale. See [Docker](https://docs.openclaw.ai/install/docker) and [Deployment Options](/guides/deployment-options).
 
 ---
 
-## Pre-Deployment Checks
+## Triggering the Agent From CI
 
-Run these before every deployment or upgrade:
-
-### Backup
-
-```bash
-# Full backup
-tar czf ~/openclaw-backup-$(date +%Y%m%d).tar.gz \
-  ~/.openclaw/openclaw.json \
-  ~/.openclaw/workspace/ \
-  ~/.openclaw/memory/ \
-  ~/.openclaw/skills/
-```
-
-| Directory | Contents |
-|-----------|----------|
-| `openclaw.json` | Configuration, API keys, security settings |
-| `workspace/` | SOUL.md, IDENTITY.md, USER.md |
-| `memory/` | Persistent memory |
-| `skills/` | Installed skills |
-
-### Validation Checklist
-
-```bash
-# 1. Health check
-openclaw doctor
-
-# 2. Security audit
-openclaw security audit
-
-# 3. Scan all skills
-openclaw security scan --all
-
-# 4. Check channels
-openclaw channel list
-
-# 5. Check MCP servers
-openclaw mcp doctor
-
-# 6. Check plugins
-openclaw plugins doctor
-
-# 7. Verify config loads
-openclaw config list > /dev/null && echo "Config OK"
-```
-
-### Upgrade Procedure
-
-```bash
-# 1. Backup (see above)
-
-# 2. Check release notes
-gh release view --repo openclaw/openclaw
-
-# 3. Upgrade
-npm update -g openclaw
-
-# 4. Validate
-openclaw doctor
-
-# 5. Restart gateway
-openclaw gateway restart
-
-# 6. Verify channels reconnected
-openclaw channel list
-```
-
-### Rollback
-
-If something breaks after an upgrade:
-
-```bash
-# Stop the agent
-openclaw stop
-
-# Restore from backup
-tar xzf ~/openclaw-backup-YYYYMMDD.tar.gz -C /
-
-# Downgrade to previous version
-npm install -g openclaw@<previous-version>
-
-# Restart
-openclaw start
-
-# Verify
-openclaw doctor
-```
-
----
-
-## Continuous Monitoring
-
-### Cron-Based Testing
-
-Schedule recurring tests with OpenClaw's cron system:
-
-```bash
-# Nightly regression test
-openclaw cron add "regression-test" \
-  --schedule "0 2 * * *" \
-  --message "Run the full test suite, compare against baseline, alert if regressions"
-
-# Weekly integration check
-openclaw cron add "integration-test" \
-  --schedule "0 3 * * 0" \
-  --message "Test all third-party integrations, verify API connectivity"
-
-# Hourly health check during work hours
-openclaw cron add "health-check" \
-  --schedule "0 9-17 * * 1-5" \
-  --message "Check API health, database connections, service status"
-```
-
-### Heartbeat Monitoring
-
-Use the heartbeat system for continuous self-monitoring:
-
-```markdown title="~/.openclaw/HEARTBEAT.md"
-## System Health (every heartbeat cycle)
-
-- Check that all channels are connected
-- Verify MCP servers are responsive
-- Monitor memory usage (alert if > 90%)
-- Check disk usage (alert if > 85%)
-- Review error logs since last heartbeat
-- Send health summary to Telegram if any issues found
-```
-
-### Production Diagnostics
-
-```bash
-# Real-time log monitoring
-openclaw logs --follow
-
-# Filter by component
-openclaw logs --filter heartbeat --follow
-openclaw logs --filter channel --follow
-
-# Token usage
-openclaw stats tokens
-
-# Cost breakdown
-openclaw gateway usage-cost
-
-# Channel statistics
-openclaw stats channels
-
-# Per-heartbeat stats
-openclaw stats heartbeat
-```
-
-### Deep Security Audit
-
-```bash
-# Standard audit
-openclaw security audit
-
-# Deep audit (live WebSocket probe, browser exposure, plugin validation)
-openclaw security audit --deep
-
-# Auto-fix safe defaults (chmod, groupPolicy, logging)
-openclaw security audit --fix
-```
-
----
-
-## Lobster Workflow Shell
-
-[Lobster](https://github.com/nicholasgriffintn/lobster) is OpenClaw's official workflow shell for typed CI/CD pipelines:
-
-```yaml title="workflows/deploy-pipeline.yml"
-name: Deploy Pipeline
-steps:
-  - name: lint
-    skill: code-lint
-    input: "{{ files.changed }}"
-
-  - name: test
-    skill: run-tests
-    needs: [lint]
-
-  - name: security-scan
-    skill: security-check
-    needs: [lint]
-
-  - name: deploy-staging
-    skill: deploy-staging
-    needs: [test, security-scan]
-
-  - name: smoke-test
-    skill: smoke-test
-    needs: [deploy-staging]
-
-  - name: deploy-production
-    skill: deploy-production
-    needs: [smoke-test]
-    approval: required
-```
-
-**Key features:**
-- Typed, local-first macro engine
-- Approval gates for side-effect actions (deploy, publish)
-- Stateful workflows with persistence
-- Data shaping tools (`where`, `pick`, `head`)
-- Reduces token usage via composable automation
-
----
-
-## Patterns
-
-### Multi-Agent DevOps Pipeline
-
-Use the [Workboard](/guides/workboard) to coordinate specialized agents:
-
-```
-PR opened
-  ├─ Reviewer Agent → Code review + security check
-  ├─ Tester Agent   → Test suite execution
-  └─ Deployer Agent → Staging → approval gate → Production
-```
-
-Each agent works independently, updating Workboard cards as they progress. The deployer agent waits for both review and test agents to complete before promoting.
-
-See the [Advanced Recipes](/guides/recipes/advanced-recipes) guide for a full implementation.
-
-### Skill Version Control
-
-Keep skills in a git repository for version control and CI:
-
-```
-skills-repo/
-├── .github/
-│   └── workflows/
-│       └── validate.yml    # CI pipeline
-├── skills/
-│   ├── deploy-helper.md
-│   ├── code-review.md
-│   └── incident-response.md
-└── README.md
-```
-
-On every push, CI validates structure and scans for security issues. On merge to main, skills are synced to the production agent.
-
-### Canary Deployment
-
-Deploy to a subset of agents first, then roll out:
-
-```bash
-# Deploy to canary agent (10% traffic)
-rsync skills/ canary-host:~/.openclaw/skills/
-ssh canary-host "openclaw gateway restart"
-
-# Monitor for 30 minutes
-# Check error rates, response quality, channel stability
-
-# If healthy, deploy to remaining agents
-rsync skills/ prod-host-1:~/.openclaw/skills/
-rsync skills/ prod-host-2:~/.openclaw/skills/
-ssh prod-host-1 "openclaw gateway restart"
-ssh prod-host-2 "openclaw gateway restart"
-```
-
-### Webhook-Triggered Deployments
-
-Trigger agent actions from external CI/CD:
+To have a pipeline wake an agent (for example, "summarize this failed build"), enable Gateway HTTP hooks with a dedicated token:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "webhooks": {
-    "incoming": {
-      "enabled": true,
-      "secret": "${WEBHOOK_SECRET}",
-      "endpoints": [
-        {
-          "path": "/deploy-complete",
-          "message": "Deployment completed: {{body.service}} {{body.status}}. Run post-deploy checks."
-        },
-        {
-          "path": "/ci-failure",
-          "message": "CI failed for {{body.repo}} on branch {{body.branch}}. Error: {{body.error}}. Investigate and suggest fixes."
-        }
-      ]
-    }
-  }
+  hooks: {
+    enabled: true,
+    token: "${OPENCLAW_HOOKS_TOKEN}",
+    path: "/hooks",
+    allowedAgentIds: ["main"],
+    allowRequestSessionKey: false,
+  },
 }
 ```
 
 ```bash
-# Trigger from your CI pipeline
-curl -X POST http://your-agent:18789/webhook/deploy-complete \
-  -H "Content-Type: application/json" \
-  -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
-  -d '{"service": "api-v2", "status": "success", "commit": "abc123"}'
+curl -fsS https://agent.example.com/hooks/agent \
+  -H "Authorization: Bearer $OPENCLAW_HOOKS_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: build-$GITHUB_RUN_ID" \
+  --data '{"message":"Build failed on main. Summarize the log at the attached URL.","agentId":"main","deliver":true}'
 ```
+
+An HTTP 200 means the run was admitted, not that it finished. Expose the Gateway only over HTTPS or a private network, never as plain HTTP on the internet. Treat the message as untrusted input to the agent. See [Inbound webhooks](https://docs.openclaw.ai/automation/cron-jobs/webhooks) and [API & Webhooks](/guides/api-webhooks).
+
+For scheduled checks on the agent host itself, use an [Automation](/guides/automation) job, for example `openclaw cron add "0 2 * * *" "Run the nightly health checklist" --name nightly-check`.
 
 ---
 
 ## Checklist
 
-A quick reference for production-ready deployments:
+### In CI
 
-### Before First Deploy
+- [ ] OpenClaw version pinned; Node 24.16+ on the runner
+- [ ] `config validate --json` checked for `"valid": true`
+- [ ] `doctor --lint` and `security audit` clean, with explicit skips and suppressions
+- [ ] Every skill folder eligible in `skills check`
+- [ ] Plugins installed from their packed tarball and inspected
+- [ ] Model-backed smoke tests only on trusted branches, on a disposable fixture
+- [ ] `permissions: contents: read` unless a job needs more
 
-- [ ] Config validated (`openclaw doctor`)
-- [ ] Security audit passed (`openclaw security audit`)
-- [ ] All skills scanned (`openclaw security scan --all`)
-- [ ] Channels tested individually
-- [ ] MCP servers probed (`openclaw mcp doctor`)
-- [ ] Backup script in place
-- [ ] Monitoring configured (heartbeat + health checks)
-- [ ] Rate limits set for all channels
-- [ ] Access controls configured (`allowed_users`, `require_mention`)
+### Before every deploy
 
-### Before Every Update
-
-- [ ] Backup taken
-- [ ] Release notes reviewed
-- [ ] Skills re-validated after upgrade
-- [ ] `openclaw doctor` passes
-- [ ] Channels reconnected
-- [ ] Rollback plan ready
-
-### Ongoing
-
-- [ ] Nightly security scan (cron or CI)
-- [ ] Weekly integration test
-- [ ] Monthly credential rotation
-- [ ] Quarterly deep security audit
+- [ ] `openclaw backup create --verify`
+- [ ] Release notes read; `openclaw update --dry-run`
+- [ ] `openclaw doctor --fix` and `openclaw config validate` after the update
+- [ ] `openclaw channels status --probe` shows channels back
 
 ---
 
 ## See Also
 
-- [Automation](/guides/automation) — Cron jobs, webhooks, and GitHub Actions
-- [Deployment Options](/guides/deployment-options) — Docker, Kubernetes, managed hosting
-- [Security Hardening](/security/hardening) — Production security checklist
-- [Skill Verification](/security/skill-verification) — VirusTotal scanning and trust model
-- [Skill Workshop](/guides/skill-workshop) — Governed skill creation with scanner gating
-- [Workboard](/guides/workboard) — Multi-agent task orchestration
-- [Advanced Recipes](/guides/recipes/advanced-recipes) — Multi-agent DevOps pipeline
-- [First 7 Days: Day 7](/guides/first-7-days/day-7-production) — Production readiness walkthrough
+- [Skill Development](/guides/skill-development): writing and testing skills
+- [Plugin System](/guides/plugin-system): building and testing plugins
+- [Lobster Workflows](/guides/lobster-workflows): deterministic multi-step pipelines ([openclaw/lobster](https://github.com/openclaw/lobster))
+- [Monitoring](/guides/monitoring): watching a running Gateway
+- [Security hardening](/security/hardening)
+- Upstream: [`openclaw agent exec`](https://docs.openclaw.ai/cli/agent), [`openclaw config`](https://docs.openclaw.ai/cli/config), [`openclaw security`](https://docs.openclaw.ai/cli/security)
