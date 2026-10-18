@@ -1,6 +1,7 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: "SOUL.md Guide"
 description: "How to write, customize, and secure your OpenClaw agent's identity file — the most important file in the ecosystem"
 keywords: [openclaw, openclaw soul, personality, agent identity, customization, soul.md]
@@ -8,7 +9,9 @@ keywords: [openclaw, openclaw soul, personality, agent identity, customization, 
 
 # SOUL.md Guide
 
-SOUL.md is the most important file in the OpenClaw ecosystem. It defines **who your agent is** — its personality, values, communication style, and boundaries. Every time the agent starts a session, it reads SOUL.md first. It literally reads itself into being.
+SOUL.md defines **who your agent is**: its personality, values, communication style, and boundaries. OpenClaw injects it into every normal session as part of the system prompt, so it shapes everything the agent says. Sub-agents are the exception: they receive only `AGENTS.md`, not `SOUL.md`, `IDENTITY.md`, `USER.md` or `MEMORY.md` ([sub-agents](https://docs.openclaw.ai/tools/subagents)).
+
+The official guide is [SOUL.md personality guide](https://docs.openclaw.ai/concepts/soul); this page adds examples, tools and security advice.
 
 :::warning Critical Security Target
 SOUL.md is also the #1 target for attackers. A compromised SOUL.md means a permanently hijacked agent. Read the [Security section](#security) before deploying.
@@ -18,7 +21,7 @@ SOUL.md is also the #1 target for attackers. A compromised SOUL.md means a perma
 
 ## What SOUL.md Is
 
-SOUL.md is a plain Markdown file at `~/.openclaw/workspace/SOUL.md` that gets injected into the system prompt before every message. There's no special model fine-tuning — it's entirely prompt-driven.
+SOUL.md is a plain Markdown file in the agent workspace (`~/.openclaw/workspace/SOUL.md` for the default agent) that is injected into the system prompt. See [System prompt](https://docs.openclaw.ai/concepts/system-prompt) for how the workspace files are composed. There's no special model fine-tuning — it's entirely prompt-driven.
 
 > *"OpenClaw's personality comes from markdown files. That's it. No secret sauce, no special model fine-tuning. Just well-crafted prompts."*
 
@@ -29,9 +32,9 @@ SOUL.md is a plain Markdown file at `~/.openclaw/workspace/SOUL.md` that gets in
 | **SOUL.md** | Internal personality | Values, tone, boundaries — what the model *embodies* |
 | **IDENTITY.md** | External presentation | Name, emoji, avatar — what *users see* |
 | **AGENTS.md** | Task instructions | What the agent should *do*, operational rules |
-| **USER.md** | User context | Information about you (bio, preferences) |
-| **TOOLS.md** | Capabilities | Available tools, calendar IDs, contact info |
-| **MEMORY.md** | Persistence | Accumulated knowledge across sessions |
+| **USER.md** | User model | Stable preferences and profile facts about you, written as directives |
+| **TOOLS.md** | Environment notes | Local tool notes, calendar IDs, contact info |
+| **MEMORY.md** | Long-term memory | Durable facts and decisions; Dreaming promotes into it |
 | **openclaw.json** | Infrastructure | LLM provider, API keys, channel settings |
 
 The key distinction: *"Soul is what the model embodies. Identity is what users see. You can have a formal, precise soul with a playful emoji and nickname — internal behavior and external presentation don't have to match."*
@@ -40,16 +43,16 @@ The key distinction: *"Soul is what the model embodies. Identity is what users s
 
 ## Writing an Effective SOUL.md
 
-### Official Template (Six Sections)
+### Official Template {#official-template-six-sections}
 
-The [official template](https://docs.openclaw.ai/reference/templates/SOUL) defines six sections:
+The [official template](https://docs.openclaw.ai/reference/templates/SOUL) has a short opening line, four sections, and a closing note:
 
-1. **Opening** — One line that captures the essence
-2. **Core Truths** — 3-5 principles that guide all behavior
-3. **Boundaries** — Clear but not exhaustive; what matters most
-4. **Vibe** — Voice, style, what makes the agent distinctive
-5. **Continuity** — How the soul relates to memory and growth
-6. **Closing** — Invites evolution
+1. **Core Truths**: a few principles that guide all behavior
+2. **Boundaries**: clear but not exhaustive; what matters most
+3. **Vibe**: voice, style, what makes the agent distinctive
+4. **Continuity**: how the soul relates to memory and growth
+
+The upstream guide also has the "Molty prompt", a paste-in instruction that makes the agent rewrite its own SOUL.md with stronger opinions and less filler ([SOUL.md personality guide](https://docs.openclaw.ai/concepts/soul#the-molty-prompt)). Keep operating rules in `AGENTS.md` and voice in `SOUL.md`.
 
 ### Design Philosophy
 
@@ -120,8 +123,8 @@ What the agent should NOT do matters as much as what it should do.
 
 | Tool | Description |
 |------|-------------|
-| [**SoulCraft**](https://github.com/kesslerio/soulcraft-openclaw-skill) | OpenClaw skill that creates SOUL.md through guided conversation. Say "help me create a soul." |
-| [**soul.md builder**](https://github.com/aaronjmars/soul.md) | Ingests your data (writings, tweets, conversations) to build a personality that "thinks and speaks as you" |
+| [**SoulCraft**](https://github.com/kesslerio/soulcraft-openclaw-skill) | OpenClaw skill that creates SOUL.md through guided conversation. Dormant: no push since 2026-01-31. Review before installing |
+| [**soul.md builder**](https://github.com/aeonfun/soul.md) | Ingests your data (writings, tweets, conversations) to build a personality that "thinks and speaks as you" |
 | [**souls.directory**](https://souls.directory/) | Curated, open-source directory of SOUL.md templates by category (writer, analyst, PM, support agent) |
 | [**10 Templates (Medium)**](https://alirezarezvani.medium.com/10-soul-md-practical-cases-in-a-guide-for-moltbot-clawdbot-defining-who-your-ai-chooses-to-be-dadff9b08fe2) | 10 production-ready templates for professional roles |
 
@@ -129,60 +132,42 @@ What the agent should NOT do matters as much as what it should do.
 
 ## Advanced Patterns
 
-### The Soul-Evil Hook
-
-OpenClaw's hook system makes identity dynamic. The [soul-evil hook](https://docs.openclaw.ai/hooks/soul-evil) swaps SOUL.md content with an alternate file during a scheduled window or by random chance — **in memory only**, without modifying files on disk.
-
-```json title="settings.json"
-{
-  "file": "SOUL_EVIL.md",
-  "chance": 0.10,
-  "purge": {
-    "at": "21:00",
-    "duration": "15m"
-  }
-}
-```
-
-| Setting | Description |
-|---------|-------------|
-| `file` | Alternate SOUL filename (default: `SOUL_EVIL.md`) |
-| `chance` | Random probability per run (0-1, e.g., 0.10 = 10%) |
-| `purge.at` | Daily purge start time (24-hour clock) |
-| `purge.duration` | Window length |
-
-Purge window takes priority over random chance. If the alternate file is missing, the hook logs a warning and keeps normal SOUL.md. Sub-agents are unaffected.
-
-**Use cases beyond "evil twin":**
-- Context-adaptive personas (Monday morning persona, customer support persona)
-- Time-of-day personality shifts
-- Testing adversarial behavior
+:::note Soul-Evil hook removed
+Older guides describe a bundled `soul-evil` hook that swapped SOUL.md for an alternate file at random or on a schedule. It was removed for security reasons in v2026.2.12 and no longer exists.
+:::
 
 ### The Identity Cascade
 
-OpenClaw resolves identity using a CSS-like cascade — most specific wins:
+An agent's visible identity (name, emoji, avatar, theme) comes from two places:
 
-1. **Global config** (`ui.assistant.name`)
-2. **Per-agent config** (`agents.list[].identity.name`)
-3. **Workspace files** (`IDENTITY.md` in workspace)
-4. **Fallback default** (`"Assistant"`)
+1. **Per-agent config**: `agents.entries.<id>.identity { name, emoji, avatar, theme }`
+2. **Workspace file**: `IDENTITY.md`, written during the first-run bootstrap ([template](https://docs.openclaw.ai/reference/templates/IDENTITY))
+
+When you edit identity in the Control UI (**Settings → Agents → Overview**), OpenClaw stores it in config and mirrors it to `IDENTITY.md`. Configured values win over manual edits to the same fields in the file. `identity.name` and `identity.emoji` also become the agent's default mention patterns and acknowledgement reaction.
 
 ### Multi-Agent SOUL.md
 
-Each agent in a [multi-agent setup](/guides/multi-agent) has its own isolated workspace with its own SOUL.md:
+Each agent in a [multi-agent setup](/guides/multi-agent) has its own workspace with its own SOUL.md. Agents are keyed by id under `agents.entries` (the old `agents.list` array is migrated by `openclaw doctor --fix`):
 
-```json title="openclaw.json"
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "agents": {
-    "list": [
-      { "id": "alex", "workspace": "~/.openclaw/workspace-alex" },
-      { "id": "mia", "workspace": "~/.openclaw/workspace-mia" }
-    ]
-  }
+  agents: {
+    ownership: "explicit",
+    entries: {
+      alex: {
+        workspace: "~/.openclaw/workspace-alex",
+        identity: { name: "Alex" },
+      },
+      mia: {
+        workspace: "~/.openclaw/workspace-mia",
+        identity: { name: "Mia", theme: "dry, precise analyst" },
+      },
+    },
+  },
 }
 ```
 
-Keep a shared `AGENTS.md` for common operating rules while giving each agent a unique SOUL.md personality.
+Each workspace needs its own `AGENTS.md`. Copy shared operating rules into each one (or generate them from a common source) and give each agent its own SOUL.md.
 
 ### Versioning with Git
 
@@ -223,13 +208,16 @@ The [ClawHavoc campaign](/security/known-vulnerabilities#the-clawhavoc-campaign)
 
 ### Protecting SOUL.md
 
-**File permissions:**
+**Don't rely on file permissions.** Making workspace files read-only with `chmod 444` gives false assurance: an agent with shell access can change the mode back. Never do it to `MEMORY.md`, which Dreaming and the agent itself are meant to write to. Real protection comes from limiting what the agent can run:
+
+- Keep exec approvals on and consider sandboxing sessions that read untrusted content ([Security Hardening](/security/hardening))
+- Keep the workspace in Git so every change to SOUL.md is visible in `git diff` and easy to revert
+
+**Versioning as detection:**
 
 ```bash
-# Make identity files read-only to prevent agent self-modification
-chmod 444 ~/.openclaw/workspace/SOUL.md
-chmod 444 ~/.openclaw/workspace/IDENTITY.md
-chmod 444 ~/.openclaw/workspace/MEMORY.md
+cd ~/.openclaw/workspace
+git diff --stat SOUL.md IDENTITY.md AGENTS.md   # anything changed since your last commit?
 ```
 
 **Drift detection with ClawSec:**
@@ -237,10 +225,10 @@ chmod 444 ~/.openclaw/workspace/MEMORY.md
 [ClawSec](https://github.com/prompt-security/clawsec)'s `soul-guardian` component monitors SOUL.md for unauthorized changes and can auto-restore from a known-good backup.
 
 **Additional measures:**
-- Back up SOUL.md to version control (Git) nightly
+- Commit the workspace to Git regularly and review diffs to SOUL.md and AGENTS.md
 - Run `openclaw security audit --deep` before production deployment
-- Review all skills before installation — check for base64 payloads and zero-width characters
-- Set quiet hours to limit autonomous operation windows
+- Review all skills before installation; check for base64 payloads and zero-width characters
+- Limit unattended operation: restrict heartbeat runs with `agents.defaults.heartbeat.activeHours` and keep automation schedules to hours you can review (see [Heartbeat](/guides/heartbeat))
 
 ---
 
@@ -265,4 +253,5 @@ From [SparkryAI](https://sparkryai.substack.com/p/24-hours-with-openclaw-the-ai-
 - [Security Hardening](/security/hardening) — Protecting your agent and system
 - [Skill Verification](/security/skill-verification) — Reviewing skills that might modify SOUL.md
 - [Memory System](/architecture/memory-system) — How persistent context works
+- [SOUL.md personality guide](https://docs.openclaw.ai/concepts/soul) and [Agent workspace](https://docs.openclaw.ai/concepts/agent-workspace) (official docs)
 - [Multi-Agent Workflows](/guides/multi-agent) — Running multiple agents with distinct personalities
