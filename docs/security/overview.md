@@ -1,224 +1,207 @@
 ---
 last_update:
-  date: 2026-07-08
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Security Overview
-description: Secure your OpenClaw setup in 5 steps, understand the threat model, and learn from past incidents
+description: OpenClaw's security defaults, trust model and threat model, a validated baseline config, and where to go next
 keywords: [openclaw, openclaw security, threat model, attack surface, is openclaw safe, security overview, ai agent security]
 ---
 
 # Security Overview
 
-OpenClaw is a powerful tool that grants an AI agent significant access to your system. This page helps you secure it — starting with 5 steps you should take right now.
+OpenClaw gives an AI agent real access to your machine and your accounts. This page covers what is safe by default, what isn't, and a baseline config to start from. It was checked against OpenClaw v2026.10.4 on 2026-10-18. For the full checklist, see [Security Hardening](/security/hardening).
 
 ---
 
-## Secure Your Setup in 5 Steps
+## Start here
 
-Do these before anything else. Each takes under a minute.
-
-### 1. Update to the latest version
+### 1. Run the latest stable release
 
 ```bash
-openclaw --version        # Check current
-npm update -g openclaw    # Update
+openclaw --version
+openclaw update
+openclaw plugins update --all
 ```
 
-### 2. Verify gateway binds to localhost
+`openclaw update` works for npm, pnpm and git installs ([`openclaw update`](https://docs.openclaw.ai/cli/update)). Channel plugins ship some security fixes separately, so update them too. See [Known Vulnerabilities](/security/known-vulnerabilities) for why this matters.
+
+### 2. Start from a hardened baseline
+
+This is upstream's ["hardened baseline in 60 seconds"](https://docs.openclaw.ai/gateway/security/hardened-baseline), with the current `tools.exec.mode` key. It keeps the Gateway local, isolates DMs per sender, and turns off shell, file and automation tools. Re-enable tools per trusted agent from there.
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "gateway": {
-    "host": "127.0.0.1",  // NEVER use 0.0.0.0
-    "port": 18789
-  }
+  gateway: {
+    mode: "local",
+    bind: "loopback",
+    auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" },
+  },
+  session: { dmScope: "per-channel-peer" },
+  tools: {
+    profile: "messaging",
+    deny: ["group:automation", "group:runtime", "group:fs", "sessions_spawn", "sessions_send"],
+    fs: { workspaceOnly: true },
+    exec: { mode: "deny" },
+    elevated: { enabled: false },
+    sessions: { visibility: "agent" },
+    agentToAgent: { enabled: false },
+  },
+  channels: {
+    telegram: { dmPolicy: "pairing", groups: { "*": { requireMention: true } } },
+  },
 }
 ```
 
-### 3. Verify authentication is enabled
+Set `OPENCLAW_GATEWAY_TOKEN` to the output of `openssl rand -hex 32`, or run `openclaw doctor --generate-gateway-token` to write a token into the config. The Gateway rejects blank and placeholder tokens at startup ([network exposure](https://docs.openclaw.ai/gateway/security/network-exposure)).
 
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "gateway": {
-    "auth": {
-      "mode": "token"
-    }
-  }
-}
-```
+:::warning
+OpenClaw refuses to start on unknown config keys. Snippets that use `gateway.host`, `channels.*.allowed_chat_ids` or `hands.*` are invalid. Run `openclaw config validate` after every edit.
+:::
 
-### 4. Set channel allowlists
-
-Don't accept messages from unknown senders:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "channels": {
-    "telegram": {
-      "allowed_chat_ids": [123456789]
-    }
-  }
-}
-```
-
-### 5. Run the security audit
+### 3. Run the audit
 
 ```bash
 openclaw security audit --deep
-openclaw security audit --fix    # Auto-fix what it can
+openclaw security audit --fix    # tightens group policies and file permissions only
 ```
 
-:::tip
-That's it — you're covered for most threats. For production deployments, follow the full [Security Hardening](/security/hardening) guide.
-:::
+The audit tells you when you have drifted from safe defaults. It is not a substitute for tool policy and sandboxing, which upstream treats as the real boundaries ([SECURITY.md](https://github.com/openclaw/openclaw/blob/main/SECURITY.md), [`openclaw security`](https://docs.openclaw.ai/cli/security)).
 
 ---
 
-## What OpenClaw Has Access To
+## What is on by default
 
-By default, the agent can:
-- **Execute arbitrary shell commands** as your user
-- **Read and write any file** your user can access
-- **Automate a web browser** (fill forms, visit URLs, scrape pages)
-- **Send messages** on your behalf through connected channels
-- **Make HTTP requests** to any endpoint
-- **Modify its own configuration** including `SOUL.md` (identity/behavior)
+As of v2026.10.4:
+
+| Setting | Default | Source |
+|---|---|---|
+| Gateway bind | `loopback` on host installs | [network exposure](https://docs.openclaw.ai/gateway/security/network-exposure) |
+| Gateway bind in the Docker setup | **`lan`**, port published on all host interfaces | [Docker networking](https://docs.openclaw.ai/install/docker/networking-and-storage) |
+| Gateway auth | Required; fails closed with no secret | [network exposure](https://docs.openclaw.ai/gateway/security/network-exposure) |
+| DM policy | `pairing` (unknown senders get a code) | [access control](https://docs.openclaw.ai/gateway/security/access-control) |
+| Group policy | `allowlist` | [groups](https://docs.openclaw.ai/channels/groups) |
+| Host shell (`tools.exec.mode`) | **`full`**: commands run without asking | [exec approvals](https://docs.openclaw.ai/tools/exec-approvals) |
+| Sandbox (`agents.defaults.sandbox.mode`) | **`off`** | [sandboxing](https://docs.openclaw.ai/gateway/sandboxing) |
+| Session tool reach | Gateway-wide (`tools.sessions.visibility: "all"`) | [trust model](https://docs.openclaw.ai/gateway/security/trust-model) |
+| Update check | A daily request to `telemetry.openclaw.ai` | [telemetry](https://docs.openclaw.ai/gateway/telemetry) |
+
+The bold rows are the ones to change for most setups: [publish Docker ports to loopback](/security/hardening#docker), [turn on exec approvals](/security/hardening#exec-approvals) and [enable the sandbox](/security/hardening#sandboxing).
+
+## What OpenClaw has access to
+
+With the defaults, the agent can:
+
+- **Run shell commands** on the Gateway host as your user, without approval
+- **Read and write files** your user can access (file tools can be limited to the workspace; exec can't without a sandbox)
+- **Drive a browser**, fill forms and fetch URLs
+- **Send messages** on your behalf through connected channels, including across channels
+- **Make HTTP requests**
+- **Edit its own workspace files**, including `SOUL.md`, `AGENTS.md` and `MEMORY.md`
+
+Source: [SECURITY.md](https://github.com/openclaw/openclaw/blob/main/SECURITY.md), which says exec is host-first by default and recommends sandbox mode plus strict tool policy when you need isolation.
 
 ---
 
-## Threat Model
+## Trust model
 
-### Attack Surfaces
+OpenClaw is built as a personal assistant for one trusted operator, possibly with many agents. It is not a multi-tenant system ([trust model](https://docs.openclaw.ai/gateway/security/trust-model)):
+
+- **One trust boundary per Gateway.** A single operator, or a team whose members trust each other. For people who don't trust each other, run separate Gateways, ideally under separate OS users or hosts.
+- **Everyone who can message an agent shares its tools.** In a shared Slack workspace, any allowed sender can steer the agent within its permissions.
+- **Session ownership and operator roles are guardrails, not isolation.**
+- **Anyone who can edit `~/.openclaw` is an operator.**
+- **The model is not trusted.** Assume prompt injection can manipulate it. A prompt injection on its own is out of scope as a vulnerability report; a report must show a bypass of auth, tool policy, approvals or the sandbox ([SECURITY.md](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)).
+- **Plugins are trusted code.** They run in-process with the Gateway's privileges.
+
+## Threat model
 
 | Surface | Risk | Mitigation |
 |---------|------|------------|
-| **Gateway WebSocket** | Remote code execution if exposed | Bind to localhost, enable auth |
-| **Reverse proxy bypass** | Auth bypass via header spoofing | Configure `trustedProxies`, overwrite `X-Forwarded-For` |
-| **Channel messages** | Prompt injection via incoming messages | Contact allowlists, mention-gating |
-| **ClawHub skills** | Malicious code execution, credential theft | VirusTotal scanning, manual review |
-| **LLM API** | Data exfiltration via prompts | Use local models for sensitive work |
-| **Memory files** | Sensitive data in plaintext | File permissions, full-disk encryption |
-| **`SOUL.md`** | Persistent agent hijacking via prompt injection | ClawSec drift detection |
-| **Credentials** | Plaintext API key storage | Environment variables, OS keychain |
-| **Browser automation** | Credential theft, session hijacking | Domain allowlists |
+| **Gateway port** | Full operator access if reached with a valid secret, or with none | Loopback bind, strong token, SSH tunnel or Tailscale Serve for remote access |
+| **Docker publishing** | Port exposed on every host interface; bypasses ufw | Publish to `127.0.0.1:18789`, `DOCKER-USER` rules |
+| **Reverse proxies** | Forwarded-header spoofing | `gateway.trustedProxies`, overwrite `X-Forwarded-For`. An unconfigured same-host proxy is rejected with `403 proxy_attribution_required` (since [PR #1795](https://github.com/openclaw/openclaw/pull/1795), January 2026) |
+| **Channel messages** | Prompt injection from senders | DM pairing or allowlists, mention-gated groups, `contextVisibility` |
+| **Host shell** | Injected commands run as your user | `tools.exec.mode: "ask"` or `"deny"`, sandbox |
+| **ClawHub skills** | Malicious instructions or code | `openclaw skills verify`, manual review, `security.installPolicy` |
+| **Plugins** | Arbitrary code in the Gateway process | Install only what you trust, `plugins.allow` |
+| **Credentials** | Plaintext in `openclaw.json`, `.env`, `credentials/` | SecretRefs, `openclaw secrets audit --check`, `600`/`700` permissions |
+| **Transcripts and memory** | Private data at rest | Full-disk encryption, tight permissions, pruning |
+| **Browser automation** | SSRF into your LAN, session theft | Strict-by-default `browser.ssrfPolicy` (`allowedHostnames`, `blockedHostnames`) |
+| **LLM provider** | Your prompts and tool output leave the host | Choose a provider and retention terms you accept, or a local model |
+
+Details: [Security Hardening](/security/hardening), upstream [Security](https://docs.openclaw.ai/gateway/security).
 
 ### The Prompt Injection Problem
 
-OpenClaw processes untrusted content (chat messages, skill outputs, external data) **in the same reasoning context as user instructions**. There are no hard isolation boundaries between trusted and untrusted content.
+OpenClaw processes untrusted content (chat messages, web pages, documents, skill text) in the same model context as your instructions. Upstream wraps external content and offers controls such as `contextVisibility`, but the model can still be manipulated. Limit what a manipulated agent can do ([prompt injection](https://docs.openclaw.ai/gateway/security/prompt-injection)).
 
-Zenity Labs demonstrated a complete zero-click attack chain:
-1. Indirect prompt injection via a **Google Document**
-2. Agent creates a **Telegram backdoor** to an attacker-controlled bot
-3. Attacker modifies **`SOUL.md`** for persistence across sessions
-4. Creates a **scheduled task** that re-injects malicious instructions every 2 minutes
-5. Deploys a traditional **C2 implant** for full system compromise
+In February 2026, Zenity Labs demonstrated a [zero-click attack chain](https://labs.zenity.io/p/openclaw-or-opendoor-indirect-prompt-injection-makes-openclaw-vulnerable-to-backdoors-and-much-more) against a default setup:
 
-All of this abuses intended capabilities — no software vulnerability required.
+1. Indirect prompt injection through a **Google Document**
+2. The agent creates a **Telegram integration** with an attacker-controlled bot
+3. The attacker edits **`SOUL.md`** for persistence across sessions
+4. A **scheduled task** re-injects instructions every 2 minutes
+5. A traditional **C2 implant** completes the compromise
 
----
-
-## Full Security Checklist
-
-For those who want to go deeper than the 5 quick steps:
-
-- [ ] **Update to the latest stable release** (currently v2026.6.11) — patches critical RCE, the [June 30, 2026 advisory batch](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026) (fixed in v2026.6.6–v2026.6.8), and many subsequent security improvements
-- [ ] **Bind gateway to localhost** — never expose port 18789
-- [ ] **Enable authentication** — token or password mode
-- [ ] **Set `trustedProxies`** — if behind any reverse proxy
-- [ ] **Run `openclaw security audit --deep`** — verify configuration
-- [ ] **Set channel allowlists** — don't accept messages from unknown senders
-- [ ] **Review installed skills** — `openclaw skill list` and `openclaw security scan --all`
-- [ ] **Protect credentials** — use environment variables, not plaintext files
-- [ ] **Set quiet hours** — limit autonomous operation
-- [ ] **Review memory** — check `~/.openclaw/memory/` periodically
-- [ ] **Monitor SOUL.md** — watch for unauthorized modifications
+Every step used intended capabilities. The defences that would have stopped it are the ones that limit capability: exec approvals or `exec.mode: "deny"`, the sandbox, a `messaging` tool profile for agents that read documents, and allowlisted channels.
 
 ---
 
-## Community Security Tools
+## Checklist
+
+- [ ] **Run the latest stable release** (v2026.10.4 as of 2026-10-18) and `openclaw plugins update --all`
+- [ ] **Keep `gateway.bind: "loopback"`**; in Docker, publish to `127.0.0.1` only
+- [ ] **Use a token of at least 24 characters**, ideally 64 hex
+- [ ] **Remote access via SSH tunnel, Tailscale Serve or Cloudflare Access**, never an open port
+- [ ] **Set `gateway.trustedProxies`** if any reverse proxy is in front
+- [ ] **Keep DM pairing or allowlists**; mention-gate groups; set `session.dmScope: "per-channel-peer"` if more than one person DMs the bot
+- [ ] **Turn on exec approvals** (`tools.exec.mode: "ask"` or `"auto"`) and **the sandbox** (`agents.defaults.sandbox.mode: "non-main"`)
+- [ ] **Review skills and plugins**: `openclaw skills list`, `openclaw skills verify @owner/<slug>`, `openclaw plugins list`
+- [ ] **Move secrets to SecretRefs** and run `openclaw secrets audit --check`
+- [ ] **Limit when heartbeats run** with `agents.defaults.heartbeat.activeHours`
+- [ ] **Review memory**: `~/.openclaw/workspace/MEMORY.md` and `memory/*.md`
+- [ ] **Watch workspace files** (`SOUL.md`, `AGENTS.md`) for changes you didn't make
+- [ ] **Run `openclaw security audit --deep`** after every change
+
+---
+
+## Community security tools
+
+Third-party projects, listed for reference. **clawdocs has not reviewed their code.** A security tool runs with the same access as the agent, so vet it like any other skill or plugin.
 
 | Tool | Description |
 |------|-------------|
-| [**ClawSec**](https://github.com/prompt-security/clawsec) | Security skill suite — SOUL.md drift detection, advisory monitoring, audit watchdog |
-| [**ClawBands**](https://github.com/SeyZ/clawbands) | Middleware that enforces human approval before dangerous actions |
-| [**Clawprint**](https://github.com/cyntrisec/clawprint) | Tamper-evident audit trail with SHA-256 hash chain ledger |
-| [**SkillGuard**](https://github.com/bossondehiggs/skillguard) | Skill file scanner for vulnerabilities and malicious patterns |
-| [**Security Monitor**](https://github.com/adibirzu/openclaw-security-monitor) | 32-script monitoring suite targeting known threat campaigns |
+| [**ClawSec**](https://github.com/prompt-security/clawsec) | Skill suite: SOUL.md drift detection, advisory monitoring, audit watchdog |
+| [**ClawBands**](https://github.com/SeyZ/clawbands) | Middleware that asks for human approval before dangerous actions |
+| [**Security Monitor**](https://github.com/adibirzu/openclaw-security-monitor) | Monitoring scripts targeting known threat campaigns |
 | [**openclaw-secure**](https://github.com/seomikewaltman/openclaw-secure) | Hardware-gated secret management with pluggable backends |
-| [**Clawdex**](https://koisecurity.com/clawdex) | Pre-installation skill scanning against Koi's malicious skills database |
+| [**Clawdex**](https://koisecurity.com/clawdex) | Koi Security's lookup of skills against its malicious-skills database |
+| [**Cisco Skill Scanner**](https://github.com/cisco-ai-defense/skill-scanner) | Static, dataflow and LLM-based scanning of agent skills |
 
-See the [Ecosystem page](/reference/ecosystem#security-tools) for full details on each tool.
-
----
-
-## Enterprise Assessment
-
-> *"It is not enterprise software. There is no promise of quality, no vendor support, no SLA... it ships without authentication enforced by default."* — Gartner
-
-For enterprise compliance considerations, see [Privacy & Compliance](/guides/privacy-compliance).
+See the [Ecosystem page](/reference/ecosystem#security-tools) for more.
 
 ---
 
-## Security Incident History
+## Enterprise assessment
 
-OpenClaw's explosive adoption (377k+ GitHub stars as of June 2026) massively outpaced its security maturity. Security has improved significantly since then — run `openclaw security audit --deep` regularly to stay current.
+> *"It is not enterprise software. There is no promise of quality, no vendor support, no SLA... it ships without authentication enforced by default."* — Gartner, February 2026
 
-In a single week in late January / early February 2026:
-
-- A **one-click RCE vulnerability** was discovered and patched (CVE-2026-25253)
-- **40,000-135,000+ exposed instances** were found on the public internet
-- **341 malicious skills** were discovered on ClawHub
-- A **$16 million crypto scam** exploited the naming chaos
-- The **Moltbook database breach** exposed 1.5 million API tokens
-- **93.4% of publicly reachable instances** had critical authentication bypasses
-
-### Timeline
-
-| Date | Event | Severity |
-|------|-------|----------|
-| Jan 27 | Anthropic sends trademark notice; Steinberger begins rebrand | — |
-| Jan 27 | Crypto scammers hijack X accounts during rebrand, launch $CLAWD pump-and-dump | **$16M stolen** |
-| Jan 30 | CVE-2026-25253: One-click RCE via gateway URL discovered and patched (v2026.1.29) | **Critical (8.8)** |
-| Jan 31 | Moltbook database breach — 1.5M API tokens, 35K emails exposed | **Critical** |
-| Feb 2 | SecurityScorecard: 40,214 exposed instances found via favicon fingerprinting | **Critical** |
-| Feb 2 | The Register: "security dumpster fire" | — |
-| Feb 4 | Koi Security: 341 malicious ClawHub skills found (ClawHavoc campaign) | **High** |
-| Feb 5 | Snyk ToxicSkills: 36% of all skills contain security flaws | **High** |
-| Feb 5 | Cisco: 9 vulnerabilities in top community skill | **High** |
-| Feb 5 | Zenity Labs: Prompt injection backdoor research published | **High** |
-| Feb 7 | VirusTotal partnership and code safety scanner (v2026.2.6) | Mitigation |
-| Feb 8 | Korean tech firms (Kakao, Naver, Karrot) ban OpenClaw internally | — |
-| Feb 9 | Follow-up scans: 135,000+ exposed instances, 42,665 on Shodan | **Critical** |
-| Feb 9 | JFrog: 93.4% of exposed instances have auth bypass | **Critical** |
-
-### Who Has Published Security Research
-
-| Organization | Finding / Action |
-|-------------|-----------------|
-| **Gartner** | "Unacceptable cybersecurity risk" — recommended blocking OpenClaw downloads |
-| **JFrog** | Gateway localhost bypass — 93.4% auth bypass rate |
-| **Zenity Labs** | Prompt injection backdoor via Google Docs, SOUL.md persistence |
-| **SecurityScorecard** | 40,214-135,000+ exposed instances via favicon fingerprinting |
-| **Snyk** | ToxicSkills study — 36% of skills have flaws, 283 leak credentials |
-| **Koi Security** | 341 malicious skills, ClawHavoc campaign, AMOS malware |
-| **Cisco** | 9 vulnerabilities (2 critical) in top community skill |
-| **OX Security** | Plaintext credential storage, credential backup on removal |
-| **CrowdStrike** | Security briefing + Falcon "Search & Removal Content Pack" |
-| **Bitdefender** | Technical advisory — 900+ malicious skills (~20% of total) |
-| **Trend Micro** | Risk analysis of agentic assistants |
-| **Kaspersky** | "OpenClaw found unsafe for use" |
-| **Noma Security** | 53% of enterprise customers gave OpenClaw privileged access in one weekend |
-| **Token Security** | 22% of enterprise customers had unauthorized OpenClaw deployments |
-| **Wiz** | Moltbook database breach discovery |
-| **Belgian CCB** | Official advisory urging immediate patching |
-| **University of Toronto** | Vulnerability notification for community |
-| **Penligent** | "The security boundary that doesn't exist" — persistence and tool hijack |
-| **Cyera** | "The OpenClaw Security Saga" — how adoption outpaced security |
+The authentication part of that quote is out of date: current releases require Gateway auth by default and fail closed ([network exposure](https://docs.openclaw.ai/gateway/security/network-exposure)). The rest still describes an open-source project without a vendor. For compliance questions, see [Privacy & Compliance](/guides/privacy-compliance).
 
 ---
 
-## Deep Dives
+## Security incident history
 
-- [Security Hardening](/security/hardening) — Step-by-step production security with Docker, reverse proxy, and network configs
-- [Known Vulnerabilities](/security/known-vulnerabilities) — CVEs, incidents, and full timeline
-- [Skill Verification](/security/skill-verification) — Reviewing skills before installation
-- [Privacy & Compliance](/guides/privacy-compliance) — GDPR, SOC 2, HIPAA, data flows
+OpenClaw's adoption (392,000+ GitHub stars as of 2026-10-18) outpaced its security work in early 2026. In late January and early February 2026, a one-click RCE (CVE-2026-25253) was patched, tens of thousands of exposed instances were found on the internet, hundreds of malicious skills were found on ClawHub, and the Moltbook breach exposed 1.5 million agent API tokens.
+
+Since then the project has published 722 security advisories (as of 2026-10-18), 14 of them critical. The full timeline, the critical advisories and the current minimum version are on [Known Vulnerabilities](/security/known-vulnerabilities).
+
+---
+
+## Deep dives
+
+- [Security Hardening](/security/hardening): the full self-hosting checklist
+- [Known Vulnerabilities](/security/known-vulnerabilities): advisories, incidents and timeline
+- [Skill Verification](/security/skill-verification): reviewing skills before installing them
+- [Privacy & Compliance](/guides/privacy-compliance): data flows, telemetry, GDPR, SOC 2, HIPAA
+- Upstream: [Security](https://docs.openclaw.ai/gateway/security) · [Trust model](https://docs.openclaw.ai/gateway/security/trust-model) · [Threat model (MITRE ATLAS)](https://docs.openclaw.ai/security/THREAT-MODEL-ATLAS)
