@@ -1,6 +1,7 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Video Generation with Remotion
 description: Comprehensive guide to programmatic video creation with OpenClaw and Remotion — skills, MCP servers, templates, rendering pipelines, and production recipes
 keywords: [openclaw, remotion, video generation, programmatic video, tiktok, youtube shorts, ai video, mcp video, remotion agent skills]
@@ -8,9 +9,7 @@ keywords: [openclaw, remotion, video generation, programmatic video, tiktok, you
 
 # Video Generation with Remotion
 
-OpenClaw + Remotion is one of the most powerful combinations in the ecosystem. Remotion lets you create videos with React components, and OpenClaw can orchestrate the entire pipeline — from script generation to rendering to publishing. The Remotion Video Toolkit is the **most-installed video skill on ClawHub** with 126,000+ installs.
-
-This guide covers the full landscape: skills, MCP servers, rendering APIs, production recipes, and cost optimization.
+OpenClaw has two ways to make video: the built-in `video_generate` tool, which asks a video model for a clip, and **Remotion**, which renders React components into video that you fully control. This guide covers both, with the skills, MCP servers, rendering APIs and recipes that connect Remotion to OpenClaw. Checked against OpenClaw **v2026.10.4** on 2026-10-18; third-party star and download counts are as of that date.
 
 ---
 
@@ -20,7 +19,7 @@ OpenClaw has **two paths** for video generation — pick the one that fits your 
 
 | | **`video_generate` tool** | **Remotion** |
 |---|---|---|
-| **Setup** | None — built-in tool, one call | Node.js project, React, FFmpeg |
+| **Setup** | A provider API key — built-in tool, one call | Node.js project, React, FFmpeg |
 | **Best for** | Quick clips, one-off demos, simple prompts | Branded content, templates, recurring series |
 | **Control** | Prompt-only — you describe, AI generates | Full creative control — React components, animations, layouts |
 | **Customization** | Limited to what the AI model produces | Unlimited — any React code, custom fonts, charts, 3D |
@@ -28,13 +27,33 @@ OpenClaw has **two paths** for video generation — pick the one that fits your 
 | **Cost** | Per-generation API cost | Free local rendering + optional API costs for assets |
 | **Example** | `"Make a 5-second hello world clip"` | Templated TikTok series, data dashboards, branded intros |
 
-**Start with `video_generate`** if you just want a quick video from a text prompt — no setup needed:
+**Start with `video_generate`** if you just want a quick clip from a prompt. **Use Remotion** when you need templates, branding, recurring content, or pixel-perfect control.
 
-```
-openclaw chat "Generate a 5-second video of a hello world animation"
+---
+
+## The Built-in `video_generate` Tool
+
+`video_generate` appears as soon as one video provider is available: set an API key (for example `GEMINI_API_KEY` for Google Veo) or configure a default model. 18 provider backends are supported as of v2026.10.4, including Google (Veo), Runway, MiniMax (Hailuo), Alibaba and Qwen (Wan), BytePlus (Seedance), PixVerse, Kie AI, OpenRouter, Together, Z.AI, Vydra and ComfyUI.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    defaults: {
+      mediaModels: {
+        video: { primary: "google/veo-3.1-fast-generate-preview" },
+      },
+    },
+  },
+}
 ```
 
-**Use Remotion** when you need templates, branding, recurring content, or pixel-perfect control. The rest of this guide covers the Remotion path.
+Then ask in any chat: *"Generate a 5-second cinematic video of a lobster surfing at sunset."*
+
+- Generation is **asynchronous**: the tool returns a task id, the provider works for 30 seconds to several minutes, and OpenClaw wakes the session and posts the video when it is done. A repeated request while a job is running returns its status instead of starting another.
+- It supports text-to-video, image-to-video and (on some providers) video-to-video. `action: "list"` shows which modes each configured provider supports.
+- It is billed per clip by the provider. Check the provider's pricing before putting it in a loop.
+
+Reference: [Video generation](https://docs.openclaw.ai/tools/video-generation). The same pattern gives you `image_generate` for thumbnails and `music_generate` for soundtracks; see [Voice & Multimodal](/guides/voice-multimodal#image-generation).
 
 ---
 
@@ -98,16 +117,16 @@ export const RemotionRoot: React.FC = () => (
 ### 1. Install Remotion
 
 ```bash
-# Create a new Remotion project
+# Create a new Remotion project (pick a template interactively)
 npx create-video@latest my-video
 
-# Or use the prompt-to-video template
-npx create-video@latest --template prompt-to-video
+# Or choose a template with its flag
+npx create-video@latest --prompt-to-video my-prompt-video
 ```
 
 ### 2. Install Remotion Agent Skills
 
-Agent Skills teach OpenClaw how to write correct Remotion code — 28 modular rule files covering 9 component patterns and 7 transition types.
+Agent Skills teach OpenClaw how to write correct Remotion code. The [remotion-dev/skills](https://github.com/remotion-dev/skills) repo ships 12 skills (best practices, captions, create, docs, interactivity, maps, markup, multimedia, render, SaaS, studio, upgrade).
 
 ```bash
 # In your Remotion project directory
@@ -130,59 +149,39 @@ npx remotion render HelloWorld out/video.mp4
 
 ## ClawHub Video Skills
 
+All of these are **third-party**. Read a skill's files before installing it, and see [Skill Verification](/security/skill-verification).
+
 ### Remotion Video Toolkit
 
-The flagship video skill — a complete toolkit for React-based video creation.
+A general Remotion toolkit skill by `shreefentsar`: animations, timing, rendering, captions, 3D (React Three Fiber), charts, text effects and transitions. About 23,000 downloads and 730 installs on ClawHub.
 
 ```bash
-openclaw skills install remotion-video-toolkit
+openclaw skills install @shreefentsar/remotion-video-toolkit
 ```
-
-**Capabilities:** Animations, timing, rendering, captions, 3D (React Three Fiber), charts, text effects, transitions, and template scaffolding.
-
-### ClawVid
-
-Short-form video generator for YouTube Shorts, TikTok, and Instagram Reels.
-
-```bash
-openclaw skills install clawvid
-```
-
-**GitHub:** [neur0map/clawvid](https://github.com/neur0map/clawvid)
-
-**Pipeline:** Text prompt → AI script → asset generation → Remotion composition → rendered video → platform-ready output with captions and music.
-
-### TikTok Engine
-
-Programmatic TikTok and Reels generator that runs Remotion as an OpenClaw skill.
-
-```bash
-openclaw skills install tiktok-engine
-```
-
-**GitHub:** [callwallagent/tiktok-engine](https://github.com/callwallagent/tiktok-engine)
 
 ### Pexo
 
-Auto-selects across 10+ video generation models with multi-shot sequencing. Reported 73% faster production than manual model selection.
+Video-agent skills from Pexo that turn a description into a finished video, routing each shot to a hosted video model (Seedance, Kling and others) through one Pexo API key. The most-downloaded one (about 40,000 installs) is listed through skills.sh; Pexo also publishes on ClawHub directly. Both call Pexo's hosted service; check its pricing first.
 
 ```bash
-openclaw skills install pexo
+openclaw skills install skills-sh:pexoai/pexo-skills/pexo-agent
+# or
+openclaw skills install @pexo/pexo-video-agent
 ```
 
 ### BibiGPT
 
-AI video summarization across 30+ platforms (Bilibili, YouTube, etc.) — useful for research and content repurposing.
+Wraps the BibiGPT CLI to summarize videos, audio and podcasts from a URL (YouTube, Bilibili and others), useful for research and repurposing. It uses the BibiGPT service.
 
 ```bash
-openclaw skills install bibigpt
+openclaw skills install @jimmylv/bibigpt-skill
 ```
 
-### video-agent
+### ClawVid
 
-Part of the official `openclaw/skills` repository with detailed Remotion integration docs.
+[neur0map/clawvid](https://github.com/neur0map/clawvid) is a short-form pipeline (prompt → script → assets → Remotion → captioned video). It is **not on ClawHub**, has about 20 stars, and has not been updated since February 2026; treat it as example code to read rather than a skill to install.
 
-**GitHub:** [openclaw/skills — video-agent](https://github.com/openclaw/skills/blob/main/skills/michaelwang11394/video-agent/references/remotion-integration.md)
+Search for others with `openclaw skills search video`.
 
 ---
 
@@ -253,32 +252,30 @@ Interactive MCP app with a live video player and editing layer — useful for re
 
 FFmpeg operations via natural language. Useful for post-processing — trimming, concatenating, adding audio tracks, format conversion.
 
+[video-creator/ffmpeg-mcp](https://github.com/video-creator/ffmpeg-mcp) is a Python server (about 150 stars) with tools to find, inspect, clip, concatenate, overlay, scale and extract frames from videos. It is not on npm: clone it, run `uv sync`, and point OpenClaw at the checkout:
+
 ```json5 title="~/.openclaw/openclaw.json"
 {
   "mcp": {
     "servers": {
       "ffmpeg": {
-        "command": "npx",
-        "args": ["ffmpeg-mcp"]
+        "command": "uv",
+        "args": ["--directory", "/home/you/src/ffmpeg-mcp", "run", "ffmpeg-mcp"]
       }
     }
   }
 }
 ```
 
-**GitHub:** [video-creator/ffmpeg-mcp](https://github.com/video-creator/ffmpeg-mcp)
+(The npm package named `ffmpeg-mcp` is an unrelated project.)
 
-### sora-2-mcp
+### kinocut (formerly mcp-video)
 
-OpenAI Sora 2 video generation with FFmpeg merging. Generates AI video clips that can be composited into Remotion projects.
+Guardrailed video-editing MCP with planning and quality checks, aimed at safer autonomous operation. Renamed from `mcp-video`; about 210 stars and active.
 
-**GitHub:** [writingmate/sora-2-mcp](https://github.com/writingmate/sora-2-mcp)
+**GitHub:** [KyaniteLabs/kinocut](https://github.com/KyaniteLabs/kinocut)
 
-### mcp-video
-
-Guardrailed video editing MCP with planning and quality checks — safer for autonomous operation.
-
-**GitHub:** [KyaniteLabs/mcp-video](https://github.com/KyaniteLabs/mcp-video)
+For AI-generated footage, prefer the built-in `video_generate` tool over single-provider MCP servers.
 
 ---
 
@@ -294,15 +291,14 @@ The most important integration. Install in your Remotion project:
 npx skills add remotion-dev/skills
 ```
 
-This adds 28 rule files that teach your AI agent:
+This adds 12 skills that teach your AI agent, among other things:
 - How to structure compositions and sequences
-- 9 component patterns (text, image, video, audio, shape, chart, 3D, code, transition)
-- 7 transition types with proper timing
 - Animation best practices with `interpolate()` and `spring()`
+- Captions, maps, multimedia and interactive compositions
 - How to use `staticFile()` for assets
-- Rendering configuration
+- Rendering configuration and version upgrades
 
-**GitHub:** [remotion-dev/skills](https://github.com/remotion-dev/skills) (3.6k stars)
+**GitHub:** [remotion-dev/skills](https://github.com/remotion-dev/skills) (about 5,300 stars)
 
 ### AI-Optimized Docs
 
@@ -335,31 +331,31 @@ Remotion's `template-prompt-to-video` handles the full pipeline:
 
 ```bash
 # Create project from template
-npx create-video@latest --template prompt-to-video
+npx create-video@latest --prompt-to-video my-prompt-video
 cd my-prompt-video
 
-# Set API keys
+# API keys (or put them in .env; the CLI prompts if they are missing)
 export OPENAI_API_KEY=sk-...
 export ELEVENLABS_API_KEY=...
 
-# Generate a video from a prompt
-npm run gen -- "Explain how OpenClaw's heartbeat system works in 60 seconds"
+# Generate a story timeline (prompts for a title and topic; needs Bun)
+npm run gen
+
+# Render
+npx remotion render
 ```
 
-**What happens under the hood:**
-1. GPT-4.1 generates a script with scene descriptions
-2. DALL-E 3 generates images for each scene
-3. ElevenLabs generates voiceover with word-level timestamps
-4. A JSON timeline is assembled
-5. Remotion renders the composition with synced visuals and audio
+**What happens under the hood:** the template's CLI uses OpenAI to write the story and make the scene images, and ElevenLabs for the voiceover with timestamps. It assembles a JSON timeline, and Remotion renders it with synced visuals and audio.
 
 ### Custom pipeline with OpenClaw
 
 For more control, build your own pipeline:
 
+Run these from your Remotion project directory. `openclaw agent exec` runs one headless agent turn with that directory as its workspace.
+
 ```bash title="Step 1: Generate script"
-openclaw chat "Write a 60-second video script about OpenClaw's memory system. 
-Format as JSON: { scenes: [{ duration: number, narration: string, visual: string }] }"
+openclaw agent exec --cwd . "Write a 60-second video script about OpenClaw's memory system.
+Save it as public/script.json in the form { scenes: [{ duration: number, narration: string, visual: string }] }"
 ```
 
 ```bash title="Step 2: Generate assets"
@@ -370,11 +366,14 @@ Format as JSON: { scenes: [{ duration: number, narration: string, visual: string
 ```
 
 ```bash title="Step 3: Create composition"
-# OpenClaw generates a Remotion composition using Agent Skills knowledge
-openclaw chat "Create a Remotion composition from this script JSON. 
-Use Sequence for each scene, AbsoluteFill for layouts, 
-and spring() for transitions."
+# OpenClaw writes a Remotion composition using the Agent Skills
+openclaw agent exec --cwd . "Create a Remotion composition MyVideo in src/ from public/script.json.
+Use Sequence for each scene, AbsoluteFill for layouts, and spring() for transitions."
 ```
+
+:::warning Headless runs can run commands
+Unless your config says otherwise, `agent exec` runs with the sandbox off and the full exec policy, scoped to `--cwd`. Run it in a project directory you are happy for the agent to change, run it under a dedicated agent or config with narrower tools, and see [Security Hardening](/security/hardening).
+:::
 
 ```bash title="Step 4: Render"
 npx remotion render MyVideo out/video.mp4 --codec h264
@@ -493,9 +492,9 @@ Generate speech with word-level timestamps, then sync with Remotion sequences fo
 ### Image Generation
 
 Use OpenClaw's LLM to call image generation APIs:
-- **DALL-E 3** — via OpenAI API (used by the prompt-to-video template)
-- **Stable Diffusion** — via local or API deployment
-- **remotion-media-mcp** — `generate_image` tool handles this automatically
+- **`image_generate`** — OpenClaw's built-in tool (OpenAI `gpt-image-2`, Google, fal, ComfyUI and others)
+- **ComfyUI** — local Stable Diffusion or Flux workflows, via the ComfyUI provider
+- **remotion-media-mcp** — its `generate_image` tool writes straight into `public/`
 
 ### FFmpeg (Post-processing)
 
@@ -505,7 +504,7 @@ Remotion uses FFmpeg internally, but for post-processing:
 - Convert formats (MP4 → GIF, WebM)
 - Extract audio tracks
 
-The `ffmpeg-mcp` server lets OpenClaw run FFmpeg operations via natural language.
+The FFmpeg MCP server above lets OpenClaw run these operations by name, or the agent can call `ffmpeg` directly through exec.
 
 ---
 
@@ -513,33 +512,7 @@ The `ffmpeg-mcp` server lets OpenClaw run FFmpeg operations via natural language
 
 ### Faceless TikTok / YouTube Shorts
 
-The most popular use case. Full pipeline using ClawVid:
-
-```yaml title="lobster-workflow.yml"
-name: faceless-short
-steps:
-  - id: script
-    run: |
-      openclaw chat "Write a 45-second script about {{topic}}.
-      Format: { scenes: [...], hook: string, cta: string }"
-    output: script.json
-
-  - id: assets
-    run: |
-      openclaw chat "Using remotion-media-mcp:
-      1. generate_speech for each scene narration
-      2. generate_image for each scene background  
-      3. generate_music for a background track"
-    needs: [script]
-
-  - id: render
-    run: npx remotion render TikTokVideo out/short.mp4 --props=script.json
-    needs: [assets]
-
-  - id: thumbnail
-    run: npx remotion still TikTokVideo out/thumb.png --frame=15
-    needs: [render]
-```
+The most popular use case. Let the agent write the script and generate assets (with `video_generate`, `image_generate`, TTS or remotion-media-mcp) into `public/props.json` and `public/`, then render deterministically with Remotion. The rendering half is a good fit for a [Lobster](#lobster-workflow-for-video-pipelines) workflow, shown below.
 
 ### Audiogram (Podcast Clips)
 
@@ -547,7 +520,7 @@ Turn podcast audio into shareable video clips with waveform visualization:
 
 ```bash
 # Use the audiogram template
-npx create-video@latest --template audiogram
+npx create-video@latest --audiogram my-audiogram
 ```
 
 The audiogram template renders:
@@ -587,80 +560,53 @@ export const DataViz: React.FC<{ data: number[] }> = ({ data }) => {
 Use the code-hike template for animated code explanations:
 
 ```bash
-npx create-video@latest --template code-hike
+npx create-video@latest --code-hike my-code-video
 ```
 
 OpenClaw can generate the code snippets and step-by-step annotations, then Remotion renders them with syntax highlighting and smooth transitions.
 
 ### Automated Daily Digest
 
-Combine with heartbeat for recurring video content:
+Recurring work is an **automation job**, not a heartbeat setting (the old top-level `heartbeat.tasks` key no longer exists, and the Gateway rejects it):
 
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "heartbeat": {
-    "tasks": [
-      {
-        "name": "daily-video-digest",
-        "interval": 86400,
-        "prompt": "Create a 60-second video digest of today's top OpenClaw community updates. Use the Remotion Video Toolkit to generate and render it, then save to ~/videos/digest/"
-      }
-    ]
-  }
-}
+```bash
+openclaw cron add --name daily-video-digest --cron "0 18 * * *" --tz Europe/Berlin \
+  --agent main --session isolated \
+  --message "Create a 60-second video digest of today's top OpenClaw community updates with the Remotion project in ~/videos/digest. Render to out/digest-<date>.mp4 and tell me when it is ready. Do not publish it." \
+  --announce --channel telegram --to 123456789
 ```
+
+Check it with `openclaw cron list` and `openclaw cron runs`. See [Automation](/guides/automation).
 
 ---
 
 ## Lobster Workflow for Video Pipelines
 
-For complex multi-step video production, use [Lobster](/guides/lobster-workflows):
+For the deterministic half of a pipeline, a [Lobster](/guides/lobster-workflows) workflow runs each step in order and stops at an approval gate before anything is published. Lobster workflow files use `name`, `args`, and `steps` with `run` (or `command`), `stdin`, `approval` and `when`/`condition`:
 
-```yaml title="video-pipeline.yml"
-name: video-production-pipeline
-description: End-to-end AI video production
-
+```yaml title="render-short.lobster"
+name: render-short
+args:
+  props:
+    default: public/props.json
 steps:
-  - id: research
-    run: |
-      openclaw chat "Research trending topics in AI this week. 
-      Return top 3 as JSON: [{ topic, angle, audience }]"
-
-  - id: scripts
-    for_each: "research.output[*]"
-    run: |
-      openclaw chat "Write a 60-second TikTok script about: {{item.topic}}
-      Angle: {{item.angle}}
-      Target: {{item.audience}}
-      Format: JSON with scenes array"
-
-  - id: generate_assets
-    for_each: "scripts.output[*]"
-    parallel: true
-    run: |
-      openclaw chat "For this script, generate all assets:
-      1. Scene images (DALL-E or generate_image)
-      2. Voiceover (ElevenLabs or generate_speech)  
-      3. Background music (generate_music)
-      4. Subtitles (generate_subtitles)
-      Save all to public/ directory"
-
   - id: render
-    for_each: "generate_assets.output[*]"
-    run: npx remotion render TikTokVideo "out/video-{{index}}.mp4" --props="{{item.propsPath}}"
+    run: npx remotion render TikTokVideo out/short.mp4 --props=${props}
 
-  - id: thumbnails
-    for_each: "render.output[*]"
-    parallel: true
-    run: npx remotion still TikTokVideo "out/thumb-{{index}}.png" --frame=15
+  - id: thumbnail
+    run: npx remotion still TikTokVideo out/thumb.png --frame=15 --props=${props}
+
+  - id: review
+    approval: Publish out/short.mp4 with out/thumb.png?
 
   - id: publish
-    for_each: "render.output[*]"
-    run: |
-      openclaw chat "Post video {{item.path}} to TikTok and YouTube Shorts
-      with title and hashtags from the script"
-    approval: required
+    run: ./scripts/publish.sh out/short.mp4 out/thumb.png
+    when: $review.approved
 ```
+
+Run it from the Remotion project with the standalone CLI (`lobster run --file render-short.lobster`), or install the OpenClaw plugin (`openclaw plugins install @openclaw/lobster`, then allow the `lobster` tool) and ask the agent to run it. The approval step halts the run and returns a resume token, so nothing is posted until you approve.
+
+OpenClaw has no built-in TikTok or YouTube publishing tool. `scripts/publish.sh` stands for whatever uploader you trust: a platform CLI, an MCP server or a skill. Keep the approval step in front of it. Reference: [Lobster](https://docs.openclaw.ai/tools/lobster) and the [Lobster README](https://github.com/openclaw/lobster).
 
 ---
 
@@ -669,42 +615,30 @@ steps:
 | Tool | Type | Best For | AI Integration |
 |------|------|----------|----------------|
 | **Remotion** | React framework | Custom compositions, full control | Agent Skills, MCP, system prompts |
-| **Revideo/Midrender** | Motion Canvas fork | Visual editor + code | MCP support |
-| **JSON2Video** | Template API | Simple template-based videos | REST API, Make.com, n8n |
-| **Synthesia** | Avatar platform | Talking-head videos | Video Agents (interactive) |
-| **FFmpeg** | CLI tool | Post-processing, conversion | ffmpeg-mcp |
-| **Sora** | AI model | AI-generated footage | sora-2-mcp |
+| **`video_generate`** | Built-in OpenClaw tool | AI-generated footage from a prompt or image | Native tool, 18 provider backends |
+| **FFmpeg** | CLI tool | Post-processing, conversion | Agent exec, FFmpeg MCP |
+| **Hosted template APIs** | Template services | Simple template videos without code | REST APIs, n8n/Make |
 
-Remotion is the best choice when you need **full programmatic control** and **React ecosystem compatibility**. Use JSON2Video for simpler template-based generation without code.
+Remotion is the best choice when you need **full programmatic control** and **React ecosystem compatibility**. Use `video_generate` for footage you cannot draw in code, and composite it in Remotion.
 
 ---
 
 ## Cost and Performance
 
-### Rendering costs
+Prices change too often to print here. What drives the cost:
 
-| Method | Cost | Render Time (60s video) |
-|--------|------|------------------------|
-| **Local (CLI)** | Free (your hardware) | 1-5 min depending on complexity |
-| **Remotion Lambda** | ~$0.01-0.05 per render | 10-30 seconds |
-| **Cloud Run** | ~$0.02-0.10 per render | 15-45 seconds |
-
-### API costs per video
-
-| Service | Usage | Cost |
-|---------|-------|------|
-| **GPT-4.1** (script) | ~2K tokens | ~$0.02 |
-| **DALL-E 3** (5 scenes) | 5 images | ~$0.20 |
-| **ElevenLabs** (60s voiceover) | ~150 words | ~$0.03 |
-| **Total per video** | | **~$0.25** |
+- **Local rendering** with the Remotion CLI costs only your hardware time; a 60-second 1080x1920 video takes minutes on a laptop, depending on complexity.
+- **Remotion Lambda** and other cloud renderers bill per render; see Remotion's own cost estimator in its Lambda docs.
+- **AI assets** (script tokens, images, voiceover, `video_generate` clips) are billed by each provider. Generated video clips are by far the most expensive part.
+- **Remotion licensing**: Remotion is free for individuals, non-profits and companies with up to 3 employees; larger companies need a company license. See [remotion.dev/license](https://www.remotion.dev/license).
 
 ### Optimization tips
 
 1. **Cache AI-generated assets** — don't regenerate images/audio for unchanged scenes
 2. **Use `concurrency`** — `renderMedia({ concurrency: "75%" })` uses more CPU threads
 3. **Render at target resolution** — don't render 4K if publishing to TikTok (1080x1920)
-4. **Use Haiku/local models** for script generation when quality isn't critical
-5. **Batch renders** — render overnight with heartbeat for cost-effective scheduling
+4. **Use a smaller model** (for example `anthropic/claude-haiku-5-5` or a local model) for script drafts when quality isn't critical
+5. **Batch renders** — schedule renders overnight with an automation job
 6. **Lambda for parallelism** — render multiple videos simultaneously in the cloud
 
 ---
@@ -727,10 +661,10 @@ Remotion is the best choice when you need **full programmatic control** and **Re
 
 - [Remotion Docs](https://remotion.dev/docs/) — Official documentation
 - [Remotion AI Docs](https://remotion.dev/docs/ai/) — AI integration guide
-- [Remotion Templates](https://remotion.dev/templates/) — 22+ free templates
-- [Remotion Agent Skills](https://github.com/remotion-dev/skills) — 3.6k star skill set
-- [ClawVid](https://github.com/neur0map/clawvid) — Short-form video generation
-- [TikTok Engine](https://github.com/callwallagent/tiktok-engine) — TikTok/Reels generator
+- [Remotion Templates](https://remotion.dev/templates/) — about 20 starter templates
+- [Remotion Agent Skills](https://github.com/remotion-dev/skills) — 12 skills, about 5,300 stars
+- [ClawVid](https://github.com/neur0map/clawvid) — Short-form pipeline (example code, inactive)
+- [OpenClaw video generation](https://docs.openclaw.ai/tools/video-generation) — the built-in `video_generate` tool
 - [remotion-media-mcp](https://github.com/stephengpope/remotion-media-mcp) — Media generation MCP
 - [OpenClaw + Composio + Remotion tutorial](https://medium.com/composiohq/i-built-a-faceless-ai-video-pipeline-using-openclaw-composio-remotion-clawvid-heres-05618dc79705) — Step-by-step pipeline guide
 
@@ -740,6 +674,6 @@ Remotion is the best choice when you need **full programmatic control** and **Re
 
 - [Lobster Workflows](/guides/lobster-workflows) — Orchestrate multi-step video pipelines
 - [MCP Servers](/guides/mcp-servers) — Connect video MCP servers
-- [Heartbeat](/guides/heartbeat) — Schedule automated video generation
+- [Voice & Multimodal](/guides/voice-multimodal) — Image, music and speech generation
 - [Cost Management](/guides/cost-management) — Optimize API spend
-- [Automation](/guides/automation) — Cron-based video scheduling
+- [Automation](/guides/automation) — Schedule automated video generation

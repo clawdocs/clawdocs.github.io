@@ -1,233 +1,213 @@
 ---
 last_update:
-  date: 2026-07-08
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Channels & Integrations
-description: Connect OpenClaw to WhatsApp, Telegram, Discord, Slack, and 20+ other platforms — setup, configuration, security, and troubleshooting
-keywords: [openclaw, openclaw channels, whatsapp, telegram, discord, slack, messaging integration]
+description: Connect OpenClaw to Telegram, WhatsApp, Discord, Slack and 30 other chat platforms — which channels are bundled, how to install the rest, DM pairing, group policy, and troubleshooting
+keywords: [openclaw, openclaw channels, whatsapp, telegram, discord, slack, pairing, dmPolicy, groupPolicy]
 ---
 
 # Channels & Integrations
 
-A **channel** is any messaging platform connected to your OpenClaw gateway. The same agent, same brain, same memory — accessible from WhatsApp on your phone, Discord on your desktop, or Slack during a meeting. Channels are just transport.
+A **channel** is a chat platform connected to your OpenClaw Gateway. The same agent, memory and tools are reachable from Telegram on your phone, Discord on your desktop or Slack at work. Channels are transport: they decide who may reach the agent and how replies are delivered, not what the agent can do.
 
-As of v2026.6, OpenClaw supports **26 channels** spanning messaging platforms, enterprise tools, and niche services. Since v2026.3.22, most channels are distributed as install-on-demand plugins via ClawHub rather than bundled in core.
+Checked against OpenClaw **v2026.10.4** on 2026-10-18. The official catalog lists 33 channels plus WebChat: [docs.openclaw.ai/channels](https://docs.openclaw.ai/channels). This page is the opinionated short version; each section links the upstream page with the full key reference.
 
 ---
 
 ## Supported Channels
 
-### Messaging Platforms
+Upstream sorts channels into four groups:
 
-| Channel | Library | Auth Method | Status | Notes |
-|---------|---------|-------------|--------|-------|
-| **WhatsApp** | Baileys | QR code scan | Bundled | Unofficial API; ban risk — see [WhatsApp](#whatsapp) |
-| **Telegram** | grammY | Bot token | Bundled | Fastest setup — see [Telegram](#telegram) |
-| **Discord** | discord.js | Bot token | Bundled | Thread binding, mention gating — see [Discord](#discord) |
-| **Slack** | Bolt | Bot + App token | Bundled | Socket Mode or HTTP — see [Slack](#slack) |
-| **Signal** | libsignal | Phone number link | Bundled | E2E encrypted, most private |
-| **iMessage** | Native | System integration | Bundled | macOS only |
-| **WebChat** | Built-in | Gateway URL | Bundled | `http://localhost:18789/chat` |
-| **IRC** | irc-framework | Server + nick | Bundled | Multiple networks supported |
-| **Matrix** | matrix-js-sdk | Access token | Plugin | Self-hostable, optional E2E |
-| **Microsoft Teams** | Bot Framework | Azure AD app | Plugin | Enterprise SSO |
-| **Google Chat** | googleapis | Service account | Plugin | Workspace integration |
-| **Feishu / Lark** | larksuite SDK | App credentials | Plugin | Chinese/intl enterprise |
-| **LINE** | LINE Messaging API | Channel token | Plugin | Popular in Japan/SE Asia |
-| **WeChat** | WeChat API | AppID + secret | Plugin | Chinese market |
-| **Nostr** | nostr-tools | Private key (nsec) | Plugin | Decentralized protocol |
-| **Twitch** | tmi.js | OAuth token | Plugin | Chat integration |
-| **Zalo** | Zalo OA API | OA token | Plugin | Vietnam market |
-| **QQ Bot** | QQ Bot API | App ID + secret | Plugin | China market |
-| **Mattermost** | Mattermost API | Bot token | Plugin | Self-hosted Slack alternative |
-| **Nextcloud Talk** | Nextcloud API | App password | Plugin | Self-hosted |
-| **Synology Chat** | Synology API | Bot token | Plugin | NAS integration |
-| **SMS** | Twilio | Account SID + token | Plugin | Outbound/inbound SMS |
-| **Voice Call** | Plivo / Twilio | Account credentials | Plugin | Phone call channel |
-| **Tlon / Urbit** | Urbit API | Ship credentials | Plugin | Experimental |
+- **Bundled plugin**: ships with the core install. Only **Telegram**, **A2A**, **Reef** and **X / Twitter**.
+- **Included in core**: **WebChat** (the Control UI chat tab and the native apps).
+- **Official plugin**: maintained in the OpenClaw repo, installed on demand as `@openclaw/<id>`. `openclaw onboard` and `openclaw channels add` offer the install the first time you pick one.
+- **External plugin**: maintained by someone else, under their own package name.
 
-### Service Integrations
+| Channel | Channel id | Package | How it connects |
+|---------|-----------|---------|-----------------|
+| **Telegram** | `telegram` | bundled | Bot token from BotFather (grammY, long polling or webhook) |
+| **WhatsApp** | `whatsapp` | `@openclaw/whatsapp` | WhatsApp Web via Baileys, QR login. Unofficial; see the [ban-risk warning](#whatsapp) |
+| **Discord** | `discord` | `@openclaw/discord` | Bot token (Developer Portal) |
+| **Slack** | `slack` | `@openclaw/slack` | Socket Mode, HTTP Request URLs, or relay mode |
+| **Signal** | `signal` | `@openclaw/signal` | `signal-cli` daemon or the bbernhard container; OpenClaw does not embed libsignal |
+| **iMessage** | `imessage` | `@openclaw/imessage` | The `imsg` CLI on a signed-in Mac (BlueBubbles support was removed) |
+| **WebChat** | — | core | Control UI at `http://127.0.0.1:18789/`, or the macOS/iOS app |
+| **Matrix** | `matrix` | `@openclaw/matrix` | Homeserver + access token, optional E2EE |
+| **Microsoft Teams** | `msteams` | `@openclaw/msteams` | Azure bot registration (Teams SDK) |
+| **Google Chat** | `googlechat` | `@openclaw/googlechat` | Workspace app |
+| **Feishu / Lark** | `feishu` | `@openclaw/feishu` | App credentials |
+| **LINE** | `line` | `@openclaw/line` | Messaging API channel token |
+| **IRC** | `irc` | `@openclaw/irc` | Server + nick |
+| **Mattermost** | `mattermost` | `@openclaw/mattermost` | Bot token |
+| **Nextcloud Talk** | `nextcloud-talk` | `@openclaw/nextcloud-talk` | App password |
+| **Nostr** | `nostr` | `@openclaw/nostr` | Private key; DMs only, NIP-04 encrypted |
+| **SMS** | `sms` | `@openclaw/sms` | Twilio SMS/MMS |
+| **Synology Chat** | `synology-chat` | `@openclaw/synology-chat` | Webhook |
+| **Tlon / Urbit** | `tlon` | `@openclaw/tlon` | Ship credentials |
+| **Twitch** | `twitch` | `@openclaw/twitch` | OAuth (twurple), with token refresh |
+| **Zalo** / **Zalo personal** | `zalo` / `zalouser` | `@openclaw/zalo` / `@openclaw/zalouser` | Bot token / QR login |
+| **X / Twitter** | `x` | bundled | OAuth2 app; mentions and allowlisted public replies, no DMs |
+| **A2A**, **Reef** | `a2a`, `reef` | bundled | Agent-to-agent protocols |
+| **Buzz**, **ClickClack**, **Raft** | `buzz`, `clickclack`, `raft` | `@openclaw/<id>` | See the upstream page for each |
+| **WeChat** | — | external: `@tencent-weixin/openclaw-weixin` | Tencent's plugin |
+| **QQ Bot** | `qqbot` | external: `@tencent-connect/openclaw-qqbot` | Tencent's plugin |
+| **WeCom**, **Yuanbao**, **Zalo ClawBot** | — | external | See the upstream page for each |
 
-| Integration | Capabilities | Connection |
-|-------------|-------------|------------|
-| **Gmail** | Read, send, search, label emails | OAuth or App Password |
-| **GitHub** | Issues, PRs, notifications, code review | Personal Access Token |
-| **Spotify** | Playback control, playlist management | OAuth |
-| **Obsidian** | Read/write notes, search vault | Local filesystem |
-| **Philips Hue** | Smart light control | Bridge API key |
-| **Google Calendar** | Event management, scheduling | OAuth |
-| **Outlook Calendar** | Event management, scheduling | Azure AD |
-| **Twitter/X** | Timeline, search, post | [TweetClaw](#twitterx-with-tweetclaw) plugin |
-| **Browser** | Full Chromium automation | Built-in (Playwright) |
-| **Home Assistant** | Smart home device control | Long-lived access token |
+**Voice Call** (`@openclaw/voice-call`, telephony via Plivo, Telnyx or Twilio) is a communication plugin, not a chat channel: [docs.openclaw.ai/plugins/voice-call](https://docs.openclaw.ai/plugins/voice-call).
+
+### Service integrations are skills, not channels
+
+Gmail, GitHub, Spotify, Obsidian and Philips Hue are reached through **skills** that ship with OpenClaw, not through channel plugins: `gog` (Gmail, Calendar, Drive, Contacts, Sheets, Docs), `himalaya` (IMAP/SMTP email), `github` and `gh-issues`, `spotify-player`, `obsidian`, `openhue`. Browse them in [the upstream `skills/` folder](https://github.com/openclaw/openclaw/tree/main/skills). Browser automation is the built-in [browser tool](https://docs.openclaw.ai/tools/browser). For push-style Gmail ingress, use `openclaw webhooks gmail setup` (see [API & Webhooks](/guides/api-webhooks)).
 
 ---
 
 ## Quick Setup
 
-```bash
-# Add a channel interactively
-openclaw channel add telegram
-openclaw channel add discord
-openclaw channel add whatsapp
+Start with Telegram: it is bundled and needs only a bot token.
 
-# Install a plugin channel first, then add
-openclaw plugins install @openclaw/channel-matrix
-openclaw channel add matrix
+```bash
+# Guided setup: pick a channel from a list
+openclaw channels add
+
+# Non-interactive Telegram setup
+openclaw channels add --channel telegram --token <bot-token>
+
+# Official plugin channels install on demand, or explicitly:
+openclaw plugins install @openclaw/matrix
+
+# See every channel id, configured or installable
+openclaw channels list --all
+
+# Check that the running Gateway picked it up
+openclaw channels status --probe
 ```
 
-Each channel walks you through authentication specific to that platform. For the fastest start, **Telegram** only needs a bot token (2 minutes). WhatsApp requires QR scanning from your phone. Discord and Slack need app/bot creation in their developer portals.
+With the default hot reload, a running Gateway applies new channel config without a restart. If the Gateway is not running, start it with `openclaw gateway start` (service) or `openclaw gateway run` (foreground).
+
+`openclaw plugins install <pkg>` resolves through ClawHub first; use `npm:@openclaw/<id>` to install straight from npm. Reference: [`openclaw channels`](https://docs.openclaw.ai/cli/channels), [plugins](https://docs.openclaw.ai/tools/plugin).
 
 ---
 
 ## WhatsApp
 
-WhatsApp uses the unofficial **Baileys** library (`@whiskeysockets/baileys`) — a reverse-engineered implementation of the WhatsApp Web protocol. This is not the WhatsApp Business API or Cloud API.
+WhatsApp uses **Baileys** (the `baileys` package), a reverse-engineered implementation of the WhatsApp Web protocol. It is not the WhatsApp Business API or Cloud API, and there is no Twilio WhatsApp channel.
 
 ### Setup
 
 ```bash
-openclaw channel add whatsapp
+openclaw plugins install @openclaw/whatsapp   # or let channels add/login offer it
+openclaw channels login --channel whatsapp
 ```
 
-1. A QR code appears in your terminal
-2. Open WhatsApp on your phone: **Settings > Linked Devices > Link a Device**
-3. Scan the QR code
-4. Session credentials are saved to `~/.openclaw/credentials/whatsapp/<accountId>/creds.json`
+1. A QR code appears in your terminal. Login is QR-only.
+2. On the phone: **Settings → Linked Devices → Link a Device**, then scan it.
+3. Credentials are saved under `~/.openclaw/credentials/whatsapp/<accountId>/`.
 
-The gateway owns the WhatsApp socket and handles automatic reconnection. A `.bak` backup of credentials is maintained and restored on corruption.
+On a headless host, make sure you can get the live QR to the phone quickly; screenshots and forwarded images often expire in transit. A dedicated number is recommended, but a personal number with self-chat mode is supported.
+
+The QR login links the *account*. It is separate from DM pairing, which approves the *people* who message that account.
 
 ### Configuration
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "whatsapp": {
-      "enabled": true,
-      "sendReadReceipts": false,
-      "mediaMaxMb": 50,
-      "dmPolicy": "pairing",
-      "allowFrom": [],
-      "group": {
-        "requireMention": true,
-        "senderPolicy": "allowlist",
-        "pendingHistoryCount": 50
-      }
-    }
-  }
+  channels: {
+    whatsapp: {
+      dmPolicy: "pairing",
+      allowFrom: ["+15551234567"],          // E.164 numbers
+      groupPolicy: "allowlist",
+      groupAllowFrom: ["+15551234567"],     // who may trigger the bot inside groups
+      groups: { "*": { requireMention: true } },
+      sendReadReceipts: false,
+    },
+  },
 }
 ```
 
-### Features
-
-- **Multi-account** — Configure separate accounts (default, personal, biz) with per-account settings
-- **Group chats** — Mention gating with regex matching, reply-to-bot detection, allowlist/sender policy
-- **Voice notes** — Automatic transcription (shipped v2026.2, PR #9973)
-- **Native mentions** — Outbound `@+<digits>` mention metadata (v2026.5, PR #73961)
-- **Media** — Images, video, documents, audio up to 50 MB
-- **Text chunking** — Long messages split at 4,000 character boundaries
-- **Read receipts** — Configurable per account
-
-### Multi-Account Setup
+### Multiple accounts
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "whatsapp": {
-      "accounts": {
-        "default": {
-          "sendReadReceipts": false,
-          "dmPolicy": "allowlist",
-          "allowFrom": ["+1234567890"]
-        },
-        "personal": {
-          "sendReadReceipts": true,
-          "dmPolicy": "open",
-          "mediaMaxMb": 25
-        }
-      }
-    }
-  }
+  channels: {
+    whatsapp: {
+      defaultAccount: "personal",
+      accounts: {
+        personal: { dmPolicy: "allowlist", allowFrom: ["+15551234567"], sendReadReceipts: false },
+        biz: { dmPolicy: "pairing", mediaMaxMb: 25 },
+      },
+    },
+  },
 }
 ```
 
-Migrate from single-account to multi-account: `openclaw doctor --fix`
-
-### Known Issues
+Log each account in with `openclaw channels login --channel whatsapp --account <id>`. With two or more accounts, set `defaultAccount` so routing is explicit; `openclaw doctor` warns otherwise.
 
 :::warning Ban risk
-WhatsApp uses an unofficial reverse-engineered API. Meta has banned users for automated usage. Community reports (GitHub issues #4376, #73016) document bans and session instability ("frequent Web connection closed status 408 storms"). Mitigate by:
-- Keeping message volume reasonable
-- Not sending bulk messages
-- Using `sendReadReceipts: false` to reduce API surface
-- Having a backup channel (Telegram) configured
+WhatsApp is reached through an unofficial, reverse-engineered API. Meta has banned numbers for automated use, and users have reported bans and unstable sessions (see [issue #4376](https://github.com/openclaw/openclaw/issues/4376)). Mitigate by:
+- using a dedicated number, not the one you cannot afford to lose
+- keeping message volume low and never sending bulk or unsolicited messages
+- leaving `sendReadReceipts: false`
+- keeping a second channel (Telegram) configured as a fallback
 :::
+
+Full reference: [docs.openclaw.ai/channels/whatsapp](https://docs.openclaw.ai/channels/whatsapp).
 
 ---
 
 ## Telegram
 
-Telegram is the **fastest channel to set up** — it only needs a bot token from BotFather.
-
 ### Setup
 
-1. Message [@BotFather](https://t.me/botfather) on Telegram
-2. Send `/newbot`, choose a name and username
-3. Copy the bot token
+1. Chat with [@BotFather](https://t.me/botfather) (check the handle is exactly `@BotFather`), send `/newbot`, and copy the token.
+2. Run `openclaw channels add --channel telegram --token <bot-token>`, or edit the config below.
+3. Send your bot any message, then approve yourself: `openclaw pairing list telegram` and `openclaw pairing approve telegram <CODE>`.
 
-```bash
-openclaw channel add telegram
-# ? Bot token: paste-your-token-here
-# ✓ Telegram connected
-```
+Telegram does not use `openclaw channels login`. The env var `TELEGRAM_BOT_TOKEN` works as a fallback for the default account only.
 
 ### Configuration
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "telegram": {
-      "enabled": true,
-      "botToken": "${TELEGRAM_BOT_TOKEN}",
-      "mode": "polling",
-      "dmPolicy": "pairing",
-      "group": {
-        "requireMention": true
-      },
-      "proxy": {
-        "url": "socks5://proxy:1080"
-      }
-    }
-  }
+  channels: {
+    telegram: {
+      enabled: true,
+      botToken: "${TELEGRAM_BOT_TOKEN}",
+      dmPolicy: "pairing",
+      allowFrom: ["123456789"],            // numeric Telegram user IDs, not usernames
+      groupPolicy: "allowlist",
+      groupAllowFrom: ["123456789"],
+      groups: { "*": { requireMention: true } },
+      historyLimit: 50,
+    },
+  },
 }
 ```
 
-### Features
+Group chat IDs (negative numbers, `-100…` for supergroups) go under `groups` as keys, not in `groupAllowFrom`. After a group is allowed, `/whoami@<bot_username>` in that group shows both IDs. `openclaw doctor --fix` migrates old username entries in `allowFrom` to numeric IDs, and moves the retired flat `channels.telegram.requireMention` to `groups["*"].requireMention`.
 
-- **Polling or webhook** — Long polling is the default; set `webhookUrl` and `webhookSecret` for webhook mode
-- **Self-hosted API** — Point to your own Telegram Bot API server via `apiRoot`
-- **Forum topics** — Bind topics to specific agent routing with per-topic configuration
-- **Streaming preview** — Responses stream via `sendMessage` + `editMessageText` for real-time output
-- **Bot menu commands** — Custom command menu via `commands` config
-- **Proxy support** — SOCKS5 and HTTP proxy for restricted networks
-- **Retry logic** — 3 attempts, 400-30000ms delay, 0.1 jitter factor
-- **Media conversion** — Markdown image syntax is converted to media replies on outbound path
-- **Reactions** — Configurable notification modes: off, own, all
+Telegram bots default to **Privacy Mode** and do not see ordinary group messages. Disable it with `/setprivacy` in BotFather, or make the bot a group admin, then remove and re-add the bot.
 
-### Webhook Mode
+### Webhook mode
 
-For production deployments behind a reverse proxy:
+Long polling is the default and needs no public URL. Webhook mode is enabled by setting a URL and secret; there is no `mode` key.
 
-```json5
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "telegram": {
-      "mode": "webhook",
-      "webhookUrl": "https://yourdomain.com/telegram/webhook",
-      "webhookSecret": "${TELEGRAM_WEBHOOK_SECRET}"
-    }
-  }
+  channels: {
+    telegram: {
+      botToken: "${TELEGRAM_BOT_TOKEN}",
+      webhookUrl: "https://bot.example.com/telegram-webhook",
+      webhookSecret: "${TELEGRAM_WEBHOOK_SECRET}",
+      proxy: "socks5://127.0.0.1:1080",     // optional, a plain string
+    },
+  },
 }
 ```
+
+The webhook route is served on the Gateway port (default path `/telegram-webhook`); point your HTTPS reverse proxy there. Telegram's secret header is the authentication for that route. Details: [Telegram transports](https://docs.openclaw.ai/channels/telegram/transports).
+
+Full reference: [docs.openclaw.ai/channels/telegram](https://docs.openclaw.ai/channels/telegram).
 
 ---
 
@@ -235,56 +215,39 @@ For production deployments behind a reverse proxy:
 
 ### Setup
 
-1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
-2. Click **New Application**, give it a name
-3. Go to **Bot** in the sidebar, click **Add Bot**
-4. Copy the bot token
-5. Under **Privileged Gateway Intents**, enable **Message Content Intent**
-6. Go to **OAuth2 > URL Generator**, select `bot` scope and `Send Messages` + `Read Message History` permissions
-7. Copy the generated URL and open it to invite the bot to your server
-
-```bash
-openclaw channel add discord
-# ? Bot token: paste-your-token-here
-# ? Default server ID (optional): 123456789
-# ? Default channel ID (optional): 987654321
-# ✓ Discord connected
-```
+1. In the [Discord Developer Portal](https://discord.com/developers/applications), create an application and add a bot.
+2. Copy the bot token. Under **Privileged Gateway Intents**, enable **Message Content Intent**.
+3. Under **OAuth2 → URL Generator**, select the `bot` scope with `Send Messages` and `Read Message History`, and open the URL to invite the bot.
+4. Install the plugin (`openclaw plugins install @openclaw/discord`, or let `openclaw channels add` do it) and set the token.
+5. DM the bot. It replies with a pairing code; approve it with `openclaw pairing approve discord <CODE>`.
 
 ### Configuration
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "discord": {
-      "enabled": true,
-      "botToken": "${DISCORD_BOT_TOKEN}",
-      "dmPolicy": "pairing",
-      "allowedGuildIds": [],
-      "allowedChannelIds": [],
-      "group": {
-        "requireMention": true,
-        "mentionPrefix": ["!bot", "/ask"]
+  channels: {
+    discord: {
+      enabled: true,
+      token: { source: "env", provider: "default", id: "DISCORD_BOT_TOKEN" },
+      dmPolicy: "pairing",
+      allowFrom: ["123456789012345678"],          // Discord user IDs
+      groupPolicy: "allowlist",
+      guilds: {
+        "111111111111111111": {                   // server (guild) ID
+          requireMention: true,
+          users: ["123456789012345678"],
+        },
       },
-      "thread": {
-        "enabled": true,
-        "historyScope": "thread"
-      },
-      "reactions": "allowlist",
-      "typingIndicator": true
-    }
-  }
+    },
+  },
 }
 ```
 
-### Features
+The token key is `token` (not `botToken`). Servers and channels are restricted with `guilds.<guildId>` (and its `channels` map) plus `groupPolicy`; there are no `allowedGuildIds` or `allowedChannelIds` keys. Use user IDs everywhere: Discord discriminators (`name#1234`) no longer exist. Turn on Developer Mode in Discord to copy IDs.
 
-- **Thread binding** — Reply in threads with per-thread history isolation and spawn/idle/maxAge controls
-- **Mention gating** — Respond only when @mentioned or with custom prefixes
-- **Guild/channel restrictions** — Allowlist specific servers and channels
-- **Typing indicator** — Show "typing..." while processing
-- **Reactions** — Configurable: off, own, allowlist, all
-- **Role-based access** — Restrict bot interaction to specific Discord roles
+What the agent may do on Discord (reactions, pins, threads, moderation, role changes) is gated by `channels.discord.actions.*`. Leave moderation and role actions off unless you need them.
+
+Full reference: [docs.openclaw.ai/channels/discord](https://docs.openclaw.ai/channels/discord), including [voice channels](https://docs.openclaw.ai/channels/discord/voice-channels).
 
 ---
 
@@ -292,468 +255,339 @@ openclaw channel add discord
 
 ### Setup
 
-1. Go to [api.slack.com/apps](https://api.slack.com/apps) and create a new app
-2. Under **OAuth & Permissions**, add bot scopes: `chat:write`, `channels:history`, `groups:history`, `im:history`, `users:read`
-3. Install to your workspace
-4. Copy the **Bot Token** (`xoxb-...`) and **App Token** (`xapp-...`) for Socket Mode
-
-```bash
-openclaw channel add slack
-# ? Bot token: xoxb-...
-# ? App token: xapp-...
-# ✓ Slack connected via Socket Mode
-```
-
-:::info
-**v2026.6.11** added a Slack **relay mode**, alongside a batch of channel-reliability fixes (misplaced replies, stuck sends, reconnects) covering Google Chat DM routing, Discord/Telegram reply threading, Feishu voice replies, and iMessage turn consolidation.
-:::
+1. `openclaw plugins install @openclaw/slack`.
+2. At [api.slack.com/apps](https://api.slack.com/apps), choose **Create New App → From a manifest** and paste the manifest from the [upstream Slack setup page](https://docs.openclaw.ai/channels/slack/setup). It sets the scopes and events for you.
+3. Install the app to the workspace. Copy the **Bot Token** (`xoxb-…`) and create an **App-Level Token** (`xapp-…`) for Socket Mode.
 
 ### Configuration
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "slack": {
-      "enabled": true,
-      "botToken": "${SLACK_BOT_TOKEN}",
-      "appToken": "${SLACK_APP_TOKEN}",
-      "mode": "socket",
-      "nativeTransport": true,
-      "dmPolicy": "pairing",
-      "allowedChannels": ["ask-bot", "dev-ops"],
-      "thread": {
-        "enabled": true,
-        "historyScope": "thread"
-      }
-    }
-  }
+  channels: {
+    slack: {
+      enabled: true,
+      mode: "socket",
+      appToken: { source: "env", provider: "default", id: "SLACK_APP_TOKEN" },
+      botToken: { source: "env", provider: "default", id: "SLACK_BOT_TOKEN" },
+      dmPolicy: "pairing",
+      groupPolicy: "allowlist",
+      channels: {
+        C12345678: { enabled: true, requireMention: true },   // channel ID, or "#name"
+      },
+    },
+  },
 }
 ```
 
-### Connection Modes
+| Mode | Needs | Use when |
+|------|-------|----------|
+| `socket` (default) | `botToken` + `appToken` | Most setups; no public URL |
+| `http` | `botToken` + `signingSecret` (+ `webhookPath`) | You already have HTTPS ingress |
+| `relay` | a trusted router | Managed deployments where a router owns Slack ingress |
 
-| Mode | Requires | Best For |
-|------|----------|----------|
-| **Socket Mode** | botToken + appToken | Most setups — no public URL needed |
-| **HTTP** | botToken + signingSecret | Production behind reverse proxy |
-
-### Features
-
-- **Native streaming** — Enable with `nativeTransport: true` for real-time response streaming
-- **Per-thread history** — Thread conversations are isolated with `historyScope: "thread"`
-- **Channel restrictions** — Only respond in listed channels
-- **Thread replies** — Force responses into threads to reduce noise
+Channel messages are mention-gated by default. Slack multi-person DMs are treated as group chats, so group policy applies to them. Full reference: [docs.openclaw.ai/channels/slack](https://docs.openclaw.ai/channels/slack).
 
 ---
 
-## Signal
+## Signal, iMessage, Matrix and Others
 
-The most private channel — full end-to-end encryption with minimal metadata exposure.
+- **Signal**: `openclaw plugins install @openclaw/signal`. You run `signal-cli` (native daemon or the [bbernhard/signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) container) and OpenClaw talks to it over HTTP. Use a separate bot number: on your personal account the bot ignores your own messages. [Upstream page](https://docs.openclaw.ai/channels/signal).
+- **iMessage**: `openclaw plugins install @openclaw/imessage`. The Gateway spawns `imsg rpc` on a signed-in Mac (JSON-RPC over stdio). Replies, tapbacks and group actions need the `imsg` private API mode. If the Gateway runs elsewhere, point `channels.imessage.cliPath` at an SSH wrapper. [Upstream page](https://docs.openclaw.ai/channels/imessage).
+- **Matrix**: `openclaw plugins install @openclaw/matrix`, then `openclaw channels add --channel matrix`. [Upstream page](https://docs.openclaw.ai/channels/matrix).
+- **Microsoft Teams**: `openclaw plugins install @openclaw/msteams`; the channel id is `msteams`. [Upstream page](https://docs.openclaw.ai/channels/msteams).
+- **Feishu / Lark**: `openclaw plugins install @openclaw/feishu`. [Upstream page](https://docs.openclaw.ai/channels/feishu).
+
+The pattern for any official plugin channel is the same:
 
 ```bash
-openclaw channel add signal
+openclaw plugins install @openclaw/<id>
+openclaw channels add --channel <id>
+openclaw channels status --probe
 ```
-
-Link via phone number, similar to Signal Desktop. Follow the on-screen prompts to pair your device. Signal's privacy guarantees mean OpenClaw cannot see metadata about other participants beyond the message content.
 
 ---
 
-## iMessage
+## Twitter/X with TweetClaw {#twitterx-with-tweetclaw}
 
-macOS only — uses native system integration.
+OpenClaw now bundles an **X / Twitter channel** (`x`): it turns mentions of your bot account into conversations and posts public replies, only for allowlisted authors by default. It does not do DMs, likes or original posts. See [docs.openclaw.ai/channels/x](https://docs.openclaw.ai/channels/x).
 
-```bash
-openclaw channel add imessage
-```
-
-Requires macOS with Messages.app configured. Works with both iMessage (Apple devices) and SMS (non-Apple) conversations routed through your Mac.
-
----
-
-## Matrix
-
-Self-hostable, optionally E2E encrypted. Install the plugin first:
-
-```bash
-openclaw plugins install @openclaw/channel-matrix
-openclaw channel add matrix
-# ? Homeserver URL: https://matrix.org
-# ? Access token: paste-your-token
-```
-
-Matrix is the second-most downloaded channel plugin (13.3k downloads) after WhatsApp (43.1k).
-
----
-
-## Other Channels
-
-### Microsoft Teams
-
-```bash
-openclaw plugins install @openclaw/channel-teams
-openclaw channel add teams
-```
-
-Requires Azure AD app registration with Bot Framework credentials. Supports enterprise SSO.
-
-### Feishu / Lark
-
-```bash
-openclaw plugins install @openclaw/channel-feishu
-openclaw channel add feishu
-```
-
-Popular in Chinese enterprise environments. The [larksuite/openclaw-lark](https://github.com/larksuite/openclaw-lark) community integration is also available.
-
-### Additional Plugin Channels
-
-Install any plugin channel with:
-
-```bash
-openclaw plugins install @openclaw/channel-<name>
-openclaw channel add <name>
-```
-
-Available: `line`, `wechat`, `nostr`, `twitch`, `zalo`, `qqbot`, `mattermost`, `nextcloud-talk`, `synology-chat`, `sms`, `voice-call`, `tlon`.
-
----
-
-## Twitter/X with TweetClaw
-
-The base Twitter/X integration is limited. For full automation, use the [TweetClaw](https://github.com/Xquik-dev/tweetclaw) plugin:
+For broader automation (search, follower export, monitors, giveaways), [TweetClaw](https://github.com/Xquik-dev/tweetclaw) is a **third-party** plugin backed by Xquik's paid API:
 
 ```bash
 openclaw plugins install @xquik/tweetclaw
 ```
 
-TweetClaw adds: tweet search, reply search, post tweets, post replies, follower export, user lookup, media upload/download, direct messages, tweet monitors, webhooks, and giveaway draws.
-
-- **Package**: [@xquik/tweetclaw](https://www.npmjs.com/package/@xquik/tweetclaw)
-- **ClawHub**: [clawhub.ai/plugins/@xquik/tweetclaw](https://clawhub.ai/plugins/@xquik/tweetclaw)
+Read its pricing and data policy before installing; it is not maintained by OpenClaw.
 
 ---
 
 ## DM Access Control
 
-Every channel enforces access control for direct messages. Four policies are available:
+Every DM-capable channel has a `dmPolicy`:
 
-| Policy | Behavior | Use Case |
+| Policy | Behavior | Use case |
 |--------|----------|----------|
-| **pairing** (default) | Users must enter an 8-character code to pair | Personal use — secure by default |
-| **allowlist** | Only pre-approved contacts can DM | Team/family use |
-| **open** | Anyone can DM (requires explicit `"*"` wildcard) | Public bots |
-| **disabled** | DMs are turned off entirely | Group-only bots |
+| `pairing` (default) | Unknown senders get a pairing code; their message is not processed until you approve | Personal use |
+| `allowlist` | Only senders in `allowFrom` get through; no code is sent | Family or team |
+| `open` | Anyone can DM; requires `"*"` in `allowFrom` as an explicit opt-in | Public bots |
+| `disabled` | Inbound DMs ignored | Group-only bots |
 
-### Pairing Flow
+When no policy is set, DMs default to `pairing` and groups to `allowlist`. A channel account with no config does not silently open up.
 
-When `dmPolicy` is `"pairing"`:
+### Pairing flow
 
-1. A new contact sends a message
-2. OpenClaw responds: "Send the pairing code to chat with me"
-3. The user gets the code from the gateway operator
-4. Code is 8 uppercase characters (excluding ambiguous chars: 0, O, 1, I)
-5. Codes expire after **1 hour**, max **3 pending** codes per channel
+The **sender** gets the code from the bot; the **operator** approves it.
+
+1. Someone you do not know yet DMs the bot.
+2. The bot replies once with an 8-character code (uppercase, no `0`, `O`, `1` or `I`). Their message is held, not processed.
+3. You approve it from the CLI, or in the Control UI under **Settings → Channels → DM access requests**.
 
 ```bash
-# Generate a pairing code
-openclaw pairing create whatsapp
-
-# List pending codes
-openclaw pairing list
-
-# Approve or reject
-openclaw pairing approve whatsapp abc12345
-openclaw pairing reject whatsapp abc12345
+openclaw pairing list telegram
+openclaw pairing approve telegram <CODE>
+openclaw pairing approve telegram <CODE> --notify     # tell the sender
+openclaw pairing approve whatsapp <CODE> --account biz
 ```
 
-### Allowlist
+Codes expire after 1 hour. Pending requests are capped at 3 per channel account; extra requests are ignored until one expires or is approved. There is no `pairing create` or `pairing reject`: dismiss a request in the Control UI, or let it expire.
+
+Approval grants DM access only, never group access. The first CLI approval on a fresh install also sets `commands.ownerAllowFrom` (the owner allowed to run privileged commands and answer exec approvals) when no owner exists yet. Later approvals do not add owners.
+
+### Allowlists
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "whatsapp": {
-      "dmPolicy": "allowlist",
-      "allowFrom": ["+1234567890", "+0987654321"]
-    },
-    "telegram": {
-      "dmPolicy": "allowlist",
-      "allowFrom": ["alice_username", "bob_username"]
-    },
-    "discord": {
-      "dmPolicy": "allowlist",
-      "allowFrom": ["alice#1234", "bob#5678"]
-    }
-  }
+  channels: {
+    whatsapp: { dmPolicy: "allowlist", allowFrom: ["+15551234567", "+15557654321"] },
+    telegram: { dmPolicy: "allowlist", allowFrom: ["123456789"] },
+    discord: { dmPolicy: "allowlist", allowFrom: ["123456789012345678"] },
+  },
 }
 ```
 
-WhatsApp uses **E.164-normalized** phone numbers. Allowlists are stored at `~/.openclaw/credentials/<channel>-allowFrom.json`.
+WhatsApp takes E.164 numbers, Telegram numeric user IDs, Discord user IDs. Approved pairings are stored in SQLite at `~/.openclaw/state/openclaw.sqlite` (tables `channel_pairing_requests` and `channel_pairing_allow_entries`), merged with the config allowlist. Older installs kept `~/.openclaw/credentials/<channel>-allowFrom.json`; `openclaw doctor --fix` imports those. Treat the database as sensitive.
 
-:::caution
-If no channel config block exists, the default is `allowlist` — which blocks all DMs with a startup warning. Always configure access control explicitly.
-:::
+To reuse one trusted sender list across channels, define top-level `accessGroups` and reference them as `accessGroup:<name>`: [Access groups](https://docs.openclaw.ai/channels/access-groups).
+
+If more than one person can DM the bot, also set `session: { dmScope: "per-channel-peer" }` so each sender gets an isolated session instead of sharing your main one. Reference: [Access control](https://docs.openclaw.ai/gateway/security/access-control).
 
 ---
 
 ## Group Chat Configuration
 
-Groups need guard rails to prevent the bot from replying to every message.
+Groups need guard rails, or the bot answers every message. Three settings do the work:
 
-### Mention Gating
+- `groupPolicy`: `allowlist` (default, fail-closed), `open` (any group the bot is in), or `disabled`.
+- **Which rooms**: `groups` (WhatsApp, Telegram, iMessage), `guilds` (Discord) or `channels` (Slack). When set, the map is also the room allowlist; use the `"*"` key for defaults that apply to all.
+- **Who inside a room**: `groupAllowFrom`, a sender allowlist checked before mention rules. Replying to the bot does not bypass it.
 
-The most important group setting — the bot only responds when directly mentioned:
-
-```json5
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "discord": {
-      "group": {
-        "requireMention": true,
-        "mentionPrefix": ["!bot", "/ask"]
-      }
+  messages: { groupChat: { mentionPatterns: ["@claw", "hey claw"] } },
+  channels: {
+    telegram: {
+      groupPolicy: "allowlist",
+      groupAllowFrom: ["123456789"],
+      groups: {
+        "*": { requireMention: true },
+        "-1001234567890": { requireMention: false },   // a private family group
+      },
     },
-    "telegram": {
-      "group": {
-        "requireMention": true
-      }
-    }
-  }
+  },
 }
 ```
 
-### Channel Restrictions
+`requireMention` makes the bot respond only to @mentions, replies to its own messages, or your `mentionPatterns`. Set per-agent patterns under `agents.entries.<id>.groupChat.mentionPatterns`.
 
-Restrict the bot to specific channels within a server:
+For a private room of people you trust, `groupPolicy: "open"` with mention gating off is a normal setup. Keep sender allowlists and mention gating on any room strangers can join.
 
-```json5
+There are no per-channel rate-limit keys (`maxMessagesPerHour` and similar do not exist). Supported channels can also post a short join introduction when the bot is added to a group (`joinIntro`, on by default for Discord, LINE, Matrix, Slack and Telegram) and treat unmentioned chatter as quiet context ([ambient room events](https://docs.openclaw.ai/channels/ambient-room-events)). Reference: [Groups](https://docs.openclaw.ai/channels/groups).
+
+### Bot loop protection
+
+On channels that accept bot-authored messages (Discord and Slack do by default), a shared guard stops two bots from replying to each other forever. It is a sliding-window budget per bot pair, on by default:
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "discord": {
-      "allowedChannels": ["bot-chat", "ask-anything"],
-      "ignoreChannels": ["off-topic", "memes"]
+  channels: {
+    defaults: {
+      botLoopProtection: { maxEventsPerWindow: 20, windowSeconds: 60, cooldownSeconds: 60 },
     },
-    "slack": {
-      "allowedChannels": ["ask-bot", "dev-ops"]
-    }
-  }
+  },
 }
 ```
 
-### Group Access Policies
-
-| Policy | Behavior |
-|--------|----------|
-| **allowlist** (default) | Only allowed groups — fail-closed |
-| **open** | All groups the bot is in |
-| **disabled** | Ignore all group messages |
-
-### Rate Limiting
-
-```json5
-{
-  "channels": {
-    "whatsapp": {
-      "maxMessagesPerHour": 30,
-      "cooldownSeconds": 5
-    }
-  }
-}
-```
-
-### Bot Loop Protection
-
-A shared cross-channel mechanism prevents runaway bot-to-bot conversations using a sliding window budget (default: `maxEventsPerWindow: 20`).
+Those are the defaults; you only need the block to change them. Channels can override it per channel, account or room. Reference: [Bot loop protection](https://docs.openclaw.ai/channels/bot-loop-protection).
 
 ---
 
-## Channel Permissions
+## What the Agent May Do per Channel
 
-Control what OpenClaw can do per channel:
+There is no generic `permissions` block. Two layers control what happens on a channel:
 
-```json5
-{
-  "channels": {
-    "whatsapp": {
-      "permissions": {
-        "read": true,
-        "reply": true,
-        "initiate": false,
-        "send_media": false
-      }
-    }
-  }
-}
-```
+- **Who can trigger the agent**: `dmPolicy`, `groupPolicy` and the allowlists above.
+- **What the agent can do there**: channel `actions.*` gates (for example `channels.discord.actions.moderation`, `channels.telegram.actions.deleteMessage`) and tool policy, including per-chat `tools` overrides on channels that support them.
 
-| Permission | Description |
-|-----------|-------------|
-| `read` | Process incoming messages |
-| `reply` | Respond to messages |
-| `initiate` | Start new conversations unprompted |
-| `send_media` | Send images, files, audio, video |
+The agent can run shell commands, read files and browse no matter which channel the message came from. Anyone who can message it can steer it. Keep exec approvals on for chat-triggered work and read [Security Hardening](/security/hardening) before you open a channel to other people.
 
 ---
 
 ## Multi-Channel Routing
 
-The same agent can act across platforms — read from one, post to another:
+One agent can read from one channel and post to another ("summarise today's Slack threads and send them to my Telegram DM"). It can only read rooms it has been added to and post where the platform allows it.
 
+To route channels to **different agents**, use top-level `bindings`:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    ownership: "explicit",
+    entries: {
+      main: {},
+      work: { workspace: "~/.openclaw/workspace-work" },
+    },
+  },
+  bindings: [
+    { agentId: "work", match: { channel: "slack", accountId: "*" } },
+    { agentId: "main", match: { channel: "telegram", accountId: "default" } },
+  ],
+}
 ```
-You (Telegram): "Forward any Slack messages from my manager to me here"
-→ Bot monitors Slack, pushes matching messages to your Telegram DM
 
-You (Discord): "Summarize today's emails and post to #daily-updates on Slack"
-→ Bot reads Gmail, compiles summary, posts to Slack channel
-
-You (WhatsApp): "Check Discord for the last message from Alice in #project-alpha"
-→ Bot reads from Discord, reports back on WhatsApp
-```
-
-Cross-channel routing requires the bot to have appropriate permissions on each platform. It can only read channels it's been added to and post where it has write access.
+The most specific match wins. Reference: [Multi-agent routing](https://docs.openclaw.ai/concepts/multi-agent) and [Channel routing](https://docs.openclaw.ai/channels/channel-routing).
 
 ---
 
 ## Channel Security
 
-### Prompt Injection Sanitization
+### Prompt injection sanitization
 
-OpenClaw sanitizes incoming messages to defend against prompt injection:
+OpenClaw sanitizes incoming channel content to make prompt injection harder:
 
-1. **Strips LLM special tokens** — Removes chat-template delimiters from major model families (ChatML `<|im_start|>`, Llama `<|start_header_id|>`, Gemma `<start_of_turn>`, Mistral `[INST]`, Phi, GPT-OSS tokens)
-2. **Wraps in boundary markers** — External content is enclosed in `<<<EXTERNAL_UNTRUSTED_CONTENT ...>>>` with `Source: External` metadata
+1. **Strips LLM special tokens**: chat-template delimiters from major model families (ChatML `<|im_start|>`, Llama `<|start_header_id|>`, Gemma `<start_of_turn>`, Mistral `[INST]`, Phi and GPT-OSS tokens) are removed.
+2. **Wraps external content in boundary markers**: it is enclosed in `<<<EXTERNAL_UNTRUSTED_CONTENT ...>>>` with `Source: External` metadata.
 
 :::info
-This closes tokenizer-layer bypasses but does not replace other hardening measures. See [Security Hardening](/security/hardening) for the full defense stack.
+This closes tokenizer-level bypasses. It does not make untrusted messages safe to act on. See [Security Hardening](/security/hardening) for the rest of the defense stack.
 :::
 
-### Credential Storage
+### Credentials
 
-Channel credentials are stored per-channel with configurable providers:
+Channel tokens accept plain strings, `${ENV_VAR}` substitution, or a **SecretRef**:
 
-| Provider | Syntax | Example |
-|----------|--------|---------|
-| **Environment variable** | `${ENV_VAR}` | `"botToken": "${DISCORD_BOT_TOKEN}"` |
-| **File** | `{"type": "file", "path": "..."}` | Read token from a file |
-| **Exec** | `{"type": "exec", "command": "..."}` | Run a command to get token |
+| Source | Example |
+|--------|---------|
+| Environment variable | `"${DISCORD_BOT_TOKEN}"` or `{ source: "env", provider: "default", id: "DISCORD_BOT_TOKEN" }` |
+| File | `{ source: "file", provider: "<name>", id: "..." }` with the provider registered under `secrets.providers` |
+| Exec (password manager CLI) | `{ source: "exec", provider: "<name>", id: "..." }`, same |
+| Secret Store | `{ source: "store", provider: "default", id: "..." }` |
 
-SecretRef providers were expanded to channel credentials after v2026.2 (issue #28306). Telegram `tokenFile` rejects symlinks for security.
+Plaintext tokens in config or `.env` are readable by the agent itself. SecretRefs keep them out of reach. Telegram's `tokenFile` must be a regular file; symlinks are rejected. Reference: [Secrets](https://docs.openclaw.ai/gateway/secrets).
 
-### Encryption Comparison
+### Encryption comparison
 
-| Channel | Encryption | Metadata Exposure | Self-Hostable |
+| Channel | Encryption | Metadata exposure | Self-hostable |
 |---------|-----------|-------------------|---------------|
-| **Signal** | E2E | Minimal | No |
+| **Signal** | E2E | Minimal | No (you run `signal-cli`) |
 | **WhatsApp** | E2E | Meta collects metadata | No |
-| **Matrix** | Optional E2E | Depends on server | Yes |
-| **Telegram** | Server-side TLS | Moderate | Partial (Bot API) |
-| **Discord** | TLS only | High (server logs) | No |
-| **Slack** | TLS only | High (workspace logs) | No |
-| **WebChat** | TLS (local) | You control everything | Yes |
+| **Matrix** | Optional E2E | Depends on homeserver | Yes |
+| **Telegram** | TLS to Telegram servers (bots cannot use secret chats) | Moderate | Partial (Bot API server) |
+| **Discord** | TLS only | High | No |
+| **Slack** | TLS only | High (workspace retention) | No |
+| **WebChat** | Your Gateway, over loopback or your TLS | You control everything | Yes |
 | **IRC** | TLS optional | High | Yes |
-| **Nostr** | NIP-44 E2E | Relay sees metadata | Yes |
+| **Nostr** | NIP-04 encrypted DMs | Relays see metadata | Yes |
 
-### Security Checklist
+### Security checklist
 
-- [ ] Set `dmPolicy` to `pairing` or `allowlist` on every channel
-- [ ] Enable `requireMention: true` in all group chats
-- [ ] Configure `maxMessagesPerHour` rate limits
-- [ ] Store tokens in environment variables, not config files
-- [ ] Bind gateway to `127.0.0.1` (never `0.0.0.0`)
-- [ ] Enable gateway authentication token
-- [ ] Review [Security Hardening](/security/hardening) for full defense stack
+- [ ] Keep `dmPolicy` at `pairing` or `allowlist` on every channel
+- [ ] Keep `groupPolicy: "allowlist"` and `requireMention: true` in rooms strangers can join
+- [ ] Set `session.dmScope: "per-channel-peer"` if more than one person can DM the bot
+- [ ] Store channel tokens as SecretRefs, not plaintext
+- [ ] Keep the Gateway on `gateway.bind: "loopback"` with token auth
+- [ ] Run `openclaw security audit` after adding a channel
+- [ ] Review [Security Hardening](/security/hardening)
 
 ---
 
 ## Managing Channels
 
 ```bash
-# List active channels
-openclaw channel list
-
-# Check channel status
-openclaw channel status whatsapp
-
-# Disconnect a channel
-openclaw channel remove telegram
-
-# Reconnect after auth expires
-openclaw channel reconnect discord
-
-# Install a plugin channel
-openclaw plugins install @openclaw/channel-matrix
-
-# Check available channel plugins
-openclaw plugins search channel
+openclaw channels list                       # configured channels
+openclaw channels list --all                 # plus bundled and installable ones
+openclaw channels status --probe             # check credentials and connections
+openclaw channels logs --channel whatsapp    # recent channel log lines
+openclaw channels login --channel whatsapp   # re-link after a logout or expired session
+openclaw channels logout --channel whatsapp
+openclaw channels remove --channel telegram  # disable (add --delete to remove config)
+openclaw channels dead-letters list --channel telegram   # failed inbound events
+openclaw plugins search matrix               # find channel plugins on ClawHub
 ```
+
+There is no `reconnect` command. For a token channel, fix the token and let hot reload apply it, or run `openclaw gateway restart`. For a QR channel, run `channels login` again.
 
 ---
 
 ## Plugin Architecture
 
-Since v2026.3.22, channels follow a plugin architecture:
+Channels are plugins. Telegram, A2A, Reef and X ship in core; the official ones live in the OpenClaw repo under `extensions/<id>` and publish as `@openclaw/<id>`; external ones publish under their own scope. WhatsApp's runtime ships outside the core npm package so its dependencies stay with the plugin, and the Gateway loads it only when the channel is active.
 
-- **Bundled channels** (installed with core): WhatsApp, Telegram, Slack, Discord, Signal, iMessage, WebChat, IRC
-- **Plugin channels** (install on demand): Teams, Matrix, Feishu, LINE, WeChat, Nostr, Twitch, Zalo, QQBot, Mattermost, Nextcloud Talk, Synology Chat, SMS, Voice Call, Tlon
-
-Plugin channels are distributed via ClawHub and npm. Install with `openclaw plugins install @openclaw/channel-<name>`.
-
-The channel plugin SDK is TypeScript-based with a `ChannelPlugin` interface using declarative builder APIs (`createChatChannelPlugin`, `createChannelPluginBase`). Core owns the shared message tool, prompt wiring, session-key shape, thread bookkeeping, and dispatch; plugins handle channel-specific adapters. See [Custom Channels](/guides/custom-channels) for the full SDK reference.
+The channel plugin SDK lives at `openclaw/plugin-sdk/channel-core` (`defineChannelPluginEntry`, `createChatChannelPlugin`). Core owns the shared `message` tool, session keys and dispatch; a plugin supplies config, security, pairing and outbound delivery for its platform. See [Custom Channels](/guides/custom-channels).
 
 ---
 
 ## Troubleshooting
 
+Start with `openclaw channels status --probe` and `openclaw channels logs --channel <id>`. Upstream has a per-symptom guide: [Channel troubleshooting](https://docs.openclaw.ai/channels/troubleshooting).
+
 ### WhatsApp
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| QR code doesn't appear | Gateway not running | Check `openclaw status` |
-| Session disconnects frequently | Baileys connection storms | Update OpenClaw, check issue #73016 |
-| Account banned | Automated usage detected | Reduce message volume, use backup channel |
-| "Credentials corrupted" | Bad shutdown | Auto-restored from `.bak`; run `openclaw doctor --fix` |
-| Voice notes not transcribed | Feature regression | Update to v2026.4.26+ (fix for issue #52213) |
+| QR code doesn't appear | Plugin not installed, or Gateway down | `openclaw plugins install @openclaw/whatsapp`; `openclaw status` |
+| QR expires before you scan it | QR relayed through screenshots or chat | Scan from the terminal directly, or use a faster path to the phone |
+| Session keeps dropping | Network or WhatsApp Web instability | Update OpenClaw; check `openclaw channels logs --channel whatsapp`; re-run `channels login` |
+| Account banned | Automated usage detected | Lower volume, use a dedicated number, keep a fallback channel |
 
 ### Telegram
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| Bot doesn't respond | Missing Message Content intent | N/A for Telegram (no intents needed) |
-| Rate limited | Too many API calls | Enable polling mode (default), add proxy |
-| Webhook not receiving | Firewall/SSL issue | Verify public URL, valid HTTPS cert |
-| Forum topics not routing | Missing topic config | Configure per-topic bindings |
+| Bot ignores group messages | Privacy Mode, or group not in `groups` | `/setprivacy` → Disable and re-add the bot; add the group ID or `"*"` under `groups` |
+| Your DMs are ignored | `allowFrom` has a username | Use the numeric user ID; run `openclaw doctor --fix` |
+| Webhook not receiving | Ingress not pointing at the Gateway port and `webhookPath` | Check the reverse proxy and HTTPS certificate; `openclaw channels status --probe` |
 
 ### Discord
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| Bot doesn't respond in server | Missing Message Content Intent | Enable in Developer Portal > Bot > Privileged Intents |
-| Can't read messages | Missing permissions | Re-invite with `Read Message History` scope |
-| Responds to everything | Mention gating not set | Add `"requireMention": true` to group config |
+| Bot doesn't respond in a server | Message Content Intent off, or guild not allowed | Enable the intent; add the guild under `guilds` |
+| Can't read messages | Missing permissions | Re-invite with `Read Message History` |
+| Responds to everything | Mention gating off | Set `requireMention: true` on the guild |
 
 ### Slack
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| Socket Mode won't connect | Missing App Token | Generate under Basic Information > App-Level Tokens |
-| Can't post to channel | Bot not in channel | Invite bot to channel: `/invite @botname` |
-| Thread context lost | History scope wrong | Set `"historyScope": "thread"` |
+| Socket Mode won't connect | Missing App-Level Token | Create one under Basic Information → App-Level Tokens |
+| Can't post to a channel | Bot not in channel, or channel not allowed | `/invite @botname`; add the channel ID under `channels` |
 
 ### General
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| Channel shows "disconnected" | Token expired or network issue | `openclaw channel reconnect <name>` |
-| Messages silently dropped | DM policy blocking | Check `dmPolicy` setting, verify allowlist |
-| Bot responds to other bots | Loop protection disabled | Ensure `maxEventsPerWindow` is set |
-| High API costs from channels | Too many channels active | Disable unused channels, increase heartbeat interval |
+| New sender gets no reply | DM pairing pending | `openclaw pairing list <channel>`, then approve |
+| Messages silently dropped | `dmPolicy`/`groupPolicy` blocking | Check policies and allowlists; `openclaw channels logs` |
+| Gateway won't start after a config edit | Unknown key (the schema is strict) | `openclaw config validate`; `openclaw doctor --fix` for retired keys |
+| Two bots reply to each other | Loop protection disabled | Remove `botLoopProtection.enabled: false` |
 
 ---
 
 ## See Also
 
-- [Custom Channels](/guides/custom-channels) — Build new channel adapters with the TypeScript SDK
-- [WebClaw](/guides/webclaw) — Browser-based web client frontend
-- [API & Webhooks](/guides/api-webhooks) — WebSocket API, webhook integrations, custom HTTP channel
-- [Security Hardening](/security/hardening) — Channel security, rate limiting, prompt injection defense
-- [First 7 Days: Day 5](/guides/first-7-days/day-5-multi-channel) — Multi-channel setup tutorial
-- [Configuration Reference](/reference/configuration) — All channel settings
+- [Custom Channels](/guides/custom-channels): build a channel plugin with the SDK
+- [WebClaw](/guides/webclaw): third-party web front-ends, and the built-in Control UI
+- [API & Webhooks](/guides/api-webhooks): `/hooks` ingress and the Gateway protocol
+- [Security Hardening](/security/hardening): channel access, secrets, prompt injection
+- [First 7 Days: Day 5](/guides/first-7-days/day-5-multi-channel): multi-channel tutorial
+- [Configuration Reference](/reference/configuration): all settings

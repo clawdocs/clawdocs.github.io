@@ -1,960 +1,426 @@
 ---
 last_update:
-  date: 2026-06-11
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: API & Webhooks
-description: Integrate OpenClaw with external systems using the WebSocket API, webhook ingress/egress, and HTTP channels
-keywords: [openclaw, openclaw api, webhook, websocket, integration, rest api]
+description: Integrate OpenClaw with external systems — /hooks/agent and /hooks/wake webhooks, the Gateway WebSocket protocol v4, the OpenAI-compatible endpoint, auth, reverse proxies and remote access
+keywords: [openclaw, openclaw api, webhook, hooks, websocket, gateway protocol, integration]
 ---
 
 # API & Webhooks
 
-OpenClaw exposes a real-time WebSocket control plane and a webhook system for bidirectional integration with external services. This guide covers how to programmatically send messages, trigger skills, receive notifications, and build integrations with CI/CD pipelines, monitoring systems, chat platforms, and automation tools.
-
-:::tip Key concept
-OpenClaw uses **WebSocket** for real-time control and **HTTP webhooks** for event-driven integration. There is no traditional REST API — everything is either a WebSocket message or a webhook POST.
-:::
+Everything external talks to one place: the Gateway, on one port (default `18789`). This page covers the surfaces you can integrate with, how to authenticate, and how to expose them safely. Checked against OpenClaw **v2026.10.4** on 2026-10-18.
 
 ---
 
 ## Architecture
 
 ```
-External Systems                    OpenClaw Gateway (port 18789)
-─────────────────                   ─────────────────────────────
-                                    
-GitHub Actions ─── webhook POST ──► /webhook/deploy-alert ──► Agent processes
-Monitoring     ─── webhook POST ──► /webhook/error-alert  ──► Agent investigates
-Your App       ─── WebSocket ─────► ws://localhost:18789   ──► Full control
-                                    
-                                    Agent events ──► webhook POST ──► Slack
-                                    Agent errors ──► webhook POST ──► PagerDuty
-                                    Messages     ──► webhook POST ──► Your App
+External systems                       OpenClaw Gateway (127.0.0.1:18789)
+────────────────                       ──────────────────────────────────
+CI, Home Assistant, n8n ── POST ─────► /hooks/agent, /hooks/wake, /hooks/<name>
+Your app or dashboard  ─── WebSocket ► protocol v4 (connect.challenge → connect → req/res/event)
+OpenAI-compatible tools ── POST ─────► /v1/chat/completions   (opt-in)
+Scripts                ─── POST ─────► /tools/invoke
+Monitoring             ─── GET ──────► /healthz, /readyz
+Browser                ─── HTTPS ────► Control UI at /
 ```
 
-| Method | Direction | Use Case |
-|--------|-----------|----------|
-| WebSocket API | Bidirectional | Full agent control — send messages, invoke skills, get responses |
-| Webhook Ingress | External → Agent | Trigger actions from CI/CD, monitoring, forms, IoT |
-| Webhook Egress | Agent → External | Notify Slack, PagerDuty, your app when events occur |
-| Custom HTTP Channel | Both | Build a full HTTP API adapter for your platform |
+| Surface | Direction | Auth | Default |
+|---------|-----------|------|---------|
+| **Webhooks** (`/hooks/*`) | External → agent | Dedicated hook token | Off |
+| **WebSocket protocol** | Both | Gateway token + device pairing | On |
+| **OpenAI-compatible HTTP** (`/v1/*`) | Request/response | Gateway token = full operator | Off |
+| **Tools invoke** (`/tools/invoke`) | Request/response | Gateway token = full operator | On |
+| **Health checks** | Read | None | On |
+
+There is no outbound "webhook egress" system that posts agent events to arbitrary URLs. For outbound notifications, see [Sending results out](#sending-results-out).
 
 ---
 
-## WebSocket API
+## Webhook Ingress (External to Agent) {#webhook-ingress-external-to-agent}
 
-### Connecting
-
-The gateway listens on `ws://localhost:18789` by default:
-
-```javascript
-const ws = new WebSocket('ws://localhost:18789');
-
-ws.onopen = () => {
-  console.log('Connected to OpenClaw gateway');
-};
-
-ws.onmessage = (event) => {
-  const msg = JSON.parse(event.data);
-  console.log('Received:', msg.type, msg.payload);
-};
-```
-
-With authentication enabled:
-
-```javascript
-const ws = new WebSocket('ws://localhost:18789?token=your-auth-token');
-```
-
-### Message Format
-
-Every message follows this structure:
-
-```json
-{
-  "type": "message_type",
-  "id": "optional-correlation-id",
-  "payload": {},
-  "timestamp": "2026-06-08T12:00:00Z"
-}
-```
-
-The `id` field lets you correlate responses to requests. If omitted, the gateway generates one.
-
-### Sending Messages
-
-#### Chat Message
-
-Send a message to the agent as if a user typed it:
-
-```json
-{
-  "type": "chat",
-  "id": "msg-001",
-  "payload": {
-    "text": "What's the status of our deployment?",
-    "context": {
-      "user": "api-client",
-      "channel": "api"
-    },
-    "options": {
-      "model": "claude-haiku-4-5-20251001",
-      "no_memory": false
-    }
-  }
-}
-```
-
-**Response:**
-
-```json
-{
-  "type": "response",
-  "id": "msg-001",
-  "payload": {
-    "text": "All systems operational. Last deploy was 2 hours ago...",
-    "tool_calls": [],
-    "tokens_used": 847
-  }
-}
-```
-
-#### Invoke a Skill
-
-Trigger a specific skill directly, bypassing the brain's routing:
-
-```json
-{
-  "type": "skill_invoke",
-  "id": "skill-001",
-  "payload": {
-    "skill": "deploy-check",
-    "args": {
-      "service": "api-v2",
-      "environment": "production"
-    }
-  }
-}
-```
-
-#### Trigger Heartbeat
-
-Run the heartbeat cycle on demand:
-
-```json
-{
-  "type": "heartbeat_trigger",
-  "id": "hb-001",
-  "payload": {
-    "dry_run": false
-  }
-}
-```
-
-**Response:**
-
-```json
-{
-  "type": "heartbeat_status",
-  "id": "hb-001",
-  "payload": {
-    "status": "HEARTBEAT_OK",
-    "actions_taken": ["checked channels", "sent morning brief"],
-    "tokens_used": 2340
-  }
-}
-```
-
-#### Request Status
-
-Get current gateway state:
-
-```json
-{
-  "type": "status",
-  "id": "status-001"
-}
-```
-
-### Event Stream
-
-The gateway pushes events as they happen:
-
-```json
-{
-  "type": "tool_call",
-  "payload": {
-    "tool": "shell",
-    "args": "git status"
-  }
-}
-```
-
-```json
-{
-  "type": "tool_result",
-  "payload": {
-    "tool": "shell",
-    "output": "On branch main\nnothing to commit",
-    "exit_code": 0
-  }
-}
-```
-
-```json
-{
-  "type": "error",
-  "payload": {
-    "code": "AUTH_REQUIRED",
-    "message": "Authentication token required"
-  }
-}
-```
-
-### Node.js Client Example
-
-```javascript
-import WebSocket from 'ws';
-
-class OpenClawClient {
-  constructor(url = 'ws://localhost:18789', token = null) {
-    const wsUrl = token ? `${url}?token=${token}` : url;
-    this.ws = new WebSocket(wsUrl);
-    this.pending = new Map();
-    this.counter = 0;
-
-    this.ws.on('message', (data) => {
-      const msg = JSON.parse(data);
-      if (msg.id && this.pending.has(msg.id)) {
-        this.pending.get(msg.id)(msg);
-        this.pending.delete(msg.id);
-      }
-    });
-  }
-
-  send(type, payload) {
-    return new Promise((resolve) => {
-      const id = `req-${++this.counter}`;
-      this.pending.set(id, resolve);
-      this.ws.send(JSON.stringify({ type, id, payload }));
-    });
-  }
-
-  async chat(text, options = {}) {
-    return this.send('chat', { text, ...options });
-  }
-
-  async invokeSkill(skill, args = {}) {
-    return this.send('skill_invoke', { skill, args });
-  }
-
-  async triggerHeartbeat(dryRun = false) {
-    return this.send('heartbeat_trigger', { dry_run: dryRun });
-  }
-
-  async status() {
-    return this.send('status', {});
-  }
-}
-
-// Usage
-const claw = new OpenClawClient(
-  'ws://localhost:18789',
-  process.env.OPENCLAW_AUTH_TOKEN
-);
-
-claw.ws.on('open', async () => {
-  const status = await claw.status();
-  console.log('Gateway status:', status.payload);
-
-  const reply = await claw.chat('Summarize today\'s alerts');
-  console.log('Agent says:', reply.payload.text);
-});
-```
-
-### Python Client Example
-
-```python
-import asyncio
-import json
-import websockets
-
-class OpenClawClient:
-    def __init__(self, url='ws://localhost:18789', token=None):
-        self.url = f'{url}?token={token}' if token else url
-        self.ws = None
-        self.counter = 0
-        self.pending = {}
-
-    async def connect(self):
-        self.ws = await websockets.connect(self.url)
-        asyncio.create_task(self._listen())
-
-    async def _listen(self):
-        async for data in self.ws:
-            msg = json.loads(data)
-            msg_id = msg.get('id')
-            if msg_id and msg_id in self.pending:
-                self.pending[msg_id].set_result(msg)
-                del self.pending[msg_id]
-
-    async def send(self, msg_type, payload):
-        self.counter += 1
-        msg_id = f'req-{self.counter}'
-        future = asyncio.get_event_loop().create_future()
-        self.pending[msg_id] = future
-        await self.ws.send(json.dumps({
-            'type': msg_type,
-            'id': msg_id,
-            'payload': payload
-        }))
-        return await future
-
-    async def chat(self, text, **options):
-        return await self.send('chat', {'text': text, **options})
-
-    async def invoke_skill(self, skill, args=None):
-        return await self.send('skill_invoke', {'skill': skill, 'args': args or {}})
-
-    async def heartbeat(self, dry_run=False):
-        return await self.send('heartbeat_trigger', {'dry_run': dry_run})
-
-# Usage
-async def main():
-    import os
-    client = OpenClawClient(token=os.environ.get('OPENCLAW_AUTH_TOKEN'))
-    await client.connect()
-
-    reply = await client.chat('What happened overnight?')
-    print(reply['payload']['text'])
-
-asyncio.run(main())
-```
-
-### curl (Quick Test)
-
-Use `websocat` for quick WebSocket testing from the command line:
-
-```bash
-# Install websocat
-cargo install websocat
-# or: brew install websocat
-
-# Send a chat message
-echo '{"type":"chat","id":"test-1","payload":{"text":"Hello from the API"}}' | \
-  websocat ws://localhost:18789
-
-# Interactive session
-websocat ws://localhost:18789?token=your-token
-```
-
----
-
-## Webhook Ingress (External to Agent)
-
-Webhook ingress lets external systems trigger agent actions via HTTP POST.
+Gateway HTTP hooks let an external service submit an agent turn or wake an agent. They are **disabled by default**. They are separate from internal event hooks (`HOOK.md` handlers) and plugin hooks.
 
 ### Configuration
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "webhooks": {
-    "incoming": {
-      "enabled": true,
-      "secret": "your-webhook-secret",
-      "endpoints": [
-        {
-          "path": "/deploy-alert",
-          "message": "Deployment completed: {{body.service}} is now {{body.status}} (commit {{body.commit}})"
-        },
-        {
-          "path": "/error-alert",
-          "message": "Production error in {{body.service}}: {{body.error}}"
-        },
-        {
-          "path": "/github-event",
-          "message": "GitHub event: {{body.action}} on {{body.repository.full_name}}"
-        },
-        {
-          "path": "/form-submission",
-          "message": "New form submission from {{body.email}}: {{body.message}}"
-        }
-      ]
-    }
-  }
+  hooks: {
+    enabled: true,
+    token: "${OPENCLAW_HOOKS_TOKEN}",   // long random value, NOT the Gateway token
+    path: "/hooks",
+    allowedAgentIds: ["main"],
+    allowRequestSessionKey: false,
+  },
 }
 ```
 
-### Sending a Webhook
+- Use a token dedicated to hooks. Reusing the Gateway token logs a warning, and `openclaw security audit` flags it as critical. `hooks.token` takes a string or `${ENV}` reference, not a SecretRef object.
+- `allowedAgentIds` limits which agents callers may target. Omitting it allows all agents; `[]` denies all.
+- Keep `allowRequestSessionKey: false` unless callers really need to pick sessions.
+
+Apply it and watch the logs:
 
 ```bash
-# Trigger a deploy alert
-curl -X POST http://localhost:18789/webhook/deploy-alert \
-  -H "Content-Type: application/json" \
-  -H "X-Webhook-Secret: your-webhook-secret" \
-  -d '{"service": "api-v2", "status": "success", "commit": "abc123"}'
-
-# Trigger an error alert
-curl -X POST http://localhost:18789/webhook/error-alert \
-  -H "Content-Type: application/json" \
-  -H "X-Webhook-Secret: your-webhook-secret" \
-  -d '{"service": "payments", "error": "Connection timeout to database"}'
+openclaw config validate
+openclaw gateway restart
+openclaw logs --follow
 ```
 
-### Template Variables
+### Sending a webhook
 
-The `message` field supports `{{body}}` interpolation:
+```bash
+curl --include http://127.0.0.1:18789/hooks/agent \
+  -H "Authorization: Bearer $OPENCLAW_HOOKS_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: deploy-2026-10-18-001' \
+  --data '{"message":"Deploy of api finished with status success. Check for anything unusual.","name":"Deploy alert","agentId":"main","deliver":false}'
+```
 
-| Variable | Description |
-|----------|-------------|
-| `{{body}}` | Entire POST body as string |
-| `{{body.field}}` | Specific field from JSON body |
-| `{{body.nested.field}}` | Nested field access |
+A `200 {"ok":true,"runId":"..."}` means the run was **admitted**. It does not mean the model finished or a message was delivered. Add `"waitForCompletion": true` to keep the request open until the run settles; the response then includes a `completion` object with `status` and delivery facts (never the model's output).
+
+Useful `/hooks/agent` fields:
+
+| Field | Meaning |
+|-------|---------|
+| `message` | Required. The agent input. External content is safety-wrapped. |
+| `name` | Label in logs and completion events |
+| `agentId` | Target agent (must be in `allowedAgentIds`) |
+| `sessionMode` | `isolated` (default, fresh context) or `persistent` (needs an explicit `sessionKey` and prefix policy) |
+| `deliver` | Default `true`. `false` suppresses the success announcement. |
+| `channel` + `to` (+ `accountId`) | Deliver the result straight to a chat, for example `"channel":"telegram","to":"123456789"`. Both are required; `"last"` is not allowed here. |
+| `model`, `thinking`, `timeoutSeconds` | Per-run overrides |
+| `waitForCompletion` | Wait for the run to settle (direct `/hooks/agent` only) |
+
+Send an `Idempotency-Key` header on anything you might retry: a replay with the same key and payload returns the original result instead of running the agent again.
+
+### Wake vs agent
+
+`POST /hooks/wake` enqueues a short notification into the agent's **main session**:
+
+```bash
+curl --include http://127.0.0.1:18789/hooks/wake \
+  -H "Authorization: Bearer $OPENCLAW_HOOKS_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{"text":"Nightly backup completed","mode":"now","agentId":"main"}'
+```
+
+:::warning Wake text is trusted
+Wake text is a system event in your main session, not a safety-wrapped external turn. Only send short text you control. Route raw emails, issue bodies, form submissions and other untrusted content through `/hooks/agent`, ideally to an agent with restricted tools.
+:::
+
+### Mapped hooks and templates
+
+Custom paths (`POST /hooks/<name>`) resolve through `hooks.mappings`. The first match wins. Templates use `{{payload.field}}`, `{{headers.x-event-type}}`, `{{query.kind}}` and `{{now}}`:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  hooks: {
+    enabled: true,
+    token: "${OPENCLAW_HOOKS_TOKEN}",
+    allowedAgentIds: ["main"],
+    mappings: [
+      {
+        id: "deploy",
+        match: { path: "deploy" },        // POST /hooks/deploy
+        action: "agent",
+        agentId: "main",
+        name: "Deploy alert",
+        messageTemplate: "Deploy of {{payload.service}} finished: {{payload.status}}. Investigate if it failed.",
+        channel: "telegram",
+        to: "123456789",
+      },
+    ],
+  },
+}
+```
+
+For logic a template cannot express, a mapping can name a trusted JS/TS `transform` module under `~/.openclaw/hooks/transforms`. For Gmail, `openclaw webhooks gmail setup` wires Pub/Sub, `gogcli` and the `gmail` preset for you. Reference: [Hooks configuration](https://docs.openclaw.ai/gateway/config-hooks).
 
 ### Security
 
-Always set a webhook secret:
+- Every request needs `Authorization: Bearer <token>` or `x-openclaw-token: <token>`. A `?token=` query parameter is **rejected** (it would leak into proxy logs).
+- Wrong tokens return `401`. After 20 failures in 60 seconds from one client, the Gateway returns `429` with `Retry-After`. Loopback is not exempt.
+- Requests are capped at 256 KiB with a 30-second body-read timeout.
+- Keep hooks on loopback, a tailnet or behind a trusted reverse proxy, and use HTTPS for anything remote.
+- A hook token grants ingress, not identity. Treat payloads as untrusted data, and remember that safety-wrapping does not remove the agent's tools. Exec approvals and sandboxing still matter: see [Security Hardening](/security/hardening).
 
-```json5
-{
-  "webhooks": {
-    "incoming": {
-      "secret": "${WEBHOOK_SECRET}"
-    }
-  }
-}
-```
+Services that cannot set a custom header (GitHub repository webhooks, Stripe) need a small relay or a channel plugin that verifies their signatures; see [Custom Channels](/guides/custom-channels#receiving-messages-safely).
 
-The gateway validates the `X-Webhook-Secret` header against this value. Requests without a matching secret are rejected with 401.
-
-For stronger security, use HMAC-SHA256 validation in a custom channel adapter (see [Custom Channels](/guides/custom-channels) for the full HMAC implementation).
-
----
-
-## Webhook Egress (Agent to External)
-
-Webhook egress sends HTTP POST notifications when events occur inside the agent.
-
-### Configuration
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "webhooks": {
-    "outgoing": [
-      {
-        "event": "agent.task.completed",
-        "url": "https://hooks.slack.com/services/T00/B00/your-webhook-url",
-        "headers": {
-          "Content-Type": "application/json"
-        }
-      },
-      {
-        "event": "agent.error",
-        "url": "https://events.pagerduty.com/v2/enqueue",
-        "headers": {
-          "Content-Type": "application/json"
-        }
-      },
-      {
-        "event": "channel.message.received",
-        "url": "https://your-app.example.com/agent-messages",
-        "headers": {
-          "Authorization": "Bearer ${APP_API_KEY}"
-        },
-        "filter": {
-          "channel": "telegram"
-        }
-      },
-      {
-        "event": "security.alert",
-        "url": "https://your-siem.example.com/api/events"
-      },
-      {
-        "event": "channel.disconnected",
-        "url": "https://your-monitoring.example.com/alerts"
-      }
-    ]
-  }
-}
-```
-
-### Supported Events
-
-| Event | Trigger | Payload |
-|-------|---------|---------|
-| `agent.task.completed` | Skill or task finishes | Task name, result, duration |
-| `agent.error` | Unhandled error occurs | Error message, stack, context |
-| `channel.message.received` | Message arrives on a channel | Channel, sender, text |
-| `channel.disconnected` | Channel adapter loses connection | Channel name, error |
-| `security.alert` | Security event detected | Alert type, severity, details |
-
-### Filtering
-
-Add a `filter` object to only fire on matching events:
-
-```json5
-{
-  "event": "channel.message.received",
-  "url": "https://your-app.example.com/vip-messages",
-  "filter": {
-    "channel": "telegram",
-    "sender": "boss-user-id"
-  }
-}
-```
+Full reference: [Inbound webhooks](https://docs.openclaw.ai/automation/cron-jobs/webhooks).
 
 ---
 
 ## Integration Patterns
 
-### Pattern 1: GitHub Actions Trigger
+### GitHub Actions
 
-Notify your agent when a deployment completes:
+Store the hook token as a repository secret and call the Gateway over your tailnet or a protected tunnel:
 
-```yaml title=".github/workflows/deploy.yml"
+```yaml
+# .github/workflows/notify-openclaw.yml
+on:
+  workflow_run:
+    workflows: ["Deploy"]
+    types: [completed]
 jobs:
-  deploy:
+  notify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: ./deploy.sh
-
-      - name: Notify OpenClaw
-        if: always()
+      - name: Tell the agent
         run: |
-          curl -X POST https://your-agent.example.com/webhook/deploy-alert \
+          curl --fail -X POST "$OPENCLAW_URL/hooks/agent" \
+            -H "Authorization: Bearer $OPENCLAW_HOOKS_TOKEN" \
             -H "Content-Type: application/json" \
-            -H "X-Webhook-Secret: ${{ secrets.OPENCLAW_WEBHOOK_SECRET }}" \
-            -d "{\"service\": \"${{ github.repository }}\", \"status\": \"${{ job.status }}\", \"commit\": \"${{ github.sha }}\", \"actor\": \"${{ github.actor }}\"}"
+            -H "Idempotency-Key: gh-${{ github.event.workflow_run.id }}" \
+            --data "{\"message\":\"Deploy workflow ${{ github.event.workflow_run.conclusion }} for ${{ github.repository }}.\",\"name\":\"GitHub deploy\",\"agentId\":\"main\"}"
+        env:
+          OPENCLAW_URL: ${{ secrets.OPENCLAW_URL }}
+          OPENCLAW_HOOKS_TOKEN: ${{ secrets.OPENCLAW_HOOKS_TOKEN }}
 ```
 
-The agent receives a message like: *"Deployment completed: myorg/api is now success (commit abc1234)"* and can run post-deploy checks, notify the team, or roll back if the status is `failure`.
+### Home Assistant
 
-### Pattern 2: Slack Bot via Webhooks
-
-Forward agent messages to Slack:
-
-```json5 title="Egress to Slack"
-{
-  "webhooks": {
-    "outgoing": [
-      {
-        "event": "agent.task.completed",
-        "url": "https://hooks.slack.com/services/T00/B00/xxx",
-        "transform": {
-          "text": "OpenClaw completed: {{event.task_name}} — {{event.result}}"
-        }
-      }
-    ]
-  }
-}
-```
-
-Receive commands from Slack (using Slack's outgoing webhooks):
-
-```json5 title="Ingress from Slack"
-{
-  "webhooks": {
-    "incoming": {
-      "endpoints": [
-        {
-          "path": "/slack-command",
-          "message": "Slack user {{body.user_name}} says: {{body.text}}"
-        }
-      ]
-    }
-  }
-}
-```
-
-### Pattern 3: Home Assistant
-
-Trigger agent actions from smart home events:
-
-```yaml title="Home Assistant automation"
-automation:
-  - alias: "Notify agent on motion"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.front_door_motion
-        to: "on"
-    action:
-      - service: rest_command.openclaw_webhook
-        data:
-          service: "security"
-          event: "motion_detected"
-          location: "front_door"
-
+```yaml
+# configuration.yaml
 rest_command:
-  openclaw_webhook:
-    url: "http://192.168.1.100:18789/webhook/home-event"
+  openclaw_alert:
+    url: "https://openclaw.your-tailnet.ts.net/hooks/agent"
     method: POST
     headers:
-      Content-Type: "application/json"
-      X-Webhook-Secret: !secret openclaw_webhook_secret
-    payload: '{"service":"{{ service }}","event":"{{ event }}","location":"{{ location }}"}'
+      Authorization: !secret openclaw_hooks_bearer   # "Bearer <token>"
+      Content-Type: application/json
+    payload: '{"message": "Home Assistant: {{ message }}", "name": "Home Assistant", "agentId": "main", "deliver": true, "channel": "telegram", "to": "123456789"}'
 ```
 
-```json5 title="OpenClaw ingress config"
-{
-  "webhooks": {
-    "incoming": {
-      "endpoints": [
-        {
-          "path": "/home-event",
-          "message": "Home event: {{body.event}} at {{body.location}}"
-        }
-      ]
-    }
-  }
-}
-```
+Do not point Home Assistant at `http://<lan-ip>:18789`: that needs `gateway.bind: "lan"` and sends the token in plain HTTP across your network. Use Tailscale Serve or another HTTPS path.
 
-### Pattern 4: n8n / Make / Zapier
+### n8n, Make, Zapier
 
-Low-code automation platforms can trigger OpenClaw via webhook:
-
-```
-n8n Workflow:
-  Trigger (Schedule/Event) → HTTP Request Node → OpenClaw Webhook
-
-Config:
-  Method: POST
-  URL: https://your-agent.example.com/webhook/automation
-  Headers: X-Webhook-Secret = your-secret
-  Body: {"task": "generate-report", "params": {"period": "weekly"}}
-```
-
-And OpenClaw can trigger n8n workflows via egress webhooks:
-
-```json5
-{
-  "webhooks": {
-    "outgoing": [
-      {
-        "event": "agent.task.completed",
-        "url": "https://your-n8n.example.com/webhook/agent-complete"
-      }
-    ]
-  }
-}
-```
-
-### Pattern 5: Custom Dashboard
-
-Build a web dashboard that talks to your agent:
-
-```html title="dashboard.html"
-<script>
-const ws = new WebSocket('ws://localhost:18789?token=your-token');
-
-// Send a question
-function askAgent(question) {
-  ws.send(JSON.stringify({
-    type: 'chat',
-    id: `q-${Date.now()}`,
-    payload: { text: question }
-  }));
-}
-
-// Handle responses
-ws.onmessage = (event) => {
-  const msg = JSON.parse(event.data);
-  if (msg.type === 'response') {
-    document.getElementById('output').textContent = msg.payload.text;
-  }
-};
-
-// Request status on load
-ws.onopen = () => {
-  ws.send(JSON.stringify({ type: 'status', id: 'init' }));
-};
-</script>
-
-<button onclick="askAgent('System health report')">Health Check</button>
-<button onclick="askAgent('Token usage this week')">Token Report</button>
-<pre id="output"></pre>
-```
-
-### Pattern 6: Monitoring Integration
-
-Forward agent errors to PagerDuty:
-
-```json5
-{
-  "webhooks": {
-    "outgoing": [
-      {
-        "event": "agent.error",
-        "url": "https://events.pagerduty.com/v2/enqueue",
-        "transform": {
-          "routing_key": "${PAGERDUTY_ROUTING_KEY}",
-          "event_action": "trigger",
-          "payload": {
-            "summary": "OpenClaw error: {{event.message}}",
-            "severity": "error",
-            "source": "openclaw-agent"
-          }
-        }
-      }
-    ]
-  }
-}
-```
-
-Forward to Datadog:
-
-```json5
-{
-  "webhooks": {
-    "outgoing": [
-      {
-        "event": "agent.error",
-        "url": "https://http-intake.logs.datadoghq.com/api/v2/logs",
-        "headers": {
-          "DD-API-KEY": "${DATADOG_API_KEY}",
-          "Content-Type": "application/json"
-        }
-      }
-    ]
-  }
-}
-```
+Use an HTTP Request node: `POST` to `<gateway>/hooks/agent`, header `Authorization: Bearer <hook token>`, JSON body with `message`, `agentId` and optionally `channel` + `to`. Set `Idempotency-Key` from the trigger's event ID so retries do not run the agent twice.
 
 ---
 
-## Custom HTTP Channel
+## Sending Results Out {#sending-results-out}
 
-For full HTTP API control, build a custom channel adapter that exposes REST-like endpoints. This is more powerful than webhooks — you get structured request/response, authentication, and routing.
+OpenClaw has no generic outbound-webhook system (`webhooks.outgoing` does not exist, and the strict config schema rejects it). Use one of these:
 
-See [Custom Channels](/guides/custom-channels) for the complete tutorial. Here's the key pattern:
+- **Deliver to a chat**: `channel` + `to` on `/hooks/agent`, or the agent's `message` tool.
+- **Automation delivery**: scheduled jobs can deliver results to a channel or to a webhook URL, behind a strict SSRF guard (private and loopback targets are refused unless you allow them under `cron.webhookSsrfPolicy`). See [Automation](/guides/automation) and [delivery](https://docs.openclaw.ai/automation/cron-jobs/delivery).
+- **Plugin hooks**: a plugin can react to events such as `message_received` and call your API ([plugin hooks](https://docs.openclaw.ai/plugins/hooks)).
+- **Observability**: OpenTelemetry and Prometheus export ([Monitoring](/guides/monitoring)).
 
-```typescript title="channels/http-api/index.ts"
-import express from 'express';
-import crypto from 'crypto';
+---
 
-export default class HttpApiChannel {
-  name = 'http-api';
-  private app = express();
-  private server: any;
-  private gateway: any;
+## WebSocket API
 
-  async connect(config: any, context: any) {
-    this.gateway = context;
-    this.app.use(express.json());
+The Gateway's WebSocket protocol is what the CLI, Control UI and native apps use. It is a typed RPC protocol, currently **version 4**. Clients that only speak v3 (except node-role devices) are rejected.
 
-    // Verify HMAC signature
-    this.app.use((req, res, next) => {
-      const signature = req.headers['x-signature'] as string;
-      const expected = crypto
-        .createHmac('sha256', config.hmac_secret)
-        .update(JSON.stringify(req.body))
-        .digest('hex');
-      if (signature !== expected) return res.status(401).json({ error: 'Invalid signature' });
-      next();
-    });
+### Frames
 
-    // POST /message — send a message to the agent
-    this.app.post('/message', async (req, res) => {
-      const message = {
-        id: crypto.randomUUID(),
-        channel: this.name,
-        text: req.body.text,
-        sender: { id: req.body.user_id, name: req.body.user_name },
-        conversation: { id: req.body.conversation_id || 'default', type: 'direct' },
-        timestamp: Date.now()
-      };
+- Request: `{ "type": "req", "id", "method", "params" }`
+- Response: `{ "type": "res", "id", "ok", "payload" | "error" }`
+- Event: `{ "type": "event", "event", "payload", "seq"? }`
 
-      // Store callback for async reply
-      this.pendingReplies.set(message.id, res);
-      context.onMessage(message);
-    });
+### Handshake
 
-    // GET /health
-    this.app.get('/health', (req, res) => {
-      res.json({ ok: true, uptime: process.uptime() });
-    });
+1. The client opens the socket. The Gateway sends a `connect.challenge` event with a `nonce` and `ts`.
+2. The client's first frame **must** be a `connect` request:
 
-    const port = config.port || 18800;
-    this.server = this.app.listen(port);
-  }
-
-  async sendReply(message: any, reply: string) {
-    const res = this.pendingReplies.get(message.id);
-    if (res) {
-      res.json({ reply, message_id: message.id });
-      this.pendingReplies.delete(message.id);
-    }
-  }
-
-  private pendingReplies = new Map();
-
-  async disconnect() {
-    this.server?.close();
+{/* snippet:skip: Gateway protocol frame, not openclaw.json */}
+```json title="connect request (abridged)"
+{
+  "type": "req",
+  "id": "1",
+  "method": "connect",
+  "params": {
+    "minProtocol": 4,
+    "maxProtocol": 4,
+    "client": { "id": "my-dashboard", "version": "0.1.0", "platform": "linux", "mode": "operator" },
+    "role": "operator",
+    "scopes": ["operator.read", "operator.write"],
+    "auth": { "token": "<gateway token>" },
+    "device": { "id": "…", "publicKey": "…", "signature": "…", "signedAt": 1737264000000, "nonce": "…" }
   }
 }
 ```
 
-This gives you a synchronous HTTP API: POST a message, get the agent's reply in the response body.
+3. The Gateway replies with `hello-ok` (negotiated protocol, granted role and scopes, method and event lists, limits) and, after device pairing, a `deviceToken` to use on later connections.
 
----
+The token goes in `connect.params.auth.token`, **never** in the URL. A third-party UI client signs the challenge with its own Ed25519 device key and must be approved once on the Gateway host (`openclaw devices list`, then `openclaw devices approve <requestId>`). Request only the scopes you need: `operator.read` (history, sessions), `operator.write` (`chat.send`), `operator.approvals` (exec approvals). `operator.admin` is full control.
 
-## Exposing the Agent as an MCP Server
+### Use the reference client
 
-OpenClaw can also serve as an MCP server, letting other AI agents use your agent's skills as tools:
+Writing the handshake, device signing and reconnect logic yourself is error-prone. Use the published packages:
 
 ```bash
-# Start OpenClaw as an MCP server
-openclaw mcp serve
+npm install --save-exact @openclaw/gateway-client@2026.8.1 @openclaw/gateway-protocol@2026.8.1
 ```
 
-This exposes all installed skills as MCP tools over stdio or HTTP, making your agent composable with other MCP-compatible systems (Claude Desktop, other OpenClaw instances, custom agents).
+That is the release upstream's client guide names as verified; package versions follow OpenClaw releases and are separate from the wire version. Pin and test them against your Gateway version.
 
-```json5 title="Another agent's MCP config"
+```ts
+import { GatewayClient } from "@openclaw/gateway-client";
+import { PROTOCOL_VERSION } from "@openclaw/gateway-protocol/version";
+
+const connected = Promise.withResolvers<void>();
+const client = new GatewayClient({
+  url: "ws://127.0.0.1:18789",
+  token: process.env.OPENCLAW_GATEWAY_TOKEN,
+  minProtocol: PROTOCOL_VERSION,   // 4
+  maxProtocol: PROTOCOL_VERSION,
+  onHelloOk: () => connected.resolve(),
+  onConnectError: (error) => connected.reject(error),
+  onEvent: (event) => console.log(event.event, event.payload),
+});
+
+client.start();
+await connected.promise;
+console.log(await client.request("status", {}));
+client.stop();
+```
+
+This loopback example uses the client's default local backend identity. A UI that runs remotely or in a browser must supply device-identity callbacks and go through pairing; see [Building a Gateway client](https://docs.openclaw.ai/gateway/clients). Common methods are `chat.send` (`sessionKey`, `message`, `idempotencyKey`), `chat.history`, `sessions.list` and `status`; the full list is in the [protocol reference](https://docs.openclaw.ai/gateway/protocol).
+
+For a one-off call from the shell, `openclaw gateway call <method>` does the handshake for you, for example `openclaw gateway call health`.
+
+---
+
+## OpenAI-Compatible HTTP and Tools Invoke
+
+The Gateway can serve `POST /v1/chat/completions`, `GET /v1/models` and `POST /v1/embeddings` for tools that expect an OpenAI API. It is off by default:
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "mcp": {
-    "servers": {
-      "my-openclaw": {
-        "command": "ssh",
-        "args": ["user@server", "openclaw", "mcp", "serve"]
-      }
-    }
+  gateway: {
+    http: { endpoints: { chatCompletions: { enabled: true } } },
+  },
+}
+```
+
+The `model` field selects an OpenClaw **agent**, not a raw provider model. `POST /tools/invoke` runs a single tool under tool policy and is always on.
+
+:::danger Full operator access
+With token or password auth, a request to `/v1/*` or `/tools/invoke` carrying the Gateway token is treated as the owner, with every operator scope including `operator.admin`. If the agent may use exec or other sensitive tools, so may the caller. Keep these endpoints on loopback or a tailnet; never publish them.
+:::
+
+References: [OpenAI chat completions](https://docs.openclaw.ai/gateway/openai-http-api), [Tools invoke](https://docs.openclaw.ai/gateway/tools-invoke-http-api).
+
+---
+
+## Exposing Channels over MCP
+
+`openclaw mcp serve` runs a **stdio** MCP server that connects to your Gateway and exposes your routed channel conversations: list conversations, read transcripts, send messages over existing routes, poll events, and answer approvals. It does not expose your skills as MCP tools.
+
+```json title="MCP client config (for example Claude Desktop)"
+{
+  "mcpServers": {
+    "openclaw": { "command": "openclaw", "args": ["mcp", "serve"] }
   }
 }
 ```
+
+Reference: [`openclaw mcp serve`](https://docs.openclaw.ai/cli/mcp/serve). For connecting MCP servers *to* OpenClaw, see [MCP Servers](/guides/mcp-servers).
 
 ---
 
 ## Authentication & Security
 
-### Enable Authentication
+### Gateway auth
+
+Token auth has been the default since 2026.2.19; onboarding generates the token. A typical locked-down config:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "gateway": {
-    "host": "127.0.0.1",
-    "port": 18789,
-    "auth": {
-      "enabled": true,
-      "mode": "token",
-      "token": "${OPENCLAW_AUTH_TOKEN}"
-    }
-  }
+  gateway: {
+    bind: "loopback",
+    port: 18789,
+    auth: {
+      mode: "token",
+      token: "${OPENCLAW_GATEWAY_TOKEN}",
+    },
+  },
 }
 ```
 
-```bash title="Set the token"
-export OPENCLAW_AUTH_TOKEN=$(openssl rand -hex 32)
-```
+Allowed `auth.mode` values are `token`, `password`, `trusted-proxy` and `none`. There is no `gateway.host` or `gateway.auth.enabled`. Show the current token with `openclaw gateway auth-token --show`. The Gateway token is an operator credential: never put it in browser JavaScript, a public repo or a URL.
 
-### Reverse Proxy (Nginx)
+### Reverse proxy (Nginx)
 
-For external access, always put a reverse proxy in front:
+The WebSocket, Control UI, hooks and HTTP APIs all share one port, so proxy `/` with upgrade headers:
 
-```nginx title="/etc/nginx/sites-available/openclaw-api"
-upstream openclaw {
-    server 127.0.0.1:18789;
-}
-
+```nginx
 server {
     listen 443 ssl;
-    server_name agent.example.com;
+    server_name openclaw.example.com;
 
-    ssl_certificate /etc/letsencrypt/live/agent.example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/agent.example.com/privkey.pem;
-
-    # WebSocket upgrade
-    location /ws {
-        proxy_pass http://openclaw;
+    location / {
+        proxy_pass http://127.0.0.1:18789;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-For $remote_addr;   # overwrite, do not append
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_read_timeout 86400;
-    }
-
-    # Webhook endpoints
-    location /webhook/ {
-        proxy_pass http://openclaw;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $remote_addr;
-    }
-
-    # Block everything else
-    location / {
-        return 404;
+        proxy_read_timeout 3600s;
     }
 }
 ```
 
-### Trusted Proxies
+If only machines need access, expose just `location /hooks/` and keep the rest on the tailnet.
 
-When behind a reverse proxy, configure trusted proxies so the gateway validates the real client IP:
+### Trusted proxies
 
-```json5
+A same-host proxy must be listed, or the Gateway rejects proxied requests with `403 proxy_attribution_required`:
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "gateway": {
-    "bind": "loopback",
-    "trustedProxies": ["127.0.0.1"],
-    "auth": {
-      "mode": "token"
-    }
-  }
+  gateway: {
+    bind: "loopback",
+    trustedProxies: ["127.0.0.1"],
+  },
 }
 ```
 
-### Security Checklist
+Listing the proxy only lets the Gateway trust its forwarded client address. It does not switch on `trusted-proxy` auth, which is a separate mode for identity-aware proxies. Details: [Security Hardening, reverse proxies](/security/hardening#configure-trustedproxies-critical-for-reverse-proxies).
 
-- [ ] **Never bind to 0.0.0.0** — always use `127.0.0.1` (loopback)
-- [ ] **Enable authentication** — set `gateway.auth.enabled: true`
-- [ ] **Use a strong token** — at least 32 random bytes
-- [ ] **Set webhook secrets** — validate `X-Webhook-Secret` on all ingress
-- [ ] **Use TLS** — terminate SSL at the reverse proxy
-- [ ] **Strip forwarded headers** — prevent IP spoofing through proxy
-- [ ] **Rate limit** — configure `max_messages_per_hour` per channel
-- [ ] **Audit logs** — enable `log_level: "info"` to track API access
+### Security checklist
+
+- [ ] `gateway.bind: "loopback"` unless you have a reason; any non-loopback bind needs auth
+- [ ] `gateway.auth.mode: "token"` with a strong token, stored outside the repo
+- [ ] Hook token distinct from the Gateway token; `hooks.allowedAgentIds` set
+- [ ] `/v1/*` endpoints off unless needed, and never public
+- [ ] HTTPS (Tailscale Serve, Cloudflare Access, or your proxy) for any remote access
+- [ ] `openclaw security audit` clean
+- [ ] Read [Security Hardening](/security/hardening)
 
 ---
 
 ## Rate Limiting
 
-### Channel-Level Limits
+The Gateway has built-in limits; there are no per-channel `max_*` keys.
 
-```json5
+| Surface | Default | Configurable |
+|---------|---------|--------------|
+| Failed Gateway auth (token/password/device) | 10 failures / 60 s, 5 min lockout | `gateway.auth.rateLimit` |
+| Failed hook auth | 20 failures / 60 s | No |
+| Control-plane write RPCs | 30 / 60 s per method | No |
+| Unauthenticated WebSocket connections | 128 outstanding per client IP | Env override only |
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "channels": {
-    "http-api": {
-      "max_messages_per_hour": 100,
-      "cooldown_seconds": 2,
-      "max_connections": 10
-    }
-  }
+  gateway: {
+    auth: {
+      mode: "token",
+      token: "${OPENCLAW_GATEWAY_TOKEN}",
+      rateLimit: { maxAttempts: 10, windowMs: 60000, lockoutMs: 300000 },
+    },
+  },
 }
 ```
 
-### Gateway-Level Limits
-
-```json5
-{
-  "gateway": {
-    "max_connections": 10
-  }
-}
-```
-
-For webhook ingress, implement rate limiting at the reverse proxy layer:
-
-```nginx
-limit_req_zone $binary_remote_addr zone=webhooks:10m rate=10r/s;
-
-location /webhook/ {
-    limit_req zone=webhooks burst=20 nodelay;
-    proxy_pass http://openclaw;
-}
-```
+Reference: [Rate limiting](https://docs.openclaw.ai/gateway/security/rate-limiting).
 
 ---
 
@@ -962,30 +428,29 @@ location /webhook/ {
 
 ### SSH Tunnel (Simplest)
 
-Access your agent's API from anywhere without exposing it to the internet:
-
 ```bash
 # On your local machine
-ssh -L 18789:localhost:18789 user@your-server
-
-# Now connect locally
-websocat ws://localhost:18789?token=your-token
+ssh -N -L 18789:127.0.0.1:18789 user@your-server
+# Now the Gateway is at http://127.0.0.1:18789 on your machine
 ```
 
 ### Tailscale / WireGuard
 
-For always-on remote access without port exposure:
+Tailscale Serve gives tailnet-only HTTPS while the Gateway stays on loopback:
 
-```bash
-# Install Tailscale on your VPS
-curl -fsSL https://tailscale.com/install.sh | sh
-sudo tailscale up
-
-# Access from any Tailscale device
-websocat ws://100.x.y.z:18789?token=your-token
+```json5 title="~/.openclaw/openclaw.json"
+{
+  gateway: { bind: "loopback", tailscale: { mode: "serve" } },
+}
 ```
 
+Or run `openclaw gateway --tailscale serve`. `funnel` mode is public and needs password auth; avoid it for hooks. For WireGuard, see [Security Hardening](/security/hardening). Reference: [Tailscale](https://docs.openclaw.ai/gateway/tailscale).
+
 ### Cloudflare Tunnel
+
+:::danger A quick tunnel publishes the whole Gateway
+The URL a quick tunnel prints reaches everything on the port: the Control UI, the WebSocket and the hooks. Anyone who finds it can try your token. Use it only for a short test, and stop it afterwards.
+:::
 
 For quick testing, a zero-config quick tunnel needs no account or DNS setup:
 
@@ -1002,124 +467,74 @@ cloudflared tunnel create openclaw
 cloudflared tunnel route dns openclaw agent.example.com
 
 # Run it
-cloudflared tunnel run --url ws://localhost:18789 openclaw
+cloudflared tunnel run --url http://localhost:18789 openclaw
 ```
 
-The tunnel provides transport encryption only — keep gateway token auth enabled.
+The tunnel provides transport encryption only. Keep Gateway token auth on, add `gateway.trustedProxies: ["127.0.0.1"]` (otherwise proxied requests get `403 proxy_attribution_required`), and put a **Cloudflare Access** policy in front of the hostname. The supported production setup uses Access with `trusted-proxy` auth: see [Security Hardening, Cloudflare Tunnel and Access](/security/hardening#cloudflare-tunnel-and-access) and [upstream](https://docs.openclaw.ai/gateway/cloudflare-access).
 
 ---
 
 ## Error Handling
 
-### Common Error Codes
+### Hook status codes
 
-| Code | Meaning | Fix |
-|------|---------|-----|
-| `AUTH_REQUIRED` | No token provided or auth enabled | Add `?token=` to WebSocket URL |
-| `AUTH_INVALID` | Token doesn't match | Check `OPENCLAW_AUTH_TOKEN` |
-| `RATE_LIMITED` | Too many requests | Reduce request frequency |
-| `SKILL_NOT_FOUND` | Skill name doesn't exist | Check `openclaw skills list` |
-| `GATEWAY_BUSY` | Max connections reached | Wait or increase `max_connections` |
-| `WEBHOOK_INVALID` | Bad webhook path or missing secret | Check endpoint config and secret header |
+| Status | Meaning |
+|--------|---------|
+| `200` | Admitted (not necessarily finished or delivered) |
+| `204` | A mapping produced no action |
+| `400` | Bad JSON, payload, session policy or delivery target; also a `?token=` query |
+| `401` | Wrong or missing hook token |
+| `404` | Hooks disabled, wrong `hooks.path`, or no matching mapping |
+| `409` | Target session cannot accept work |
+| `413` | Body over 256 KiB |
+| `429` | Too many failed auth attempts; honor `Retry-After` |
+| `502` / `503` | Preparation failed, admission timed out (15 s), or the Gateway is restarting |
+
+### WebSocket handshake errors
+
+The `connect` response carries structured `error.details`. The ones you will meet first: a **protocol mismatch** (your client is not on v4; update it), **pairing required** (approve the device with `openclaw devices approve <requestId>` and reconnect), and auth failures (wrong token, or rate limited). See the [protocol error reference](https://docs.openclaw.ai/gateway/protocol).
 
 ### Reconnection
 
-WebSocket connections can drop. Always implement reconnection:
-
-```javascript
-function connectWithRetry(url, maxRetries = 10) {
-  let retries = 0;
-
-  function connect() {
-    const ws = new WebSocket(url);
-
-    ws.onopen = () => {
-      retries = 0;
-      console.log('Connected');
-    };
-
-    ws.onclose = () => {
-      if (retries < maxRetries) {
-        const delay = Math.min(1000 * Math.pow(2, retries), 30000);
-        retries++;
-        console.log(`Reconnecting in ${delay}ms (attempt ${retries})`);
-        setTimeout(connect, delay);
-      }
-    };
-
-    ws.onerror = (err) => {
-      console.error('WebSocket error:', err.message);
-      ws.close();
-    };
-
-    return ws;
-  }
-
-  return connect();
-}
-```
+Connections drop when the Gateway restarts or updates. `@openclaw/gateway-client` reconnects with jittered exponential backoff (1 s up to 30 s) and reports sequence gaps. After a reconnect, refetch history and restore your subscriptions. If you write your own client, do the same: back off exponentially, redo the full `connect.challenge` handshake each time, and never resend a `chat.send` without its original `idempotencyKey`.
 
 ---
 
 ## Testing
 
-### Test Webhook Ingress
+### Test webhook ingress
 
 ```bash
-# Verify webhook endpoint is accessible
-curl -v -X POST http://localhost:18789/webhook/deploy-alert \
-  -H "Content-Type: application/json" \
-  -H "X-Webhook-Secret: your-secret" \
-  -d '{"service": "test", "status": "success"}'
-
-# Expected: 200 OK
+curl --include -X POST http://127.0.0.1:18789/hooks/wake \
+  -H "Authorization: Bearer $OPENCLAW_HOOKS_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{"text":"webhook smoke test","mode":"next-heartbeat"}'
+# Expected: HTTP 200 with "ok": true
 ```
 
-### Test WebSocket API
+Then look for the run in `openclaw logs --follow`.
+
+### Health check
 
 ```bash
-# Using websocat
-echo '{"type":"status","id":"test"}' | websocat ws://localhost:18789
-
-# Using wscat
-npx wscat -c ws://localhost:18789?token=your-token
-> {"type":"chat","id":"t1","payload":{"text":"ping"}}
-```
-
-### Test Webhook Egress
-
-```bash
-# Start a local listener
-npx http-echo-server 9999
-
-# Configure egress to localhost:9999
-# Trigger an event and check the listener output
-```
-
-### Health Check
-
-```bash
-# CLI
 openclaw status
-openclaw doctor
-
-# From another machine (via SSH)
-ssh user@server "openclaw doctor"
-
-# HTTP (if custom channel exposes /health)
-curl http://localhost:18800/health
+openclaw gateway health
+curl -fsS http://127.0.0.1:18789/healthz   # process is live
+curl -fsS http://127.0.0.1:18789/readyz    # ready for traffic, channels healthy
 ```
+
+`/healthz`, `/readyz` and `/startupz` need no auth and return no sensitive detail. Reference: [Health checks](https://docs.openclaw.ai/gateway/health).
 
 ---
 
 ## See Also
 
-- [Gateway API Reference](/reference/gateway-api) — Complete WebSocket message specification
-- [Custom Channels](/guides/custom-channels) — Build a full HTTP API channel adapter
-- [Automation](/guides/automation) — Cron jobs, webhook triggers, and scheduling
-- [Security Hardening](/security/hardening) — Gateway auth, TLS, and reverse proxy setup
-- [Monitoring & Observability](/guides/monitoring) — Health checks and alerting
-- [CI/CD & Testing](/guides/cicd-testing) — Pipeline integration with webhooks
-- [MCP Servers](/guides/mcp-servers) — MCP protocol for tool integration
-- [Configuration Reference](/reference/configuration) — All gateway config options
-- [Environment Variables](/reference/environment-variables) — API tokens and port settings
+- [Gateway API Reference](/reference/gateway-api): protocol notes
+- [Custom Channels](/guides/custom-channels): build a channel plugin with a signed webhook route
+- [Automation](/guides/automation): scheduled jobs and delivery
+- [Security Hardening](/security/hardening): Gateway auth, TLS, reverse proxies
+- [Monitoring & Observability](/guides/monitoring): health checks and alerting
+- [CI/CD & Testing](/guides/cicd-testing): pipeline integration
+- [MCP Servers](/guides/mcp-servers): MCP tools for your agent
+- [Configuration Reference](/reference/configuration): all settings
+- [Environment Variables](/reference/environment-variables): `OPENCLAW_GATEWAY_TOKEN` and friends

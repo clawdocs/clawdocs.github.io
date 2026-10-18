@@ -1,453 +1,111 @@
 ---
 last_update:
-  date: 2026-07-08
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: WebClaw Web Client
-description: Set up WebClaw or PinchChat — community browser frontends that connect to your OpenClaw Gateway over WebSockets
-keywords: [openclaw, webclaw, web client, browser frontend, web ui, react frontend]
+description: WebClaw and PinchChat are third-party browser front-ends for OpenClaw. WebClaw cannot connect to current Gateways; use the built-in Control UI, or PinchChat with care.
+keywords: [openclaw, webclaw, pinchchat, web client, browser frontend, control ui]
 ---
 
 # WebClaw Web Client
 
-[WebClaw](https://github.com/ibelick/webclaw) is a community-built, browser-based chat interface for OpenClaw. It connects to your Gateway over WebSockets and provides a clean, modern UI for interacting with your agent from any device with a browser.
-
-:::info
-WebClaw is currently in **beta** (~639 stars, 5 contributors). It is a third-party project and not maintained by the OpenClaw team. As of July 2026 it has had no commits, tags, or releases since March 17, 2026 — development appears stalled (the npm package remains at v0.1.1 from February 2026). Consider [PinchChat](#pinchchat-alternative-frontend) if you need an actively maintained frontend.
+:::danger WebClaw does not work with current OpenClaw
+[WebClaw](https://github.com/ibelick/webclaw) hard-codes Gateway protocol **3** (`minProtocol: 3, maxProtocol: 3`). Gateways have required protocol **4** for operator and UI clients since 2026.5.19; only node-role devices may still use v3. Against v2026.10.4 the handshake fails with a protocol mismatch. Updating the Gateway does not help: the Gateway update is what broke it. The project has had no commits since 2026-03-17.
 :::
 
----
-
-## Why a Browser Frontend?
-
-OpenClaw ships with a built-in WebChat UI accessible at `http://localhost:18789/chat`, but community frontends offer a richer experience:
-
-| Feature | Built-in WebChat | WebClaw | PinchChat |
-|---------|-----------------|---------|-----------|
-| Framework | Vanilla JS | React 19 / TanStack Router | React 19 / Vite 7 |
-| Customization | Limited | Full source access | Full source access |
-| Mobile UX | Basic | Responsive-first | PWA with offline support |
-| Theming | Dark only | Configurable | Dark / Light / OLED Black + 6 accents |
-| Multi-session | No | No | Split-view monitoring |
-| i18n | No | No | English, French |
-| Install method | Built-in | `npx webclaw` | Docker or git clone |
-| License | Apache 2.0 | MIT | MIT |
-| Status | Stable | Beta | Stable (119 releases) |
-
-If the built-in WebChat works for you, there's no need to switch. These frontends are for users who want a more customizable or polished web experience.
+This page used to be a WebClaw setup guide. It is now a short note on browser front-ends, checked on 2026-10-18 against OpenClaw **v2026.10.4**.
 
 ---
 
-## Quick Start
+## Use the Built-in Control UI First
 
-The fastest way to get WebClaw running:
+Every Gateway serves the **Control UI** on its own port: `http://127.0.0.1:18789/` by default. It is maintained with the Gateway, so it always speaks the current protocol. It has the WebChat chat tab, a session rail, side chat, themes, approvals, config and channel management, and the DM access request queue. The macOS and iOS apps provide the same WebChat natively.
 
 ```bash
-npx webclaw
+openclaw dashboard        # opens the Control UI with your Gateway token
 ```
 
-This downloads the CLI package and starts WebClaw locally. For more control, clone and configure manually — see [Installation](#installation) below.
-
----
-
-## Prerequisites
-
-- A running [OpenClaw Gateway](/architecture/gateway) (default: `ws://localhost:18789`)
-- **Node.js >= 20**
-- **pnpm** (preferred) or npm
-
----
-
-## Installation
-
-### Method 1: npx (Quickest)
-
-```bash
-npx webclaw
-```
-
-### Method 2: Clone and Build
-
-```bash
-git clone https://github.com/ibelick/webclaw.git
-cd webclaw
-
-# Install dependencies
-pnpm install
-
-# Development mode (with hot reload)
-pnpm dev
-
-# Production build
-pnpm build
-pnpm start
-```
-
-The WebClaw UI will be available at `http://localhost:3000` by default.
-
-### Method 3: Docker
-
-Community Docker images are available:
-
-```bash
-docker run -d \
-  --name webclaw \
-  -p 3000:3000 \
-  -e OPENCLAW_GATEWAY_URL=ws://host.docker.internal:18789 \
-  -e OPENCLAW_GATEWAY_TOKEN=your-token-here \
-  land007/webclaw:latest
-```
-
-:::tip
-Use `host.docker.internal` (Docker Desktop) or `172.17.0.1` (Linux) to reach the Gateway running on the host.
-:::
-
----
-
-## Configuration
-
-Create the environment file at `apps/webclaw/.env.local`:
-
-```bash title="apps/webclaw/.env.local"
-OPENCLAW_GATEWAY_URL=ws://127.0.0.1:18789
-OPENCLAW_GATEWAY_TOKEN=your-gateway-token-here
-```
-
-The token must match your OpenClaw Gateway authentication settings. You can find or set your token in `~/.openclaw/openclaw.json`:
+For access from other devices, keep the Gateway on loopback and use Tailscale Serve or an SSH tunnel rather than exposing the port:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "gateway": {
-    "auth": {
-      "mode": "shared-secret",
-      "token": "your-gateway-token-here"
-    }
-  }
+  gateway: { bind: "loopback", tailscale: { mode: "serve" } },
 }
 ```
 
-:::tip
-If you use password authentication instead of token auth, set `OPENCLAW_GATEWAY_PASSWORD` instead of `OPENCLAW_GATEWAY_TOKEN`.
-:::
-
-### Environment Variables
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `OPENCLAW_GATEWAY_URL` | Yes | `ws://127.0.0.1:18789` | WebSocket URL of your Gateway |
-| `OPENCLAW_GATEWAY_TOKEN` | Recommended | — | Authentication token |
-| `OPENCLAW_GATEWAY_PASSWORD` | Alternative | — | Password auth (if not using token) |
-
-:::caution
-The WebClaw repository's `.env.example` may still use the legacy `CLAWDBOT_GATEWAY_*` variable names. OpenClaw only reads `OPENCLAW_*` environment variables — the legacy `CLAWDBOT_*` and `MOLTBOT_*` prefixes are silently ignored. Always use the `OPENCLAW_*` prefix.
-:::
+Reference: [Control UI](https://docs.openclaw.ai/web/control-ui), [WebChat](https://docs.openclaw.ai/web/webchat), [remote access](/guides/api-webhooks#remote-access).
 
 ---
 
-## Tech Stack
+## WebClaw, for the Record
 
-WebClaw is a TypeScript monorepo (93.6% TypeScript) managed with pnpm 9.15.4:
+| | |
+|---|---|
+| Repo | [ibelick/webclaw](https://github.com/ibelick/webclaw), MIT, 647 stars (2026-10-18) |
+| Last commit | 2026-03-17; no releases; npm `webclaw` 0.1.1 (2026-02-14) |
+| Stack | TanStack Start (React) with server routes; the Gateway connection runs server-side |
+| Protocol | v3 only, so it is rejected by v2026.5.19 and later |
+| Env vars | Reads only `CLAWDBOT_GATEWAY_URL`, `CLAWDBOT_GATEWAY_TOKEN`, `CLAWDBOT_GATEWAY_PASSWORD` (WebClaw reads these, not the Gateway) |
+| Scope | Connects with `operator.admin` and has no login of its own |
 
-```
-webclaw-monorepo/
-├── apps/
-│   ├── webclaw/        # Main web client (React 19 + TanStack Router)
-│   └── landing/        # Marketing site (webclaw.dev)
-├── packages/
-│   └── webclaw/        # npm-publishable CLI (npx webclaw)
-├── pnpm-workspace.yaml
-└── package.json
-```
-
-### Core Dependencies
-
-| Library | Version | Purpose |
-|---------|---------|---------|
-| React | ^19.2.0 | UI framework |
-| TanStack Router | ^1.132.0 | Client-side routing |
-| Tailwind CSS | ^4.1.18 | Utility-first styling |
-| TypeScript | — | Type safety |
-
-:::info
-WebClaw uses **TanStack Router**, not Next.js. It's a single-page application with client-side routing, not a server-rendered framework.
-:::
+If WebClaw is updated to protocol 4, two warnings still apply. Anyone who can open the WebClaw page gets admin control of your Gateway, so it must sit behind its own authentication (Tailscale, an SSH tunnel, or an authenticating proxy). And unofficial Docker images of it (for example on Docker Hub) are not published by the author; do not hand them your Gateway token.
 
 ---
 
-## Architecture
+## PinchChat (Alternative Frontend) {#pinchchat-alternative-frontend}
 
-WebClaw communicates with OpenClaw through the same WebSocket control plane that all clients use:
+[PinchChat](https://github.com/MarlBurroW/pinchchat) is a third-party browser chat UI with tool-call visualization, multi-session navigation, split view, themes and PWA support.
 
-```mermaid
-flowchart LR
-    Browser["🌐 Browser<br/>(WebClaw UI)"] -->|WebSocket| GW["⚡ Gateway<br/>:18789"]
-    CLI["💻 CLI<br/>(openclaw chat)"] -->|WebSocket| GW
-    Apps["📱 Companion Apps<br/>(macOS/iOS)"] -->|WebSocket| GW
-    GW --> Brain["🧠 Brain"]
-    GW --> Hands["🤖 Hands"]
-```
+| | |
+|---|---|
+| Repo | MarlBurroW/pinchchat, MIT, 187 stars (2026-10-18) |
+| Latest release | v1.71.4 (2026-06-14); last push 2026-06-18, so quiet for four months |
+| Protocol | Negotiates `minProtocol: 3, maxProtocol: 4` and signs the `connect.challenge` with a browser device key |
+| Scopes requested | `operator.read`, `operator.write`, `operator.admin`, `operator.approvals` |
+| Credentials | Gateway URL and token entered at runtime, stored in the browser's `localStorage` |
 
-WebClaw is just another client — it doesn't replace or modify the Gateway.
-
-### WebSocket Protocol
-
-WebClaw uses the Gateway's standard [wire protocol](/architecture/gateway#wire-protocol) with three frame types:
-
-| Frame | Direction | Structure | Purpose |
-|-------|-----------|-----------|---------|
-| Request | Client to Gateway | `{type: "req", id, method, params}` | Send messages, invoke tools |
-| Response | Gateway to Client | `{type: "res", id, ok, payload}` | RPC replies |
-| Event | Gateway to Client | `{type: "event", event, payload}` | Streaming tokens, tool calls |
-
-### Streaming and Optimistic Updates
-
-WebClaw implements streaming chat with an optimistic update pattern:
-
-1. User sends a message
-2. WebClaw writes an **optimistic entry** into the history cache immediately (no round-trip delay)
-3. The Gateway streams response events back in real-time
-4. When server history arrives, WebClaw **reconciles** optimistic entries using `clientId` matching or near-timestamp matching (10-second window)
-
-This is implemented across `use-chat-history.ts`, `chat-queries.ts`, and `use-chat-pending-send.ts`.
-
----
-
-## Production Deployment
-
-### Behind a Reverse Proxy
-
-For remote access, run WebClaw behind Nginx or Caddy with TLS:
-
-```nginx title="nginx.conf"
-server {
-    listen 443 ssl;
-    server_name webclaw.example.com;
-
-    ssl_certificate     /etc/letsencrypt/live/webclaw.example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/webclaw.example.com/privkey.pem;
-
-    # WebClaw frontend
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-
-    # Gateway WebSocket (proxied through same domain)
-    location /ws {
-        proxy_pass http://127.0.0.1:18789;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_read_timeout 86400;
-    }
-}
-```
-
-```title="Caddyfile"
-webclaw.example.com {
-    reverse_proxy /ws localhost:18789
-    reverse_proxy localhost:3000
-}
-```
-
-### Cloudflare Tunnel
-
-Expose WebClaw without opening ports:
-
-```bash
-cloudflared tunnel --url http://localhost:3000
-```
-
-:::warning
-If using Cloudflare Tunnel, you still need to configure Gateway authentication. The tunnel provides transport encryption but not application-layer auth.
-:::
-
-### SSH Tunnel (Simple Remote Access)
-
-For quick access without a full reverse proxy setup:
-
-```bash
-# Forward both WebClaw and Gateway ports
-ssh -L 3000:localhost:3000 -L 18789:localhost:18789 user@your-server
-```
-
-Then open `http://localhost:3000` in your browser.
-
----
-
-## Security
-
-### Authentication Is Required
-
-The Gateway enforces authentication by default (fail-closed model since v2026.2.19, after [CVE-2026-25253](/security/known-vulnerabilities)). WebClaw authenticates using the token or password in your environment variables.
-
-| Auth Mode | How It Works | Config |
-|-----------|-------------|--------|
-| **Token** (recommended) | Shared secret compared at handshake | `OPENCLAW_GATEWAY_TOKEN` |
-| **Password** | Password-based auth | `OPENCLAW_GATEWAY_PASSWORD` |
-| **Trusted proxy** | Gateway trusts `X-Forwarded-*` headers | Nginx/Caddy config |
-
-### TLS Requirements
-
-The Gateway enforces TLS for non-local connections:
-
-| Connection Source | Plaintext `ws://` | Encrypted `wss://` |
-|-------------------|-------------------|---------------------|
-| Loopback (127.0.0.1) | Allowed | Allowed |
-| Private network (192.168.x.x, 10.x.x.x) | Allowed | Allowed |
-| `.local` hostnames | Allowed | Allowed |
-| Tailnet (`*.ts.net`) | Allowed | Allowed |
-| **Everything else** | **Blocked** | **Required** |
-
-### CORS
-
-When WebClaw runs on a different origin than the Gateway (e.g., `localhost:3000` vs. `localhost:18789`), the Gateway handles CORS automatically for loopback connections. For non-loopback deployments, configure allowed origins:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "gateway": {
-    "cors": {
-      "origins": ["https://webclaw.example.com"]
-    }
-  }
-}
-```
-
-### Best Practices
-
-- **Never expose WebClaw to the public internet** without Gateway authentication enabled
-- Use **token auth** rather than leaving the Gateway open — WebClaw has the same access as any Gateway client
-- Keep tokens in `.env.local` files (never committed to git) — the `.env.example` notes "Keep secrets here (never in the browser)"
-- For remote access, always use a **reverse proxy with TLS** or an **SSH tunnel**
-- Review the [Security Hardening guide](/security/hardening) for full Gateway lockdown
-
----
-
-## PinchChat (Alternative Frontend)
-
-[PinchChat](https://github.com/MarlBurroW/pinchchat) is a more mature alternative browser frontend with 182 stars and 119 releases (latest v1.71.3):
-
-| Feature | WebClaw | PinchChat |
-|---------|---------|-----------|
-| Stars | 637 | 182 |
-| Releases | 0 (beta) | 119 (stable) |
-| Multi-session | Single chat | Split-view monitoring |
-| Themes | Configurable | Dark / Light / OLED Black + 6 accents |
-| PWA | No | Yes (installable, offline) |
-| i18n | No | English, French |
-| Tool visualization | Basic | Colored badges per tool type |
-| Message search | No | Ctrl+F search |
-| Export | No | Markdown export |
-| Session management | Basic | Drag-and-drop reordering |
+Its code speaks protocol 4, but this site has not tested it against v2026.10.4. Gateway changes after June 2026 may affect it.
 
 ### Installing PinchChat
 
 ```bash
-git clone https://github.com/MarlBurroW/pinchchat.git
-cd pinchchat
-docker compose up -d
+docker run -p 127.0.0.1:3000:80 ghcr.io/marlburrow/pinchchat:v1.71.4
 ```
 
-PinchChat connects to the same Gateway WebSocket and uses the same JSON-framed protocol. Choose PinchChat if you need multi-session monitoring, PWA support, or a more polished out-of-the-box experience. Choose WebClaw if you want a lightweight SPA to customize and build upon.
+The image is published by the author under their GitHub account. Pin a release tag rather than `latest`, and bind it to localhost as above. Then open `http://localhost:3000` and enter the Gateway URL and token.
 
----
+Because PinchChat connects from the browser, the Gateway must accept its origin. Same-origin loads from loopback, LAN and tailnet hosts are accepted; for a public hostname, allow it explicitly:
 
-## Customization
-
-### Theming
-
-WebClaw uses Tailwind CSS v4, so you can customize the look by editing the Tailwind configuration in `apps/webclaw/`:
-
-```css title="apps/webclaw/src/styles/globals.css"
-@theme {
-  --color-primary: #your-brand-color;
-  --color-background: #1a1a2e;
-  --color-surface: #16213e;
+```json5 title="~/.openclaw/openclaw.json"
+{
+  gateway: {
+    controlUi: { allowedOrigins: ["https://chat.example.com"] },
+  },
 }
 ```
 
-### Building a Custom Frontend
-
-Since WebClaw is MIT-licensed with full source access, you can fork it as a starting point for your own UI. The monorepo structure makes it easy to modify the client without touching the CLI package:
+On first connect, the browser's device key needs approval on the Gateway host:
 
 ```bash
-# Fork and clone
-git clone https://github.com/YOUR-USERNAME/webclaw.git
-cd webclaw
-
-# Work only on the web client
-cd apps/webclaw
-pnpm dev
+openclaw devices list
+openclaw devices approve <requestId>
 ```
 
-Key files to customize:
-
-| File | Purpose |
-|------|---------|
-| `apps/webclaw/src/routes/` | Page routes (TanStack Router) |
-| `apps/webclaw/src/components/` | UI components |
-| `apps/webclaw/src/hooks/use-chat-history.ts` | Chat history and streaming |
-| `apps/webclaw/src/hooks/use-chat-pending-send.ts` | Optimistic message sending |
-| `apps/webclaw/src/lib/chat-queries.ts` | Gateway API integration |
-
----
-
-## Troubleshooting
-
-### Connection Issues
-
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| Connection refused | Gateway not running | Run `openclaw status`, check URL in `.env.local` |
-| Authentication failed | Token mismatch | Verify token matches `~/.openclaw/openclaw.json` |
-| CORS errors | Different origin, non-loopback | Configure `gateway.cors.origins` or use reverse proxy |
-| WebSocket closes immediately | Protocol mismatch | Ensure Gateway is updated to latest version |
-| Blank screen after build | Missing env vars | Check `.env.local` exists with correct variables |
-
-### Environment Variable Issues
-
-```bash
-# Verify Gateway is running and accessible
-openclaw status
-
-# Test WebSocket connection directly
-wscat -c ws://127.0.0.1:18789
-
-# Check Gateway auth settings
-cat ~/.openclaw/openclaw.json | grep -A 5 'auth'
-```
-
-:::caution
-If you cloned WebClaw before March 2026, your `.env.local` may use the legacy `CLAWDBOT_GATEWAY_*` variable names. Rename them to `OPENCLAW_GATEWAY_*` — the Gateway silently ignores the old prefix.
+:::warning
+PinchChat asks for `operator.admin` and keeps your Gateway token in `localStorage`. Anything that can run script on that origin, such as a malicious extension or an XSS bug, can take that token. Use it on a device you trust, serve it over HTTPS, and do not put it on a public URL without an authenticating proxy in front. See [Security Hardening](/security/hardening).
 :::
 
-### Performance
-
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| Slow with long conversations | Large history cache | Clear browser cache, start new session |
-| High memory usage | Accumulated WebSocket events | Refresh the page periodically |
-| Laggy typing | Heavy re-renders | Use production build (`pnpm build && pnpm start`) |
-
 ---
 
-## Project Info
+## Building Your Own Client
 
-| Field | Value |
-|-------|-------|
-| **Repository** | [github.com/ibelick/webclaw](https://github.com/ibelick/webclaw) |
-| **Website** | [webclaw.dev](https://webclaw.dev) |
-| **License** | MIT |
-| **Language** | TypeScript (93.6%) |
-| **Status** | Beta |
-| **Stars** | 637 |
-| **Contributors** | 5 |
+Use `@openclaw/gateway-client` and follow the protocol v4 handshake (`connect.challenge` → `connect` → `hello-ok`) rather than copying an old client. See [API & Webhooks: WebSocket API](/guides/api-webhooks#websocket-api) and upstream's [Building a Gateway client](https://docs.openclaw.ai/gateway/clients).
 
 ---
 
 ## See Also
 
-- [Gateway Architecture](/architecture/gateway) — Understanding the WebSocket control plane
-- [Gateway API Reference](/reference/gateway-api) — WebSocket message protocol
-- [Security Hardening](/security/hardening) — Securing your Gateway for remote access
-- [Channels & Integrations](/guides/channels) — Other ways to interact with your agent
-- [Custom Channels](/guides/custom-channels) — Building your own channel adapter
+- [API & Webhooks](/guides/api-webhooks): Gateway protocol, auth, remote access
+- [Channels & Integrations](/guides/channels): chat apps as front-ends
+- [Security Hardening](/security/hardening): exposing the Gateway safely
+- [Ecosystem](/reference/ecosystem): other community projects
