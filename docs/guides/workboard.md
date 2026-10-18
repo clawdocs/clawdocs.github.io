@@ -1,16 +1,17 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Workboard
-description: Orchestrate multi-agent work with the Workboard — a Kanban-style task board built into OpenClaw v2026.6.1+
+description: Orchestrate multi-agent work with the Workboard — a Kanban-style task board bundled with OpenClaw as a plugin
 keywords: [openclaw, workboard, kanban, task management, agent coordination]
 ---
 
 # Workboard
 
-The Workboard is a Kanban-style task board built into OpenClaw as a core plugin. It lets you collect agent-sized work cards, assign them to specific agents, dispatch workers, and track progress — all from the dashboard, CLI, or chat.
+The Workboard is a Kanban-style task board bundled with OpenClaw as a plugin (disabled by default). It lets you collect agent-sized work cards, assign them to specific agents, dispatch workers, and track progress from the dashboard, CLI, or chat.
 
-Introduced in **v2026.6.1**, the Workboard is the first official orchestration layer in OpenClaw. It replaces the need for external project management tools for local agent work.
+The first Workboard entries appear in v2026.5.28; the orchestration primitives (dependencies, dispatch, claims) landed in v2026.5.31 and v2026.6.1. Official reference: [Workboard plugin](https://docs.openclaw.ai/plugins/workboard) and [Workboard CLI](https://docs.openclaw.ai/cli/workboard).
 
 :::info
 The Workboard manages **local operating work** within your OpenClaw Gateway. It is not a replacement for GitHub Issues, Linear, or Jira — it's purpose-built for coordinating agent tasks.
@@ -22,10 +23,10 @@ The Workboard manages **local operating work** within your OpenClaw Gateway. It 
 
 ```bash
 openclaw plugins enable workboard
-openclaw gateway restart
+openclaw dashboard
 ```
 
-Then open the dashboard at `http://127.0.0.1:18789` and navigate to the **Workboard** tab.
+Enabling applies to a running Gateway without a restart. `openclaw dashboard` opens the Control UI; the **Workboard** tab appears once the plugin has loaded. The `openclaw workboard` CLI is only available while the plugin is enabled.
 
 You can also enable it in config:
 
@@ -60,19 +61,23 @@ Each Workboard card represents a unit of work for an agent.
 
 ### Card Lifecycle
 
-Cards flow through five states:
+Cards have nine statuses:
 
 ```
-todo → running → review → done
-                ↘ blocked
+triage → backlog → todo → ready → running → review → done
+                     ↘ scheduled ↗        ↘ blocked
 ```
 
-| State | Meaning |
+| Status | Meaning |
 |-------|---------|
-| `todo` | Work queued, not started |
+| `triage` | Rough idea, not yet specified |
+| `backlog` | Accepted, not yet queued |
+| `todo` | Queued; children wait here until every parent is `done` (the default for new cards) |
+| `scheduled` | Held until a scheduled time |
+| `ready` | Eligible for dispatch |
 | `running` | Linked session is active |
 | `review` | Linked session completed, needs human review |
-| `blocked` | Session failed, timed out, or was aborted |
+| `blocked` | Run failed, timed out, or was aborted |
 | `done` | Work accepted and complete |
 
 ### Automatic Lifecycle Sync
@@ -92,13 +97,16 @@ Once you manually move a card to `review`, `blocked`, or `done`, automatic sync 
 ### Create a Card
 
 ```bash
-openclaw workboard create "Fix stale worker heartbeat" \
+openclaw workboard create "Write Workboard docs" \
+  --status ready \
   --priority high \
-  --labels bug,workboard \
+  --labels docs,workboard \
   --agent docs-agent \
   --board docs \
   --notes "Cover CLI, slash command, dispatch, and SQLite state."
 ```
+
+New cards start in `todo` unless you pass `--status`. Add `--json` to print the created card.
 
 ### List Cards
 
@@ -106,6 +114,7 @@ openclaw workboard create "Fix stale worker heartbeat" \
 openclaw workboard list
 openclaw workboard list --board default --status ready
 openclaw workboard list --json
+openclaw workboard list --include-archived
 ```
 
 ### Show Card Details
@@ -115,15 +124,27 @@ openclaw workboard show 7f4a2c10
 openclaw workboard show 7f4a2c10 --json
 ```
 
+### Move a Card
+
+```bash
+openclaw workboard move 7f4a2c10 --status review
+openclaw workboard move 7f4a2c10 --status done
+```
+
+`move` is the same operator action as dragging a card in the dashboard. Dependency and schedule holds still apply.
+
 ### Dispatch Workers
 
 Dispatch scans for ready cards and starts agent workers:
 
 ```bash
 openclaw workboard dispatch
+openclaw workboard dispatch --max-starts 10
 openclaw workboard dispatch --url http://127.0.0.1:18789 \
   --token "$OPENCLAW_GATEWAY_TOKEN"
 ```
+
+One dispatch starts at most three workers by default, and only one card per owner or agent per pass. `--max-starts` raises the cap, but the one-per-agent rule still applies. If the local Gateway is stopped, dispatch runs data-only: it promotes dependencies and cleans stale claims but starts no workers.
 
 ### Slash Commands
 
@@ -147,7 +168,7 @@ When you run `dispatch`, the Workboard:
 3. **Records dispatch metadata** on ready cards
 4. **Selects a batch** of unclaimed ready cards
 5. **Claims each card** for the dispatcher or assigned agent
-6. **Starts workers** — each worker gets the card's notes as its prompt
+6. **Starts workers**: each worker is a subagent run with bounded card context and the claim token
 
 Dispatch can be triggered from:
 - The dashboard dispatch button
@@ -155,21 +176,45 @@ Dispatch can be triggered from:
 - `/workboard dispatch` on chat channels
 - Manually starting a card from the Workboard UI
 
+Dispatch does not run on its own. To dispatch on a schedule, create an automation (see [Recipes](#self-organizing-heartbeat)).
+
 ---
 
 ## Agent Coordination Tools
 
-The Workboard exposes tools that agents can call during execution. These enable agents to interact with the board autonomously.
+The Workboard exposes tools that agents can call during execution. The card tools are **optional plugin tools**: enabling Workboard gives agents only the three `workboard_sessions_board_*` tools. An agent that should create, claim or complete cards needs them allowed:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  plugins: { entries: { workboard: { enabled: true } } },
+  agents: {
+    entries: {
+      main: {
+        tools: { alsoAllow: ["workboard"] },
+      },
+    },
+  },
+}
+```
+
+Workers that the Workboard starts from a card (**Start** or dispatch) do not need this: each worker run is granted `workboard_heartbeat`, `workboard_complete` and `workboard_block` for its card.
 
 | Tool | What It Does |
 |------|-------------|
 | `workboard_list` | List cards with claim and diagnostic state |
 | `workboard_read` | Read one card plus bounded worker context |
 | `workboard_create` | Create a card with optional parents, skills, and workspace metadata |
-| `workboard_claim` | Claim a card for the calling agent |
-| `workboard_link` | Link parent and child cards with state tracking |
+| `workboard_claim` | Claim a card for the calling agent (moves it to `running`) |
+| `workboard_link` | Link a parent to a child; the child waits in `todo` until every parent is `done` |
 | `workboard_heartbeat` | Refresh the claim heartbeat during longer runs |
+| `workboard_release` | Release the claim after completion, pause or handoff |
+| `workboard_complete` / `workboard_block` | Finish with a summary and proof, or block with a reason |
+| `workboard_specify` | Turn a rough triage/backlog card into a clarified `todo` card |
+| `workboard_decompose` | Fan a parent card into linked children |
 | `workboard_runs` | Return persisted run-attempt history for a card |
+| `workboard_dispatch` | Nudge dependency promotion and stale-claim cleanup; does **not** launch workers |
+
+The full list, including attachments, notifications and recovery tools, is in the [plugin reference](https://docs.openclaw.ai/plugins/workboard#agent-tools).
 
 ### What This Enables
 
@@ -203,56 +248,36 @@ You can also capture an existing session as a card: open **Sessions** → choose
 
 ### Templates
 
-Workboard supports templates for common card types. Templates pre-fill title patterns, notes, labels, and priority for repeatable work like:
-- Bug fixes
-- Documentation updates
-- PR reviews
-- Release checklists
-- Plugin work
+Workboard supports templates for common card types. Templates pre-fill title, notes, labels, and priority. The built-in template ids are `bugfix`, `docs`, `release`, `pr_review` and `plugin`.
 
 ---
 
 ## Dreaming Tab & Agent Selector
 
-v2026.6.1 also added a **Dreaming-tab agent selector** in the Control UI. This is relevant to multi-agent setups because it lets you manage each agent's memory consolidation independently.
+v2026.6.1 added an agent selector to the Control UI **Dreaming** tab. In a multi-agent setup it lets you pick which agent's dreaming status, phase progress and Dream Diary you are looking at.
 
-### What Dreaming Is
+The selector changes the view, not the schedule. Dreaming (the `memory-core` plugin's memory consolidation) has one sweep per Gateway with a single `frequency`, owned by `agents.defaults.systemAgent`. It has been **on by default since v2026.8.1** and runs its phases in the order light → REM → deep. `/dreaming on` and `/dreaming off` switch it globally; there is no per-agent schedule or pause.
 
-Dreaming is an opt-in background memory consolidation system. It runs on a schedule and moves strong short-term signals into durable long-term memory, loosely modeled on biological sleep cycles:
-
-| Phase | What Happens |
-|-------|-------------|
-| **Light** | Ingests recent signals, deduplicates candidates |
-| **REM** | Extracts patterns, recurring themes, actionable insights |
-| **Deep** | Promotes the strongest signals to long-term memory (MEMORY.md) |
-
-### Enable Dreaming
+To change the schedule or turn it off:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "plugins": {
-    "entries": {
+  plugins: {
+    entries: {
       "memory-core": {
-        "config": {
-          "dreaming": {
-            "enabled": true,
-            "cadence": "0 3 * * *"  // 3 AM daily
-          }
-        }
-      }
-    }
-  }
+        config: {
+          dreaming: {
+            enabled: true,
+            frequency: "0 3 * * *", // 3 AM daily (the default)
+          },
+        },
+      },
+    },
+  },
 }
 ```
 
-### Agent Selector
-
-In multi-agent setups, the Dreaming tab now shows an agent dropdown. Select an agent to:
-- View its dreaming status and phase progress
-- Read its Dream Diary (narrative summaries of what was consolidated)
-- Trigger or pause dreaming for that specific agent
-
-This means you can run dreaming on different schedules per agent — your work agent consolidates memories during lunch, your personal agent at 3 AM.
+See [Dreaming](https://docs.openclaw.ai/concepts/dreaming) and the [Memory Systems guide](/guides/memory-systems).
 
 ---
 
@@ -264,24 +289,25 @@ A researcher agent gathers information, a writer agent turns it into content:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "agents": {
-    "list": [
-      {
-        "id": "researcher",
-        "model": "claude-opus-4-8",
-        "workspace": "~/.openclaw/workspace-researcher"
+  plugins: { entries: { workboard: { enabled: true } } },
+  agents: {
+    ownership: "explicit",
+    defaults: { systemAgent: { agentId: "researcher" } },
+    entries: {
+      researcher: {
+        model: "anthropic/claude-opus-5-5",
+        workspace: "~/.openclaw/workspace-researcher",
       },
-      {
-        "id": "writer",
-        "model": "claude-sonnet-4-6",
-        "workspace": "~/.openclaw/workspace-writer"
-      }
-    ]
-  }
+      writer: {
+        model: "anthropic/claude-sonnet-5-5",
+        workspace: "~/.openclaw/workspace-writer",
+      },
+    },
+  },
 }
 ```
 
-1. Create Workboard cards for each research topic, assigned to `researcher`
+1. Create Workboard cards for each research topic with `--agent researcher --status ready`
 2. Run `openclaw workboard dispatch`
 3. Researcher completes work → cards move to `review`
 4. Review the research, then create new cards assigned to `writer` linking the research sessions
@@ -293,11 +319,13 @@ Queue bugs as cards with priority and labels, let agents claim them:
 
 ```bash
 openclaw workboard create "Fix memory leak in gateway session handler" \
+  --status ready \
   --priority urgent \
   --labels bug,gateway \
   --agent coder
 
-openclaw workboard create "Update FAQ for v2026.6.1 changes" \
+openclaw workboard create "Update FAQ for v2026.10 changes" \
+  --status ready \
   --priority normal \
   --labels docs \
   --agent docs-writer
@@ -307,25 +335,27 @@ openclaw workboard dispatch
 
 ### Autonomous Sub-Tasks
 
-An orchestrator agent breaks complex work into sub-cards:
+An orchestrator agent (with `tools.alsoAllow: ["workboard"]`) breaks complex work into sub-cards:
 
 1. You create one card: "Audit all API endpoints for auth bypasses"
 2. The orchestrator agent claims the card
-3. It uses `workboard_create` to make sub-cards for each endpoint
-4. It uses `workboard_link` to connect sub-cards to the parent
-5. Specialist agents claim and execute sub-cards
-6. Parent card moves to `review` when all children are `done`
+3. It uses `workboard_decompose` (or `workboard_create` plus `workboard_link`) to make linked child cards for each endpoint
+4. Children wait in `todo` until their parents are done; dispatch promotes them to `ready`
+5. Dispatch starts workers for the children, one per agent per pass
+6. You review the results and move cards to `done`
 
-### Self-Organizing Heartbeat
+### Self-Organizing Heartbeat {#self-organizing-heartbeat}
 
-Combine the heartbeat with the Workboard for self-organizing work:
+To review the board on a schedule, create an automation job rather than a heartbeat checklist (`HEARTBEAT.md` is retired):
 
-```markdown title="~/.openclaw/workspace/HEARTBEAT.md"
-## Every 2 hours
-- Check the Workboard for blocked cards
-- If any cards are blocked, diagnose the failure and either retry or create a fix card
-- Summarize Workboard status and send me a Telegram update
+```bash
+openclaw automations create "every 2h" \
+  "Check the Workboard for blocked cards. For each, diagnose the failure and either unblock it or create a fix card. Send me a short status summary." \
+  --name workboard-review --agent main --session isolated \
+  --announce --channel telegram --to "123456789"
 ```
+
+The agent running this job needs the card tools (`tools.alsoAllow: ["workboard"]`). Keep exec approvals on for anything the fix cards might do unattended; see [Security hardening](/security/hardening).
 
 ---
 
@@ -333,8 +363,8 @@ Combine the heartbeat with the Workboard for self-organizing work:
 
 | Operation | Required Permission |
 |-----------|-------------------|
-| `list`, `show`, `export`, `diagnostics` | `operator.read` |
-| `create`, `dispatch`, `diagnostics.refresh` | `operator.write` |
+| `list`, `show` (and the `export`/`diagnostics` Gateway methods) | `operator.read` |
+| `create`, `move`, `dispatch` (and `diagnostics.refresh`) | `operator.write` |
 
 ---
 
@@ -372,7 +402,7 @@ openclaw gateway status --deep
 ## See Also
 
 - [Multi-Agent Workflows](/guides/multi-agent) — Agent configuration, routing, and channel bindings
-- [Heartbeat System](/guides/heartbeat) — Scheduled autonomous tasks
+- [Heartbeat Guide](/guides/heartbeat) — The ambient monitor and automation jobs
 - [Automation & Integrations](/guides/automation) — CI/CD and external tool integration
 - [Security Hardening](/security/hardening) — Securing multi-agent setups
 - [Cost Management](/guides/cost-management) — Managing costs across multiple agents
