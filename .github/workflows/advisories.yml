@@ -1,0 +1,57 @@
+name: Refresh security advisories
+
+# Weekly refresh of static/data/openclaw-advisories.json, the data behind the
+# chart and table on /security/known-vulnerabilities. Fetches OpenClaw's
+# published GitHub security advisories (public data) with GITHUB_TOKEN and,
+# if the file changed, opens or updates a pull request. See scripts/README.md.
+
+on:
+  schedule:
+    - cron: '23 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: advisories
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Fetch advisories
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node scripts/advisories.mjs --json static/data/openclaw-advisories.json > advisories-summary.md
+          cat advisories-summary.md >> "$GITHUB_STEP_SUMMARY"
+          rm advisories-summary.md
+      - name: Ignore a timestamp-only change
+        # generatedAt changes on every run; only open a PR when an advisory
+        # was added, removed or edited.
+        run: |
+          if git diff --quiet -I '"generatedAt"' -- static/data/openclaw-advisories.json; then
+            git checkout -- static/data/openclaw-advisories.json
+            echo "No advisory changes."
+          fi
+      - uses: peter-evans/create-pull-request@v8
+        with:
+          branch: bot/advisories-refresh
+          delete-branch: true
+          add-paths: static/data/openclaw-advisories.json
+          commit-message: Refresh OpenClaw security advisory data
+          title: Refresh OpenClaw security advisory data
+          body: |
+            Weekly refresh of `static/data/openclaw-advisories.json` from the
+            GitHub security advisories API (`scripts/advisories.mjs --json`).
+            Check the new advisories, and update the prose on
+            `docs/security/known-vulnerabilities.md` (batches, latest release
+            passed to `<MinimumSafeVersion>`) if they need it.

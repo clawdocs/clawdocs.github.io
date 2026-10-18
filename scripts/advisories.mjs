@@ -5,12 +5,18 @@
 //   node scripts/advisories.mjs                 # fetch with `gh api` (needs gh logged in)
 //   GITHUB_TOKEN=... node scripts/advisories.mjs  # fetch with the REST API instead
 //   node scripts/advisories.mjs --file adv.json   # read a saved JSON array / JSONL dump
+//   node scripts/advisories.mjs --json static/data/openclaw-advisories.json
+//                                                 # also write the compact data file
 //
 // Prints: totals, counts by severity, counts by publication month, and a
-// table of every critical-severity advisory. No dependencies.
+// table of every critical-severity advisory. With --json, also writes the
+// public fields of every advisory to a compact JSON file that the
+// AdvisoryTimeline component on /security/known-vulnerabilities renders.
+// No dependencies.
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 
 const REPO = "openclaw/openclaw";
 const SEVERITIES = ["critical", "high", "medium", "low"];
@@ -68,6 +74,76 @@ function cvssLabel(score) {
   return "None";
 }
 
+// Former names of the core package; their fixes count as core fixes.
+const CORE_PACKAGES = new Set(["openclaw", "clawdbot", "moltbot", "openclaw/openclaw", "clawdbot/clawdbot"]);
+
+function cleanVersion(v) {
+  if (!v || v === "None") return null;
+  return String(v).replace(/^>=\s*v?/, "").trim() || null;
+}
+
+// Compact, public-only record for the site's data file.
+function compact(a) {
+  const core = new Set();
+  const other = new Set();
+  for (const v of a.vulnerabilities ?? []) {
+    const name = (v.package?.name ?? "").trim();
+    const patched = cleanVersion(v.patched_versions);
+    if (CORE_PACKAGES.has(name.toLowerCase())) {
+      if (patched) core.add(patched);
+    } else if (name || patched) {
+      other.add(`${name || "?"} ${patched ?? "(no patched version listed)"}`.trim());
+    }
+  }
+  const v3 = a.cvss_severities?.cvss_v3?.score ?? null;
+  const v4 = a.cvss_severities?.cvss_v4?.score ?? null;
+  const legacy = a.cvss?.score ?? null;
+  const cvss = v3 ?? (v4 != null ? v4 : legacy || null);
+  return {
+    ghsa_id: a.ghsa_id,
+    cve_id: a.cve_id ?? null,
+    severity: a.severity,
+    cvss,
+    cvss_version: v3 != null ? "3.1" : v4 != null ? "4.0" : null,
+    summary: String(a.summary ?? "").replace(/\s+/g, " ").trim(),
+    published_at: a.published_at,
+    patched: [...core].sort(compareVersions),
+    patched_other: [...other].sort(),
+    html_url: a.html_url,
+  };
+}
+
+function compareVersions(a, b) {
+  const pa = a.split(/[.-]/).map((n) => parseInt(n, 10) || 0);
+  const pb = b.split(/[.-]/).map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d) return d;
+  }
+  return 0;
+}
+
+function writeJson(path, advisories) {
+  const records = advisories
+    .map(compact)
+    .sort((x, y) => (y.published_at ?? "").localeCompare(x.published_at ?? "") || x.ghsa_id.localeCompare(y.ghsa_id));
+  const data = { generatedAt: new Date().toISOString(), repo: REPO, advisories: records };
+  mkdirSync(dirname(path), { recursive: true });
+  // One advisory per line keeps weekly diffs readable.
+  const body = [
+    "{",
+    `  "generatedAt": ${JSON.stringify(data.generatedAt)},`,
+    `  "repo": ${JSON.stringify(data.repo)},`,
+    '  "advisories": [',
+    records.map((r) => "    " + JSON.stringify(r)).join(",\n"),
+    "  ]",
+    "}",
+    "",
+  ].join("\n");
+  writeFileSync(path, body);
+  console.error(`wrote ${records.length} advisories to ${path}`);
+}
+
 const esc = (s) => String(s ?? "").replace(/\|/g, "\\|").replace(/\s+/g, " ").trim();
 
 async function main() {
@@ -78,6 +154,13 @@ async function main() {
   else advisories = fetchWithGh();
 
   advisories = advisories.filter((a) => a.state === "published" || a.state === undefined);
+
+  const jsonArg = process.argv.indexOf("--json");
+  if (jsonArg !== -1) {
+    const out = process.argv[jsonArg + 1];
+    if (!out || out.startsWith("--")) throw new Error("--json needs a path");
+    writeJson(out, advisories);
+  }
 
   const bySeverity = Object.fromEntries(SEVERITIES.map((s) => [s, 0]));
   const byMonth = new Map();
