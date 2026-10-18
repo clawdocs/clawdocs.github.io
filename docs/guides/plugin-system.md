@@ -67,7 +67,7 @@ openclaw plugins install --link ./my-plugin --force   # link a dev checkout
 
 Git sources use `git:github.com/<owner>/<repo>` with an optional `@<ref>`. Claude-compatible marketplaces use `<plugin>@<marketplace>` or `--marketplace <source>`.
 
-In v2026.10.4, a **bare** name (`openclaw plugins install some-plugin`) installs from **npm**, unless it matches a bundled or official plugin id. Upstream `main` has switched bare names to ClawHub for the next release. Use an explicit `clawhub:` or `npm:` prefix so the command means the same thing on both.
+In v2026.10.4, a **bare** name (`openclaw plugins install some-plugin`) installs from **npm**, unless it matches a bundled or official plugin id. Upstream `main` has switched bare names to ClawHub with no npm fallback ([PR #173669](https://github.com/openclaw/openclaw/pull/173669)). That change merged after 2026.10.10-beta.1 and beta.2 were cut, so it is in no release yet and may or may not ship in 2026.10.10. Use an explicit `clawhub:` or `npm:` prefix so the command means the same thing on both sides.
 
 ClawHub packages and OpenClaw's bundled and official catalogue are trusted sources. Arbitrary npm packages, git, local paths and marketplaces warn and ask first; non-interactive installs need `--force` after you have reviewed the source. `--force` does not bypass `security.installPolicy`.
 
@@ -294,6 +294,7 @@ Points that trip people up:
 - Every plugin needs `openclaw.plugin.json` with a `configSchema`, even an empty one.
 - Every tool the plugin registers must be listed in `contracts.tools`.
 - The SDK is imported from the `openclaw` package itself (`openclaw/plugin-sdk/plugin-entry`, `openclaw/plugin-sdk/core` for channels). There is no separate `@openclaw/plugin-sdk` package on npm.
+- Deprecated synchronous SQLite-backed SDK members stay compatible through **2026-12-31**; upstream plans to remove them in the first January 2027 stable release. Move to the async replacements before then ([plugin compatibility](https://docs.openclaw.ai/plugins/compatibility), as documented in the 2026.10.10-beta.1 docs; the 2026.10.4 docs do not give the date yet).
 - Runtime imports go in `dependencies`; `devDependencies` are not installed for the plugin at runtime.
 - Published plugins point `openclaw.extensions` at built JavaScript, not `.ts` source.
 

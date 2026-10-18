@@ -164,7 +164,7 @@ For CI, ClawHub ships a reusable GitHub Actions workflow; see [CI/CD & Testing](
 
 ### After you publish
 
-Publishes are staged: a release is held behind pre-publication checks (static analysis, VirusTotal, SkillSpector, Tencent A.I.G, ClawScan risk analysis) and appears in search once it clears. Releases that are held or blocked stay visible to their owner. Download the scan report for a blocked version with:
+Publishes are staged: since 2026-10-13 every skill version and package release is held as pending behind pre-publication checks, and a scanner failure or timeout leaves it unpublished rather than letting it through ([clawhub PR #3947](https://github.com/openclaw/clawhub/pull/3947)). The checks are static analysis, VirusTotal, SkillSpector, Tencent A.I.G and ClawScan risk analysis; the release appears in search once it clears. Releases that are held or blocked stay visible to their owner. Download the scan report for a blocked version with:
 
 ```bash
 clawhub scan download my-skill --version 1.0.1 --output report.zip
@@ -202,7 +202,7 @@ Each release gets a security audit on its skill page, combining ([Security audit
 - **ClawScan** risk analysis, which asks whether the name, description, declared permissions and actual content line up, using the OWASP Agentic Skills Top 10 as a lens
 - **VirusTotal** and static analysis results, shown as detail pages
 
-Signed-in users can report a skill with the **Report skill** button; a skill is hidden automatically after more than three unique reports, pending moderator review.
+Signed-in users can report a skill with the **Report skill** button. Reports never hide a skill automatically; moderators review them ([ClawHub moderation spec](https://github.com/openclaw/clawhub/blob/main/specs/security-moderation.md)). The old auto-hide rule was withdrawn after GHSA-5jj4-m8c9-gwcq showed that four ordinary accounts could hide any skill, official ones included.
 
 OpenClaw itself also has a local code-safety scanner (since 2026.2.6), and `openclaw skills install` refuses releases ClawHub has marked malicious or blocked.
 

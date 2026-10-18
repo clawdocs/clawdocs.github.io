@@ -39,7 +39,7 @@ openclaw gateway status
 openclaw gateway restart
 ```
 
-- **macOS:** a per-user LaunchAgent labelled `ai.openclaw.gateway`.
+- **macOS:** a per-user LaunchAgent labelled `ai.openclaw.gateway`. The Gateway itself only needs Node; from 2026.10.10 (now in beta) the macOS app and the Control UI in Safari need macOS or Safari 26.2 or newer ([PR #168595](https://github.com/openclaw/openclaw/pull/168595)).
 - **Linux:** a systemd **user** unit, `openclaw-gateway.service`. Inspect it with `systemctl --user status openclaw-gateway` and `journalctl --user -u openclaw-gateway -f`. On a headless server, run `sudo loginctl enable-linger $(whoami)` so it keeps running after you log out.
 - After changing `gateway.port`, run `openclaw gateway install --force` so the service starts on the new port.
 

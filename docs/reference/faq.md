@@ -36,7 +36,7 @@ Upstream tells the story in [Lore](https://docs.openclaw.ai/start/lore).
 
 ### What is the OpenClaw Foundation?
 
-The [OpenClaw Foundation](https://openclaw.org) is an independent 501(c)(3) that develops OpenClaw in the open, employs the core team and signs releases. Donors listed in the upstream README include Amazon, OpenAI, Red Hat and the University of Michigan; "none of them own or direct the project". The code stays MIT-licensed.
+The [OpenClaw Foundation](https://openclaw.org) is an independent 501(c)(3) that develops OpenClaw in the open, employs the core team and signs releases. Its donor lists differ by source. The [README at v2026.10.4](https://github.com/openclaw/openclaw/blob/v2026.10.4/README.md#donors-and-sponsors) names Amazon, Lobster Computer Company, Offline Holdings, OpenAI, Red Hat and the University of Michigan; the Foundation's [donors page](https://www.openclaw.org/donors) (checked 2026-10-18) shows Microsoft, NVIDIA and OpenAI as partners alongside Offline Holdings, Red Hat and the University of Michigan, and does not list Amazon or Lobster Computer Company. Both say donors do not own the project; the README says "none of them own or direct the project". The code stays MIT-licensed.
 
 ### What is Moltbook?
 
@@ -45,6 +45,8 @@ Moltbook is a separate social network (created by Matt Schlicht) where AI agents
 ### What version is current?
 
 As of 2026-10-18 the latest stable release is **v2026.10.4** (published 2026-10-16). OpenClaw uses calendar versions `YYYY.M.N`, where `N` is a release counter within the month, not a day. There are four update channels: `stable`, `extended-stable`, `beta` and `dev` ([development channels](https://docs.openclaw.ai/install/development-channels)). Check yours with `openclaw --version`.
+
+On 2026-10-18 npm's tags are `latest` 2026.10.4, `extended-stable` 2026.9.33 (a trailing, LTS-like line: end of September plus critical security fixes) and `beta` 2026.10.10-beta.1. Version numbers are not in time order: 2026.10.10-beta.1 was published on 2026-10-15, a few hours before 2026.10.4, because the 10.1 to 10.4 releases come from a maintenance branch while new features ship on the 10.10 beta line. `openclaw update --channel beta` installs 2026.10.10-beta.1 today. This site documents 2026.10.4 and will move when npm `latest` does.
 
 The v2026.6.11 regression where tools returned empty output after the first call in a turn (issue [#98528](https://github.com/openclaw/openclaw/issues/98528)) is closed; update to the current release.
 

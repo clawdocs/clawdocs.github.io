@@ -277,6 +277,12 @@ Skills are enabled or given keys under `skills.entries.<name>`. Plugins are conf
 }
 ```
 
+Self-learning lives under `skills.workshop` (`autonomous.mode`: `auto`, `propose` or `off`; plus `approvalPolicy`, `maxPending`, `maxSkillBytes`). See [Skill Workshop](/guides/skill-workshop).
+
+:::warning Changing in 2026.10.10 (beta)
+2026.10.10-beta.1 (npm `beta`, 2026-10-15; not in 2026.10.4) removes `propose` mode, `skills.workshop.approvalPolicy` and `skills.workshop.maxPending`. `openclaw doctor --fix` rewrites `mode: "propose"` to `"off"`, which turns learning off. If you set `propose`, re-check the mode after upgrading.
+:::
+
 Reference: [Configuration - MCP, skills, and plugins](https://docs.openclaw.ai/gateway/config-extensions), [`openclaw mcp`](https://docs.openclaw.ai/cli/mcp), [Memory config](https://docs.openclaw.ai/reference/memory-config).
 
 ### `logging`

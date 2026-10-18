@@ -73,6 +73,10 @@ Do not use `sudo npm`. Point npm's global prefix at a directory you own (for exa
 
 Both desktop apps can set up a local Gateway on first run or connect to a remote one.
 
+:::warning Changing in 2026.10.10 (beta)
+2026.10.10-beta.1 (npm `beta`, 2026-10-15; not in 2026.10.4) requires **macOS 26.2, iOS 26.2 and Safari 26.2** or newer for the native apps and the Control UI ([PR #168595](https://github.com/openclaw/openclaw/pull/168595)). 2026.10.4's macOS app needs macOS 15.0 or later. If a Mac, iPhone or iPad you use cannot update to 26.2, stay on 2026.10.4 for the apps, or use the Control UI from another browser.
+:::
+
 ## Method 4: Docker
 
 Use Docker for a headless server or an isolated Gateway. The supported path is the setup script in the repo, which builds or pulls the image, runs onboarding, writes a Gateway token to `.env` and starts Docker Compose:

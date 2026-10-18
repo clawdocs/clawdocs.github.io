@@ -84,7 +84,7 @@ openclaw channels status --probe
 
 With the default hot reload, a running Gateway applies new channel config without a restart. If the Gateway is not running, start it with `openclaw gateway start` (service) or `openclaw gateway run` (foreground).
 
-In 2026.10.4, `openclaw plugins install @openclaw/<id>` installs from npm first and falls back to the package's ClawHub listing only when the npm target is unavailable; prefix `npm:` or `clawhub:` to force a source. Reference: [`openclaw channels`](https://docs.openclaw.ai/cli/channels), [plugins](https://docs.openclaw.ai/tools/plugin).
+In 2026.10.4, `openclaw plugins install @openclaw/<id>` installs from npm first and falls back to the package's ClawHub listing only when the npm target is unavailable; prefix `npm:` or `clawhub:` to force a source. Upstream `main` (not yet in any release, including 2026.10.10-beta.1) resolves bare names through ClawHub instead, with no npm fallback ([PR #173669](https://github.com/openclaw/openclaw/pull/173669)); the official `@openclaw/*` channel plugins install either way, but scripts that need npm should say `npm:`. Reference: [`openclaw channels`](https://docs.openclaw.ai/cli/channels), [plugins](https://docs.openclaw.ai/tools/plugin).
 
 ---
 
@@ -310,8 +310,8 @@ openclaw channels status --probe
 
 OpenClaw 2026.10.4 has no built-in X / Twitter channel.
 
-:::note Next release
-Upstream `main` adds a bundled **X channel** (`x`) that turns mentions of your bot account into conversations and posts public replies, only for allowlisted authors by default, with no DMs, likes or original posts. It is not in 2026.10.4. See [docs.openclaw.ai/channels/x](https://docs.openclaw.ai/channels/x) once you upgrade.
+:::note Coming in 2026.10.10 (beta)
+2026.10.10-beta.1 (npm `beta`, 2026-10-15; not in 2026.10.4) adds an **X channel plugin** (`x`, [PR #165138](https://github.com/openclaw/openclaw/pull/165138)). It turns mentions of your bot account into conversations and posts public replies, only for allowlisted authors by default. It uses X Activity API streaming or mention polling, has an optional guest mode for unknown authors, and enforces daily and monthly X API cost limits. No DMs, likes or original posts. Until it is stable, use TweetClaw below or wait; see [docs.openclaw.ai/channels/x](https://docs.openclaw.ai/channels/x) once you upgrade.
 :::
 
 For X automation today (search, follower export, monitors, giveaways), [TweetClaw](https://github.com/Xquik-dev/tweetclaw) is a **third-party** plugin backed by Xquik's paid API:

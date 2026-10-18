@@ -468,7 +468,7 @@ See [ClawHub — Publishing](https://docs.openclaw.ai/clawhub/publishing) for ow
 
 ### Via Skill Workshop
 
-Skills that the agent writes for itself go through [Skill Workshop](/guides/skill-workshop), not through your workspace folder.
+Skills that the agent writes for itself go through [Skill Workshop](/guides/skill-workshop), not through your workspace folder. On 2026.10.4 you can make them wait for review with `propose` mode. 2026.10.10-beta.1 (npm `beta`, 2026-10-15) removes proposals: changes apply immediately with Undo, and `openclaw doctor --fix` rewrites `propose` to `off`, which disables learning. Do not rely on `propose` as a lasting review gate.
 
 ---
 
@@ -506,7 +506,7 @@ There is no `openclaw skill` (singular) or `openclaw clawhub` command.
 ## See Also
 
 - [ClawHub](/guides/clawhub): find, verify and install community skills
-- [Skill Workshop](/guides/skill-workshop): skills the agent proposes for itself
+- [Skill Workshop](/guides/skill-workshop): skills the agent writes for itself
 - [Plugin System](/guides/plugin-system): when you need real code, not instructions
 - [Security hardening](/security/hardening): sandboxing and approvals
 - Upstream: [Creating skills](https://docs.openclaw.ai/tools/creating-skills), [Skills](https://docs.openclaw.ai/tools/skills), [Skills config](https://docs.openclaw.ai/tools/skills-config), [`openclaw skills`](https://docs.openclaw.ai/cli/skills)
