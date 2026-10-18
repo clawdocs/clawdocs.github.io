@@ -34,7 +34,7 @@ Smaller models answer faster. Use them where quality allows:
 
 | Need | Example ref |
 |---|---|
-| Interactive chat, quick replies | `anthropic/claude-haiku-5-5`, `anthropic/claude-sonnet-5-5`, `google/gemini-3.8-flash` |
+| Interactive chat, quick replies | `anthropic/claude-haiku-5-5`, `anthropic/claude-sonnet-5-5`, `google/gemini-3.7-flash` |
 | Hard reasoning, long agent runs | `anthropic/claude-opus-5-5`, `anthropic/claude-fable-5-1` (slower, longer turns) |
 | Specialised fast inference | Providers such as [Groq](https://docs.openclaw.ai/providers/groq) and [Cerebras](https://docs.openclaw.ai/providers/cerebras) |
 

@@ -9,7 +9,7 @@ keywords: [openclaw, openclaw cost, reduce cost, save money, api cost, token opt
 
 # Cost Management
 
-OpenClaw itself is free (MIT licence). What you pay for is model usage: every agent turn, heartbeat, utility task (titles, summaries), embedding and paid tool call goes to a provider that bills per token or draws on a plan quota. This page explains where the tokens go, how to estimate a bill, and which settings reduce it. It is provider-neutral; prices below are examples.
+OpenClaw itself is free (MIT licence). What you pay for is model usage: every agent turn, heartbeat, utility task (titles, narration, recaps), embedding and paid tool call goes to a provider that bills per token or draws on a plan quota. This page explains where the tokens go, how to estimate a bill, and which settings reduce it. It is provider-neutral; prices below are examples.
 
 :::warning OpenClaw has no built-in spend cap
 There is no `daily_budget_usd` or `monthly_budget_usd` setting. The config schema is strict, so invented keys like these stop the Gateway from starting ([configuration](https://docs.openclaw.ai/gateway/configuration)). Set hard limits where billing happens: in your provider's console, on an OpenRouter or ClawRouter key, or by using a subscription plan with fixed quotas.
@@ -22,7 +22,7 @@ There is no `daily_budget_usd` or `monthly_budget_usd` setting. The config schem
 | Agent turns | Your messages and the tool loop that follows. Each request resends the system prompt, workspace bootstrap files, tool definitions and session history. | Model choice, `/compact`, `/new`, prompt caching |
 | Heartbeats | Scheduled main-session turns, every `30m` by default (`1h` with Anthropic OAuth or Claude CLI auth) | `every`, `activeHours`, `isolatedSession`, `lightContext`, a cheaper `heartbeat.model` |
 | Automations | Each cron/automation job is its own agent run | Job schedule and `--model` |
-| Utility tasks | Session titles, progress narration, recaps, summaries | `agents.defaults.utilityModel` |
+| Utility tasks | Session and thread titles, progress narration, Activity recaps | `agents.defaults.utilityModel` |
 | Other paid features | Media understanding, image and video generation, memory embeddings, web search and fetch, speech | Turn off what you don't use |
 
 Upstream lists every feature that can spend a key in [API usage and costs](https://docs.openclaw.ai/reference/api-usage-costs), and explains how the prompt is built in [Token use](https://docs.openclaw.ai/reference/token-use).
@@ -99,7 +99,7 @@ Keep a capable primary model, and send background work somewhere cheaper:
         primary: "anthropic/claude-sonnet-5-5",
         fallbacks: ["anthropic/claude-haiku-5-5"],
       },
-      // Short internal tasks: titles, narration, recaps, summaries
+      // Short internal tasks: titles, progress narration, Activity recaps
       utilityModel: "anthropic/claude-haiku-5-5",
       heartbeat: {
         every: "1h",
