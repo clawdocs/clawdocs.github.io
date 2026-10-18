@@ -37,6 +37,7 @@ flowchart LR
 | [OpenClaw Launch](#openclawlaunch) | Managed | $6/mo | No | No | AI credits, fast setup |
 | [MyClaw.ai](#myclawai) | Managed | $9/mo | No | Partial | Cheapest dedicated managed |
 | [RunClaw.ai](#runclawai) | Managed | ~$13/mo | No | Yes | Transparent managed (Hetzner DE) |
+| [OneClickClaw.io](#oneclickclaw) | Managed VPS | €14.99/mo | Yes (Hobbyist, Pro) | Yes | OpenClaw or Hermes Agent, 7-day free trial |
 | [OpenClaw Cloud](#openclaw-cloud) | Managed | $19/mo | Free model | Yes | Free trial, own URL |
 | [ClawHosters](#clawhosters) | Managed VPS | €19/mo | — | Yes | GDPR, German servers |
 | [Molty Hosting](#molty-hosting) | Managed | $19.99/mo | No | — | WebChat dashboard |
@@ -193,6 +194,30 @@ GDPR-compliant managed hosting on German VPS infrastructure.
 - **GDPR**: Full compliance (German data centers)
 - **LLM**: BYOK (bring your own API keys — Anthropic, OpenAI, Google)
 - **Promos**: 25% off with code `LAUNCH-SUB`
+
+### OneClickClaw.io {#oneclickclaw}
+
+Managed hosting on a dedicated EU server for each customer, with OpenClaw or Hermes Agent installed on the same plans and prices.
+
+- **URL**: [oneclickclaw.io/openclaw](https://oneclickclaw.io/openclaw)
+- **Pricing**:
+
+| Plan | Monthly | Annual | Specs |
+|------|---------|--------|-------|
+| Starter | €14.99/mo | €149.88/yr | 2 vCPU, 4 GB RAM, 15 GB NVMe SSD |
+| Hobbyist | €25.99/mo | €251.88/yr | 4 vCPU, 8 GB RAM, 25 GB NVMe SSD |
+| Pro | €49.99/mo | €479.88/yr | 8 vCPU, 16 GB RAM, 40 GB NVMe SSD |
+
+- **Free trial**: 7 days on a dedicated Starter server, sign in with a Google account, no credit card. The trial server and its data are removed at the end of day 7 unless a payment method is added
+- **Setup**: Under 10 minutes for OpenClaw; the terminal and server setup are handled for you
+- **Infrastructure**: Dedicated single-tenant VPS on Webdock in Denmark (EU), AMD EPYC processors
+- **Channels**: Telegram, WhatsApp, Discord, Web Chat and more (20+ channels)
+- **LLM**: BYOK from 25+ providers, or sign in with a ChatGPT or Grok subscription (Hermes Agent also accepts Nous Portal and MiniMax). AI usage is billed by your own provider
+- **Local LLMs**: Ollama on the Hobbyist and Pro plans
+- **Features**: SSL and custom domain, firewall, daily and weekly snapshots, DDoS protection, 24/7 health monitoring, auto-updates with version pinning, optional SSH access
+- **Payment**: Stripe in EUR (Visa, Mastercard, American Express, SEPA Direct Debit), monthly or annual, cancel any time
+- **GDPR**: Servers in Denmark, operated from Greece (EU)
+- **Hermes Agent**: Same plans and prices at [oneclickclaw.io/hermes](https://oneclickclaw.io/hermes)
 
 ### ClawBook.io {#clawbookio}
 
