@@ -1,467 +1,243 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Voice & Multimodal
-description: Add voice control, vision, image analysis, audio handling, and multimodal capabilities to your OpenClaw agent
-keywords: [openclaw, voice, multimodal, speech, vision, image analysis]
+description: Voice notes, text-to-speech, Talk mode, Voice Wake, image understanding, image and music generation in OpenClaw — the built-in features, their config keys, and what to watch out for
+keywords: [openclaw, voice, tts, speech to text, talk mode, multimodal, vision, image generation]
 ---
 
 # Voice & Multimodal
 
-OpenClaw can see images, hear voice messages, speak back in natural voice, analyze screenshots, generate images, and stream real-time audio — all through its standard channel and skill architecture. This guide covers every multimodal capability and how to wire it up.
+Most multimodal features are now **built in**. You do not need a Whisper skill to transcribe voice notes, a TTS skill to speak, or a DALL-E skill to draw. You pick providers in config and the Gateway does the rest. This page summarises each feature with a tested config and links the upstream reference. Checked against OpenClaw **v2026.10.4** on 2026-10-18.
 
-:::tip Start here
-The fastest path to multimodal: enable **Whisper** for voice-to-text on Telegram, configure a **vision-capable model**, and install an **image generation skill** from ClawHub. You'll have a voice-controlled, vision-enabled, image-generating agent in under 30 minutes.
-:::
-
----
-
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────────────┐
-│                  Channel Layer                    │
-│  Telegram · WhatsApp · Discord · Signal · Slack  │
-│         (receives voice, images, files)           │
-└──────────────┬──────────────────┬────────────────┘
-               │                  │
-        ┌──────▼──────┐   ┌──────▼──────┐
-        │  STT Engine │   │  Attachment  │
-        │  (Whisper)  │   │  Parser      │
-        └──────┬──────┘   └──────┬──────┘
-               │                  │
-        ┌──────▼──────────────────▼──────┐
-        │          Brain (LLM)            │
-        │  Claude · GPT-4o · Gemini      │
-        │  (text + vision + reasoning)    │
-        └──────┬──────────────────┬──────┘
-               │                  │
-        ┌──────▼──────┐   ┌──────▼──────┐
-        │  TTS Engine │   │  Skills      │
-        │  (Edge/11L) │   │  (DALL-E,    │
-        │             │   │   SD, etc.)  │
-        └──────┬──────┘   └──────┬──────┘
-               │                  │
-        ┌──────▼──────────────────▼──────┐
-        │         Channel Reply           │
-        │  (voice + images + text)        │
-        └────────────────────────────────┘
-```
-
-Every multimodal feature flows through the same message pipeline — channels handle media I/O, the brain processes it, and skills/TTS engines generate media output. No special architecture changes needed.
+| You want | Built-in feature | Config key | Upstream |
+|----------|------------------|-----------|----------|
+| Understand voice notes | Audio transcription (media understanding) | `tools.media.audio` | [Audio and voice notes](https://docs.openclaw.ai/nodes/audio) |
+| Understand images and video | Media understanding, or a vision-capable chat model | `tools.media.image`, `tools.media.video` | [Media understanding](https://docs.openclaw.ai/nodes/media-understanding) |
+| Reply with voice | Text-to-speech | `tts` | [TTS](https://docs.openclaw.ai/tools/tts) |
+| Continuous spoken conversation | Talk mode | `talk` | [Talk](https://docs.openclaw.ai/nodes/talk) |
+| "Hey OpenClaw" hands-free | Voice Wake | Control UI → Settings → Talk | [Voice wake](https://docs.openclaw.ai/nodes/voicewake) |
+| Voice in Discord voice channels | Discord voice | `channels.discord.voice` | [Discord voice](https://docs.openclaw.ai/channels/discord/voice-channels) |
+| Phone calls | Voice Call plugin | `@openclaw/voice-call` | [Voice Call](https://docs.openclaw.ai/plugins/voice-call) |
+| Make images | `image_generate` tool | `agents.defaults.mediaModels.image` | [Image generation](https://docs.openclaw.ai/tools/image-generation) |
+| Make music | `music_generate` tool | `agents.defaults.mediaModels.music` | [Music generation](https://docs.openclaw.ai/tools/music-generation) |
+| Make video | `video_generate` tool | `agents.defaults.mediaModels.video` | [Video Generation](/guides/video-generation) |
+| Screenshots of web pages | Built-in browser tool | `browser` | [Browser](https://docs.openclaw.ai/tools/browser) |
 
 ---
 
 ## Media Attachments
 
-All 50+ channel adapters support a standard attachment interface:
+Channels pass images, audio, video and documents to the Gateway as attachments. What a channel can carry varies: Telegram, WhatsApp, Matrix and Feishu support native voice notes; most others take audio as a file attachment. Size limits are per channel (`mediaMaxMb`) and per agent (`agents.defaults.mediaMaxMb`, default 20 MB).
 
-```typescript
-interface ChannelMessage {
-  text: string;
-  sender: string;
-  channel: string;
-  attachments?: Array<{
-    type: 'image' | 'file' | 'audio' | 'video' | 'link';
-    url: string;
-    name?: string;
-    mimeType?: string;
-  }>;
-}
-```
-
-When a user sends a photo, voice note, or file through any channel, it arrives as an attachment with type metadata. The brain receives both the text and attachment URLs in its context.
-
-### Supported Media by Channel
-
-| Channel | Images | Voice/Audio | Video | Files |
-|---------|--------|-------------|-------|-------|
-| Telegram | Yes | Yes (OGG) | Yes | Yes |
-| WhatsApp | Yes | Yes (OGG) | Yes | Yes |
-| Discord | Yes | Yes | Yes | Yes |
-| Slack | Yes | Yes | Yes | Yes |
-| Signal | Yes | Yes | Yes | Yes |
-| iMessage | Yes | Yes | Yes | Yes |
-| Matrix | Yes | Yes | Yes | Yes |
-| Teams | Yes | No | No | Yes |
-
-### Channel Permissions
-
-Control media sending per channel:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "channels": {
-    "telegram": {
-      "permissions": {
-        "send_media": true,
-        "send_voice": true,
-        "receive_media": true
-      }
-    }
-  }
-}
-```
+There is no per-channel `permissions` block for media. Whether the agent can *send* media on a channel follows the channel's own action gates and tool policy (see [Channels](/guides/channels#what-the-agent-may-do-per-channel)). A `channels.<id>.permissions` key is rejected by the strict config schema, and the Gateway will not start.
 
 ---
 
-## Voice Control
+## Voice Notes In: Transcription {#voice-control}
 
-### Speech-to-Text (STT)
+When someone sends a voice note, OpenClaw transcribes it **before** the agent sees the message, replaces the body with the transcript, and lets slash commands in speech work. It is on by default and auto-detects what you have, stopping at the first that works:
 
-OpenAI Whisper transcribes incoming voice messages into text for the brain to process.
+1. The active reply model, if its provider understands audio.
+2. Any configured provider key that supports transcription, in this order: Groq, OpenAI, xAI, Deepgram, Google, SenseAudio, ElevenLabs, Mistral.
+3. Local CLIs, if no provider key is available: `whisper-cli` (whisper.cpp), `sherpa-onnx-offline`, `parakeet-mlx` (Apple Silicon), then the Python `whisper` CLI.
 
-#### Install Whisper
-
-```bash
-# Install via pip
-pip install openai-whisper
-
-# Or with conda
-conda install -c conda-forge openai-whisper
-```
-
-#### Create a Voice Transcription Skill
-
-```yaml title="skills/voice-transcribe/skill.yaml"
-name: voice-transcribe
-description: Transcribe voice messages using Whisper
-trigger: attachment:audio
-tools:
-  - shell
-```
-
-```markdown title="skills/voice-transcribe/SKILL.md"
-## Voice Transcription
-
-When a voice message arrives:
-1. Download the audio attachment to /tmp/voice_msg.ogg
-2. Run: whisper --model base --output_format txt /tmp/voice_msg.ogg
-3. Read the transcription from /tmp/voice_msg.txt
-4. Process the transcribed text as a normal user message
-5. Clean up temporary files
-```
-
-#### Whisper Model Selection
-
-| Model | Size | Speed | Accuracy | Best For |
-|-------|------|-------|----------|----------|
-| `tiny` | 39 MB | Fastest | Good | Quick responses, low-resource VPS |
-| `base` | 74 MB | Fast | Better | **Recommended default** |
-| `small` | 244 MB | Medium | Good | Better accuracy when needed |
-| `medium` | 769 MB | Slow | Very good | Non-English or accented speech |
-| `large-v3` | 1.5 GB | Slowest | Best | Maximum accuracy, GPU recommended |
+See what it picked without transcribing anything:
 
 ```bash
-# Test transcription quality
-whisper --model base --language en voice_message.ogg
-
-# Force English for faster processing
-whisper --model base --language en --task transcribe voice_message.ogg
+openclaw capability audio providers
 ```
 
-### Text-to-Speech (TTS)
+To pin a provider with a local fallback:
 
-Two options: free Edge TTS or premium ElevenLabs.
-
-#### Edge TTS (Free)
-
-Microsoft's Edge TTS engine — high quality, zero cost, no API key:
-
-```bash
-# Install
-pip install edge-tts
-
-# Generate speech
-edge-tts --text "Hello, I'm your OpenClaw agent" \
-  --voice en-US-AriaNeural \
-  --write-media reply.mp3
+```json5 title="~/.openclaw/openclaw.json"
+{
+  tools: {
+    media: {
+      models: [
+        { provider: "openai", model: "gpt-4o-transcribe", capabilities: ["audio"] },
+        {
+          type: "cli",
+          command: "whisper",
+          args: ["--model", "base", "{{AttachmentPath}}"],
+          timeoutSeconds: 45,
+          capabilities: ["audio"],
+        },
+      ],
+      audio: { enabled: true, echoTranscript: true },   // echo the transcript back to chat
+    },
+  },
+}
 ```
 
-**Popular voices:**
-| Voice | Style |
-|-------|-------|
-| `en-US-AriaNeural` | Friendly, natural |
-| `en-US-GuyNeural` | Casual male |
-| `en-GB-SoniaNeural` | British female |
-| `en-US-JennyNeural` | Professional female |
+For fully local transcription, install whisper.cpp (`whisper-cli` on `PATH`) or the Python CLI (`pip install openai-whisper`, which also needs `ffmpeg`), and do not configure a cloud transcription key. Note that a cloud provider key, once configured, wins over local binaries. Set `tools.media.audio.enabled: false` to turn transcription off.
 
-```bash
-# List all available voices
-edge-tts --list-voices | grep en-
+---
+
+## Voice Out: Text-to-Speech {#voice-reply}
+
+TTS turns replies into audio: native voice notes on Feishu, Matrix, Telegram and WhatsApp, an audio attachment everywhere else. It is **off** by default.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  tts: {
+    auto: "inbound",           // speak only when the user sent a voice note
+    provider: "microsoft",     // no API key needed
+  },
+}
 ```
 
-#### ElevenLabs (Premium)
+`auto` is `off`, `always`, `inbound` (reply with voice to voice) or `tagged` (only when the reply contains `[[tts:...]]` directives). `inbound` is the least surprising choice for most people.
 
-Custom voice cloning, highest quality:
+Providers (as of v2026.10.4): Azure Speech, DeepInfra, ElevenLabs, Fish Audio, Google Gemini, Gradium, Inworld, Local CLI, **Microsoft** (Edge neural voices via `node-edge-tts`, no key, best-effort with no SLA), MiniMax, OpenAI, OpenRouter, Volcengine, Vydra, xAI and Xiaomi MiMo. The old provider id `edge` is now `microsoft`; `openclaw doctor --fix` rewrites it. A paid provider with explicit voice settings:
 
-```bash title="Environment"
-export ELEVENLABS_API_KEY=your_key_here
+```json5 title="~/.openclaw/openclaw.json"
+{
+  tts: {
+    auto: "always",
+    provider: "elevenlabs",
+    providers: {
+      elevenlabs: {
+        apiKey: "${ELEVENLABS_API_KEY}",
+        modelId: "eleven_multilingual_v2",
+        speakerVoiceId: "EXAVITQu4vr4xnSDxMaL",
+      },
+    },
+  },
+}
 ```
 
-```yaml title="skills/voice-reply/skill.yaml"
-name: voice-reply
-description: Reply with voice using ElevenLabs
-trigger: "speak|say|voice"
-tools:
-  - shell
-  - http
+From chat:
+
+- `/tts status`: current state and the last attempt's fallback chain
+- `/tts on` / `/tts off`, `/tts chat on|off|default` (this chat only)
+- `/tts audio <text>`: a one-off voice reply
+- `/tts latest`: speak the last reply
+- `/tts provider <id>`
+
+:::note ffmpeg
+WhatsApp and Feishu voice notes need `ffmpeg` on the Gateway host when the provider's audio must be converted to Ogg/Opus. Without it, WhatsApp voice sends fail.
+:::
+
+Provider prices change often; check the provider's own pricing page rather than any number copied into a guide. Reference: [TTS quickstart](https://docs.openclaw.ai/tools/tts/quickstart), [TTS configuration](https://docs.openclaw.ai/tools/tts/configuration).
+
+---
+
+## Talk Mode and Voice Wake {#voice-agent}
+
+**Talk mode** is a continuous spoken conversation: listen, send the transcript to the agent, speak the answer, repeat. It runs in the macOS, iOS, Android and Apple Watch apps and in the browser Control UI. It has three shapes:
+
+- `stt-tts`: device speech recognition plus the TTS above
+- `realtime`: a provider's realtime voice model (OpenAI realtime and GPT-Live, among others) with the agent consulted for real work
+- `transcription`: captions or dictation with no spoken reply
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  talk: {
+    provider: "elevenlabs",
+    providers: {
+      elevenlabs: { voiceId: "<elevenlabs-voice-id>", modelId: "eleven_v3" },
+    },
+    interruptOnSpeech: true,
+    realtime: {
+      provider: "openai",
+      mode: "realtime",
+      transport: "webrtc",
+      brain: "agent-consult",
+    },
+  },
+}
 ```
 
-````markdown title="skills/voice-reply/SKILL.md"
-## Voice Reply
+The old top-level `talk.mode`, `talk.transport`, `talk.brain`, `talk.model` and `talk.voice` keys are retired; they live under `talk.realtime` and `talk.providers` now, and `openclaw doctor` refuses the old ones. Pick models and voices in **Control UI → Settings → Talk**.
 
-When asked to speak or reply with voice:
-1. Generate the text response normally
-2. Call ElevenLabs API:
-   ```
-   curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/YOUR_VOICE_ID" \
-     -H "xi-api-key: $ELEVENLABS_API_KEY" \
-     -H "Content-Type: application/json" \
-     -d '{"text": "YOUR_RESPONSE", "model_id": "eleven_turbo_v2_5"}' \
-     --output /tmp/reply.mp3
-   ```
-3. Send the audio file as a reply attachment
-4. Clean up temporary files
-````
+**Voice Wake** is a single global list of wake words owned by the Gateway (defaults: `openclaw`, `claude`, `computer`). Edit it in **Control UI → Settings → Talk**; the apps toggle listening locally.
 
-### Full Voice Pipeline
+**Discord voice channels**: the Discord plugin can join a voice channel with `/vc join` and hold a spoken conversation, including with GPT-Live. Setup: [Discord voice](https://docs.openclaw.ai/channels/discord/voice-channels).
 
-Combine STT + brain + TTS for a complete voice-controlled agent:
+**Phone calls**: the Voice Call plugin (`openclaw plugins install @openclaw/voice-call`) handles telephony through Plivo, Telnyx or Twilio.
 
-```yaml title="skills/voice-agent/skill.yaml"
-name: voice-agent
-description: Full voice-in, voice-out pipeline
-trigger: attachment:audio
-tools:
-  - shell
-  - http
-```
-
-```markdown title="skills/voice-agent/SKILL.md"
-## Voice Agent
-
-Complete voice pipeline:
-1. **Transcribe** the incoming voice message with Whisper:
-   `whisper --model base --language en --output_format txt /tmp/incoming.ogg`
-2. **Process** the transcription as a text message — reason, plan, act
-3. **Synthesize** the response as speech:
-   `edge-tts --text "YOUR_RESPONSE" --voice en-US-AriaNeural --write-media /tmp/reply.mp3`
-4. **Send** the audio file back through the channel
-5. Also include the text response for accessibility
-```
-
-### Voice Cost Comparison
-
-| Engine | Cost | Quality | Latency |
-|--------|------|---------|---------|
-| Whisper (local) | Free | Excellent | 2-5s (CPU), under 1s (GPU) |
-| Edge TTS | Free | Very good | 1-3s |
-| ElevenLabs | ~$0.30/1K chars | Excellent | 1-2s |
-| Google Cloud TTS | ~$0.016/1K chars | Very good | 1-2s |
-
-For most setups, **Whisper + Edge TTS** gives production-quality voice at zero cost.
+:::warning Voice is still the agent
+A spoken request reaches the same agent, with the same tools, as a typed one. Anyone in earshot of a wake-word device, or anyone who can call your number, can ask it to act. Keep exec approvals on and read [Security Hardening](/security/hardening).
+:::
 
 ---
 
 ## Vision & Image Analysis
 
-### Vision-Capable Models
-
-These models can analyze images, screenshots, documents, and visual content directly:
-
-| Model | Vision Support | Best For |
-|-------|---------------|----------|
-| Claude Sonnet 4.6 | Yes | Detailed image analysis, document understanding |
-| Claude Opus 4.8 | Yes | Complex visual reasoning |
-| GPT-4o | Yes | General multimodal, fast |
-| Gemini 2.5 Pro | Yes | Large images, long documents |
-| Gemini 2.5 Flash | Yes | Fast visual analysis, low cost |
-| LLaVA (local) | Yes | Free, on-device vision |
-
-#### Configure a Vision Model
+Current frontier chat models accept images directly: for example `anthropic/claude-sonnet-5-5` and `anthropic/claude-opus-5-5`, and the current OpenAI and Gemini chat models. Check the provider page if you are unsure. If your main model is vision-capable, an image sent on any channel just works.
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6"
-  }
+  agents: {
+    defaults: { model: { primary: "anthropic/claude-sonnet-5-5" } },
+  },
 }
 ```
 
-When a user sends an image through any channel, the brain automatically receives it if the model supports vision. No additional configuration needed — the channel adapter passes image attachments to the LLM.
-
-### Image Analysis Skill
-
-For explicit image analysis commands:
-
-```yaml title="skills/analyze-image/skill.yaml"
-name: analyze-image
-description: Analyze images sent by the user
-trigger: "analyze|describe|what is this|what do you see"
-tools:
-  - shell
-```
-
-```markdown title="skills/analyze-image/SKILL.md"
-## Image Analysis
-
-When the user sends an image and asks for analysis:
-1. The image is already in your context via the channel attachment
-2. Describe what you see in detail
-3. Answer any specific questions about the image
-4. If asked to extract text, perform OCR on the image content
-5. If asked about a screenshot, identify the application and UI elements
-```
-
-### Browser Screenshots
-
-The built-in browser Hand captures screenshots for visual analysis:
+If your main model is text-only (many local models are), let media understanding describe images first with a cheaper vision model:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "hands": {
-    "browser": {
-      "enabled": true,
-      "headless": true,
-      "timeout": 60000,
-      "allowed_domains": ["*"]
-    }
-  }
+  tools: {
+    media: {
+      models: [{ provider: "google", model: "gemini-3-flash-preview", capabilities: ["image", "video"] }],
+      image: { preferredModel: "google/gemini-3-flash-preview" },
+      video: { enabled: true },
+    },
+  },
 }
 ```
 
-Use cases:
-- **Web monitoring:** Screenshot a page, analyze for changes
-- **Visual QA:** Capture a UI, check layout and content
-- **Data extraction:** Screenshot a dashboard, read values from charts
+The image is then passed to the agent as an `[Image]` text block.
 
-### MCP Vision Servers
+### Browser screenshots
 
-```json5 title="Puppeteer MCP for screenshots"
+The built-in browser tool can open pages and take screenshots for the agent to read; no Puppeteer MCP server is needed (`@modelcontextprotocol/server-puppeteer` is deprecated on npm).
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "mcp": {
-    "servers": {
-      "puppeteer": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
-      }
-    }
-  }
+  browser: { enabled: true, headless: true },
 }
 ```
 
-The Puppeteer MCP server provides `puppeteer_screenshot` and `puppeteer_navigate` tools for programmatic screenshot capture.
+A browser gives the agent the web with your network position. Keep it on a separate profile and read the browser section of [Security Hardening](/security/hardening). Reference: [Browser](https://docs.openclaw.ai/tools/browser).
 
 ---
 
 ## Image Generation
 
-### ClawHub Skills
+The built-in `image_generate` tool appears once an image provider is available. It runs asynchronously and delivers the image back to the chat. Providers include OpenAI (default `openai/gpt-image-2`), Google, fal, ComfyUI, MiniMax, xAI, OpenRouter and others.
 
-60+ image and video generation skills available:
-
-```bash
-# Browse image generation skills
-openclaw clawhub search "image generation"
-openclaw clawhub search "DALL-E"
-openclaw clawhub search "stable diffusion"
-
-# Install one
-openclaw clawhub install dalle-generator
-```
-
-### DALL-E Skill
-
-```yaml title="skills/dalle/skill.yaml"
-name: dalle
-description: Generate images with DALL-E
-trigger: "generate|draw|create image|make a picture"
-tools:
-  - http
-```
-
-````markdown title="skills/dalle/SKILL.md"
-## Image Generation
-
-When the user asks to generate an image:
-1. Craft a detailed prompt from their request
-2. Call the OpenAI Images API:
-   ```
-   curl -X POST "https://api.openai.com/v1/images/generations" \
-     -H "Authorization: Bearer $OPENAI_API_KEY" \
-     -H "Content-Type: application/json" \
-     -d '{"model": "dall-e-3", "prompt": "DETAILED_PROMPT", "size": "1024x1024", "quality": "standard"}'
-   ```
-3. Download the generated image
-4. Send it as a channel attachment
-````
-
-### Stable Diffusion (Local)
-
-Run image generation locally with no API costs:
-
-```bash
-# Install via Ollama (if supported) or standalone
-# Using ComfyUI for local Stable Diffusion
-git clone https://github.com/comfyanonymous/ComfyUI
-cd ComfyUI && pip install -r requirements.txt
-python main.py --listen 0.0.0.0 --port 8188
-```
-
-Connect via MCP or HTTP skill for zero-cost image generation on GPU hardware.
-
----
-
-## Real-Time Audio Streaming
-
-### Gemini Live API
-
-For real-time bidirectional audio (used by VisionClaw smart glasses):
-
-```typescript
-const ws = new WebSocket('wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent');
-
-ws.onopen = () => {
-  // Send setup message
-  ws.send(JSON.stringify({
-    setup: {
-      model: 'models/gemini-2.0-flash-exp',
-      generationConfig: {
-        responseModalities: ['AUDIO'],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Aoede' }
-          }
-        }
-      }
-    }
-  }));
-};
-
-// Stream audio chunks
-function sendAudioChunk(base64Audio: string) {
-  ws.send(JSON.stringify({
-    realtimeInput: {
-      mediaChunks: [{
-        mimeType: 'audio/pcm;rate=16000',
-        data: base64Audio
-      }]
-    }
-  }));
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    defaults: {
+      mediaModels: {
+        image: {
+          primary: "openai/gpt-image-2",
+          fallbacks: ["google/gemini-3.1-flash-image"],
+        },
+      },
+    },
+  },
 }
 ```
 
-This enables sub-second voice interaction — the user speaks, the model responds in audio, with no STT/TTS pipeline latency.
+### Local generation with ComfyUI
 
-### When to Use Real-Time vs Pipeline
+ComfyUI ([Comfy-Org/ComfyUI](https://github.com/Comfy-Org/ComfyUI)) is supported as an image (and music) provider that runs your saved workflows, locally or on Comfy Cloud. Run ComfyUI on `127.0.0.1` (its default); do not start it with `--listen 0.0.0.0`, which exposes an unauthenticated server that can run arbitrary workflows to your whole network. Setup: [ComfyUI provider](https://docs.openclaw.ai/providers/comfy).
 
-| Approach | Latency | Cost | Quality | Best For |
-|----------|---------|------|---------|----------|
-| **Whisper + Edge TTS** | 3-8s | Free | Very good | Messaging apps, async |
-| **Gemini Live** | under 1s | API cost | Good | Real-time voice, wearables |
-| **ElevenLabs Streaming** | 1-2s | Premium | Excellent | Premium voice quality |
+### Skills
+
+If you want a specific third-party service, search ClawHub first and read the skill before installing:
+
+```bash
+openclaw skills search image
+```
+
+Music works the same way with `music_generate` (ComfyUI, fal, Google Lyria, MiniMax, OpenRouter), and video with `video_generate`; see [Video Generation](/guides/video-generation).
 
 ---
 
@@ -469,227 +245,51 @@ This enables sub-second voice interaction — the user speaks, the model respond
 
 ### VisionClaw (Smart Glasses)
 
-The VisionClaw project (681 stars) connects Meta Ray-Ban smart glasses to OpenClaw:
+[VisionClaw](https://github.com/Intent-Lab/VisionClaw) (Intent-Lab, about 2,600 stars, active as of 2026-09) is a third-party iOS app that connects Meta Ray-Ban glasses to Gemini Live and an OpenClaw Gateway for voice-and-vision requests. It is not maintained by OpenClaw; review what it can reach before pairing it with your Gateway.
 
-- **Video capture** at ~1 FPS from glasses camera
-- **Bidirectional audio** via Gemini Live API WebSocket
-- **56+ connected skills** from the OpenClaw ecosystem
-- **Fallback mode** using iPhone camera for testing
+### Official apps
 
-```
-Smart Glasses → iOS App → Gemini Live API → OpenClaw Gateway
-     ↑                                            │
-     └────────────── Audio Response ◄──────────────┘
-```
-
-**Requirements:** iOS 17.0+, Xcode 15.0+, Meta Ray-Ban smart glasses (or iPhone camera fallback)
-
-See the [Ecosystem](/reference/ecosystem) page for setup details and repository links.
-
-### ClawPhone (Android)
-
-Run a multimodal agent on a $25 Android smartphone:
-
-- **Camera access** via Termux:API
-- **Screen overlay** daemon for always-on interaction
-- **Hardware control** (sensors, GPS, flashlight)
-- **Remote control** via Discord channel
-
-### macOS Companion
-
-Official menu bar app with:
-- **Voice control** — speak commands directly
-- **Gateway health** monitoring
-- **Debug tools** for development
-- Available as Universal Binary on macOS 15+
+The macOS, iOS and Android apps are OpenClaw **nodes**: they bring Talk, Voice Wake, camera and screen capture, location and notifications to the agent, each behind node pairing and per-command policy. See [Nodes](https://docs.openclaw.ai/nodes).
 
 ---
 
 ## Multimodal Skill Patterns
 
-### Pattern 1: Describe and Act
+Skills are folders with a `SKILL.md` (`name`, `description`, then instructions). They do not have `trigger:` or `tools:` fields: the agent reads the description and decides when the skill applies. A receipt scanner:
 
-Receive an image, analyze it, take action:
-
-```yaml title="skills/receipt-scanner/skill.yaml"
+```markdown title="~/.openclaw/workspace/skills/receipt-scanner/SKILL.md"
+---
 name: receipt-scanner
-description: Scan receipts and log expenses
-trigger: attachment:image
-tools:
-  - shell
-  - filesystem
+description: Extract merchant, date, total and line items when the user sends a photo of a receipt.
+---
+
+# Receipt scanner
+
+When the user sends an image of a receipt:
+
+1. Read the merchant, date, currency, total and line items from the image.
+2. Reply with a short summary and ask before saving anything.
+3. If the user confirms, append one CSV row to `receipts.csv` in the workspace.
+
+If the image is unreadable, say so and ask for a clearer photo. Do not guess totals.
 ```
 
-```markdown title="skills/receipt-scanner/SKILL.md"
-## Receipt Scanner
-
-When an image attachment arrives:
-1. Analyze the image — identify if it's a receipt
-2. Extract: merchant name, date, total amount, line items
-3. Append to ~/expenses.csv: date, merchant, amount, category
-4. Reply with a summary: "Logged $42.50 at Whole Foods (Groceries)"
-```
-
-### Pattern 2: Visual Monitoring
-
-Periodically capture and analyze visual state:
-
-```yaml title="skills/site-monitor/skill.yaml"
-name: site-monitor
-description: Monitor website appearance for changes
-trigger: "monitor site|check site"
-tools:
-  - browser
-  - shell
-```
-
-```markdown title="skills/site-monitor/SKILL.md"
-## Site Monitor
-
-When asked to monitor a site:
-1. Navigate to the URL using the browser
-2. Take a screenshot
-3. Compare against the previous screenshot (stored in ~/.openclaw/screenshots/)
-4. If significant visual changes detected, alert the user
-5. Save the current screenshot for next comparison
-```
-
-### Pattern 3: Multimodal Chain
-
-Combine vision input with media output:
-
-```markdown title="Example: Photo → Description → Voice"
-User sends a photo of a sunset via Telegram
-
-1. Vision model analyzes: "A vibrant sunset over the ocean with 
-   orange and purple hues reflecting on calm water"
-2. Agent crafts a poetic description
-3. Edge TTS converts description to speech
-4. Reply includes both text and voice note
-```
-
-### Pattern 4: Document Processing
-
-Extract and act on document content:
-
-```yaml title="skills/doc-processor/skill.yaml"
-name: doc-processor
-description: Process documents and PDFs
-trigger: attachment:file
-tools:
-  - shell
-  - filesystem
-```
-
-```markdown title="skills/doc-processor/SKILL.md"
-## Document Processor
-
-When a document is attached:
-1. Identify file type (PDF, DOCX, image of text)
-2. For PDFs: extract text, summarize key points
-3. For images of documents: use vision to OCR and extract content
-4. Answer questions about the document
-5. Offer to create action items, summaries, or translations
-```
+The same shape works for "describe this screenshot and file an issue", "summarise this voice memo into my notes" and similar chains. Check that it loaded with `openclaw skills list`. Reference: [Creating skills](https://docs.openclaw.ai/tools/creating-skills) and [Skill Development](/guides/skill-development).
 
 ---
 
-## Configuration Reference
-
-### Full Multimodal Config
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6"
-  },
-
-  "hands": {
-    "browser": {
-      "enabled": true,
-      "headless": true
-    }
-  },
-
-  "channels": {
-    "telegram": {
-      "permissions": {
-        "send_media": true,
-        "send_voice": true,
-        "receive_media": true
-      }
-    }
-  },
-
-  "mcp": {
-    "servers": {
-      "puppeteer": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
-      }
-    }
-  }
-}
-```
-
-### Environment Variables
-
-```bash title="~/.openclaw/.env"
-# Voice
-ELEVENLABS_API_KEY=your_key      # Optional: premium TTS
-OPENAI_API_KEY=your_key           # For Whisper API (if not running locally)
-
-# Image Generation
-OPENAI_API_KEY=your_key           # DALL-E
-STABILITY_API_KEY=your_key        # Stable Diffusion API
-
-# Real-Time Audio
-GOOGLE_API_KEY=your_key           # Gemini Live API
-```
-
----
-
-## Performance Tips
-
-### Voice Latency
-
-- Use Whisper `tiny` or `base` for fastest transcription
-- Run Whisper on GPU for sub-second transcription
-- Use Edge TTS (no network round-trip to paid API)
-- Pre-download Whisper models to avoid cold-start delay
-
-### Vision Cost
-
-- Gemini 2.5 Flash is the cheapest vision model
-- Resize large images before sending to the LLM (saves tokens)
-- Claude charges per image tile — smaller images cost less
-- Cache common visual analysis patterns in skills
-
-### Storage
-
-- Voice messages are temporary — clean up `/tmp` files after processing
-- Screenshots accumulate — set a retention policy
-- Generated images can be large — compress before sending
+## Environment Variables
 
 ```bash
-# Clean up old voice/image temp files (add to cron)
-find /tmp -name "voice_*.ogg" -mtime +1 -delete
-find /tmp -name "reply_*.mp3" -mtime +1 -delete
-find ~/.openclaw/screenshots -mtime +7 -delete
+# ~/.openclaw/.env  (or better: SecretRefs, see Security Hardening)
+OPENAI_API_KEY=sk-...          # transcription, TTS, image generation, realtime Talk
+ELEVENLABS_API_KEY=...         # TTS and Talk voices
+GEMINI_API_KEY=...             # Gemini TTS, image and video understanding
+DEEPGRAM_API_KEY=...           # transcription
+GROQ_API_KEY=...               # fast transcription
 ```
 
-### Resource Usage
-
-| Feature | RAM Impact | CPU Impact | GPU Impact |
-|---------|-----------|-----------|-----------|
-| Whisper tiny | +200 MB | High during transcription | Preferred |
-| Whisper base | +500 MB | High during transcription | Preferred |
-| Whisper large | +3 GB | Very high | Required |
-| Edge TTS | Minimal | Low | None |
-| ElevenLabs | Minimal | None (API) | None |
-| Local Stable Diffusion | +4 GB | Medium | Required (4+ GB VRAM) |
-| Browser screenshots | +200 MB | Low | None |
+Keys in `.env` are readable by the agent. Prefer SecretRefs for anything valuable: [Secrets](https://docs.openclaw.ai/gateway/secrets).
 
 ---
 
@@ -698,55 +298,36 @@ find ~/.openclaw/screenshots -mtime +7 -delete
 ### Voice messages not transcribed
 
 ```bash
-# Check Whisper is installed
-whisper --help
-
-# Test with a sample file
-whisper --model base test.ogg
-
-# Check ffmpeg (required by Whisper)
-ffmpeg -version
+openclaw capability audio providers     # which provider or local CLI was selected
+openclaw logs --follow                  # watch for the transcription line
+which whisper-cli whisper ffmpeg        # local fallbacks on PATH?
 ```
 
-If `ffmpeg` is missing: `sudo apt install ffmpeg`
+Check that `tools.media.audio.enabled` is not `false`, and that the provider key is visible to the **Gateway service**, not just your shell.
 
-### Images not analyzed
+### Images not understood
 
-1. Confirm your model supports vision (Claude Sonnet/Opus, GPT-4o, Gemini)
-2. Check channel permissions include `receive_media: true`
-3. Verify the image URL is accessible to the brain
-4. Check logs: `openclaw logs --filter "attachment" --follow`
+- Is the main model vision-capable? If not, add an `image` entry to `tools.media.models`.
+- Is the file over the channel's `mediaMaxMb` or the agent's `mediaMaxMb`?
 
-### TTS audio not playing
+### TTS audio not arriving
 
-```bash
-# Test Edge TTS directly
-edge-tts --text "test" --voice en-US-AriaNeural --write-media /tmp/test.mp3
+- `/tts status` shows the provider, fallbacks and the last error.
+- On WhatsApp and Feishu, install `ffmpeg` on the Gateway host.
+- With `auto: "inbound"`, you only get audio after sending a voice note.
 
-# Verify the file was created
-ls -la /tmp/test.mp3
+### High latency in voice conversations
 
-# Check the channel can send audio
-openclaw config get channels.telegram.permissions.send_voice
-```
-
-### High latency on voice pipeline
-
-- Switch Whisper to `tiny` model
-- Ensure GPU is being used: `nvidia-smi` (should show whisper process)
-- Run Whisper with `--language en` to skip language detection
-- Consider Gemini Live for real-time voice instead of STT+TTS pipeline
+- Use Talk `realtime` mode instead of a transcribe → reply → TTS round trip.
+- Use a faster transcription provider (Groq, Deepgram) or local whisper.cpp with GPU.
+- Keep the voice agent on a fast model and let it delegate long work.
 
 ---
 
 ## See Also
 
-- [Channels](/guides/channels) — Channel setup and media permissions
-- [Custom Channels](/guides/custom-channels) — Building channels with attachment support
-- [MCP Servers](/guides/mcp-servers) — Puppeteer and media-handling servers
-- [Skill Development](/guides/skill-development) — Building custom skills
-- [Advanced Recipes](/guides/recipes/advanced-recipes) — Voice-controlled agent recipe
-- [Model Selection](/guides/model-selection) — Choosing vision-capable models
-- [Ecosystem](/reference/ecosystem) — VisionClaw, ClawPhone, and companion apps
-- [Local Models](/guides/local-models) — Running Whisper and LLaVA locally
-- [Performance Tuning](/guides/performance-tuning) — Optimizing multimodal costs
+- [Video Generation](/guides/video-generation): `video_generate` and Remotion
+- [Channels & Integrations](/guides/channels): which channels carry voice notes
+- [Skill Development](/guides/skill-development): writing `SKILL.md` skills
+- [Model Selection](/guides/model-selection): choosing models
+- [Security Hardening](/security/hardening): approvals, sandboxing, browser
