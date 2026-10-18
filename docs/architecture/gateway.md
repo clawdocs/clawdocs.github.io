@@ -1,69 +1,50 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: The Gateway
-description: The central long-running process — wire protocol, authentication, internal components, daemon management, and security
+description: The central long-running process — running it as a service, the WebSocket wire protocol, authentication, device pairing, config, logs, and health endpoints
 keywords: [openclaw, gateway, websocket, port 18789, control plane, daemon, wire protocol]
 ---
 
 # The Gateway
 
-The Gateway is OpenClaw's core — a single long-running Node.js process that manages all communication, orchestration, and execution. It binds an HTTP/WebSocket server on `127.0.0.1:18789` and serves as the control plane and message broker for every connected client.
+The Gateway is OpenClaw's core: one long-running Node.js process per host that owns the messaging channels, runs agent turns, and serves a WebSocket + HTTP server on one port (default `127.0.0.1:18789`). The CLI, the Control UI, the desktop and mobile apps, and paired nodes are all clients of it.
+
+Official references: [Gateway runbook](https://docs.openclaw.ai/gateway), [Gateway architecture](https://docs.openclaw.ai/concepts/architecture), [Gateway protocol](https://docs.openclaw.ai/gateway/protocol).
 
 ---
 
-## Starting the Gateway
+## Running the Gateway
 
 ```bash
-# Foreground (development)
-openclaw gateway
+# Foreground (logs to stdout)
+openclaw gateway run
 
-# Daemon mode (production)
-openclaw gateway --daemon
+# Install and start as a service (launchd, systemd user unit, or Windows Scheduled Task)
+openclaw gateway install
+openclaw gateway status
+openclaw gateway restart
+openclaw gateway stop
 
-# Custom port
-openclaw gateway --port 19000
+# Foreground on another port, replacing anything bound to it
+openclaw gateway run --port 19000 --force
 
-# With debug logging
-openclaw gateway --log-level debug
+# Debug logging (--log-level is a global flag, so it goes before the command)
+openclaw --log-level debug gateway run
 ```
 
----
+`openclaw onboard --install-daemon` installs the service during setup. The Gateway only starts when `gateway.mode` is `"local"`; onboarding sets this. `--bind`, `--auth`, `--token` and `--tailscale` override the matching config for one run; see [`openclaw gateway`](https://docs.openclaw.ai/cli/gateway).
 
-## Process Lifecycle
-
-```mermaid
-flowchart LR
-    Boot["🔄 Boot"] --> Config["Load Config<br/>(openclaw.json)"]
-    Config --> Memory["Initialize<br/>Memory"]
-    Memory --> WS["Start WebSocket<br/>Server (:18789)"]
-    WS --> Auth["Initialize<br/>Auth"]
-    Auth --> Chan["Connect<br/>Channels"]
-    Chan --> Skills["Register<br/>Skills"]
-    Skills --> Plugins["Load<br/>Plugins"]
-    Plugins --> HB["Start Heartbeat<br/>Timer"]
-    HB --> Ready["✅ Ready"]
-```
-
-### Shutdown Sequence
-
-On `SIGTERM` or `openclaw gateway stop`:
-
-1. Stop accepting new connections
-2. Send disconnect to all channels
-3. Save pending memory updates
-4. Drain command queues
-5. Close WebSocket connections
-6. Write final log entry
-7. Remove PID file
+The Gateway watches `openclaw.json` and hot-applies most changes. Some, such as `gateway.auth.mode`, need a restart ([Config hot reload](https://docs.openclaw.ai/gateway/configuration/hot-reload)). An invalid edit is skipped and the running config stays in place.
 
 ---
 
 ## Wire Protocol
 
-The Gateway communicates via WebSocket using JSON text frames at **protocol version 4**.
+Clients talk to the Gateway over WebSocket using JSON text frames, at **protocol version 4**. For anything you build, prefer the published client packages `@openclaw/gateway-client` and `@openclaw/gateway-protocol` over hand-rolled frames ([Building a Gateway client](https://docs.openclaw.ai/gateway/clients)).
 
-### Message Frame Types
+### Frame types
 
 | Type | Direction | Structure | Purpose |
 |------|-----------|-----------|---------|
@@ -71,200 +52,172 @@ The Gateway communicates via WebSocket using JSON text frames at **protocol vers
 | **Response** | Gateway → Client | `{type: "res", id, ok, payload\|error}` | RPC replies |
 | **Event** | Gateway → Client | `{type: "event", event, payload, seq?, stateVersion?}` | Push notifications |
 
-### Connection Handshake
+### Connection handshake
 
-1. Client opens WebSocket to `ws://localhost:18789`
-2. Client sends a `connect` message (must be the first frame)
-3. Gateway responds with `connect.challenge` containing a nonce
-4. Client responds with authentication credentials (see [Authentication](#authentication))
-5. Gateway sends `hello-ok` with policy limits
+1. Client opens a WebSocket to `ws://127.0.0.1:18789`.
+2. Gateway sends a `connect.challenge` event with a `nonce` and `ts`.
+3. Client sends a `connect` request as its first frame: protocol range (`minProtocol`/`maxProtocol` 4), client info, `role` (`operator` or `node`), scopes, `auth` (for example `{ token }`), and a `device` block that signs the challenge nonce.
+4. Gateway replies with `hello-ok`, which carries the negotiated protocol, policy limits, and a presence/health snapshot.
 
-### Payload Limits
+A first frame that is not JSON or not `connect` is a hard close. Events are not replayed, so clients refresh state after a gap. Details: [Handshake and roles](https://docs.openclaw.ai/gateway/protocol/handshake).
 
-| Phase | Max Size |
+### Payload limits
+
+| Phase | Max size |
 |-------|----------|
-| Pre-handshake | 64 KiB |
-| Post-handshake (maxPayload) | 25 MiB |
-| Buffered bytes (maxBufferedBytes) | 50 MiB |
+| Pre-handshake frames | 64 KiB |
+| Post-handshake (`hello-ok.policy.maxPayload`) | 25 MiB |
+| Per-connection send buffer (`maxBufferedBytes`) | 50 MiB |
 
-### Key RPC Methods
+### Common RPC methods
 
-The protocol defines 200+ RPC methods. The most commonly used:
+The protocol has many methods; `hello-ok.features.methods` lists what a Gateway advertises. Commonly used ones:
 
-| Category | Methods |
-|----------|---------|
-| **Chat** | `chat.send`, `chat.abort`, `sessions.create`, `sessions.send`, `sessions.steer` |
+| Area | Methods |
+|------|---------|
+| **Chat and sessions** | `chat.send`, `chat.abort`, `chat.history`, `sessions.create`, `sessions.send`, `sessions.steer` |
+| **Agent runs** | `agent`, `agent.wait` |
 | **Tools** | `tools.catalog`, `tools.effective`, `tools.invoke` |
-| **Exec Approval** | `exec.approval.request`, `exec.approval.resolve` |
-| **Heartbeat** | `heartbeat.trigger`, `heartbeat.status` |
-| **Memory** | `doctor.memory.status`, `doctor.memory.dreamDiary`, `doctor.memory.remHarness` |
-| **Agents** | `agents.list`, `agents.create`, `agents.switch` |
-| **Config** | `config.get`, `config.set`, `config.reload` |
-| **Plugins** | `plugins.list`, `plugins.install`, `plugins.enable` |
-| **Device** | `device.pair`, `device.approve`, `device.list` |
-| **Voice** | `talk.session.create`, `talk.session.end` |
-| **Node** | `node.invoke`, `node.capabilities` |
+| **Exec approvals** | `exec.approval.request`, `exec.approval.resolve` |
+| **Heartbeat** | `last-heartbeat`, `set-heartbeats`, `wake` |
+| **Memory** | `doctor.memory.status` |
+| **Agents** | `agents.list`, `agents.create` |
+| **Config** | `config.get`, `config.set`, `config.patch`, `config.apply` |
+| **Plugins** | `plugins.list`, `plugins.install` |
+| **Devices** | `device.pair.list`, `device.pair.approve`, `device.pair.reject`, `device.pair.remove` |
+| **Talk** | `talk.session.create`, `talk.session.close` |
+| **Nodes** | `node.list`, `node.describe`, `node.invoke` |
+
+The full list is in [RPC methods](https://docs.openclaw.ai/gateway/protocol/rpc-methods). From a shell, `openclaw gateway call <method> --params '<json>'` calls one method with your configured auth:
+
+```bash
+openclaw gateway call health
+openclaw gateway call status --json
+```
 
 ### Idempotency
 
-Side-effecting methods (`send`, `agent`, etc.) require an idempotency key. The Gateway maintains a short-lived dedupe cache to prevent duplicate processing.
+Side-effecting methods such as `chat.send` and `agent` require an `idempotencyKey`. The Gateway keeps a short-lived dedupe cache so a retried request is not processed twice.
 
-### Example: Sending a Chat Message
+### Example: sending a chat message
+
+This is the shape of a `chat.send` request, sent after a successful `connect`. `chat.send` is a closed object: it takes `sessionKey`, `message` and `idempotencyKey` (plus optional fields), and rejects unknown keys such as `text`.
 
 ```typescript
-// Client sends request
 ws.send(JSON.stringify({
   type: 'req',
   id: 'msg-001',
   method: 'chat.send',
   params: {
-    text: 'What files are in my home directory?',
-    idempotencyKey: 'idem-abc123'
-  }
+    sessionKey: 'agent:main:main',
+    message: 'What files are in my home directory?',
+    idempotencyKey: 'idem-abc123',
+  },
 }));
 
-// Gateway streams events
-// → {type: "event", event: "tool_call", payload: {tool: "shell", args: {command: "ls ~"}}}
-// → {type: "event", event: "tool_result", payload: {output: "Desktop\nDocuments\n..."}}
-// → {type: "res", id: "msg-001", ok: true, payload: {text: "Your home directory contains..."}}
+// The Gateway acknowledges with {type: "res", id: "msg-001", ok: true, payload: {...}}
+// and then streams progress as `chat` and `agent` events
+// (assistant deltas, tool events, lifecycle start/end).
 ```
 
 ---
 
 ## Authentication
 
-The Gateway supports multiple authentication modes, configured in `openclaw.json`:
+Gateway auth is **required by default**, and onboarding generates a token. The Gateway refuses to bind to a non-loopback address without auth.
 
-### Modes
-
-| Mode | How It Works | Use Case |
+| `gateway.auth.mode` | How it works | Use case |
 |------|-------------|----------|
-| **shared-secret** | Token or password compared at handshake | Default for most setups |
-| **trusted-proxy** | Gateway trusts `X-Forwarded-*` headers from configured proxies | Behind Nginx/Caddy |
-| **tailscale** | Identity from Tailscale Serve headers | Tailnet deployments |
-| **none** | No authentication | Local development only |
+| `token` | Shared token sent in `connect.params.auth.token` | Default |
+| `password` | Shared password sent in `connect.params.auth.password` | Human-typed secret |
+| `trusted-proxy` | Identity headers from an identity-aware reverse proxy listed in `gateway.trustedProxies` | Behind an auth proxy ([Trusted proxy auth](https://docs.openclaw.ai/gateway/trusted-proxy-auth)) |
+| `none` | No shared-secret auth | Trusted loopback only; never on a reachable interface |
 
-### Challenge-Response Handshake
+Tailscale is not an auth mode. `gateway.tailscale.mode: "serve"` plus `gateway.auth.allowTailscale` lets Tailscale Serve identity satisfy Control UI and WebSocket auth. Send the token in the `connect` frame, never in a URL query string.
 
-1. Gateway sends `connect.challenge` with a random nonce
-2. Client responds with:
-   - Auth token (shared-secret mode)
-   - Ed25519 device identity (`device.id` = SHA-256 of public key)
-   - Nonce signature (v3 payload binds platform + deviceFamily, 10-minute skew tolerance)
-   - Role (`operator` or `node`), scopes, and capabilities
-3. Gateway verifies signature and issues device token
+### Device identity
 
-### Device Pairing
+Every client also presents an Ed25519 device identity on `connect` and signs the `connect.challenge` nonce. Signature payload v3 binds `platform` and `deviceFamily`. The allowed clock skew for `signedAt` is **2 minutes**. After the first approval the Gateway issues a device token for later connects ([Protocol auth](https://docs.openclaw.ai/gateway/protocol/auth)).
 
-New devices must be approved before they can connect:
+### Device pairing
 
-- Loopback connections (127.0.0.1) are auto-approved
-- Remote devices enter a pairing flow: `openclaw pairing approve <device-id>`
-- Max 3 pending pairing requests per channel
-- Pairing codes expire after 1 hour
+- Trusted local (loopback) connections, including SSH port forwards, are approved automatically.
+- LAN and tailnet devices need explicit approval: `openclaw devices list`, then `openclaw devices approve <requestId>`.
+- `openclaw pairing approve <channel> <code>` is different: it approves **DM pairing** for a chat sender, not a device. DM pairing caps pending requests at 3 per channel account ([DM pairing](https://docs.openclaw.ai/channels/pairing)).
 
-### Configuration
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "gateway": {
-    "auth": {
-      "mode": "shared-secret",
-      "token": "${OPENCLAW_AUTH_TOKEN}"
-    }
-  }
-}
-```
+See [Device pairing](https://docs.openclaw.ai/gateway/pairing).
 
 :::danger
-**Never bind to `0.0.0.0` without authentication.** Security researchers found [42,665 exposed instances](/security/known-vulnerabilities#exposed-instances-january-february-2026) with 93.4% having auth bypasses. Always bind to `127.0.0.1` and use a reverse proxy for remote access.
+Do not expose the Gateway on a public interface. Keep `gateway.bind: "loopback"` (the default) and use Tailscale, a VPN, or an SSH tunnel for remote access. If you must use `bind: "lan"`, keep token auth on and firewall the port. Exposed instances have been mass-scanned; see [Exposed Instances](/security/known-vulnerabilities#exposed-instances-january-february-2026).
 :::
 
 ---
 
-## Internal Components
+## Internal components
 
-### Node Registry
+### Command queue
 
-Tracks connected execution sessions (Local Execution processes). When a node connects, it's registered with its capabilities; when it disconnects, it's cleared. The Gateway dispatches `node.invoke` requests to the appropriate node based on required capabilities.
+Agent runs are serialized per session key (a "session lane"), optionally through a global lane as well. Only one run touches a given session at a time, so simultaneous messages from several channels or a scheduled turn cannot race. Channels choose how a message that arrives mid-run is handled (steer, follow-up, collect, interrupt). See [Command queue](https://docs.openclaw.ai/concepts/queue).
 
-### Exec Approval Manager
+### Exec approvals
 
-Serializes pending command-approval requests. When the Brain wants to execute a shell command, the Exec Approval Manager:
+When `tools.exec.mode` is `ask` or `auto`, a command that is not allowlisted becomes an approval record with its exact argv and cwd. Approval clients (CLI, Control UI, apps) resolve it with `exec.approval.resolve`. **The default mode is `full`, which runs host commands with no prompt.** See [Agent runtime and tools](/architecture/brain-and-hands).
 
-1. Creates an approval record with a UUID
-2. Presents the command to the user (exact argv, cwd, rawCommand)
-3. Waits for `exec.approval.resolve` (approve or deny)
-4. Routes the result back to the requesting session
+### Nodes
 
-This ensures only one approval prompt is active at a time, preventing race conditions.
-
-### Command Queue
-
-A **lane-aware FIFO queue** that serializes concurrent messages destined for the same session. Each session gets its own lane — only one agent run touches a given session at a time. This prevents message ordering issues when multiple channels or heartbeat triggers fire simultaneously.
+Nodes connect to the same WebSocket with `role: "node"` and declare their commands. The Gateway routes `node.invoke` calls to them. Nodes are peripherals: channel messages land on the Gateway, not on nodes ([Nodes](https://docs.openclaw.ai/nodes)).
 
 ---
 
-## Daemon Mode
+## Logs and health
 
-When installed as a daemon (`openclaw onboard --install-daemon`), the Gateway:
-
-- Starts on system boot
-- Restarts automatically on crash
-- Logs to `~/.openclaw/logs/gateway.log`
-- Manages PID file at `~/.openclaw/gateway.pid`
-
-### Management Commands
+- **Log file:** `/tmp/openclaw/openclaw-YYYY-MM-DD.log` (per-profile: `openclaw-<profile>-YYYY-MM-DD.log`). There is no PID file. See [Logging](https://docs.openclaw.ai/logging).
+- **Tail logs:** `openclaw logs --follow`. Other flags: `--limit`, `--json`, `--plain`, `--max-bytes`. There is no `--filter` flag, so pipe to `grep`.
+- **Health:** `openclaw health`, `openclaw gateway status`, and the HTTP probes `/healthz` (liveness), `/startupz` and `/readyz` (readiness).
 
 ```bash
-# Check status
-openclaw status
-
-# View logs
-openclaw logs
-openclaw logs --filter heartbeat
-openclaw logs --filter channel
-
-# Restart
-openclaw gateway restart
-
-# Stop
-openclaw gateway stop
+openclaw gateway status
+openclaw logs --follow
+openclaw logs --limit 500 --plain | grep -i heartbeat
+curl -fsS http://127.0.0.1:18789/healthz
 ```
 
 ---
 
 ## Configuration
 
+A validated starting point. The token comes from the `OPENCLAW_GATEWAY_TOKEN` environment variable (put it in `~/.openclaw/.env`). A missing variable stays unresolved and the token counts as unavailable.
+
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "gateway": {
-    "port": 18789,
-    "host": "127.0.0.1",
-    "max_connections": 10,
-    "log_level": "info",
-    "pid_file": "~/.openclaw/gateway.pid",
-    "auth": {
-      "mode": "shared-secret",
-      "token": "${OPENCLAW_AUTH_TOKEN}"
+  gateway: {
+    mode: "local",
+    port: 18789,
+    bind: "loopback", // auto | loopback | lan | tailnet | custom
+    auth: {
+      mode: "token",
+      token: "${OPENCLAW_GATEWAY_TOKEN}",
     },
-    "trustedProxies": []
-  }
+    trustedProxies: [],
+  },
+  logging: { level: "info" },
 }
 ```
 
-### Transport Security
+Port precedence: `--port` > `OPENCLAW_GATEWAY_PORT` > `gateway.port` > `18789`. For `bind: "custom"`, set `gateway.customBindHost`. All gateway keys: [Configuration — gateway](https://docs.openclaw.ai/gateway/config-gateway).
 
-- **Plaintext `ws://`** is only accepted for: loopback addresses, private IPs, `.local` hostnames, and Tailnet `*.ts.net` URLs
-- All other connections require `wss://` (TLS)
-- Browser SSRF to private networks is blocked by default
+### Transport security
+
+- Plaintext `ws://` is accepted only for loopback, private IPs, `.local` hostnames, and Tailnet `*.ts.net` hosts.
+- Everything else requires `wss://` (TLS).
+- Browser SSRF to private networks is blocked by default.
 
 ---
 
-## See Also
+## See also
 
-- [Architecture Overview](/architecture/overview) — High-level component diagram
-- [Gateway API](/reference/gateway-api) — WebSocket message protocol reference
-- [API & Webhooks](/guides/api-webhooks) — Client libraries and integration patterns
-- [Security Hardening](/security/hardening) — Gateway security, reverse proxy, authentication
-- [Configuration Reference](/reference/configuration) — Full gateway config options
+- [Architecture Overview](/architecture/overview): component map
+- [Gateway API](/reference/gateway-api): protocol and HTTP endpoint summary
+- [API & Webhooks](/guides/api-webhooks): integration patterns
+- [Security Hardening](/security/hardening): bind, auth, reverse proxy
+- [Configuration Reference](/reference/configuration): how the config file works
