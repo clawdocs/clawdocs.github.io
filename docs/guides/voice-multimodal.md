@@ -41,7 +41,7 @@ When someone sends a voice note, OpenClaw transcribes it **before** the agent se
 
 1. The active reply model, if its provider understands audio.
 2. Any configured provider key that supports transcription, in this order: Groq, OpenAI, xAI, Deepgram, Google, SenseAudio, ElevenLabs, Mistral.
-3. Local CLIs, if no provider key is available: `whisper-cli` (whisper.cpp), `sherpa-onnx-offline`, `parakeet-mlx` (Apple Silicon), then the Python `whisper` CLI.
+3. Local CLIs, if no provider key is available: `sherpa-onnx-offline` (needs `SHERPA_ONNX_MODEL_DIR`), `whisper-cli` (whisper.cpp; tried first only once a GPU backend has been observed), `parakeet-mlx` (Apple Silicon), then the Python `whisper` CLI.
 
 See what it picked without transcribing anything:
 
@@ -245,9 +245,7 @@ Music works the same way with `music_generate` (ComfyUI, fal, Google Lyria, Mini
 
 ## Wearable & Mobile Multimodal
 
-### VisionClaw (Smart Glasses)
-
-[VisionClaw](https://github.com/Intent-Lab/VisionClaw) (Intent-Lab, about 2,600 stars, active as of 2026-09) is a third-party iOS app that connects Meta Ray-Ban glasses to Gemini Live and an OpenClaw Gateway for voice-and-vision requests. It is not maintained by OpenClaw; review what it can reach before pairing it with your Gateway.
+Third-party wearable bridges, such as VisionClaw for Meta Ray-Ban glasses, are listed on [Ecosystem](/reference/ecosystem#visionclaw). They are not maintained by OpenClaw; review what they can reach before pairing one with your Gateway.
 
 ### Official apps
 
