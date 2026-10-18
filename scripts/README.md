@@ -109,6 +109,101 @@ check whether the page's prose (batch sections, the latest release passed to
 `GITHUB_TOKEN` don't trigger other workflows; re-run the snippet check by hand
 or push a commit to the branch if needed.
 
+## Tutorial tests (`tutorial-tests/`)
+
+The snippet gates check that commands *exist*. The tutorial tests check that
+the beginner path *works*: each `*.test.sh` walks one page in order and runs its
+commands for real against the pinned OpenClaw, with a Gateway running on the
+GitHub Actions runner (`.github/workflows/tutorials.yml`: pushes and PRs that
+touch `docs/` or the tests, weekly, and on demand).
+
+| Test | Page |
+|---|---|
+| `quick-start.test.sh` | `getting-started/quick-start.md` |
+| `day-1-make-it-yours.test.sh` | `guides/first-7-days/day-1-make-it-yours.md` |
+| `day-3-automation.test.sh` | `guides/first-7-days/day-3-automation.md` |
+| `day-4-skills.test.sh` | `guides/first-7-days/day-4-skills.md` |
+| `day-7-production.test.sh` | `guides/first-7-days/day-7-production.md` |
+| `heartbeat.test.sh` | `guides/heartbeat.md` |
+
+Each test gets a fresh sandbox `HOME` (so `~/.openclaw/...` on the page is the
+sandbox), a non-interactive onboarding with no model credentials, and its own
+Gateway (`openclaw gateway run`, loopback, token auth), which is stopped at the
+end. Tests re-run themselves under `env -i`, so no API key or token from the
+calling shell reaches OpenClaw.
+
+**The page is the source.** A test names commands by their text on the page;
+`lib.sh` finds them in the page's shell blocks (or inline code) and runs the
+page's own text, so a test cannot drift from its page silently:
+
+```bash
+source "$(dirname "$0")/lib.sh"
+page docs/guides/heartbeat.md
+onboard                                  # CI stand-in for interactive onboarding
+gateway_start
+run -e 'Heartbeat \(main\)' "openclaw cron list --all"   # -e: output must match
+run "openclaw automations add \"every 30m\"..."         # "...": the one command with this prefix
+capture jobId "openclaw cron list --all --json" '(j.jobs).find(x=>x.displayName==="Heartbeat (main)").id'
+run "openclaw cron scratch <jobId>"      # <placeholders> come from capture/ph
+config_block 1                           # Nth openclaw.json block: config patch + validate
+config_block 4 --dry-run                 # reference block: validate the merge, don't apply
+file_block "~/.openclaw/workspace/SOUL.md"   # write a titled block to its path
+skip "openclaw tui" "interactive terminal UI"
+finish
+```
+
+Other helpers: `run_as "<page command>" "<CI variant>"` for steps that need a
+non-interactive form or the pinned version, `setup "<label>" "<command>"` for
+CI-only checks between steps, `skip_step` for non-command steps, `-x 0,1` for
+accepted exit codes, `-t <secs>` for a timeout. A step that needs a model key
+or a channel account is a `skip` with the reason, never faked. Page commands a
+test neither runs nor skips are listed as "unmapped" in the report.
+
+**Output:** a job summary table (page, steps run, skipped, failed, unmapped,
+with every step and reason under each page) and `tutorial-report.json`
+(artifact `tutorial-report`). For a passing page the summary prints the front
+matter to add.
+
+**Report only for now.** The job passes even when a page fails. To make it
+blocking, set the repository variable `TUTORIALS_STRICT=1`, or tick "strict"
+on a manual run (`run.mjs --strict` exits 1 on any failed page).
+
+### Running locally
+
+```bash
+TT_DRY=1 bash scripts/tutorial-tests/heartbeat.test.sh   # check the test/page mapping; runs nothing
+node scripts/tutorial-tests/run.mjs                      # full run: needs a Gateway, so CI only
+```
+
+`gateway_start` refuses to run outside GitHub Actions unless you set
+`TT_ALLOW_GATEWAY=1`. Do that only in a disposable VM or container: it starts a
+real Gateway on port 18789.
+
+### The "Verified in CI" banner
+
+Pages that pass get a front matter entry, added by hand after a green run
+(the workflow never commits):
+
+```yaml
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 24
+```
+
+`src/theme/DocItem/Content` (a wrapper around the theme's component) reads it
+and renders `src/components/CiVerified.tsx` above the page: "Verified in CI on
+OpenClaw 2026.10.4, 2026-10-18 — 24 steps run", linking to the workflow.
+`steps` is the "Steps run" count minus failures from the summary. When a page
+starts failing, fix the page or remove its `ci_verified` entry. Bump the
+entries when the pin moves.
+
+### Adding a page
+
+Copy a test, point `page` at the new file, and walk the page top to bottom.
+Run it with `TT_DRY=1` until it reports `0 page commands not mapped`, then
+push and read the job summary.
+
 ## Link check
 
 `.github/workflows/links.yml` runs lychee weekly over external links in

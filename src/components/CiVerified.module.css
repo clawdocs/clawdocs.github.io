@@ -1,0 +1,25 @@
+.banner {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--ifm-color-success-dark);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: var(--ifm-color-success-darkest);
+  background: var(--ifm-color-success-contrast-background);
+}
+
+[data-theme='dark'] .banner {
+  color: var(--ifm-color-success-lightest);
+  border-color: var(--ifm-color-success);
+}
+
+.banner a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.mark {
+  font-weight: 700;
+}
