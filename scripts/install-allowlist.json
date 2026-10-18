@@ -236,7 +236,24 @@
       "note": "pypi; github.com/modelcontextprotocol/servers (src/fetch)"
     }
   },
-  "clawhub": {},
+  "clawhub": {
+    "@shreefentsar/remotion-video-toolkit": {
+      "owner": "shreefentsar",
+      "note": "ClawHub moderation: clean (2026-10-18)"
+    },
+    "@pexo/pexo-video-agent": {
+      "owner": "pexo",
+      "note": "ClawHub moderation: clean (2026-10-18)"
+    },
+    "@jimmylv/bibigpt-skill": {
+      "owner": "jimmylv",
+      "note": "ClawHub moderation: no verdict yet (2026-10-18)"
+    },
+    "@asleep123/caldav-calendar": {
+      "owner": "asleep123",
+      "note": "ClawHub moderation: no verdict yet (2026-10-18); 249 stars, 33.8k downloads"
+    }
+  },
   "denied": {
     "npm": {
       "openclaw-observability": {
