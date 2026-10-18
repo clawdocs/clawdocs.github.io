@@ -49,9 +49,9 @@ Scratch is context, not a schedule. Anything that needs its own cadence ("every 
 
 - **Cadence:** `every`, default `30m` (or `1h` when Anthropic auth resolves to OAuth/token and `every` is unset). A duration string; a bare number is minutes. `"0m"` disables the recurring cadence but keeps the job, its scratch and event-driven wakes.
 - **Active hours:** `activeHours: { start, end, timezone }` is an allow-window. Ticks outside it are skipped until the next tick inside. Equal `start` and `end` means a zero-width window, so the heartbeat never runs.
-- **Busy deferral:** a plain scheduled poll does not queue behind other work. If the main queue is busy, an automation targets the same agent or session, or the agent has an active run, the poll is recorded as skipped and waits for its next tick. Wakes that carry queued events still retry.
-- **Event wakes:** node completions and similar events can wake the heartbeat between ticks, even with `every: "0m"`. They are rate-limited per agent: at least 30 seconds apart and a flood guard after five starts in 60 seconds.
-- **Channel readiness:** if the delivery channel reports it is not ready, ambient polls skip the model call and back off from one minute up to the cadence.
+- **Busy deferral:** a plain scheduled poll does not queue behind other work. If the main queue or automation work is active or queued, the agent has an active run, or the target session has queued work, the poll is recorded as skipped and waits for its next tick. Wakes that carry queued events still retry.
+- **Event wakes:** background exec and node completions, and similar events, can wake the heartbeat between ticks, even with `every: "0m"`. They are rate-limited per agent: at least 30 seconds apart and a flood guard after five starts in 60 seconds.
+- **Channel readiness:** if the readiness check blocks an alert, OpenClaw records the non-delivery and runs the heartbeat again after a one-minute grace period, without consuming the cadence slot.
 
 ---
 
