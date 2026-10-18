@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 24
 title: Quick Start
 description: Get OpenClaw running and talking to you in about 5 minutes, from install to first conversation
 keywords: [openclaw, openclaw getting started, openclaw tutorial, openclaw quick start, openclaw first steps, how to use openclaw, openclaw beginner guide]

@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 30
 title: "Day 3: Set It Free"
 description: "Schedule automations for morning briefings and checks, and tune the heartbeat monitor so your bot reaches out on its own"
 keywords: [openclaw, automation, automations, cron, heartbeat setup, scheduled tasks, morning briefing, proactive alerts]

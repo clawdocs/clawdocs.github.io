@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 17
 title: "Day 1: Make It Yours"
 description: "Personalize your OpenClaw bot — name, personality, boundaries, and your first real conversation"
 keywords: [openclaw, setup, personalize, soul.md, agents.md, user.md, first day, customize agent, bot personality]

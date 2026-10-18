@@ -13,7 +13,7 @@ name: Tutorial tests
 
 on:
   push:
-    branches: [gh-pages, q/ci-tutorials] # TEMP: q/ci-tutorials while iterating
+    branches: [gh-pages]
     paths:
       - 'docs/**'
       - 'scripts/tutorial-tests/**'

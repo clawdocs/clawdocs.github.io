@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 30
 title: "Day 7: Lock It Down"
 description: "A validated security baseline, cost checks, monitoring, backups and safe upgrades for a long-running OpenClaw setup"
 keywords: [openclaw, production, hardening, monitoring, security, backup, upgrade, cost]

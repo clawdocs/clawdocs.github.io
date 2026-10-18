@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 39
 title: Heartbeat Guide
 description: How OpenClaw's heartbeat works in v2026.10 — agents.defaults.heartbeat, monitor scratch, automation jobs for recurring checks, cost control, and migrating from HEARTBEAT.md
 keywords: [openclaw, openclaw heartbeat, monitor scratch, automations, activeHours, HEARTBEAT.md migration]
