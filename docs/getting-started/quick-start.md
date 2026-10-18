@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 24
 title: Quick Start
 description: Get OpenClaw running and talking to you in about 5 minutes, from install to first conversation
 keywords: [openclaw, openclaw getting started, openclaw tutorial, openclaw quick start, openclaw first steps, how to use openclaw, openclaw beginner guide]
@@ -168,7 +172,7 @@ openclaw channels add discord
 Each command opens guided setup for that channel. By default, unknown senders who DM your bot get a pairing code instead of the agent. Approve them with:
 
 ```bash
-openclaw pairing list
+openclaw pairing list telegram
 openclaw pairing approve telegram <code>
 ```
 
@@ -206,7 +210,7 @@ openclaw cron add --name "Morning brief" --cron "0 9 * * *" --session isolated \
 `openclaw automations` is the same command under its new name. To give the heartbeat a short standing checklist, store it in its monitor scratch: find the job with `openclaw cron list --all` (it is listed as `Heartbeat (main)`), then `openclaw cron scratch <jobId> --set "..."`.
 
 :::note Coming from an older version?
-`HEARTBEAT.md` is retired and no longer read. `openclaw doctor --fix` imports an existing file into the heartbeat's monitor scratch and converts its `tasks:` entries into automations.
+`HEARTBEAT.md` is retired and no longer read. `openclaw doctor --fix`, run with the Gateway stopped, imports an existing file into the heartbeat's monitor scratch and converts its `tasks:` entries into automations.
 :::
 
 See the [Heartbeat Guide](/guides/heartbeat), [Automation](/guides/automation) and the official [heartbeat docs](https://docs.openclaw.ai/gateway/heartbeat).

@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 30
 title: "Day 7: Lock It Down"
 description: "A validated security baseline, cost checks, monitoring, backups and safe upgrades for a long-running OpenClaw setup"
 keywords: [openclaw, production, hardening, monitoring, security, backup, upgrade, cost]
@@ -207,9 +211,11 @@ Use `openclaw update`, not `npm update -g openclaw`. The updater validates the t
 **4. Check:**
 
 ```bash
-openclaw doctor --fix
+openclaw doctor
 openclaw status --deep
 ```
+
+The updater already ran the required Doctor migrations; `openclaw doctor` reports anything left. If it suggests repairs, stop the Gateway first (`openclaw gateway stop`), run `openclaw doctor --fix`, then `openclaw gateway start`: with the Gateway running, `doctor --fix` cannot lock the state database and exits with `GatewayStateOwnerContentionError`.
 
 Confirm every channel reconnects and your automations are listed in `openclaw cron list`.
 

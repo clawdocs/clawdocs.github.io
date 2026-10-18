@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 30
 title: "Day 3: Set It Free"
 description: "Schedule automations for morning briefings and checks, and tune the heartbeat monitor so your bot reaches out on its own"
 keywords: [openclaw, automation, automations, cron, heartbeat setup, scheduled tasks, morning briefing, proactive alerts]
@@ -28,7 +32,7 @@ OpenClaw has two kinds of scheduled work, and both are run by the Gateway's auto
 Rule of thumb: if the task has a time or interval in its name, it's an automation.
 
 :::info Coming from an older guide?
-Older OpenClaw versions read heartbeat tasks from a `HEARTBEAT.md` file in the workspace. That file was retired in 2026.8.1: OpenClaw no longer creates or reads it. If you still have one, run `openclaw doctor --fix`. Doctor imports its instructions into the heartbeat's monitor scratch, turns valid `tasks:` entries into automations, and archives the original ([retired HEARTBEAT.md](https://docs.openclaw.ai/reference/templates/HEARTBEAT)).
+Older OpenClaw versions read heartbeat tasks from a `HEARTBEAT.md` file in the workspace. That file was retired in 2026.8.1: OpenClaw no longer creates or reads it. If you still have one, stop the Gateway (`openclaw gateway stop`) and run `openclaw doctor --fix`. Doctor imports its instructions into the heartbeat's monitor scratch, turns valid `tasks:` entries into automations, and archives the original ([retired HEARTBEAT.md](https://docs.openclaw.ai/reference/templates/HEARTBEAT)).
 :::
 
 ## Before You Start: Where Messages Go

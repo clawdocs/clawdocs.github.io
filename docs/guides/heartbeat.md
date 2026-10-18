@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 39
 title: Heartbeat Guide
 description: How OpenClaw's heartbeat works in v2026.10 — agents.defaults.heartbeat, monitor scratch, automation jobs for recurring checks, cost control, and migrating from HEARTBEAT.md
 keywords: [openclaw, openclaw heartbeat, monitor scratch, automations, activeHours, HEARTBEAT.md migration]
@@ -118,11 +122,17 @@ Scratch becomes part of the prompt. Do not put API keys, tokens or phone numbers
 
 ### Migrating from HEARTBEAT.md {#migrating-from-heartbeatmd}
 
-If you used `~/.openclaw/workspace/HEARTBEAT.md` (or a per-agent workspace copy) before v2026.8.1, run:
+If you used `~/.openclaw/workspace/HEARTBEAT.md` (or a per-agent workspace copy) before v2026.8.1, stop the Gateway and run Doctor:
 
 ```bash
+openclaw gateway stop
 openclaw doctor --fix
+openclaw gateway start
 ```
+
+Doctor needs exclusive access to the state database. With the Gateway running, `doctor --fix` exits with `GatewayStateOwnerContentionError` and changes nothing.
+
+Doctor only imports into an empty scratch. If the heartbeat already has different scratch, or you cleared it with `--unset`, Doctor warns and leaves `HEARTBEAT.md` where it is; copy what you need with `openclaw cron scratch <jobId> --file ~/.openclaw/workspace/HEARTBEAT.md`.
 
 Doctor creates the monitor rows from `agents.*.heartbeat`, imports each workspace `HEARTBEAT.md` into that agent's monitor scratch, converts a structured `tasks:` block into separate automation jobs, archives the original under the state directory (`backups/heartbeat-migration/`), and deletes the file. After that the runtime reads scratch only.
 
@@ -305,7 +315,7 @@ Common skip reasons:
 Checklist when nothing happens:
 
 1. `openclaw config validate` passes, and the config has no top-level `heartbeat` key.
-2. `openclaw cron list --all` shows an enabled `Heartbeat (<agent>)` job. If not, run `openclaw doctor --fix`.
+2. `openclaw cron list --all` shows an enabled `Heartbeat (<agent>)` job. If not, stop the Gateway and run `openclaw doctor --fix`.
 3. `cron.enabled` is not `false` and `OPENCLAW_SKIP_CRON` is not set.
 4. `every` is not `"0m"`, and the current time is inside `activeHours`.
 5. An owner route resolves (no `no-route` skips in `openclaw cron runs`).

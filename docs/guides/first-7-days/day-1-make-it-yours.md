@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 17
 title: "Day 1: Make It Yours"
 description: "Personalize your OpenClaw bot — name, personality, boundaries, and your first real conversation"
 keywords: [openclaw, setup, personalize, soul.md, agents.md, user.md, first day, customize agent, bot personality]
@@ -53,7 +57,7 @@ The workspace holds a handful of Markdown files that load at the start of every 
 | `MEMORY.md` | Curated long-term facts and decisions (optional). |
 | `memory/YYYY-MM-DD.md` | Daily notes the agent writes as it goes. |
 
-You can edit them with any text editor, or in the Control UI under **Settings → Agents → Files**. If you delete one by accident, `openclaw setup` recreates missing defaults without overwriting the files you kept.
+You can edit them with any text editor, or in the Control UI under **Settings → Agents → Files**. If you delete one by accident, `openclaw setup --baseline` recreates missing defaults without overwriting the files you kept. (Bare `openclaw setup` on a configured install opens a chat instead.)
 
 ---
 
@@ -127,7 +131,7 @@ Edit `~/.openclaw/workspace/IDENTITY.md`:
 - **Avatar:** avatars/nova.png
 ```
 
-Replace `(pick one)` with a single emoji. Placeholder text in parentheses is ignored, not saved. The avatar is a workspace-relative path, an `http(s)` URL, or a data URI; drop the line if you don't have one.
+Replace `(pick one)` with a single emoji, or delete the line. Only the template's own placeholder text is ignored; anything else you leave there, including `(pick one)`, is saved as the value. The avatar is a workspace-relative path, an `http(s)` URL, or a data URI; drop the line if you don't have one.
 
 To push the file into the agent's config (used by the Control UI and other surfaces), run:
 

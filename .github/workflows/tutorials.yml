@@ -1,0 +1,70 @@
+name: Tutorial tests
+
+# Runs the beginner path's commands for real against the pinned OpenClaw
+# (scripts/openclaw-version.txt): onboarding, a Gateway on loopback with token
+# auth, automations, skills, backups, audits. One script per page in
+# scripts/tutorial-tests/. Steps that need a model key or a channel account are
+# listed as skipped, with the reason. See scripts/README.md.
+#
+# Report only for now: the job passes even when a page fails, and the summary
+# and tutorial-report.json say which steps failed. To make it blocking, set the
+# repository variable TUTORIALS_STRICT=1 (Settings > Secrets and variables >
+# Actions > Variables), or run it manually with "strict" ticked.
+
+on:
+  push:
+    branches: [gh-pages]
+    paths:
+      - 'docs/**'
+      - 'scripts/tutorial-tests/**'
+      - 'scripts/openclaw-version.txt'
+      - '.github/workflows/tutorials.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'scripts/tutorial-tests/**'
+      - 'scripts/openclaw-version.txt'
+      - '.github/workflows/tutorials.yml'
+  schedule:
+    - cron: '17 5 * * 1' # Mondays 05:17 UTC
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: Fail the job when a page fails
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tutorials-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tutorials:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TUTORIALS_STRICT: ${{ (github.event_name == 'workflow_dispatch' && inputs.strict) && '1' || vars.TUTORIALS_STRICT || '0' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24 # openclaw needs >=24.16
+      - name: Install pinned OpenClaw
+        run: |
+          npm i --prefix tools/openclaw --no-save --ignore-scripts --no-audit --no-fund \
+            "openclaw@$(tr -d '[:space:]' < scripts/openclaw-version.txt)"
+          tools/openclaw/node_modules/.bin/openclaw --version
+          node --version; npm --version
+      - name: Run tutorial tests
+        run: node scripts/tutorial-tests/run.mjs --json tutorial-report.json
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: tutorial-report
+          path: |
+            tutorial-report.json
+            tutorial-report/
+          if-no-files-found: ignore

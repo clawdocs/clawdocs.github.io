@@ -22,3 +22,7 @@ yarn-error.log*
 # Snippet gates
 /tools/openclaw
 snippet-report.json
+
+# Tutorial tests
+tutorial-report.json
+/tutorial-report

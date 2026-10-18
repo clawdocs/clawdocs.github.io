@@ -2,6 +2,10 @@
 last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
+ci_verified:
+  version: 2026.10.4
+  date: 2026-10-18
+  steps: 20
 title: "Day 4: Supercharge It"
 description: "Use the skills that ship with OpenClaw, find more on ClawHub, and check them before you install"
 keywords: [openclaw, skills, install skills, clawhub, skill tutorial, community skills, extend bot]
