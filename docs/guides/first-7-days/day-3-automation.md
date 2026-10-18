@@ -53,7 +53,7 @@ The easiest way is to ask in chat:
 Every weekday at 8am, send me the weather for Berlin and the top 5 Hacker News stories about AI.
 ```
 
-The agent creates the automation with its `cron` tool and replies with the job details. The same job from the CLI:
+The agent creates the automation with its `automations` tool and replies with the job details. The same job from the CLI:
 
 ```bash
 openclaw cron add "0 8 * * 1-5" \
