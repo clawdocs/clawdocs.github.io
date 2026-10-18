@@ -212,7 +212,7 @@ OpenClaw routes different tasks to different models based on your configuration.
 
 | Config Key | Controls | Typical Choice |
 |-----------|----------|---------------|
-| `brain.model` | Default model for chat and reasoning | Sonnet 4.6 |
+| `brain.model` | Default model for chat and reasoning (the real key is `agents.defaults.model`) | Chosen by onboarding per provider: a fresh Anthropic setup picks `anthropic/claude-opus-5-5`; with no model configured the built-in fallback is `openai/gpt-6-astra` |
 | `heartbeat.model` | Heartbeat cycles | Haiku 4.5 or local |
 | `agents.list[].model` | Per-agent model | Varies by agent role |
 | `brain.fallback` | Fallback when primary is down | Different provider |

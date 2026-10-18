@@ -13,7 +13,7 @@ Get from zero to a working OpenClaw agent in under 5 minutes.
 **What you'll have at the end:** A running OpenClaw gateway with CLI chat, able to execute shell commands, read/write files, and answer questions using your chosen LLM. Optionally connected to a messaging app so you can talk to it from your phone.
 
 **Prerequisites:**
-- Node.js 24 (recommended) or Node.js 22.19+ — check with `node --version`
+- Node.js 24.16+ or 26.1+ (26 recommended; 22, 23 and 25 are unsupported) — check with `node --version`
 - An API key from [Anthropic](https://console.anthropic.com), [OpenAI](https://platform.openai.com), [OpenRouter](https://openrouter.ai), [Google AI](https://aistudio.google.com), or [DeepSeek](https://platform.deepseek.com) — *or* a local model running via [Ollama](https://ollama.ai)
 
 :::tip No API key?
@@ -278,7 +278,7 @@ If any step fails, check the [Troubleshooting Guide](/reference/troubleshooting)
 |---------|-------|-----|
 | `Error: port 18789 already in use` | Previous gateway or another service on the port | `lsof -i :18789` to find it, then kill the process or change the port |
 | `Error: invalid API key` | Wrong key format or wrong provider | Double-check you're using the right key for your chosen provider (Anthropic keys start with `sk-ant-`) |
-| `Node.js version error` | Node.js older than 22.19 | Install Node.js 24: `curl -fsSL https://deb.nodesource.com/setup_24.x \| sudo bash -` |
+| `Node.js version error` | Node.js outside 24.16+ / 26.1+ (22, 23 and 25 are unsupported) | Install Node.js 24: `curl -fsSL https://deb.nodesource.com/setup_24.x \| sudo bash -` |
 | Gateway starts but chat hangs | Firewall blocking outbound HTTPS | Ensure your network allows HTTPS to your LLM provider's API |
 | `EACCES permission denied` | npm global install without permissions | Use `sudo npm i -g openclaw` or fix npm permissions |
 | Heartbeat running up costs | Default interval is 30 min with your primary model | Set `heartbeat.model` to a cheap model and increase `heartbeat.interval` |

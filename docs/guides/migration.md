@@ -169,13 +169,13 @@ When you install the `openclaw` package, it automatically:
 | Old (Clawdbot) | New (OpenClaw) | Notes |
 |----------------|----------------|-------|
 | `CLAWDBOT_GATEWAY_TOKEN` | `OPENCLAW_GATEWAY_TOKEN` | Must rotate after upgrade |
-| `CLAWDBOT_PORT` | `OPENCLAW_PORT` | Default: 18789 |
+| `CLAWDBOT_PORT` | `OPENCLAW_GATEWAY_PORT` | Default: 18789 |
 | `CLAWDBOT_HOME` | `OPENCLAW_HOME` | Config directory override |
 | `TELEGRAM_BOT_TOKEN` | `TELEGRAM_BOT_TOKEN` | Unchanged |
 | `DISCORD_BOT_TOKEN` | `DISCORD_BOT_TOKEN` | Unchanged |
 | `SLACK_BOT_TOKEN` | `SLACK_BOT_TOKEN` | Unchanged |
 
-Channel tokens (Telegram, Discord, Slack, etc.) are unchanged — only `CLAWDBOT_*` prefixed variables changed to `OPENCLAW_*`.
+Channel tokens (Telegram, Discord, Slack, etc.) are unchanged — only `CLAWDBOT_*` prefixed variables changed to `OPENCLAW_*`. The old prefixes were removed in v2026.3.22 and are now ignored (with a one-time warning since v2026.4.27), so rename them before upgrading.
 
 ### Docker Images
 

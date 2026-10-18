@@ -14,7 +14,7 @@ The heartbeat transforms OpenClaw from a reactive chatbot into a proactive agent
 
 ## How Heartbeat Works
 
-The heartbeat fires on a timer (default: every 30 minutes, 60 minutes for OAuth-authenticated channels) and executes the tasks defined in your `HEARTBEAT.md` file.
+The heartbeat fires on a timer (default `every: "30m"`; it becomes `1h` when the Anthropic provider uses OAuth/token auth, including Claude CLI reuse, and you have not set `heartbeat.every` yourself) and executes the tasks defined in your `HEARTBEAT.md` file.
 
 ### Lifecycle
 

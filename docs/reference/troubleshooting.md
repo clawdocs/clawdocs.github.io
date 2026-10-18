@@ -184,16 +184,14 @@ OPENCLAW_LOG_LEVEL=debug openclaw gateway
 
 ### Node.js Version Too Old
 
-```
-Error: OpenClaw requires Node.js >= 22.19
-```
+OpenClaw requires Node.js 24.16+ or 26.1+ (Node 26 recommended). Node 22, 23 and 25 are unsupported since v2026.9.3, and the launcher refuses to start on them. Upgrade Node **before** updating OpenClaw. See [Node.js requirements](https://docs.openclaw.ai/install/node).
 
 ```bash
 node --version
 
-# Update via nvm (Node 24 recommended)
-nvm install 24
-nvm use 24
+# Update via nvm (Node 26 recommended; 24.16+ also supported)
+nvm install 26
+nvm use 26
 
 # Or via package manager
 # Ubuntu/Debian:

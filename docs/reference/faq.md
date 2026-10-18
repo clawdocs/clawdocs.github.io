@@ -162,7 +162,7 @@ Yes, with [local models](/guides/local-models) via Ollama, LM Studio, or vLLM. T
 
 ### Does it work on Raspberry Pi or ARM?
 
-**Not officially supported.** OpenClaw requires Node.js 24 and the gateway uses significant RAM. ARM single-board computers lack the resources for reliable operation. For lightweight alternatives, see [NanoClaw or Nanobot](/reference/ecosystem).
+**Yes.** Upstream has an official [Raspberry Pi guide](https://docs.openclaw.ai/install/raspberry-pi) for always-on self-hosting. Use a recent 64-bit Pi with enough RAM, and run models in the cloud or on another machine. For even lighter alternatives, see [NanoClaw or Nanobot](/reference/ecosystem).
 
 ### Can I run it on a cloud server?
 
@@ -170,22 +170,25 @@ Yes. DigitalOcean, Cloudflare (via Moltworker), and others offer managed hosting
 
 ### Can I run multiple instances?
 
-Yes, on different ports with separate data directories:
+Yes. Use a separate **profile** for each instance, which gives each one its own config, state and workspace, and run each on its own port:
 
 ```bash
-# Instance 1 (work)
-OPENCLAW_PORT=18789 OPENCLAW_HOME=~/.openclaw-work openclaw gateway
+# Instance 1 (default profile)
+openclaw gateway --port 18789
 
-# Instance 2 (personal)
-OPENCLAW_PORT=18790 OPENCLAW_HOME=~/.openclaw-personal openclaw gateway
+# Instance 2 (a second profile)
+openclaw --profile personal setup
+openclaw --profile personal gateway --port 19789
 ```
+
+See [Multiple gateways](https://docs.openclaw.ai/gateway/multiple-gateways).
 
 ### What are the minimum system requirements?
 
 | Component | Minimum | Recommended |
 |-----------|---------|-------------|
-| OS | macOS, Linux, Windows (WSL2) | macOS or Linux |
-| Node.js | 22.19+ LTS | 24 |
+| OS | macOS, Linux, Windows (native Windows Hub or WSL2) | macOS or Linux |
+| Node.js | 24.16+ or 26.1+ | 26 |
 | RAM | 2 GB (gateway only) | 4 GB+ |
 | Disk | 500 MB | 2 GB+ |
 

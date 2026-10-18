@@ -12,7 +12,7 @@ OpenClaw runs on **macOS**, **Linux**, and **Windows**. Choose the installation 
 
 ## Prerequisites
 
-- **Node.js 24** (recommended) or **Node.js 22 LTS** (22.19+ minimum). Node 23.11+ currently works, but avoid it — starting with v2026.7.1 the installer, CLI launcher, and `openclaw doctor` reject Node 23 and steer you to Node 22 or 24.
+- **Node.js 24.16+ or 26.1+** (Node 26 recommended). Node 22, 23 and 25 are unsupported since v2026.9.3 ([Node.js requirements](https://docs.openclaw.ai/install/node)). The [installer script](https://docs.openclaw.ai/install) installs a supported Node for you if it is missing.
 - **pnpm** (for git/developer installs — run `corepack enable` first)
 - A supported LLM API key (Anthropic, OpenAI, OpenRouter, Google, xAI) *or* a local model setup
 
