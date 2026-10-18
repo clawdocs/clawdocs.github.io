@@ -10,7 +10,7 @@ keywords: [openclaw, advanced recipes, multi-agent, workboard, memory search, ho
 # Advanced Recipes
 
 :::danger Read before you run this recipe
-These recipes give an agent real powers (shell, SSH, email, smart-home devices). By default OpenClaw runs host commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off**. Before you try one, turn on approvals (`openclaw config set tools.exec.mode ask`), use a strong model for anything that runs tools unattended, and give the agent only the accounts and devices the recipe needs. The config blocks on this page were checked with `openclaw config validate` on OpenClaw 2026.10.4. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
+These recipes give agents shell, SSH, smart-home and deploy access. By default OpenClaw runs host commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off**. Turn on approvals first (`openclaw config set tools.exec.mode ask`), use a strong model for anything that runs tools unattended, and give the agent only the accounts and devices it needs. See [Security hardening](/security/hardening#exec-approvals) and upstream [permission modes](https://docs.openclaw.ai/tools/permission-modes).
 :::
 
 These recipes go beyond the basics. Each one shows the config, the skill files and, most importantly, where the guardrail is **enforced**. A sentence in a skill such as "always ask before deploying" is guidance for the model, not a control. Prompt injection can talk a model out of it. The controls are tool policy, exec approvals, the sandbox, scoped credentials and channel allowlists ([Security Hardening](/security/hardening)).
@@ -419,7 +419,7 @@ A file path in the workspace, or pasted text.
    specific connected channel.
 ```
 
-Use it with `/skill content-pipeline` in chat. For a scheduled post to a connected channel, make a one-shot automation with `openclaw cron add --at "2026-10-21T09:00" --message "Post the approved announcement draft from drafts/... as written" --name "Announce launch" --channel slack --to "#announcements"` once you have approved the text.
+Use it with `/skill content-pipeline` in chat. For a scheduled post to a connected channel, make a one-shot automation with `openclaw cron add --at "2026-10-21T09:00" --tz Europe/Berlin --message "Post the approved announcement draft from drafts/... as written" --name "Announce launch" --channel slack --to "channel:C0123456789"` once you have approved the text. Slack targets are channel IDs (`channel:<id>`), not names.
 
 ---
 

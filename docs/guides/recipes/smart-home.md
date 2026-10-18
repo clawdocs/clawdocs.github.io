@@ -10,7 +10,7 @@ keywords: [openclaw, smart home, home automation, philips hue, openhue, iot cont
 # Recipe: Smart Home
 
 :::danger Read before you run this recipe
-These recipes give an agent real powers (shell, SSH, email, smart-home devices). By default OpenClaw runs host commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off**. Before you try one, turn on approvals (`openclaw config set tools.exec.mode ask`), use a strong model for anything that runs tools unattended, and give the agent only the accounts and devices the recipe needs. Config blocks on this page were checked with `openclaw config validate` on 2026.10.4. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
+This recipe gives an agent your shell (through `openhue`) and your lights. By default OpenClaw runs host commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off**. Turn on approvals first (`openclaw config set tools.exec.mode ask`), use a strong model for anything that runs tools unattended, and give the agent only the accounts and devices it needs. See [Security hardening](/security/hardening#exec-approvals) and upstream [permission modes](https://docs.openclaw.ai/tools/permission-modes).
 :::
 
 Turn lights on and off, dim rooms and set scenes from chat. This recipe covers Philips Hue. For locks, alarms, thermostats and other devices, see the [Home Assistant recipe](/guides/recipes/advanced-recipes#home-assistant-control), which needs stricter guardrails.
@@ -84,10 +84,10 @@ Lights on a schedule are an automation:
 ```bash
 openclaw cron add "30 22 * * *" \
   "Dim the bedroom lights to 20% warm white." \
-  --name "Bedtime lights" --tools exec,read
+  --name "Bedtime lights" --tools exec,read --no-deliver
 ```
 
-`--tools exec,read` lets the job run `openhue` (through the allowlist) and read the skill, nothing else.
+`--tools exec,read` lets the job run `openhue` (through the allowlist) and read the skill, nothing else. `--no-deliver` keeps the run out of your chat.
 
 ## See Also
 
