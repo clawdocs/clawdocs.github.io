@@ -1,331 +1,205 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Lightweight Variants
-description: Alternative OpenClaw implementations — from 678 KB Zig binaries to $5 ESP32 boards to browser-based agents
-keywords: [openclaw, alternative, lightweight, nanoclaw, nanobot, minimal]
+description: Independent OpenClaw-style agents, from a 678 KB Zig binary to a $5 ESP32 board, with star counts as of 2026-10-18
+keywords: [openclaw, alternative, lightweight, nanoclaw, nanobot, picoclaw, ironclaw, zeroclaw, minimal]
 ---
 
 # Lightweight Variants
 
-OpenClaw's success has spawned a rich ecosystem of alternative implementations. Some strip it down to a 678 KB binary. Others run on $5 microcontrollers. One runs entirely in the browser with no install at all.
-
-This guide covers the most interesting variants, grouped by what makes them different.
+OpenClaw's success produced a wave of smaller, independent agents. Some fit in a 678 KB binary, one runs on a $5 microcontroller, one runs in a browser tab. This page covers the ones worth knowing, grouped by what makes them different.
 
 :::info
-These are **community projects**, not official OpenClaw. They have independent codebases, varying levels of maintenance, and different security postures. Evaluate each for your use case.
+These are **community projects, not OpenClaw**. Each is an independent codebase with its own config, security model and release cadence. None of them runs OpenClaw skills, plugins or `openclaw.json` unchanged. Star counts and last-push dates are from `gh api` **as of 2026-10-18**; refresh them with `node scripts/refresh-stars.mjs`.
 :::
 
+## Quick comparison
+
+| Variant | Repo | Stars | Language | Key strength |
+|---------|------|------:|----------|--------------|
+| [Nanobot](#nanobot) | [HKUDS/nanobot](https://github.com/HKUDS/nanobot) | 49.1k | Python | Python-native, many chat apps and providers |
+| [ZeroClaw](#zeroclaw) | [zeroclaw-labs/zeroclaw](https://github.com/zeroclaw-labs/zeroclaw) | 33.0k | Rust | Single binary, 30+ channels, hardware control |
+| [NanoClaw](#nanoclaw) | [nanocoai/nanoclaw](https://github.com/nanocoai/nanoclaw) | 31.0k | TypeScript | Agents run in containers |
+| [PicoClaw](#picoclaw) | [sipeed/picoclaw](https://github.com/sipeed/picoclaw) | 30.1k | Go | $10 boards, ~10-20 MB RAM |
+| [IronClaw](#ironclaw) | [nearai/ironclaw](https://github.com/nearai/ironclaw) | 12.7k | Rust | WASM-sandboxed tools, encrypted credential store |
+| [NullClaw](#nullclaw) | [nullclaw/nullclaw](https://github.com/nullclaw/nullclaw) | 8.1k | Zig | 678 KB static binary |
+| [MimiClaw](#mimiclaw) | [memovai/mimiclaw](https://github.com/memovai/mimiclaw) | 5.8k | C | Runs on an ESP32-S3, no OS |
+| [TinyAGI](#tinyclaw) (fka TinyClaw) | [TinyAGI/tinyagi](https://github.com/TinyAGI/tinyagi) | 3.6k | TypeScript | Multi-agent teams |
+| [MicroClaw](#microclaw) | [microclaw/microclaw](https://github.com/microclaw/microclaw) | 746 | Rust | Lean multi-channel bot |
+| [Tiny Claw](#tinyclaw) | [warengonzaga/tinyclaw](https://github.com/warengonzaga/tinyclaw) | 295 | TypeScript | Independent design, model routing |
+| [VibeClaw](#vibeclaw) | [jasonkneen/vibeclaw](https://github.com/jasonkneen/vibeclaw) | 135 | TypeScript | Runs in the browser |
+| [JSClaw](#jsclaw) | [jsclaw/jsclaw](https://github.com/jsclaw/jsclaw) | 1 | JavaScript | Container-orchestration library |
+
 ---
 
-## Quick Comparison
-
-| Variant | Stars | Language | Binary Size | Key Strength | Channels |
-|---------|-------|----------|-------------|--------------|----------|
-| [**ZeroClaw**](#zeroclaw) | 31.8k | Rust | 6.6 MB | Security + hardware | Discord, Telegram, Matrix, email |
-| [**NanoClaw**](#nanoclaw) | 29.7k | TypeScript | ~3k LOC | Container isolation | 14+ platforms |
-| [**Nanobot**](#nanobot) | 43.9k | Python | ~4k LOC | Multi-LLM research | 8 platforms |
-| [**NullClaw**](#nullclaw) | 7.6k | Zig | 678 KB | Smallest footprint | 19 channels |
-| [**MimiClaw**](#mimiclaw) | 5.4k | C | Embedded | $5 ESP32 hardware | Telegram |
-| [**MicroClaw**](#microclaw) | 713 | Rust | Small | Efficient multi-channel | Telegram, Discord, Slack, IRC |
-| [**VibeClaw**](#vibeclaw) | 132 | TypeScript | Browser | Zero install | Web chat |
-| [**TinyClaw**](#tinyclaw) | 262 | TypeScript | Small | Independent framework | Web UI |
-| [**IronClaw**](#ironclaw) | 81 | Rust | Single binary | 13-layer security | 20+ channels |
-| [**JSClaw**](#jsclaw) | PoC | JavaScript | Library | Container orchestration | API |
-
----
-
-## Zero-Setup / Browser-Based
+## Zero install: browser
 
 ### VibeClaw
 
-**Run OpenClaw in a browser tab — no install, no CLI, no backend.**
+Runs an OpenClaw-style agent in a browser tab via almostnode (Node.js in the browser with a virtual filesystem). Visit [vibeclaw.dev](https://vibeclaw.dev), pick a personality and chat. A sandbox mode runs entirely client-side with no persistence; a live-gateway mode connects to a running OpenClaw Gateway.
 
-- **Repo:** [jasonkneen/vibeclaw](https://github.com/jasonkneen/vibeclaw) (132 stars)
-- **Language:** TypeScript
-- **Runtime:** Browser via almostnode (browser-native Node.js with virtual filesystem)
-
-Visit [vibeclaw.dev](https://vibeclaw.dev), pick a personality, and start chatting. The entire agent sandbox runs client-side — no Docker, no server, no accounts.
-
-**Two modes:**
-- **Sandbox mode** — instant, fully browser-based, no persistent storage
-- **Live gateway mode** — connect to a running OpenClaw gateway for real agent access
-
-**Best for:** Quick demos, trying OpenClaw before installing, teaching workshops.
-
-**Limitation:** No persistent storage between sessions in sandbox mode.
+- 135 stars, AGPL-3.0, last push 2026-04-21 (quiet since spring).
+- **Best for:** demos and workshops, trying the idea before installing anything.
 
 ---
 
-### JSClaw
-
-**Container orchestration for Claude agents in pure JavaScript.**
-
-- **Website:** [jsclaw.dev](https://jsclaw.dev)
-- **Language:** Pure JavaScript ESM (zero external packages, Node.js built-ins only)
-
-A library for spawning and managing containerized Claude agents with filesystem-based IPC. Each agent runs in its own Docker, Podman, or Apple container.
-
-**Key features:**
-- Real-time streaming output via JSON
-- Filesystem-based inter-process communication (atomic file operations, not network sockets)
-- Per-group queues with exponential backoff retry
-- Volume mount allowlisting for security
-
-**Best for:** Orchestrating isolated agent workflows in JavaScript, multi-container setups.
-
-```bash
-# Example: spawn a containerized agent
-import { spawn } from 'jsclaw';
-const agent = await spawn({ model: 'claude-sonnet-4-6', container: 'docker' });
-```
-
----
-
-## Ultra-Lightweight / Embedded
+## Ultra-lightweight and embedded
 
 ### NullClaw
 
-**The smallest fully autonomous AI agent — 678 KB static binary.**
+A 678 KB static Zig binary (Zig 0.16.0) with about 1 MB of RAM and under 2 ms startup, per its README. It claims 50+ providers, 19 channels, 35+ tools, MCP and GPIO/I2C/SPI peripheral control.
 
-- **Repo:** [nullclaw/nullclaw](https://github.com/nullclaw/nullclaw) (7.6k stars)
-- **Language:** Zig 0.16.0
-- **Binary:** 678 KB static, no runtime dependencies
-
-Boot time under 2ms on Apple Silicon. Peak memory around 1 MB. Runs on ARM, x86, and RISC-V without modification.
-
-**Features:** 50+ AI providers, 19 channels, 35+ tools, 10 memory engines, MCP support, hardware peripheral control (GPIO, I2C, SPI, USB).
-
-**Best for:** Edge devices, ultra-low-resource environments, anywhere you need an agent in under a megabyte.
-
----
-
-### MimiClaw
-
-**OpenClaw on a $5 ESP32 microcontroller — 0.5W power, no OS.**
-
-- **Repo:** [memovai/mimiclaw](https://github.com/memovai/mimiclaw) (5.4k stars)
-- **Language:** C (ESP-IDF v5.5+)
-- **Hardware:** ESP32-S3 dev board, 16 MB flash, 8 MB PSRAM, WiFi
-
-A pure C implementation running directly on the chip — no Linux, no Node.js, no abstraction layers. Talks to Claude via API over WiFi, stores MEMORY.md and SOUL.md in flash.
-
-**Features:**
-- Telegram bot interface
-- Web search (Brave Search / Tavily API)
-- OTA firmware updates
-- Autonomous cron jobs
-- GPIO device control
-- Dual-core processing
-- Runs 24/7 on USB power at 0.5W
-
-**Best for:** Always-on IoT agents, smart home endpoints, hardware projects where a full server is overkill.
-
-**Getting started:**
-```bash
-# Flash firmware (requires ESP-IDF)
-idf.py build
-idf.py -p /dev/ttyUSB0 flash monitor
-```
-
-Configure via the serial console or Telegram commands after first boot.
-
----
+- 8.1k stars, MIT, last push 2026-10-08.
+- **Best for:** edge devices and anywhere memory is measured in megabytes.
 
 ### PicoClaw
 
-**Minimal agent framework for $10 RISC-V boards and old devices.**
+Sipeed's agent, written from scratch in Go (not a fork) and inspired by Nanobot. It targets $10 hardware such as Sipeed's LicheeRV boards, and also ships an Android APK and a system-tray build for Windows and Linux. It supports MCP, many chat channels (Telegram, Discord, Matrix, IRC, WeChat/WeCom and others) and multiple providers.
 
-- **Repo:** [AbuZar-Ansarii/PicoClaw](https://github.com/AbuZar-Ansarii/PicoClaw) (26 stars)
-- **Target:** RISC-V boards, old Android phones, Raspberry Pi Zero
+- 30.1k stars, MIT, latest release v0.3.1 (2026-07-03), last push 2026-10-15.
+- The README itself warns that it is in early, fast development, "may have unresolved security issues", and should not go to production before v1.0. It also says the only official site is [picoclaw.io](https://picoclaw.io), and that PicoClaw has issued no token: crypto "PicoClaw" tokens are scams.
+- **Best for:** cheap RISC-V and ARM boards, hardware experiments.
 
-Early-stage but interesting — runs on hardware most frameworks won't touch.
+:::note
+An unrelated, inactive repo, `AbuZar-Ansarii/PicoClaw` (36 stars, no push since March 2026), shares the name. The PicoClaw people mean is `sipeed/picoclaw`.
+:::
 
-**Best for:** Hardware education, RISC-V experimentation, reviving old devices.
+### MimiClaw
+
+A pure C agent on an ESP32-S3 (16 MB flash, 8 MB PSRAM), with no Linux and no Node.js. It talks to an LLM API over Wi-Fi, keeps `MEMORY.md`/`SOUL.md`-style files in flash, and uses Telegram as its interface. It also does web search, OTA updates, scheduled jobs and GPIO.
+
+- 5.8k stars, MIT, last push 2026-10-04.
+- Build and flash with ESP-IDF following the [repo README](https://github.com/memovai/mimiclaw).
+- **Best for:** always-on IoT endpoints at about 0.5 W.
 
 ---
 
-## Security-First
+## Security-first
 
 ### NanoClaw
 
-**Every agent runs in its own Linux or Apple container — escape-proof.**
+Runs each agent in its own container (Docker, or Apple Containers on macOS), built on Anthropic's Agents SDK. Per its README it connects to WhatsApp, Telegram, Slack, Discord, Gmail and other apps, with memory and scheduled jobs. The repo moved from `gavrielc/nanoclaw` to `nanocoai/nanoclaw`.
 
-- **Repo:** [gavrielc/nanoclaw](https://github.com/gavrielc/nanoclaw) (29.7k stars)
-- **Language:** TypeScript (~3,000 lines, "understandable in 8 minutes")
-- **Runtime:** Docker or Apple Containers (native macOS)
-
-Built on Anthropic's official Agents SDK. The key insight: if agents run in containers, a rogue agent can't escape to the host. Each agent gets its own isolated filesystem, network, and process tree.
-
-**Features:** 14+ channels (WhatsApp, Telegram, Slack, Discord, Gmail, Teams, Matrix, iMessage, Google Chat, Webex, Linear, GitHub, WeChat, email), persistent memory, scheduled jobs, web search, credential vault.
-
-**Best for:** Multi-user hosting, sensitive data handling, production deployments where security trumps convenience.
-
----
-
-### ZeroClaw
-
-**Production Rust binary with supervised autonomy and hardware control.**
-
-- **Repo:** [zeroclaw-labs/zeroclaw](https://github.com/zeroclaw-labs/zeroclaw) (31.8k stars)
-- **Language:** Rust
-- **Binary:** ~6.6 MB, sub-millisecond startup
-
-The most fully-featured Rust variant. Supports 20+ LLM providers with fallback chains, hardware peripherals (GPIO/I2C/SPI/USB for Raspberry Pi, STM32, Arduino, ESP32), and a Standard Operating Procedures (SOP) engine with human approval gates.
-
-**Security:** Workspace boundaries, command policies, OS-level sandboxes, cryptographic tool receipts.
-
-**Best for:** Production deployments combining software agents with hardware automation.
-
----
+- 31.0k stars, MIT, last push 2026-10-18.
+- Container isolation limits what a misbehaving agent can reach, but it is not escape-proof: you still need sensible mounts, network policy and credentials hygiene.
+- **Best for:** multi-user setups and handling sensitive data in a small codebase.
 
 ### IronClaw
 
-**13-layer defense-in-depth security architecture.**
+NEAR AI's Rust "Agent OS focused on privacy, security and extensibility". Untrusted tools run in WASM sandboxes with capability permissions, secrets are injected at the host boundary rather than exposed to tools, outbound HTTP is allowlisted, and there is an optional Docker sandbox for jobs. Channels include a REPL, HTTP webhooks, Telegram and Slack (as WASM channels) and a web UI. Install from a pinned `ironclaw-v*` release, then run `ironclaw onboard`, as the [README](https://github.com/nearai/ironclaw) describes.
 
-- **Repo:** [JoasASantos/ironclaw](https://github.com/JoasASantos/ironclaw) (81 stars)
-- **Language:** Rust (single compiled binary, embedded Web UI)
+- 12.7k stars, Apache-2.0, latest release ironclaw-v1.4.1 (2026-09-29), last push 2026-10-18.
+- **Best for:** people who want stronger tool isolation by default.
 
-The most security-focused variant. 13 overlapping protection layers including:
-- Command Guardian (45+ blocklist patterns)
-- Sandbox isolation (Docker, Bubblewrap, or native)
-- AES-256-GCM memory encryption at rest
-- Anti-credential-harvesting detection
-- SSRF protection (blocks private IPs and cloud metadata endpoints)
-- Data loss prevention with configurable redaction
-- Ed25519 cryptographic skill verification
-- 432+ security tests
+:::note
+`JoasASantos/ironclaw` (83 stars, last push 2026-02-18) is a different project with the same name. The "13-layer, 432+ security tests" claims that circulated earlier come from that repo, not from NEAR's.
+:::
 
-**Best for:** Regulated environments, sensitive data, security-critical deployments.
+### ZeroClaw
+
+A single Rust binary that, per its README, talks to Anthropic, OpenAI, Ollama and about 20 other providers, reaches 30+ channels (Discord, Telegram, Matrix, email, voice, webhooks), and acts through shell, browser, HTTP, hardware and MCP tools. It adds workspace boundaries, command policies and OS-level sandboxes.
+
+- 33.0k stars, Apache-2.0, latest release v0.8.6 (2026-10-18).
+- **Best for:** combining a software agent with hardware automation in one binary.
 
 ---
 
-## Research / Multi-LLM
+## Python
 
 ### Nanobot
 
-**Ultra-lightweight Python agent — 4,000 lines, 43.9k stars.**
+The University of Hong Kong's (HKUDS) Python agent and the most-starred variant. Its README now describes it as a self-hosted agent framework "with WebUI, tools, memory, MCP, multi-agent workflows, automation, and chat apps". The early "4,000 lines" claim is no longer made.
 
-- **Repo:** [HKUDS/nanobot](https://github.com/HKUDS/nanobot) (43.9k stars)
-- **Language:** Python 3.11+
-- **Origin:** University of Hong Kong research project
-
-The most popular alternative by star count. Gained 8k+ stars in its first 4 days. The entire core is ~4,000 lines of Python (99% smaller than OpenClaw's 430k+).
-
-**Features:** 8 chat platforms, 6+ LLM providers (OpenRouter, Anthropic, OpenAI, DeepSeek, Groq, Gemini, local via vLLM), persistent workflows, MCP support, memory systems.
-
-**Best for:** Python-native environments, research, rapid prototyping, testing multiple LLM providers.
+- 49.1k stars, 8.6k forks, MIT, latest release v0.3.5 (PyPI `nanobot-ai`), last push 2026-10-18.
+- **Best for:** Python shops, research and quick prototyping across providers.
 
 ---
 
-## Efficient Multi-Channel
+## Multi-channel and teams
 
 ### MicroClaw
 
-**Rust agent inspired by NanoClaw — efficient and multi-channel.**
+A Rust chat agent inspired by NanoClaw: multi-step tool use, scoped persistent memory, MCP servers and optional SQLite memory. Channels: Telegram, Discord, Slack, Feishu/Lark, IRC, a web UI and optional Matrix.
 
-- **Repo:** [microclaw/microclaw](https://github.com/microclaw/microclaw) (713 stars)
-- **Language:** Rust (90.9%)
+- 746 stars, MIT, last push 2026-10-18.
+- **Best for:** a small VPS where you want Rust efficiency.
 
-Multi-step tool execution, persistent memory (global, per-bot, per-chat scopes), MCP server integration, and optional SQLite structured memory.
+### TinyClaw and TinyAGI {#tinyclaw}
 
-**Channels:** Telegram, Discord, Slack, Feishu/Lark, IRC, Web UI, optional Matrix.
+Two different projects have used this name:
 
-**Best for:** Lean VPS deployments where you want Rust efficiency with multi-channel support. Runs comfortably on a $5 VPS.
+- **Tiny Claw** ([warengonzaga/tinyclaw](https://github.com/warengonzaga/tinyclaw), 295 stars, GPL-3.0, last push 2026-10-13). An independent framework, explicitly not a smaller OpenClaw, with its own personality engine, a web UI, adaptive memory and cheap/strong model routing.
+- **TinyAGI** ([TinyAGI/tinyagi](https://github.com/TinyAGI/tinyagi), 3.6k stars, MIT, last push 2026-03-30). Formerly `jlia0/tinyclaw`, now "the agent teams orchestrator": multiple isolated agents in teams, Discord/WhatsApp/Telegram, a browser dashboard and a SQLite queue. It uses the Claude Code or Codex CLI as its provider backend.
 
 ---
 
-### TinyClaw
+## Libraries
 
-**Independent framework — not a port, built from scratch.**
+### JSClaw
 
-- **Repo:** [warengonzaga/tinyclaw](https://github.com/warengonzaga/tinyclaw) (262 stars)
-- **Language:** TypeScript (85%), Svelte (9.5%)
+A JavaScript (ESM) library for running Claude agents in Docker containers with filesystem-based IPC, inspired by NanoClaw. It also includes a small OpenClaw-shaped gateway and CLI. See the [README](https://github.com/jsclaw/jsclaw) for its actual API; there is no `spawn()` function.
 
-Explicitly "NOT a smaller version of OpenClaw" — it's an independent agent framework with its own personality engine (Heartware), SHIELD.md anti-malware enforcement, and smart model routing (cheap models for simple queries, powerful models for complex ones).
-
-**Features:** Discord-like web interface, adaptive memory with temporal decay, plugin architecture, multi-provider failover, built-in Ollama Cloud integration.
-
-**Best for:** Cost-conscious personal agents, users who want a different design philosophy from OpenClaw.
+- 1 star, AGPL-3.0, last push 2026-06-12. Treat it as a proof of concept.
 
 ---
 
 ## Mobile
 
-### ZeroClaw-Android
+For an always-on phone, use the official OpenClaw apps. They are companion nodes that pair with a Gateway running elsewhere: [iOS on the App Store](https://docs.openclaw.ai/platforms/ios) and [Android on Google Play](https://docs.openclaw.ai/platforms/android).
 
-**Run a Rust-core agent 24/7 on your Android phone.**
-
-- **Repo:** [Natfii/ZeroClaw-Android](https://github.com/Natfii/ZeroClaw-Android) (293 stars)
-- **Language:** Rust core + Kotlin UI
-- **Requirements:** Android 12+ (API 31)
-
-Native Rust core for efficiency, Material You design, encrypted key storage, 25+ LLM providers, plugin browser.
-
-**Best for:** Always-on mobile assistant without additional hardware. Your old phone becomes a dedicated AI server.
+`Natfii/ZeroClaw-Android` (308 stars) is **archived** (last push 2026-03-07). Do not start new setups on it.
 
 ---
 
-## Decision Framework
+## Decision framework
 
-### By Resource Constraints
+### By constraint
 
-| Constraint | Best Pick |
-|------------|-----------|
+| Constraint | Pick |
+|------------|------|
 | No install at all | VibeClaw (browser) |
-| Under 1 MB binary | NullClaw (678 KB, Zig) |
-| $5 hardware budget | MimiClaw (ESP32) |
-| Old phone lying around | ZeroClaw-Android |
-| $5/month VPS | MicroClaw or NanoClaw |
-| Full server available | OpenClaw (standard) |
+| Under 1 MB binary | NullClaw |
+| $5-10 hardware | MimiClaw (ESP32) or PicoClaw |
+| Phone | Official OpenClaw iOS/Android app, paired with a Gateway |
+| $5/month VPS | MicroClaw, NanoClaw or PicoClaw |
+| A real server | OpenClaw |
 
-### By Priority
+### By priority
 
-| Priority | Best Pick |
-|----------|-----------|
-| Maximum security | IronClaw (13-layer) or NanoClaw (containers) |
-| Smallest footprint | NullClaw (Zig) |
-| Most features | ZeroClaw (Rust) |
-| Fastest to try | VibeClaw (browser) |
-| Python ecosystem | Nanobot |
-| Hardware/IoT | MimiClaw (ESP32) or ZeroClaw (GPIO) |
-| Multi-LLM testing | Nanobot (6+ providers) |
-| Container orchestration | JSClaw or NanoClaw |
+| Priority | Pick |
+|----------|------|
+| Tool isolation by default | IronClaw (WASM) or NanoClaw (containers) |
+| Smallest footprint | NullClaw |
+| Most features in one binary | ZeroClaw |
+| Fastest to try | VibeClaw |
+| Python | Nanobot |
+| Hardware/IoT | MimiClaw, PicoClaw or ZeroClaw |
+| Agent teams | TinyAGI |
 
-### When to Use a Variant vs Standard OpenClaw
+### Variant or OpenClaw?
 
-**Use standard OpenClaw when:**
-- You want the full feature set (377k+ stars of battle-testing)
-- You need ClawHub skills and the community ecosystem
-- Plugin compatibility matters (Workboard, Skill Workshop, etc.)
-- You want official documentation and support
+**Use OpenClaw when** you want the full feature set (Control UI, Automations, the Secret Store, approvals, native apps), ClawHub skills and plugins, and official docs at [docs.openclaw.ai](https://docs.openclaw.ai).
 
-**Use a variant when:**
-- Your hardware can't run Node.js (embedded, microcontrollers)
-- Security isolation is non-negotiable (NanoClaw containers)
-- Binary size or boot time matter (NullClaw, ZeroClaw)
-- You're in a Python-only environment (Nanobot)
-- You want to try before installing anything (VibeClaw)
-- You're building hardware projects (MimiClaw, ZeroClaw)
+**Use a variant when** your hardware cannot run Node.js 24, you want a smaller attack surface or code you can read in an afternoon, you are in a Python-only environment, or you want to try the idea with no install.
+
+Whichever you run, an agent with shell, files, email or browser access needs approvals and isolation. For OpenClaw, see [Security Hardening](/security/hardening); for a variant, read its own security notes first.
 
 ---
 
-## Contributing a Variant
+## Contributing a variant
 
-If you're building your own lightweight implementation:
-
-1. Follow the naming convention: `*claw` for the OpenClaw ecosystem
-2. Document what works and what doesn't compared to standard OpenClaw
-3. Include security considerations (especially for embedded/IoT)
-4. Add your project to [awesome-openclaw](https://github.com/vincentkoc/awesome-openclaw)
-5. Consider MCP compatibility for interoperability
+1. Document clearly what works and what does not compared with OpenClaw.
+2. State your security model, especially for embedded and IoT builds.
+3. Add the project to a maintained list such as [rohitg00/awesome-openclaw](https://github.com/rohitg00/awesome-openclaw) (560 stars) or [vincentkoc/awesome-openclaw](https://github.com/vincentkoc/awesome-openclaw) (146 stars, last push 2026-04-20).
+4. Consider MCP compatibility for interoperability.
 
 ---
 
-## See Also
+## See also
 
-- [Ecosystem](/reference/ecosystem) — Full ecosystem overview including tools, dashboards, and hosting
-- [Installation](/getting-started/installation) — Standard OpenClaw setup
-- [Local Models](/guides/local-models) — Running models on your own hardware
-- [Security Overview](/security/overview) — Threat model and hardening
-- [Plugin System](/guides/plugin-system) — Extending standard OpenClaw
+- [Ecosystem](/reference/ecosystem): tools, clients and hosting
+- [Installation](/getting-started/installation): standard OpenClaw setup
+- [Local Models](/guides/local-models): running models on your own hardware
+- [Security Overview](/security/overview): threat model and hardening

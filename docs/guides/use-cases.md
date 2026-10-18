@@ -1,17 +1,18 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Real-World Use Cases
-description: 20 verified use cases — what people are actually building with OpenClaw, from DevOps automation to smart home control
+description: 20 sourced use cases — what people are actually building with OpenClaw, from DevOps automation to smart home control
 keywords: [openclaw, use cases, examples, what can openclaw do, applications]
 ---
 
 # Real-World Use Cases
 
-What are people *actually* doing with OpenClaw? This page collects **20 verified use cases** from Hacker News discussions, blog posts, GitHub showcases, and community reports — with specific details on channels, models, costs, and workflows.
+What are people *actually* doing with OpenClaw? This page collects **20 use cases** reported in Hacker News discussions, blog posts, GitHub showcases, and community reports — with specific details on channels, models, costs, and workflows.
 
 :::info
-These are real user reports, not marketing examples. Some include cost figures and limitations. The Polymarket trading results (#3) are outliers and should not be taken as typical.
+These are user and press reports from early 2026, each linked to its source; clawdocs has not reproduced them. Some include cost figures and limitations. The Polymarket trading results (#15) are outliers and should not be taken as typical. Setups that give an agent shell, SSH, email, browser or money access need approvals and isolation: see [Security Hardening](/security/hardening).
 :::
 
 ---
@@ -25,7 +26,7 @@ A supervisor agent named "Patch" coordinates **5-20 parallel Claude Code instanc
 - **Channels**: Telegram
 - **Tools**: tmux, SSH, Claude Code
 - **Hardware**: 22-core workstation, WSL2
-- **Cost**: $400/month ($200 Claude Code Pro + $200 OpenAI)
+- **Cost**: $400/month as reported ($200 Claude Max plan + $200 OpenAI)
 - **Source**: [Ask HN: Any real OpenClaw users?](https://news.ycombinator.com/item?id=46838946)
 
 ### 2. SMS Chatbot Diagnosis and Repair
@@ -107,7 +108,7 @@ Used the `himalaya` CLI to give OpenClaw access to an email account with 15,000 
 A scheduled agent pulls CRM data and delivers customer health metrics before the Monday meeting. Automates invoice processing, report generation, and keeps calendars synced across Google, Apple, and Outlook.
 
 - **Channels**: CRM system, Google/Apple/Outlook Calendar, email
-- **Schedule**: Cron-based, runs before Monday standup
+- **Schedule**: a scheduled Automation (cron) job before the Monday standup
 - **Source**: [Hostinger: 25 Use Cases](https://www.hostinger.com/tutorials/openclaw-use-cases)
 
 ---
@@ -116,11 +117,11 @@ A scheduled agent pulls CRM data and delivers customer health metrics before the
 
 ### 11. Home Assistant Control ("Claudette")
 
-An agent named "Claudette" controls an entire house through Home Assistant. Uses the `ha-mcp` skill to access all Home Assistant entities — controls Philips Hue lights, Elgato devices, adjusts boiler settings based on weather forecasts.
+An agent named "Claudette" controls an entire house through Home Assistant. Uses the `ha-mcp` Home Assistant MCP server to access all Home Assistant entities — controls Philips Hue lights, Elgato devices, adjusts boiler settings based on weather forecasts.
 
 - **Channels**: WhatsApp/Telegram
-- **Skill**: `ha-mcp` (Home Assistant MCP server)
-- **Hardware**: Raspberry Pi 4 8GB
+- **Integration**: `ha-mcp` (an MCP server, not a ClawHub skill); see [MCP Servers](/guides/mcp-servers)
+- **Hardware**: Raspberry Pi 4 8GB (Pi 4/5 are supported: [Raspberry Pi install](https://docs.openclaw.ai/install/raspberry-pi))
 - **Setup time**: ~20 minutes
 - **Source**: [Dan Malone Blog](https://www.dan-malone.com/blog/openclaw-home-assistant)
 
@@ -168,7 +169,7 @@ An OpenClaw-powered bot providing liquidity on 15-minute prediction markets for 
 - **Source**: [Phemex News](https://phemex.com/news/article/openclaw-bot-generates-115k-in-a-week-on-polymarket-57582)
 
 :::warning
-Trading results are outliers. The crypto ecosystem around OpenClaw has been associated with scams — see [Known Vulnerabilities](/security/known-vulnerabilities). Exercise extreme caution.
+Trading results are outliers. The crypto ecosystem around OpenClaw has been associated with scams; see [Known Vulnerabilities](/security/known-vulnerabilities). An agent that can move money should not have unattended access: keep trades behind [exec approvals](https://docs.openclaw.ai/tools/exec-approvals), cap balances, and review the skill's code first ([Skill Verification](/security/skill-verification)).
 :::
 
 ### 16. Crypto Whale Wallet Monitor
@@ -223,13 +224,15 @@ Teams of specialized agents — development, marketing, business operations — 
 
 ## Typical Costs
 
-| Usage Pattern | Monthly Cost | Hardware |
-|--------------|-------------|----------|
-| Casual (heartbeat + occasional chat) | $5-20 | Any |
-| Power user (daily coding + automation) | $50-100 | Mac Mini / VPS |
-| Always-on (multiple agents, heavy use) | $200-400 | Dedicated server |
+Model API spend dominates, and reported figures vary widely with model choice, heartbeat cadence and how much context each run carries. The ranges below are rough, from the reports on this page; the [FAQ](/reference/faq#how-much-does-it-cost-to-run) collects higher press-reported figures for heavy users on premium models.
 
-See [Cost Management](/guides/cost-management) for optimization strategies.
+| Usage pattern | Monthly model cost (reported) | Hardware |
+|--------------|-------------|----------|
+| Casual (occasional chat, light heartbeat) | $5-30 | Any |
+| Power user (daily coding + automation) | $50-150 | Mac Mini / VPS |
+| Always-on (multiple agents, heavy use) | $200-400+ | Dedicated server |
+
+See [Cost Management](/guides/cost-management) for ways to bring this down.
 
 ## Getting Started
 
@@ -237,13 +240,13 @@ Pick a use case that interests you and check the relevant guides:
 
 - **Development workflows**: [Basic Usage](/guides/basic-usage) + [Skill Development](/guides/skill-development)
 - **Smart home**: [Channels](/guides/channels) + [Heartbeat Guide](/guides/heartbeat)
-- **Content automation**: [Heartbeat Guide](/guides/heartbeat) + [ClawHub](/guides/clawhub)
+- **Content automation**: [Automation](/guides/automation) + [ClawHub](/guides/clawhub)
 - **DevOps**: [Skill Development](/guides/skill-development) + [Recipes](/guides/recipes/code-reviewer)
 - **Multi-agent**: [Architecture Overview](/architecture/overview) + [Deployment Options](/guides/deployment-options)
 
 ## See Also
 
-- [Awesome OpenClaw Use Cases](https://github.com/hesamsheikh/awesome-openclaw-usecases) — Community-verified use cases (1,000+ stars)
+- [Awesome OpenClaw Use Cases](https://github.com/hesamsheikh/awesome-openclaw-usecases) — Community use cases (31,000+ stars as of 2026-10-18; no updates since 2026-03-24)
 - [Cost Management](/guides/cost-management) — Control your spending
 - [Heartbeat System](/architecture/heartbeat) — How autonomous scheduling works
 - [Skill Development](/guides/skill-development) — Build custom skills for your use case
