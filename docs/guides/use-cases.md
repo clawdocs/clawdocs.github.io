@@ -3,23 +3,23 @@ last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
 title: Real-World Use Cases
-description: 20 sourced use cases — what people are actually building with OpenClaw, from DevOps automation to smart home control
+description: Sourced reports of what people have built with OpenClaw, from DevOps automation to smart home control, with the costs and limits they reported
 keywords: [openclaw, use cases, examples, what can openclaw do, applications]
 ---
 
 # Real-World Use Cases
 
-What are people *actually* doing with OpenClaw? This page collects **20 use cases** reported in Hacker News discussions, blog posts, GitHub showcases, and community reports — with specific details on channels, models, costs, and workflows.
+Eighteen setups people have reported building with OpenClaw, from Hacker News threads, blog posts and showcases, with the channels, tools and costs they gave. Use them for ideas, not as recipes: the configs are the authors', not tested here.
 
 :::info
-These are user and press reports from early 2026, each linked to its source; clawdocs has not reproduced them. Some include cost figures and limitations. The Polymarket trading results (#15) are outliers and should not be taken as typical. Setups that give an agent shell, SSH, email, browser or money access need approvals and isolation: see [Security Hardening](/security/hardening).
+These are user and press reports from early 2026, each linked to its source; clawdocs has not reproduced them. Some include cost figures and limitations. The Polymarket trading results are outliers and should not be taken as typical. Setups that give an agent shell, SSH, email, browser or money access need approvals and isolation: see [Security Hardening](/security/hardening).
 :::
 
 ---
 
 ## Developer Workflows
 
-### 1. Multi-Agent Development Coordinator
+### Multi-Agent Development Coordinator
 
 A supervisor agent named "Patch" coordinates **5-20 parallel Claude Code instances** via Telegram. The user sends high-level instructions from their phone, and the supervisor spins up coding agents in tmux sessions over SSH, assigns tasks, reviews output, runs tests, and merges code.
 
@@ -29,7 +29,7 @@ A supervisor agent named "Patch" coordinates **5-20 parallel Claude Code instanc
 - **Cost**: $400/month as reported ($200 Claude Max plan + $200 OpenAI)
 - **Source**: [Ask HN: Any real OpenClaw users?](https://news.ycombinator.com/item?id=46838946)
 
-### 2. SMS Chatbot Diagnosis and Repair
+### SMS Chatbot Diagnosis and Repair
 
 An 8-day OpenClaw user had a broken SMS chatbot that had been non-functional for **10 months**. OpenClaw autonomously diagnosed the issue, upgraded the legacy app, rewrote the bot prompt through 6 iterations while analyzing real customer conversations, and fixed 6 API integrations.
 
@@ -39,26 +39,19 @@ An 8-day OpenClaw user had a broken SMS chatbot that had been non-functional for
 - **Limitations noted**: Hallucination on marketing copy, brittle browser automation
 - **Source**: [Ask HN](https://news.ycombinator.com/item?id=46838946)
 
-### 3. Autonomous Coding from Phone
-
-A developer sends commands like "fix tests" from Telegram on their phone. OpenClaw runs an autonomous Claude Code loop on a remote machine, executing the task and sending progress updates every 5 iterations back to Telegram.
-
-- **Channels**: Telegram, Claude Code, remote server
-- **Key benefit**: Mobile-first development — review PRs, run tests, and merge code entirely from a phone
-
 ---
 
 ## DevOps & SysAdmin
 
-### 4. 3AM Error Auto-Pilot
+### 3AM Error Auto-Pilot
 
-When a GitHub Actions workflow fails, OpenClaw fetches logs using `gh run view`, parses error messages, generates a diagnostic summary, and sends it to the developer who pushed the triggering commit — often before they've checked the Actions tab. For Sentry errors, it queries Loki logs, analyzes code, creates GitHub issues, and generates fix PRs.
+When a GitHub Actions workflow fails, OpenClaw fetches logs using `gh run view`, parses error messages, generates a diagnostic summary, and sends it to the developer who pushed the triggering commit. For Sentry errors, it queries Loki logs, analyzes code, creates GitHub issues, and generates fix PRs.
 
 - **Channels**: GitHub Actions, Sentry (webhook), Loki, Slack/Telegram
 - **Key detail**: Notifications include direct links to the PR and specific failure lines
 - **Source**: [Jeongil-Jeong's Tech Blog](https://jeongil.dev/en/blog/trends/openclaw-error-autopilot/)
 
-### 5. Slack/Basecamp + Sentry + Auto-PR
+### Slack/Basecamp + Sentry + Auto-PR
 
 After 2-3 days of use, a developer has OpenClaw monitoring Slack and Basecamp channels, doing daily Sentry error reviews, bug fixing with automatic PR generation, content creation, image editing, and voice message transcription.
 
@@ -66,7 +59,7 @@ After 2-3 days of use, a developer has OpenClaw monitoring Slack and Basecamp ch
 - **Key detail**: Works on code and non-code tasks simultaneously
 - **Source**: [Ask HN](https://news.ycombinator.com/item?id=46838946)
 
-### 6. CI/CD Pipeline Monitor + Dependency Scanner
+### CI/CD Pipeline Monitor + Dependency Scanner
 
 Two related DevOps workflows: (a) CI/CD monitoring that alerts when builds fail, tests error, or deployments finish. (b) Dependency scanning that checks `package.json`, `requirements.txt`, or `Gemfile` for outdated packages, highlights security updates, and flags breaking changes.
 
@@ -74,7 +67,7 @@ Two related DevOps workflows: (a) CI/CD monitoring that alerts when builds fail,
 - **Automation**: Uses Lobster workflow shell to chain capabilities into pipelines
 - **Source**: [Hostinger: 25 OpenClaw Use Cases](https://www.hostinger.com/tutorials/openclaw-use-cases)
 
-### 7. Pull Request Review Bot
+### Pull Request Review Bot
 
 Fetches PR diffs via webhook, analyzes changes for missing tests, unclear variable names, security concerns, and convention inconsistencies. Sends formatted review summaries to the responsible developer through their preferred channel.
 
@@ -86,7 +79,7 @@ Fetches PR diffs via webhook, analyzes changes for missing tests, unclear variab
 
 ## Knowledge Management & Productivity
 
-### 8. Full-Stack Knowledge Pipeline ("Reef")
+### Full-Stack Knowledge Pipeline ("Reef")
 
 An elaborate always-on agent named "Reef" runs multiple scheduled jobs: Wikibase entity enrichment, Gmail triage, nightly brainstorm (4am), daily briefing (8am), content publishing (Obsidian → Ghost CMS), and infrastructure management via SSH/Terraform/Ansible.
 
@@ -95,7 +88,7 @@ An elaborate always-on agent named "Reef" runs multiple scheduled jobs: Wikibase
 - **Scheduled tasks**: 6+ daily automated jobs
 - **Source**: [Everything I've Done with OpenClaw](https://madebynathan.com/2026/02/03/everything-ive-done-with-openclaw-so-far/)
 
-### 9. Inbox Zero (15,000 Emails)
+### Inbox Zero (15,000 Emails)
 
 Used the `himalaya` CLI to give OpenClaw access to an email account with 15,000 messages. The agent processed the backlog, unsubscribed from spam, categorized by urgency, and drafted replies for review.
 
@@ -103,7 +96,7 @@ Used the `himalaya` CLI to give OpenClaw access to an email account with 15,000 
 - **Key detail**: Persistent memory (Markdown files) lets the agent remember email handling rules across sessions
 - **Source**: [Ask HN](https://news.ycombinator.com/item?id=46838946)
 
-### 10. CRM + Monday Morning Reports
+### CRM + Monday Morning Reports
 
 A scheduled agent pulls CRM data and delivers customer health metrics before the Monday meeting. Automates invoice processing, report generation, and keeps calendars synced across Google, Apple, and Outlook.
 
@@ -115,7 +108,7 @@ A scheduled agent pulls CRM data and delivers customer health metrics before the
 
 ## Smart Home & IoT
 
-### 11. Home Assistant Control ("Claudette")
+### Home Assistant Control ("Claudette")
 
 An agent named "Claudette" controls an entire house through Home Assistant. Uses the `ha-mcp` Home Assistant MCP server to access all Home Assistant entities — controls Philips Hue lights, Elgato devices, adjusts boiler settings based on weather forecasts.
 
@@ -125,7 +118,7 @@ An agent named "Claudette" controls an entire house through Home Assistant. Uses
 - **Setup time**: ~20 minutes
 - **Source**: [Dan Malone Blog](https://www.dan-malone.com/blog/openclaw-home-assistant)
 
-### 12. Raspberry Pi + WHOOP Fitness Dashboard
+### Raspberry Pi + WHOOP Fitness Dashboard
 
 OpenClaw on a Raspberry Pi with Cloudflare Tunnel for remote access. Connected to WHOOP fitness tracker for health metrics and daily habit tracking. Also built a website from a phone using the same setup.
 
@@ -138,7 +131,7 @@ OpenClaw on a Raspberry Pi with Cloudflare Tunnel for remote access. Connected t
 
 ## Content & Social Media
 
-### 13. RSS-to-Twitter Content Pipeline
+### RSS-to-Twitter Content Pipeline
 
 Monitors competitor blogs via RSS feeds. Autonomously summarizes new posts, drafts Twitter threads matching brand voice, and schedules at optimal engagement times.
 
@@ -147,7 +140,7 @@ Monitors competitor blogs via RSS feeds. Autonomously summarizes new posts, draf
 - **Time saved**: 15 hours per week reported
 - **Source**: [OpenClaw Showcase](https://openclaw.ai/showcase)
 
-### 14. OpusClip Content Machine
+### OpusClip Content Machine
 
 Integrates with OpusClip to create an automated pipeline: takes long-form video, clips into short-form content, adapts for each platform's format, researches trending hashtags, and schedules across LinkedIn, Twitter, Instagram, Facebook, and TikTok.
 
@@ -159,7 +152,7 @@ Integrates with OpusClip to create an automated pipeline: takes long-form video,
 
 ## Finance & Trading
 
-### 15. Polymarket Prediction Market Bot
+### Polymarket Prediction Market Bot
 
 An OpenClaw-powered bot providing liquidity on 15-minute prediction markets for BTC, ETH, SOL, and XRP. Executes thousands of micro-trades with tight spreads.
 
@@ -172,7 +165,7 @@ An OpenClaw-powered bot providing liquidity on 15-minute prediction markets for 
 Trading results are outliers. The crypto ecosystem around OpenClaw has been associated with scams; see [Known Vulnerabilities](/security/known-vulnerabilities). An agent that can move money should not have unattended access: keep trades behind [exec approvals](https://docs.openclaw.ai/tools/exec-approvals), cap balances, and review the skill's code first ([Skill Verification](/security/skill-verification)).
 :::
 
-### 16. Crypto Whale Wallet Monitor
+### Crypto Whale Wallet Monitor
 
 A 24/7 market sentinel tracking whale wallets, monitoring exchange inflows/outflows, liquidation spikes, open interest changes, and narrative shifts. Pings users when notable activity occurs.
 
@@ -181,7 +174,7 @@ A 24/7 market sentinel tracking whale wallets, monitoring exchange inflows/outfl
 - **Key detail**: Persistent memory tracks trends over sessions, building context about market conditions
 - **Source**: [CoinMarketCap: What is OpenClaw](https://coinmarketcap.com/academy/article/what-is-openclaw-moltbot-clawdbot-ai-agent-crypto-twitter)
 
-### 17. Wall Street-Grade Stock Screener
+### Stock Screener on Free APIs
 
 Uses free APIs to build a stock screening system — collects real-time price data, trading volume, analyzes news sentiment, and generates trading decision JSON.
 
@@ -193,46 +186,30 @@ Uses free APIs to build a stock screening system — collects real-time price da
 
 ## Creative & Personal
 
-### 18. Custom Meditation Generator
+### Custom Meditation Generator
 
 Combines WHOOP/Oura fitness data with text-to-speech and ambient audio generation. Reads fitness metrics, writes a custom meditation script tailored to current recovery/strain levels, generates it with ElevenLabs custom voices, and combines with ambient audio.
 
 - **Integrations**: WHOOP/Oura API, ElevenLabs TTS, ambient audio generation
 - **Source**: [OpenClaw Showcase](https://openclaw.ai/showcase)
 
-### 19. Daily Briefing ("Jarvis")
-
-A "Jarvis"-style daily briefing agent that checks calendars, reads weather, and sends smart reminders. Tells the user when to leave for activities based on real-time traffic data.
-
-- **Channels**: Calendar APIs, traffic/maps API, Telegram/WhatsApp
-- **Key detail**: Proactive notifications during heartbeat check-ins
-
 ---
 
 ## Multi-Agent Teams
 
-### 20. Virtual Company Operations
+### Virtual Company Operations
 
 Teams of specialized agents — development, marketing, business operations — coordinated through a leader agent with shared memory. All controllable through Telegram as a "virtual team available 24/7."
 
 - **Channels**: Telegram, Discord
 - **Features**: Cross-model teams (mix Claude, GPT, Gemini), per-agent sandboxing, inter-agent messaging
-- **Platform**: Deployable on DigitalOcean App Platform with elastic scaling
 - **Source**: [AI2sql: Build Your Own AI Agent Team](https://ai2sql.io/how-to-build-your-own-ai-agent-team-with-openclaw-in-15-minutes)
 
 ---
 
-## Typical Costs
+## Costs
 
-Model API spend dominates, and reported figures vary widely with model choice, heartbeat cadence and how much context each run carries. The ranges below are rough, from the reports on this page; the [FAQ](/reference/faq#how-much-does-it-cost-to-run) collects higher press-reported figures for heavy users on premium models.
-
-| Usage pattern | Monthly model cost (reported) | Hardware |
-|--------------|-------------|----------|
-| Casual (occasional chat, light heartbeat) | $5-30 | Any |
-| Power user (daily coding + automation) | $50-150 | Mac Mini / VPS |
-| Always-on (multiple agents, heavy use) | $200-400+ | Dedicated server |
-
-See [Cost Management](/guides/cost-management) for ways to bring this down.
+Model spend dominates and varies widely with model choice, heartbeat cadence and context size. The one reported monthly figure above is the development coordinator's $400 (two subscriptions). Estimate your own with [Cost Management](/guides/cost-management) rather than from anecdotes.
 
 ## Getting Started
 
