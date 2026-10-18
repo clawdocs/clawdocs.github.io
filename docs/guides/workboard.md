@@ -349,7 +349,7 @@ An orchestrator agent (with `tools.alsoAllow: ["workboard"]`) breaks complex wor
 To review the board on a schedule, create an automation job rather than a heartbeat checklist (`HEARTBEAT.md` is retired):
 
 ```bash
-openclaw automations create "every 2h" \
+openclaw automations add "every 2h" \
   "Check the Workboard for blocked cards. For each, diagnose the failure and either unblock it or create a fix card. Send me a short status summary." \
   --name workboard-review --agent main --session isolated \
   --announce --channel telegram --to "123456789"

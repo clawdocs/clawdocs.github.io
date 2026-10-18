@@ -24,7 +24,7 @@ An automation is a stored job with a schedule, a payload (an agent prompt, a sys
 The short form takes the schedule and the prompt as positional arguments:
 
 ```bash
-openclaw automations create "0 7 * * *" "Summarize overnight updates." \
+openclaw automations add "0 7 * * *" "Summarize overnight updates." \
   --name "Morning brief" \
   --tz "America/Los_Angeles" \
   --session isolated \
@@ -71,24 +71,24 @@ Rule of thumb: if it has its own schedule or instructions, make it an automation
 
 ```bash
 # Weekday standup summary at 9 AM
-openclaw automations create "0 9 * * 1-5" \
+openclaw automations add "0 9 * * 1-5" \
   "Summarize what I worked on yesterday from git logs and calendar." --name standup
 
 # Weekly report every Friday at 5 PM, on a stronger model
-openclaw automations create "0 17 * * 5" \
+openclaw automations add "0 17 * * 5" \
   "Generate my weekly status report from this week's git activity." \
   --name weekly-report --model anthropic/claude-opus-5-5
 
 # Inbox check every 30 minutes, alert only if something matters
-openclaw automations create "every 30m" \
+openclaw automations add "every 30m" \
   "Check for urgent unread email from my VIP list. If nothing is urgent, reply NO_REPLY." \
   --name inbox-check --session isolated --announce --channel telegram --to "123456789"
 
 # One-shot reminder in 20 minutes
-openclaw automations create "20m" "Remind me to call the bank." --name bank-reminder
+openclaw automations add "20m" "Remind me to call the bank." --name bank-reminder
 
 # Shell check with no model call, every 15 minutes
-openclaw automations create "*/15 * * * *" --name queue-depth \
+openclaw automations add "*/15 * * * *" --name queue-depth \
   --command "scripts/check-queue.sh" --command-cwd "/srv/app" \
   --announce --channel telegram --to "123456789"
 ```
@@ -181,7 +181,7 @@ Anything a webhook carries (an email body, an issue title, a deploy message) can
 There is no global event-webhook list. An automation can POST its finished result to a URL instead of a chat:
 
 ```bash
-openclaw automations create "0 18 * * 1-5" "Summarize today's deploys as JSON." \
+openclaw automations add "0 18 * * 1-5" "Summarize today's deploys as JSON." \
   --name deploy-digest --webhook "https://example.com/openclaw/deploys"
 ```
 
@@ -296,7 +296,7 @@ GitHub, Google Workspace, Notion, Linear, Jira, Home Assistant and similar servi
 ### Morning briefing {#morning-briefing}
 
 ```bash
-openclaw automations create "0 7 * * 1-5" \
+openclaw automations add "0 7 * * 1-5" \
   "Check my calendar for today, summarize unread email and GitHub notifications, and give me a weather forecast." \
   --name morning-brief --tz "Europe/London" --session isolated \
   --announce --channel whatsapp --to "+15551234567"
@@ -305,7 +305,7 @@ openclaw automations create "0 7 * * 1-5" \
 ### Inbox monitor {#inbox-monitor}
 
 ```bash
-openclaw automations create "every 30m" \
+openclaw automations add "every 30m" \
   "Check Gmail for unread mail from VIP contacts. If any is urgent, write a two-line alert. Otherwise reply NO_REPLY." \
   --name inbox-monitor --session isolated --announce --channel telegram --to "123456789"
 ```
@@ -315,7 +315,7 @@ For event-driven email, prefer the [IMAP trigger](https://docs.openclaw.ai/autom
 ### Deploy watcher {#deploy-watcher}
 
 ```bash
-openclaw automations create "every 15m" \
+openclaw automations add "every 15m" \
   "Check GitHub Actions in myorg/myapp for failed deployments since the last run. For each failure, summarize the error and a likely fix. If none failed, reply NO_REPLY." \
   --name deploy-watch --session isolated --announce --channel slack --to "channel:C1234567890"
 ```
@@ -323,7 +323,7 @@ openclaw automations create "every 15m" \
 ### Content pipeline {#content-pipeline}
 
 ```bash
-openclaw automations create "0 8 * * 1-5" \
+openclaw automations add "0 8 * * 1-5" \
   "Check my content calendar. For any post due today, draft it from the outline and tell me on Slack when it is ready for review." \
   --name content-pipeline --session isolated --announce --channel slack --to "channel:C1234567890"
 ```

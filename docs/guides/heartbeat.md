@@ -165,11 +165,11 @@ Each check below is its own automation job. It has its own schedule, can use a c
 
 | Check | Command |
 |---|---|
-| Email triage | `openclaw automations create "every 30m" "Check Gmail for unread mail from my VIP list. Summarise anything urgent; otherwise reply NO_REPLY." --name email-triage --session isolated --announce --channel telegram --to "123456789"` |
-| GitHub monitor | `openclaw automations create "every 1h" "List new issues and PRs in myorg/myrepo since the last run and flag any failing CI on main." --name github-watch --session isolated --announce --channel discord --to "channel:123456789012345678"` |
-| Morning briefing | `openclaw automations create "0 8 * * *" "Brief me on today's calendar, weather and top AI news." --name morning-brief --tz "America/New_York" --session isolated --announce --channel telegram --to "123456789"` |
-| System health | `openclaw automations create "every 1h" --name system-health --command "df -h / && docker ps --format '{{.Names}} {{.Status}}'" --announce --channel telegram --to "123456789"` |
-| Weekday code health | `openclaw automations create "0 6 * * 1-5" "Run the test suite in ~/projects/main-app and report new failures." --name code-health --session isolated --model anthropic/claude-sonnet-5-5 --announce --channel slack --to "channel:C1234567890"` |
+| Email triage | `openclaw automations add "every 30m" "Check Gmail for unread mail from my VIP list. Summarise anything urgent; otherwise reply NO_REPLY." --name email-triage --session isolated --announce --channel telegram --to "123456789"` |
+| GitHub monitor | `openclaw automations add "every 1h" "List new issues and PRs in myorg/myrepo since the last run and flag any failing CI on main." --name github-watch --session isolated --announce --channel discord --to "channel:123456789012345678"` |
+| Morning briefing | `openclaw automations add "0 8 * * *" "Brief me on today's calendar, weather and top AI news." --name morning-brief --tz "America/New_York" --session isolated --announce --channel telegram --to "123456789"` |
+| System health | `openclaw automations add "every 1h" --name system-health --command "df -h / && docker ps --format '{{.Names}} {{.Status}}'" --announce --channel telegram --to "123456789"` |
+| Weekday code health | `openclaw automations add "0 6 * * 1-5" "Run the test suite in ~/projects/main-app and report new failures." --name code-health --session isolated --model anthropic/claude-sonnet-5-5 --announce --channel slack --to "channel:C1234567890"` |
 
 Notes:
 
