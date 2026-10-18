@@ -25,7 +25,7 @@ openclaw channels status --probe
 openclaw logs --follow     # live gateway log
 ```
 
-Healthy output: `openclaw gateway status` shows `Runtime: running`, a successful connectivity check and a `Capability: ...` line; `openclaw doctor` reports no blocking issues; `channels status --probe` shows each account connected (and `works` or `audit ok` where supported).
+Healthy output: `openclaw gateway status` shows `Runtime: running`, `Connectivity probe: ok` and a `Capability: ...` line; `openclaw doctor` reports no blocking issues; `channels status --probe` shows each account connected (and `works` or `audit ok` where supported).
 
 If you want one bundle to hand to a person or a coding agent, `openclaw triage` writes a sanitized diagnosis and, when the Gateway is reachable, a support archive.
 
@@ -125,7 +125,7 @@ Common log signatures and fixes:
 | `refusing to bind gateway to <host>:<port> without auth` | Non-loopback bind with no token/password | Set `gateway.auth`, or go back to `gateway.bind: "loopback"` |
 | Invalid config / unknown key | Retired or misspelled key | `openclaw config validate`, then `openclaw doctor --fix` |
 
-Doctor refuses some retired keys instead of migrating them (top-level `heartbeat`, `agents.list`, `channels.telegram.requireMention`, and others). The list is in [Config migrations](https://docs.openclaw.ai/gateway/doctor/config-migrations).
+Doctor refuses some retired keys instead of migrating them (top-level `heartbeat`, `channels.telegram.requireMention`, and others). A legacy `agents.list` roster is different: normal config reads reject it, but `openclaw doctor --fix` converts it to keyed `agents.entries`. The lists are in [Config migrations](https://docs.openclaw.ai/gateway/doctor/config-migrations).
 
 ### Node.js Version Too Old
 
