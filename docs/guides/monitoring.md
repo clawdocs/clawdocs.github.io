@@ -1,426 +1,383 @@
 ---
 last_update:
   date: 2026-10-18
+verified_with: 2026.10.4
 title: Monitoring & Observability
-description: Monitor your OpenClaw agent in production — metrics, logs, alerts, dashboards, and OpenTelemetry tracing
-keywords: [openclaw, monitoring, observability, metrics, alerting, dashboard]
+description: Monitor a production OpenClaw Gateway with status and health commands, HTTP probes, logs, the audit ledger, OpenTelemetry and Prometheus
+keywords: [openclaw, monitoring, observability, metrics, alerting, opentelemetry, prometheus, healthz]
 ---
 
 # Monitoring & Observability
 
-A 24/7 agent needs 24/7 visibility. This guide covers how to monitor OpenClaw in production — from built-in CLI tools to OpenTelemetry tracing to cost dashboards and alerting.
+An agent that runs all day needs checks that run all day too. This page covers what OpenClaw ships: CLI status and health commands, unauthenticated HTTP probes, file logs, a metadata-only audit ledger, and two official exporters (OpenTelemetry and Prometheus). Everything here was checked against OpenClaw 2026.10.4. The official reference is [Health checks](https://docs.openclaw.ai/gateway/health), [Logging](https://docs.openclaw.ai/logging) and [OpenTelemetry export](https://docs.openclaw.ai/gateway/opentelemetry).
+
+:::warning Config is strict
+`openclaw.json` is validated against a strict schema. An unknown key stops the Gateway from starting. Older guides invented keys such as `budget`, `webhooks`, `logging.path` and `logging.audit.log_tool_calls`; none of them exist.
+:::
 
 ---
 
-## Built-In Monitoring
-
-### Status & Health
+## Status and health
 
 ```bash
-# Quick status — gateway, channels, tasks, memory usage
-openclaw status
-
-# Machine-readable for scripting
-openclaw status --json
-
-# Full health check — config, dependencies, environment
-openclaw doctor
-
-# Export comprehensive diagnostic bundle
-openclaw diagnostics > ~/openclaw-debug.txt
+openclaw status            # local summary: gateway reachability, channels, sessions
+openclaw status --all      # full read-only diagnosis, safe to paste into an issue
+openclaw status --deep     # asks the running gateway to probe channels live
+openclaw status --usage    # provider usage/quota snapshots
+openclaw health            # the running gateway's health snapshot
+openclaw health --json     # same, machine-readable
+openclaw gateway status    # service and RPC probe
 ```
 
-`openclaw doctor` validates:
-- Gateway process state
-- Config file syntax
-- Node.js version compatibility
-- Filesystem permissions
-- MCP server connectivity
-- Plugin health
-- Environment variables
+`openclaw doctor` is a diagnose-and-repair tool, not a health check. Use it after upgrades or when something is broken, not as a liveness probe; `doctor --fix` writes changes.
 
-### Statistics
+### Component checks
 
 ```bash
-# Token usage breakdown
-openclaw stats tokens
-
-# Token usage over a specific period
-openclaw stats tokens --period 7
-
-# Per-channel message statistics
-openclaw stats channels
-
-# Heartbeat execution history
-openclaw stats heartbeat
-
-# Cost breakdown by model, channel, and task type
-openclaw gateway usage-cost
+openclaw channels list                 # configured channels
+openclaw channels status --probe       # live credential check per channel
+openclaw mcp status                    # MCP transport status without connecting
+openclaw mcp doctor                    # static setup problems
+openclaw mcp probe                     # connect and list capabilities
+openclaw plugins doctor                # plugin load problems
+openclaw plugins inspect <id> --runtime
+openclaw security audit --deep         # config, permissions, live gateway probes
 ```
 
-### Component Diagnostics
+In any chat, the standalone command `/status` returns runtime status and provider quota without invoking the agent.
+
+### Support bundle
 
 ```bash
-# MCP servers
-openclaw mcp doctor             # Diagnose all connections
-openclaw mcp status             # Connection overview
-openclaw mcp probe <name>       # Test specific server
-
-# Plugins
-openclaw plugins doctor         # Diagnose plugin issues
-openclaw plugins inspect <name> --runtime  # Runtime state
-
-# Channels
-openclaw channel list           # All channels and status
-openclaw channel status <name>  # Specific channel details
-
-# Security
-openclaw security audit         # Config and permissions
-openclaw security audit --deep  # WebSocket probe, browser exposure, plugins
+openclaw gateway diagnostics export --output ~/openclaw-diagnostics.zip
 ```
+
+The zip holds a summary, the newest stability bundle, sanitized log metadata, health/status snapshots and the config shape. Chat text, tool output and secrets are omitted or redacted. See [Diagnostics export](https://docs.openclaw.ai/gateway/diagnostics). For recent internal events, `openclaw gateway stability` shows the bounded stability recorder.
 
 ---
 
-## Logging
+## HTTP probes
 
-### Log Levels
+The Gateway answers three unauthenticated `GET`/`HEAD` checks on its port (default 18789):
 
-Control verbosity with the `OPENCLAW_LOG_LEVEL` environment variable:
-
-| Level | What You See | Use When |
-|-------|-------------|----------|
-| `debug` | Everything — API calls, messages, tool invocations, memory writes | Debugging specific issues |
-| `info` | Standard operations (default) | Normal production |
-| `warn` | Warnings and errors only | Quiet production, high-traffic agents |
-| `error` | Errors only | Minimal logging |
+| Endpoint | Meaning | Use it for |
+|---|---|---|
+| `/healthz` | The HTTP server is live. Body includes `"ok": true`. | Liveness and restart decisions |
+| `/startupz` | Startup work has settled and the Gateway is not draining. Ignores channel health. | Startup checks, orchestrator readiness |
+| `/readyz` | Started, agent databases admitted, and configured channel accounts pass deep checks. Body includes `"ready": true`. | Monitoring that should alert when a channel is down |
 
 ```bash
-# Run with debug logging
-OPENCLAW_LOG_LEVEL=debug openclaw gateway
-
-# Set permanently in config
-openclaw config set logging.level "info"
+curl -fsS http://127.0.0.1:18789/healthz
+curl -fsS http://127.0.0.1:18789/readyz
 ```
 
-### Filtering by Component
+:::tip Check the body, not just the status code
+The Control UI serves a catch-all `200` for unknown paths. Against an old image without the probe route, a status-only check passes forever. Upstream's Kubernetes manifests parse the JSON and require `ok === true` (or `ready === true`). Do the same: `curl -fsS http://127.0.0.1:18789/healthz | grep -q '"ok":true'`.
+:::
+
+### Docker
+
+The official image already has a `HEALTHCHECK` that pings `/healthz`, so you do not need to add one. Check it with:
 
 ```bash
-# Real-time log stream, all components
-openclaw logs --follow
-
-# Filter to specific component
-openclaw logs --filter heartbeat --follow
-openclaw logs --filter channel --follow
-openclaw logs --filter brain --follow
-openclaw logs --filter hands --follow
-openclaw logs --filter plugin --follow
-openclaw logs --filter mcp --follow
-
-# Last N lines (useful for post-mortem)
-openclaw logs --lines 200
+docker inspect --format='{{.State.Health.Status}}' openclaw-gateway
 ```
 
-### Log Rotation
+For an authenticated deep snapshot inside the upstream compose setup:
 
-Configure rotation to prevent disk exhaustion:
+```bash
+docker compose exec openclaw-gateway sh -lc 'node dist/index.js gateway health --token "$OPENCLAW_GATEWAY_TOKEN"'
+```
+
+### Kubernetes
+
+Upstream ships Kustomize manifests (`scripts/k8s/`, see [Kubernetes](https://docs.openclaw.ai/install/kubernetes)) whose probes look like this:
+
+```yaml title="deployment.yaml (excerpt)"
+livenessProbe:
+  exec:
+    command:
+      - node
+      - -e
+      - "require('http').get('http://127.0.0.1:18789/healthz', r => { let b = ''; r.on('data', d => b += d); r.on('end', () => { try { process.exit(r.statusCode < 400 && JSON.parse(b).ok === true ? 0 : 1); } catch { process.exit(1); } }); }).on('error', () => process.exit(1))"
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 10
+readinessProbe:
+  exec:
+    command:
+      - node
+      - -e
+      - "require('http').get('http://127.0.0.1:18789/readyz', r => { let b = ''; r.on('data', d => b += d); r.on('end', () => { try { process.exit(r.statusCode < 400 && JSON.parse(b).ready === true ? 0 : 1); } catch { process.exit(1); } }); }).on('error', () => process.exit(1))"
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+```
+
+Use `/startupz` instead of `/readyz` for readiness if one broken channel account should not take the whole Gateway out of service.
+
+### External uptime monitors
+
+Do not publish port 18789 to the internet just to monitor it. Run the probe on the host (cron, systemd timer) or over a private network such as Tailscale, and alert from there:
+
+```bash title="/etc/cron.d/openclaw-watchdog"
+*/5 * * * * deploy curl -fsS --max-time 10 http://127.0.0.1:18789/healthz | grep -q '"ok":true' || curl -fsS -X POST -H 'Content-Type: application/json' -d '{"text":"OpenClaw gateway health check failed"}' "$SLACK_WEBHOOK_URL"
+```
+
+Set `SLACK_WEBHOOK_URL` at the top of the cron file. An external watchdog is the only alert that still fires when the Gateway itself is down.
+
+---
+
+## Logs
+
+### Where they are
+
+The Gateway writes JSONL file logs to `/tmp/openclaw/openclaw-YYYY-MM-DD.log` (named profiles use `openclaw-<profile>-YYYY-MM-DD.log`). Each file rotates at `logging.maxFileBytes` (default 100 MB) with up to five numbered archives, and dated files are pruned after 24 hours. If `/tmp/openclaw` is unsafe, and always on Windows, OpenClaw uses an `openclaw-<uid>` directory under the OS temp dir.
+
+### Reading them
+
+```bash
+openclaw logs --follow             # live tail through the gateway
+openclaw logs --limit 500          # last 500 lines (default 200)
+openclaw logs --follow --json      # JSON lines, for filtering
+```
+
+There is no `--filter` flag. Filter JSON output yourself:
+
+```bash
+openclaw logs --follow --json | grep -i heartbeat
+```
+
+The Control UI also has a Logs tab.
+
+### Levels and config
+
+Levels are `silent`, `fatal`, `error`, `warn`, `info` (default), `debug` and `trace`. Raise verbosity for one run without editing config:
+
+```bash
+openclaw --log-level debug gateway run
+# or
+OPENCLAW_LOG_LEVEL=debug openclaw gateway run
+```
+
+Persistent settings:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "logging": {
-    "level": "info",
-    "path": "~/.openclaw/logs",
-    "max_size": "10m",
-    "max_files": 5
-  }
+  logging: {
+    level: "info",              // file log level
+    consoleLevel: "warn",       // console verbosity
+    file: "/var/log/openclaw/openclaw.log", // optional fixed path
+    maxFileBytes: 52428800,     // rotate at 50 MB (default 100 MB, 5 archives)
+    redactPatterns: ["sk-[A-Za-z0-9_-]+"],  // extra secret patterns to mask
+  },
 }
 ```
 
-With these defaults, logs rotate at 10 MB and keep 5 files — about 50 MB maximum disk usage.
-
-### Audit Logging
-
-Record a tamper-evident trail of all agent actions:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "logging": {
-    "audit": {
-      "enabled": true,
-      "path": "~/.openclaw/logs/audit.log",
-      "log_tool_calls": true,
-      "log_memory_writes": true,
-      "log_channel_messages": true
-    }
-  }
-}
-```
-
-Each audit entry records:
-- Timestamp
-- User/sender ID
-- Action type (tool call, message, memory write)
-- Result (success/failure)
-- IP address (for webhook/API calls)
-
-Audit logs are retained for 90 days by default (configurable up to 365). Exportable as CSV or JSON for compliance reviews.
+The directory in `logging.file` must exist and be writable by the Gateway user. See [Logging](https://docs.openclaw.ai/logging).
 
 ---
 
-## Metrics
+## Audit ledger
 
-### What OpenClaw Tracks
+OpenClaw keeps a **metadata-only** activity ledger: who ran which agent or tool, when, and how it ended. It never stores message or tool content. Run and tool records are on by default; message lifecycle records are off by default.
 
-| Category | Metrics | Command |
-|----------|---------|---------|
-| **Tokens** | Usage by model, input/output split, cost per request | `openclaw stats tokens` |
-| **Cost** | Total spend, cost by model/channel/task, daily/weekly trends | `openclaw gateway usage-cost` |
-| **Channels** | Messages sent/received, errors, connection uptime | `openclaw stats channels` |
-| **Heartbeat** | Execution count, tokens per cycle, cost per cycle, timing | `openclaw stats heartbeat` |
-| **Memory** | Context tokens loaded, memory file count, disk usage | `openclaw status` |
-| **MCP** | Server connectivity, tool count, response times | `openclaw mcp status` |
-| **Plugins** | Load status, hook execution, errors | `openclaw plugins list` |
+```json5 title="~/.openclaw/openclaw.json"
+{
+  logging: {
+    audit: {
+      enabled: true,          // default true
+      messages: "direct",     // "off" (default) | "direct" | "all"
+      executionIdentity: true // default false; per-run identity attribution
+    },
+  },
+}
+```
 
-### Token Cost Breakdown
-
-Typical cost distribution for a 24/7 agent:
-
-| Component | Share | Optimization |
-|-----------|-------|-------------|
-| Heartbeat | ~35% | Increase interval, use cheaper model, set quiet hours |
-| Chat | ~25% | Rate limit channels, session resets |
-| Skills | ~20% | Simplify skill prompts, reduce tool calls |
-| Context | ~15% | Lower `max_context_tokens` |
-| Sub-agents | ~5% | Limit multi-agent workflows |
+Records live in the shared state database (`state/openclaw.sqlite` under the state directory), not in a log file. Queries return at most 30 days, and the ledger is capped at 100,000 rows. Query it with the CLI:
 
 ```bash
-# Identify your biggest cost driver
-openclaw gateway usage-cost
+openclaw audit --limit 50
+openclaw audit --kind tool_action --status failed --limit 20
+openclaw audit --agent main --after 2026-10-17T00:00:00Z --json
 ```
+
+Upstream is explicit that this is "not a lossless compliance archive". If you need long retention, export through OpenTelemetry to a system you control. See [Audit history](https://docs.openclaw.ai/gateway/audit) and [`openclaw audit`](https://docs.openclaw.ai/cli/audit).
 
 ---
 
 ## OpenTelemetry
 
-### Community Observability Plugin
+The official `diagnostics-otel` plugin exports metrics, traces and logs over OTLP/HTTP (protobuf) to any OTLP collector or backend (Grafana, Datadog, Honeycomb, Tempo, Jaeger and so on). It is bundled in the default Docker images. On npm installs, install it from the official scope:
 
-The [OpenClaw Observability Plugin](https://github.com/henrikrexed/openclaw-observability-plugin) exports traces and metrics to OpenTelemetry-compatible backends.
+```bash
+openclaw plugins install @openclaw/diagnostics-otel
+# Docker image (already bundled): just enable it
+openclaw plugins enable diagnostics-otel
+```
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  plugins: {
+    entries: {
+      "diagnostics-otel": { enabled: true },
+    },
+  },
+  diagnostics: {
+    enabled: true,
+    otel: {
+      enabled: true,
+      endpoint: "http://otel-collector:4318",
+      protocol: "http/protobuf",
+      headers: { Authorization: "Bearer ${OTEL_TOKEN}" },
+      serviceName: "openclaw-gateway",
+      traces: true,
+      metrics: true,
+      logs: true,
+      sampleRate: 0.2,
+      flushIntervalMs: 60000,
+    },
+  },
+}
+```
+
+Notes:
+
+- If you use a restrictive `plugins.allow` list, `diagnostics-otel` must be in it. `plugins install` adds it to an existing list.
+- `protocol` accepts only `http/protobuf`; gRPC was retired. Doctor rewrites an old `grpc` value.
+- When `endpoint` is unset, the standard `OTEL_EXPORTER_OTLP_*` variables are used as a fallback.
+- `captureContent` (default off) puts raw message and tool content in span attributes. Leave it off unless your collector's retention policy allows that data.
+- `openclaw status --all` and `openclaw doctor` show exporter health per signal.
+- `openclaw agent exec` runs do not export telemetry; dispatch through the Gateway or use `openclaw agent --local`.
+
+Field reference, metric names and span names: [Setup](https://docs.openclaw.ai/gateway/opentelemetry/setup), [Configuration](https://docs.openclaw.ai/gateway/opentelemetry/configuration), [Privacy and trace context](https://docs.openclaw.ai/gateway/opentelemetry/privacy-and-trace-context).
+
+### Local Jaeger for testing
+
+```yaml title="docker-compose.otel.yml (add to your existing compose)"
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "127.0.0.1:16686:16686"   # Jaeger UI
+```
+
+Point `diagnostics.otel.endpoint` at `http://jaeger:4318` and open `http://localhost:16686`. Export is outbound from the Gateway, so the Gateway container needs no extra published port.
+
+### Third-party plugin
+
+The community [OpenClaw Observability Plugin](https://github.com/henrikrexed/openclaw-observability-plugin) is an alternative exporter. Prefer the official plugin above unless you need something it adds.
 
 :::warning
 The npm package for this plugin is `@henrikrexed/openclaw-otel-observability`. The unscoped name `openclaw-observability` belongs to an unrelated publisher; do not install it. Plugins run with your agent's access, so pin the version and check the [plugin README](https://github.com/henrikrexed/openclaw-observability-plugin) for the current config options.
 :::
 
-**Supported backends:**
-- Grafana Cloud
-- Dynatrace
-- Jaeger
-- Any OTLP-compatible collector
+```bash
+openclaw plugins install npm:@henrikrexed/openclaw-otel-observability --pin
+```
 
-**What it traces:**
-- Complete agent workflow spans (start to finish)
-- Individual tool execution spans
-- LLM API call spans with token breakdowns
-- Memory read/write operations
-- Session context propagation across distributed traces
+---
 
-**Span attributes:**
-- Session ID, user ID, model name
-- Channel source, message priority
-- Token count (input/output), cost
-- Tool name, execution duration, result status
+## Prometheus
 
-### Setup
+The official `diagnostics-prometheus` plugin renders the same diagnostics as Prometheus text at an **authenticated** Gateway route:
+
+```text
+GET /api/diagnostics/prometheus
+```
 
 ```bash
-# Install the plugin from its author's npm package (explicit npm: source, pinned)
-openclaw plugins install npm:@henrikrexed/openclaw-otel-observability --pin
-
-# Configure OTLP endpoint
+openclaw plugins install @openclaw/diagnostics-prometheus
+openclaw gateway restart
+curl -H "Authorization: Bearer $OPENCLAW_GATEWAY_TOKEN" \
+  http://127.0.0.1:18789/api/diagnostics/prometheus
 ```
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "plugins": {
-    "entries": {
-      "otel-observability": {
-        "enabled": true,
-        "config": {
-          "otlp_endpoint": "https://otlp.grafana.net/otlp",
-          "otlp_headers": {
-            "Authorization": "Basic ${GRAFANA_OTLP_TOKEN}"
-          },
-          "service_name": "openclaw-agent",
-          "trace_all_tool_calls": true,
-          "trace_llm_calls": true,
-          "include_token_metrics": true
-        }
-      }
-    }
-  }
+  plugins: {
+    entries: {
+      "diagnostics-prometheus": { enabled: true },
+    },
+  },
+  diagnostics: { enabled: true },
 }
 ```
 
-### Local Development with Jaeger
-
-For local tracing without a cloud backend:
-
-```yaml title="docker-compose.otel.yml"
-services:
-  openclaw:
-    image: openclaw/openclaw:latest
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
-
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "16686:16686"   # Jaeger UI
-      - "4318:4318"     # OTLP HTTP receiver
+```yaml title="prometheus.yml"
+scrape_configs:
+  - job_name: openclaw
+    scrape_interval: 30s
+    metrics_path: /api/diagnostics/prometheus
+    authorization:
+      credentials_file: /etc/prometheus/openclaw-gateway-token
+    static_configs:
+      - targets: ["openclaw-gateway:18789"]
 ```
 
-Access the Jaeger UI at `http://localhost:16686` to visualize traces.
+:::danger
+The route needs operator auth (`operator.read` scope or higher). Do not expose it as a public unauthenticated `/metrics` endpoint, and do not put a reverse proxy in front of it that strips auth. A gateway token is an operator credential: keep the scrape token file readable only by Prometheus.
+:::
 
-### Knostic Telemetry (Privacy-First)
-
-For environments where data must stay local:
-
-- Local-only processing — nothing leaves your machine
-- Cryptographic hash chains for tamper evidence
-- Opt-in granularity (choose what to track)
-- No external dependencies
+Metric names and labels: [Prometheus metrics](https://docs.openclaw.ai/gateway/prometheus).
 
 ---
 
-## Health Checks
+## Cost monitoring
 
-### CLI Health Check
-
-```bash
-# Quick check — exit code 0 = healthy, non-zero = unhealthy
-openclaw doctor
-echo $?  # 0 = healthy
-```
-
-### Docker
-
-```yaml title="docker-compose.yml"
-services:
-  openclaw:
-    image: openclaw/openclaw:latest
-    healthcheck:
-      test: ["CMD", "openclaw", "doctor"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
-```
+OpenClaw has **no built-in spend cap**. It reports usage; your provider enforces limits. Set a monthly limit or alert in each provider's console.
 
 ```bash
-# Check health status
-docker inspect --format='{{.State.Health.Status}}' openclaw
-
-# View health check history
-docker inspect --format='{{range .State.Health.Log}}{{.Output}}{{end}}' openclaw
+openclaw gateway usage-cost              # estimated cost from session logs, last 30 days
+openclaw gateway usage-cost --days 7 --all-agents
+openclaw status --usage                  # provider quota snapshots
 ```
 
-### Kubernetes
+In chat, `/usage full` adds a per-response usage footer and `/usage cost` prints a local cost summary. With an Anthropic Admin API key configured, the Control UI **Usage** view shows provider-reported cost history. `usage-cost` is an estimate derived from sessions; the provider bill is the source of truth.
 
-```yaml title="deployment.yaml"
-livenessProbe:
-  exec:
-    command: ["openclaw", "doctor"]
-  initialDelaySeconds: 30
-  periodSeconds: 60
-  timeoutSeconds: 15
+For where the money goes and how to cut it (heartbeat cadence, model routing, caching), see [Cost Management](./cost-management.md).
 
-readinessProbe:
-  exec:
-    command: ["openclaw", "status"]
-  initialDelaySeconds: 10
-  periodSeconds: 30
-  timeoutSeconds: 10
-```
-
-### External Uptime Monitoring
-
-Point any HTTP uptime monitor at the gateway health endpoint, or use SSH-based checks:
-
-```bash
-# SSH-based health check from external monitor
-ssh deploy@your-server "openclaw doctor" && echo "UP" || echo "DOWN"
-```
+| Symptom | Likely cause | Check |
+|---|---|---|
+| Steady cost with no chat activity | Heartbeat on an expensive model or with full context | `agents.defaults.heartbeat` ([cost](./cost-management.md#heartbeat-costs)) |
+| Sudden spike | Loop or stuck tool | `openclaw logs --follow`, `openclaw audit --kind tool_action` |
+| Cost from an unexpected model | A fallback took over | `openclaw status --deep`, primary provider health |
 
 ---
 
 ## Alerting
 
-### Heartbeat-Based Alerts
+### Scheduled checks with automations
 
-The simplest alerting — embed monitoring instructions in your heartbeat:
-
-```markdown title="~/.openclaw/HEARTBEAT.md"
-## System Health (every heartbeat cycle)
-
-- Check that all channels are connected via `openclaw channel list`
-- Check MCP server health via `openclaw mcp status`
-- Monitor memory usage — alert if RSS exceeds 500 MB
-- Check disk usage — alert if ~/.openclaw exceeds 1 GB
-- Review error logs since last heartbeat
-- If any issues found, send a summary to Telegram with severity level
-```
-
-The agent runs these checks every heartbeat cycle (default: 30 minutes) and sends alerts through whichever channel you configure.
-
-### Outgoing Webhooks
-
-Fire HTTP webhooks on specific events:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "webhooks": {
-    "outgoing": [
-      {
-        "event": "agent.error",
-        "url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
-      },
-      {
-        "event": "agent.task.completed",
-        "url": "https://your-app.com/task-done"
-      },
-      {
-        "event": "security.alert",
-        "url": "https://events.pagerduty.com/v2/enqueue"
-      },
-      {
-        "event": "channel.disconnected",
-        "url": "https://hooks.slack.com/services/YOUR/ALERT/URL"
-      }
-    ]
-  }
-}
-```
-
-### Cron-Based Alerts
-
-Schedule periodic checks that alert on failure:
+Recurring checks are automation jobs (`openclaw cron` and `openclaw automations` are the same command). The schedule comes first, then the prompt:
 
 ```bash
-# Hourly health check during business hours
-openclaw cron add "health-check" \
-  --schedule "0 9-17 * * 1-5" \
-  --message "Run openclaw doctor. If any checks fail, send an alert to Slack with the failure details."
+# Weekday business hours, hourly
+openclaw cron add "0 9-17 * * 1-5" \
+  "Check channel and MCP health. Reply only if something is disconnected or failing, with details." \
+  --name health-check
 
-# Nightly cost check
-openclaw cron add "cost-check" \
-  --schedule "0 23 * * *" \
-  --message "Check today's token spend via openclaw gateway usage-cost. If over $5, alert on Telegram with breakdown."
+# Nightly cost note
+openclaw cron add "0 23 * * *" \
+  "Summarise today's estimated model spend and flag anything unusual." \
+  --name cost-check
 
-# Weekly security audit
-openclaw cron add "security-audit" \
-  --schedule "0 3 * * 0" \
-  --message "Run openclaw security audit --deep. Report any new findings to Telegram."
+# POST the result to your own endpoint instead of a chat
+openclaw cron add "0 3 * * 0" \
+  "Summarise this week's failed automations as JSON." \
+  --name weekly-failures \
+  --webhook "https://alerts.example.com/openclaw"
 ```
 
-### GitHub Actions Nightly Check
+Isolated jobs announce their result to chat by default. Once a failure-alert route is configured (per job, or globally under `cron.failureAlert`), a job alerts after two consecutive failures, with a one-hour cooldown. See [`openclaw cron`](https://docs.openclaw.ai/cli/cron) for delivery and `failureAlert` options.
+
+:::warning Agents running commands
+A check that asks the agent to run shell commands depends on its exec tool, approvals and sandbox settings. Review [Security Hardening](/security/hardening) before letting a scheduled agent run commands unattended. For pure liveness, prefer the external watchdog above: it needs no model call and still works when the Gateway is down.
+:::
+
+The heartbeat is a separate, system-owned automation configured under `agents.defaults.heartbeat`. `HEARTBEAT.md` is retired; `openclaw doctor --fix` moves an old file into the heartbeat monitor's scratch. See [Heartbeat](https://docs.openclaw.ai/gateway/heartbeat).
+
+### Nightly check from CI
 
 ```yaml title=".github/workflows/nightly-health.yml"
 name: Nightly Health Check
@@ -436,230 +393,82 @@ jobs:
         env:
           AGENT_HOST: ${{ secrets.AGENT_HOST }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.AGENT_KNOWN_HOSTS }}   # output of ssh-keyscan, checked once by hand
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_KEY" > ~/.ssh/key && chmod 600 ~/.ssh/key
-          ssh -i ~/.ssh/key -o StrictHostKeyChecking=no \
-            deploy@$AGENT_HOST \
-            "openclaw doctor && openclaw mcp doctor && openclaw plugins doctor"
+          echo "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/key deploy@"$AGENT_HOST" \
+            "openclaw health && openclaw channels status --probe && openclaw mcp doctor && openclaw plugins doctor"
 
       - name: Alert on failure
         if: failure()
-        uses: slackapi/slack-github-action@v1
+        uses: slackapi/slack-github-action@v2
         with:
+          webhook: ${{ secrets.SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
           payload: '{"text": "OpenClaw health check FAILED. Check logs."}'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 ```
 
----
-
-## Cost Monitoring
-
-### Built-In Cost Tracking
-
-```bash
-# Token usage summary
-openclaw stats tokens
-
-# Full cost breakdown
-openclaw gateway usage-cost
-
-# Heartbeat-specific costs
-openclaw stats heartbeat
-```
-
-### Budget Controls
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "budget": {
-    "daily_limit_usd": 5.00,
-    "monthly_limit_usd": 50.00,
-    "alert_threshold": 0.8    // Alert at 80% of limit
-  }
-}
-```
-
-### Cost Dashboards
-
-| Tool | What It Shows |
-|------|-------------|
-| **Clawalytics** (clawalytics.com) | Real-time spend, per-agent breakdown, daily charts, suspicious activity alerts |
-| **ClawWatcher** | Real-time token usage, cost per model, skills/actions tracking |
-| **claw-dash** | Sessions, 24h tokens, costs, model info, cron jobs, system health |
-| **openclaw-dashboard** | Browser notifications for usage limits, cost analysis by model |
-| **OpenClaw Cost Calculator** (calculator.vlvt.sh) | Pre-deployment cost estimation |
-
-### Cost Anomaly Detection
-
-Watch for these patterns:
-
-| Symptom | Likely Cause | Fix |
-|---------|-------------|-----|
-| Cost doubles overnight | Heartbeat running expensive model | Use cheap model for heartbeat |
-| Sudden cost spike | Infinite loop or stuck tool | Check `openclaw logs --follow` |
-| Gradual cost increase | Context snowball (growing memory) | Reset sessions, lower `max_context_tokens` |
-| High cost per message | Thinking/reasoning mode enabled | Disable extended thinking |
-| Cost from unexpected model | Fallback provider triggered | Check primary provider health |
+Pin the host key in `known_hosts` rather than disabling host verification. Use a deploy user with only the access this check needs.
 
 ---
 
 ## Dashboards
 
-### Control UI (Built-In)
+### Control UI
 
-OpenClaw includes a web dashboard at `http://localhost:18789` (requires gateway auth token):
-
-- Connected channels and their status
-- Active tasks and Workboard state
-- Memory usage and recent writes
-- Recent logs
-- Heartbeat status and history
-
-**Remote access** via SSH tunnel:
+The built-in Control UI on the Gateway port shows chat, sessions, channels, automations, logs and usage. It needs the gateway token. To reach a remote Gateway, tunnel instead of exposing the port:
 
 ```bash
 ssh -N -L 18789:127.0.0.1:18789 user@your-server
-# Then open http://localhost:18789 in your browser
+# then open http://localhost:18789
 ```
 
-### Grafana + OpenTelemetry
+See [Control UI](https://docs.openclaw.ai/web/control-ui).
 
-With the observability plugin exporting to Grafana Cloud:
+### Grafana
 
-**Recommended dashboard panels:**
-- Agent response latency (p50, p95, p99)
-- Token usage over time (by model)
-- Error rate by component
-- Channel message throughput
-- Heartbeat execution timeline
-- Cost accumulation curve
-- MCP server health matrix
+Feed Grafana from either exporter: OTLP via `diagnostics-otel`, or Prometheus via `diagnostics-prometheus`. Useful panels: model-call latency, tokens by model, error rate, channel message throughput, queue depth, and the gateway event-loop delay. Exact metric names are in [Model calls and exported metrics](https://docs.openclaw.ai/gateway/opentelemetry/model-calls-and-metrics).
 
-### Custom Monitoring Script
-
-Build a simple health dashboard with `--json` output:
+### Simple terminal monitor
 
 ```bash title="monitor.sh"
 #!/bin/bash
 while true; do
   clear
-  echo "=== OpenClaw Monitor ==="
-  echo ""
-
-  # Gateway status
-  echo "--- Status ---"
-  openclaw status 2>/dev/null || echo "GATEWAY DOWN"
-  echo ""
-
-  # Channel health
-  echo "--- Channels ---"
-  openclaw channel list 2>/dev/null
-  echo ""
-
-  # Recent errors
-  echo "--- Recent Errors ---"
-  openclaw logs --lines 10 2>/dev/null | grep -i "error\|warn" || echo "None"
-  echo ""
-
-  # Token usage
-  echo "--- Token Usage (24h) ---"
-  openclaw stats tokens --period 1 2>/dev/null
-  echo ""
-
+  echo "=== OpenClaw $(date) ==="
+  curl -fsS --max-time 5 http://127.0.0.1:18789/healthz | grep -q '"ok":true' \
+    && echo "gateway: live" || echo "gateway: DOWN"
+  openclaw channels status 2>/dev/null
+  echo "--- recent warnings/errors ---"
+  openclaw logs --limit 200 --plain 2>/dev/null | grep -iE "error|warn" | tail -10
   sleep 60
 done
 ```
 
 ---
 
-## Security Monitoring
+## Process management
 
-### Audit Trail
+### systemd (Linux) and launchd (macOS)
 
-Enable audit logging to track every agent action:
-
-```json5
-{
-  "logging": {
-    "audit": {
-      "enabled": true,
-      "log_tool_calls": true,
-      "log_memory_writes": true,
-      "log_channel_messages": true
-    }
-  }
-}
-```
-
-Review periodically:
+`openclaw gateway install` (also run by `openclaw onboard --install-daemon`) installs a **user** service: `openclaw-gateway.service` on Linux, a LaunchAgent on macOS.
 
 ```bash
-# Recent audit entries
-tail -50 ~/.openclaw/logs/audit.log
-
-# Search for specific actions
-grep "tool_call" ~/.openclaw/logs/audit.log | tail -20
-grep "memory_write" ~/.openclaw/logs/audit.log | tail -20
+systemctl --user status openclaw-gateway
+journalctl --user -u openclaw-gateway -f
+openclaw gateway restart
 ```
 
-### Drift Detection
+On a headless server, enable lingering (`sudo loginctl enable-linger $(whoami)`) so the user service runs without a login session. The system unit `openclaw` (`systemctl status openclaw`) exists only for the [Ansible](https://docs.openclaw.ai/install/ansible) install. See [Gateway](https://docs.openclaw.ai/gateway).
 
-Monitor for unauthorized changes to critical files:
+### Docker
 
-| File | Risk | Tool |
-|------|------|------|
-| `SOUL.md` | Personality tampering | ClawSec `soul-guardian` |
-| `openclaw.json` | Config manipulation | File hash monitoring |
-| `skills/` | Malicious skill injection | `openclaw security scan --all` |
-| `memory/` | Memory poisoning | Audit logging |
-
-### Community Security Tools
-
-| Tool | What It Does |
-|------|-------------|
-| **ClawSec** | Complete security suite — SOUL.md drift detection, audit watchdog, CVE monitoring |
-| **Clawprint** | SHA-256 hash chain audit trail, web dashboard, 24/7 daemon mode, secret redaction |
-| **ClawBands** | Human-in-the-loop approval before dangerous tool calls, JSON audit logging |
-| **SkillGuard** | Skill vulnerability scanner — prompt injection, credential leaks, malicious patterns |
-| **Security Monitor** | 32-script suite for proactive threat monitoring with daily automated scans |
-
-### Automated Security Audits
-
-```bash
-# Schedule weekly deep audit
-openclaw cron add "deep-audit" \
-  --schedule "0 3 * * 0" \
-  --message "Run openclaw security audit --deep and openclaw security scan --all. Report findings to Telegram."
-```
-
----
-
-## Process Management
-
-### Systemd
-
-```bash
-# Install as systemd service
-openclaw onboard --install-daemon
-
-# Check service status
-systemctl status openclaw
-
-# View service logs
-journalctl -u openclaw --follow
-
-# Restart
-systemctl restart openclaw
-```
-
-### Docker Restart Policy
-
-```yaml title="docker-compose.yml"
+```yaml title="docker-compose.yml (excerpt)"
 services:
-  openclaw:
-    restart: unless-stopped    # Restart on crash, not on manual stop
+  openclaw-gateway:
+    restart: unless-stopped
     deploy:
       resources:
         limits:
@@ -667,78 +476,29 @@ services:
           cpus: "2.0"
 ```
 
-### Process Monitoring
-
-```bash
-# Check if running
-openclaw status
-
-# Check resource usage
-ps aux | grep openclaw
-
-# Memory usage benchmarks
-# Healthy idle: 150–250 MB
-# Warning: >500 MB
-# Critical: >1 GB — restart recommended
-```
+Upstream's Kubernetes manifests request 512 Mi and limit at 2 Gi, which is a reasonable starting point. Diagnostics record RSS and heap pressure, so watch the memory metrics rather than guessing thresholds from `ps`.
 
 ---
 
-## Self-Monitoring Patterns
+## Files worth watching
 
-### Comprehensive Heartbeat Monitor
+| Path | Why |
+|---|---|
+| `~/.openclaw/openclaw.json` | Unexpected config changes |
+| `~/.openclaw/workspace/` (`SOUL.md`, `AGENTS.md`, memory files) | Persona or memory tampering |
+| `~/.openclaw/skills/` | Skills you did not install |
+| `/tmp/openclaw/openclaw-*.log` | Errors and crashes |
+| `~/.openclaw/logs/stability/` | Stability bundles written on fatal exits |
 
-```markdown title="~/.openclaw/HEARTBEAT.md"
-## System Health (every heartbeat)
-
-Check the following and send a Telegram alert if any fail:
-
-1. **Gateway**: Run `openclaw status` — confirm gateway is running
-2. **Channels**: Run `openclaw channel list` — all channels should show connected
-3. **MCP**: Run `openclaw mcp status` — all servers should respond
-4. **Memory**: Check RSS with `ps aux | grep openclaw` — alert if >500 MB
-5. **Disk**: Check `df -h ~/.openclaw` — alert if usage >85%
-6. **Errors**: Check `openclaw logs --lines 20` for ERROR or WARN entries
-7. **Cost**: Check today's spend — alert if >$3 (daily budget: $5)
-
-Format the alert as:
-- OK items as a count
-- Failed items with details
-- Only send if something is wrong
-```
-
-### Watchdog Pattern
-
-Use a second agent or cron job to monitor the primary:
-
-```bash title="/etc/cron.d/openclaw-watchdog"
-*/5 * * * * deploy openclaw doctor > /dev/null 2>&1 || \
-  curl -s -X POST https://hooks.slack.com/services/YOUR/WEBHOOK \
-  -d '{"text":"OpenClaw health check failed!"}'
-```
-
----
-
-## Key Files to Monitor
-
-| Path | What to Watch For |
-|------|-------------------|
-| `~/.openclaw/logs/gateway.log` | Errors, crashes, slow responses |
-| `~/.openclaw/logs/audit.log` | Unusual actions, unauthorized access |
-| `~/.openclaw/gateway.pid` | Stale PID (process died but PID file remains) |
-| `~/.openclaw/openclaw.json` | Unauthorized config changes |
-| `~/.openclaw/SOUL.md` | Tampering (personality/behavior changes) |
-| `~/.openclaw/memory/` | Unexpected growth, corruption |
-| `~/.openclaw/skills/` | New files (unauthorized skill install) |
+Run `openclaw security audit --deep` after changes, and see [Security Hardening](/security/hardening) for file-integrity monitoring.
 
 ---
 
 ## See Also
 
-- [Troubleshooting](/reference/troubleshooting) — Fix specific errors and issues
-- [CI/CD & Testing](/guides/cicd-testing) — Automated health checks and deployment validation
-- [Cost Management](/guides/cost-management) — Token optimization and budgeting
-- [Security Hardening](/security/hardening) — Production security checklist
-- [Heartbeat](/guides/heartbeat) — Heartbeat configuration and scheduling
-- [Plugin System](/guides/plugin-system) — Plugin diagnostics and hooks
-- [Ecosystem](/reference/ecosystem) — Community monitoring tools
+- [Troubleshooting](/reference/troubleshooting) — fix specific errors
+- [CI/CD & Testing](/guides/cicd-testing) — automated checks and deployment validation
+- [Cost Management](/guides/cost-management) — where tokens go and how to cut them
+- [Security Hardening](/security/hardening) — production security checklist
+- [Heartbeat](/guides/heartbeat) — heartbeat configuration
+- [Plugin System](/guides/plugin-system) — plugin diagnostics and hooks

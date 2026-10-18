@@ -1,273 +1,221 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Deployment Options
-description: Compare ways to deploy OpenClaw — bare metal, Docker, Kubernetes, Cloudflare Workers, 1Panel, Coolify, and more
+description: Compare ways to deploy OpenClaw — local service, Docker, Kubernetes, Cloudflare, 1Panel, Coolify, VPS providers, and managed hosting
 keywords: [openclaw, deploy, docker, kubernetes, cloud hosting, self-host]
 ---
 
 # Deployment Options
 
-OpenClaw can be deployed in many ways, from a simple local install to fully managed cloud hosting. This guide compares the major options.
+OpenClaw runs as one Gateway process with its state in `~/.openclaw/`. Every option below is a different way to supervise that process and keep that directory. This page compares them and points to the official guide for each. Commands were checked against OpenClaw 2026.10.4.
 
 ## Quick Comparison
 
-| Method | Difficulty | Best For | Cost |
+| Method | Difficulty | Best for | Cost (as of 2026-10-18) |
 |--------|-----------|----------|------|
-| [Local install](/getting-started/installation) | Easy | Personal use, development | Free (+ LLM API) |
+| [Local service](#local-service) | Easy | Personal use on your own machine | Free (+ LLM API) |
 | [Docker](#docker) | Medium | Self-hosters, VPS | Free (+ VPS + LLM API) |
-| [Moltworker](#moltworker) | Easy | Cloudflare users | ~$34.50/mo |
-| [Kubernetes](#kubernetes) | Hard | Production, teams | Free (+ cluster + LLM API) |
-| [1Panel](#1panel) | Easy | VPS with GUI management | Free (+ VPS + LLM API) |
+| [Kubernetes](#kubernetes) | Hard | Clusters you already run | Free (+ cluster + LLM API) |
+| [Cloudflare Containers](#moltworker) | Medium | Cloudflare users (experimental) | Workers Paid plan + container time |
+| [1Panel](#1panel) | Easy | VPS with a GUI panel | Free (+ VPS + LLM API) |
 | [Coolify](#coolify) | Easy | Self-hosted PaaS users | Free (+ VPS + LLM API) |
-| [DigitalOcean 1-Click](#digitalocean) | Easy | Quick cloud deploy | From $24/mo |
-| [Hostinger Template](#hostinger) | Easy | Budget VPS | From $5/mo + LLM API |
-| [Managed Hosting](#managed-hosting) | Easiest | Non-technical users | Varies |
+| [DigitalOcean](#digitalocean) | Easy | Simple paid VPS | About $6/mo for a 1 GB Droplet |
+| [Hostinger](#hostinger) | Easy | Managed 1-Click or VPS | Varies by plan |
+| [Managed hosting](#managed-hosting) | Easiest | Non-technical users | Varies |
+
+:::danger Never expose an unauthenticated Gateway
+The Gateway listens on port 18789. Keep it on loopback and reach it over an SSH tunnel or Tailscale, or put it behind token/password auth and a firewall. Since 2.0 the installer refuses network installs that would expose OpenClaw without auth. See [Security Hardening](/security/hardening) and the upstream [network exposure](https://docs.openclaw.ai/gateway/security/network-exposure) guide. Whatever you deploy, the agent can run shell commands on that host; review approvals and sandboxing before connecting channels.
+:::
+
+## Local service {#local-service}
+
+On your own machine, install the CLI ([Installation](/getting-started/installation)), run `openclaw onboard`, then let OpenClaw install a supervised service:
+
+```bash
+openclaw gateway install      # launchd on macOS, systemd user unit on Linux, schtasks on Windows
+openclaw gateway status
+openclaw gateway restart
+```
+
+- **macOS:** a per-user LaunchAgent labelled `ai.openclaw.gateway`.
+- **Linux:** a systemd **user** unit, `openclaw-gateway.service`. Inspect it with `systemctl --user status openclaw-gateway` and `journalctl --user -u openclaw-gateway -f`. On a headless server, run `sudo loginctl enable-linger $(whoami)` so it keeps running after you log out.
+- After changing `gateway.port`, run `openclaw gateway install --force` so the service starts on the new port.
+
+`openclaw gateway uninstall` removes the service. Details: [Gateway runbook](https://docs.openclaw.ai/gateway).
 
 ## Docker {#docker}
 
-The official Docker image is the most popular self-hosted deployment method.
+The official setup runs from a clone of the repository. There is no standalone compose file to download.
 
 ```bash
-# Pull the latest image
-docker pull openclaw/openclaw:latest
+git clone https://github.com/openclaw/openclaw.git
+cd openclaw
 
-# Run with Docker Compose (recommended)
-curl -fsSL https://docs.openclaw.ai/docker-compose.yml -o docker-compose.yml
-docker compose up -d
+# Use the pre-built image from GHCR (primary registry) instead of building locally
+export OPENCLAW_IMAGE="ghcr.io/openclaw/openclaw:latest"
+./scripts/docker/setup.sh
 ```
 
-The Docker setup:
-1. Builds the OpenClaw image locally
-2. Runs the onboarding wizard inside the container
-3. Generates a gateway token for accessing the Control UI
-4. Creates necessary configuration volumes
-5. Starts the Gateway via Docker Compose
+`scripts/docker/setup.sh` prompts for provider keys, generates a Gateway token and writes it to `.env`, syncs the config, and starts the `openclaw-gateway` service with Docker Compose. Without `OPENCLAW_IMAGE` it builds `openclaw:local` from source, which needs about 6 GB of RAM. Open `http://127.0.0.1:18789/` and paste the token from `.env` into Settings.
 
-```yaml title="docker-compose.yml (example)"
+What the upstream `docker-compose.yml` sets up:
+
+| Item | Value |
+|------|-------|
+| Images | `ghcr.io/openclaw/openclaw` (primary) or the Docker Hub mirror `openclaw/openclaw`. Variants: `-slim`, `-browser` (Chromium included), `extended-stable`. Avoid unofficial mirrors. |
+| User and state | Runs as `node`. State, config and workspace live in `/home/node/.openclaw`, bind-mounted from `~/.openclaw` on the host. Mounting `/root/.openclaw` does nothing. |
+| Auth | `OPENCLAW_GATEWAY_TOKEN` from `.env`, token auth, Gateway bind mode `lan` inside the container. |
+| Hardening | `cap_drop: [NET_RAW, NET_ADMIN]`, `no-new-privileges`, built-in `HEALTHCHECK` on `/healthz`. |
+| Host models | `host.docker.internal` maps to the host, so a host Ollama is `http://host.docker.internal:11434`. |
+| Upgrades | On start, the image runs `openclaw doctor --fix --non-interactive` against the mounted state before the Gateway starts. |
+
+Run CLI commands through the companion service, for example `docker compose run --rm openclaw-cli dashboard --no-open`.
+
+:::warning Published ports
+The upstream compose file publishes `18789` (plus `18790` and `3978`) on **all host interfaces**, protected by the token. Docker's port publishing bypasses ordinary host `INPUT` firewall rules. On a VPS, either filter in the `DOCKER-USER` chain or restrict publishing to loopback with an override file and reach the Gateway over SSH or Tailscale:
+
+```yaml title="docker-compose.override.yml"
 services:
-  openclaw:
-    image: openclaw/openclaw:latest
-    ports:
-      - "18789:18789"
-    volumes:
-      - openclaw-data:/root/.openclaw
-    environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-    restart: unless-stopped
-
-volumes:
-  openclaw-data:
+  openclaw-gateway:
+    ports: !override
+      - "127.0.0.1:18789:18789"
 ```
 
-:::danger
-**Never bind port 18789 to `0.0.0.0` without authentication.** Use `127.0.0.1:18789:18789` or put OpenClaw behind a reverse proxy with auth.
+`!override` needs Docker Compose 2.24 or newer. Keep `OPENCLAW_GATEWAY_TOKEN` set either way.
 :::
+
+Health checks need no auth:
+
+```bash
+curl -fsS http://127.0.0.1:18789/healthz   # liveness
+curl -fsS http://127.0.0.1:18789/readyz    # channel-aware readiness
+```
+
+Full guide: [Docker install](https://docs.openclaw.ai/install/docker), including the [networking and storage](https://docs.openclaw.ai/install/docker/networking-and-storage) notes. For rootless containers see [Podman](https://docs.openclaw.ai/install/podman).
 
 ### Docker with Local Models
 
-To run OpenClaw with Ollama for fully local inference:
+Ollama is not configured through environment variables on the OpenClaw side. Point a provider at it in `openclaw.json`.
 
-```yaml title="docker-compose.yml"
+If Ollama runs on the host, start it with `OLLAMA_HOST=0.0.0.0:11434 ollama serve` so the container can reach it, and use `http://host.docker.internal:11434` as `baseUrl`. If you want Ollama in the same Compose project, add it in an override file:
+
+```yaml title="docker-compose.override.yml"
 services:
-  openclaw:
-    image: openclaw/openclaw:latest
-    ports:
-      - "127.0.0.1:18789:18789"
-    volumes:
-      - openclaw-data:/root/.openclaw
-    environment:
-      - OPENCLAW_BRAIN_PROVIDER=ollama
-      - OLLAMA_HOST=http://ollama:11434
+  openclaw-gateway:
     depends_on:
       - ollama
-    restart: unless-stopped
-
   ollama:
     image: ollama/ollama:latest
     volumes:
       - ollama-data:/root/.ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
     restart: unless-stopped
-
 volumes:
-  openclaw-data:
   ollama-data:
 ```
 
-## Moltworker (Cloudflare Workers) {#moltworker}
+Then configure the provider. Use the native Ollama URL with no `/v1`:
 
-[Moltworker](https://github.com/cloudflare/moltworker) is **Cloudflare's official** adaptation that runs OpenClaw on Workers and Sandbox containers — fully managed, always-on, no self-hosting required.
+```json5 title="~/.openclaw/openclaw.json"
+{
+  models: {
+    providers: {
+      ollama: {
+        baseUrl: "http://ollama:11434", // service name from the compose file; no /v1
+        apiKey: "ollama-local",
+        api: "ollama",
+        models: [{ id: "qwen3:32b", name: "qwen3:32b" }],
+      },
+    },
+  },
+  agents: {
+    defaults: {
+      model: { primary: "ollama/qwen3:32b" },
+    },
+  },
+}
+```
 
-- **8,400 GitHub stars** | **License**: Apache-2.0
-- Multi-channel chat (Telegram, Discord, Slack)
-- Device pairing authentication
-- Optional R2 persistent storage
-- Browser automation via CDP
-- Cloudflare AI Gateway routing
-- **Cost**: ~$34.50/month on standard-1 instance
+Pull the model once with `docker compose exec ollama ollama pull qwen3:32b`. For GPU passthrough, add the NVIDIA device reservation from the [Ollama Docker docs](https://hub.docker.com/r/ollama/ollama). See [Local Models](/guides/local-models) for model and context-window settings.
 
-### Getting Started with Moltworker
+## Kubernetes {#kubernetes}
 
-1. Fork the [Moltworker repo](https://github.com/cloudflare/moltworker)
-2. Configure your Cloudflare account and Workers environment
-3. Set environment variables (LLM API keys, channel tokens)
-4. Deploy via `wrangler deploy`
-
-:::tip
-Moltworker is ideal if you're already on the Cloudflare ecosystem. It handles scaling, uptime, and edge deployment automatically.
-:::
-
-## Kubernetes (Helm Chart) {#kubernetes}
-
-For production deployments on Kubernetes, use the community [Helm chart](https://github.com/serhanekicii/openclaw-helm):
+Upstream ships Kustomize manifests and a deploy script, not a Helm chart ("Why not Helm" in the [Kubernetes guide](https://docs.openclaw.ai/install/kubernetes)). From a clone of the repository:
 
 ```bash
-helm repo add openclaw https://serhanekicii.github.io/openclaw-helm
-helm install openclaw openclaw/openclaw -f values.yaml
+export ANTHROPIC_API_KEY="..."
+./scripts/k8s/deploy.sh                 # creates the namespace, Secret (with a gateway token) and Deployment
+kubectl port-forward svc/openclaw 18789:18789 -n openclaw
 ```
 
-### Key Features
+Read the generated token with `kubectl get secret openclaw-secrets -n openclaw -o jsonpath='{.data.OPENCLAW_GATEWAY_TOKEN}' | base64 -d`. For a local test cluster, `./scripts/k8s/create-kind.sh` creates one with Kind. Upstream describes these manifests as a starting point, not a production deployment. Use `/healthz` and `/readyz` (or `/startupz`) for probes.
 
-- **StatefulSet** deployment with Chromium sidecar for browser automation
-- **Security-hardened**: non-root containers, read-only root filesystems, all capabilities dropped
-- **Dual config modes**: "merge" (preserves runtime changes) or "overwrite" (strict GitOps)
-- **Init containers** for auto-installing ClawHub skills
-- **Health probes** on both OpenClaw and Chromium containers
-- **ArgoCD** and **Stakater Reloader** compatible
-- **Network policies** with deny-all-ingress defaults
-- Requires K8s 1.26+
+:::warning Archived Helm chart
+The community chart [serhanekicii/openclaw-helm](https://github.com/serhanekicii/openclaw-helm) was **archived** in May 2026 and its chart repository URL no longer resolves. Do not start new deployments on it. Its example `gateway.host` and `brain.provider` keys are not OpenClaw config keys; the real setting is `gateway.bind` (`loopback`, `lan`, `tailnet`, `auto` or `custom`).
+:::
 
-```yaml title="values.yaml (example)"
-openclaw:
-  config:
-    gateway:
-      port: 18789
-      host: "0.0.0.0"
-    brain:
-      provider: anthropic
-  env:
-    ANTHROPIC_API_KEY:
-      secretKeyRef:
-        name: openclaw-secrets
-        key: anthropic-api-key
-```
+## Cloudflare Containers (Moltworker) {#moltworker}
+
+Upstream now has its own **experimental** Cloudflare template in [`scripts/cloudflare`](https://github.com/openclaw/openclaw/tree/main/scripts/cloudflare). It runs one Gateway in a Cloudflare Container (`standard-2`, one instance) behind a Worker and Durable Object, and replicates the SQLite databases to R2 with Litestream. Litestream protects the databases, not the whole state directory, so read the limits section of the [Cloudflare guide](https://docs.openclaw.ai/install/cloudflare) before you use production credentials.
+
+[Moltworker](https://github.com/cloudflare/moltworker) (cloudflare/moltworker, Apache-2.0, about 9,900 stars as of 2026-10-18) is the earlier Cloudflare Sandbox port. Its README calls it "a proof of concept … not officially supported", and it has had no commits since May 2026. It needs the Workers Paid plan ($5/month) plus container compute; see its README for the cost estimate. Prefer the upstream template for new deployments.
 
 ## 1Panel {#1panel}
 
-[1Panel](https://github.com/1Panel-dev/1Panel) is an open-source web-based Linux server management panel with an **App Store** that includes OpenClaw as a one-click install.
-
-### Why 1Panel?
-
-- **GUI-based management** — No command line required after initial setup
-- **One-click OpenClaw install** from the App Store
-- **Ollama integration** — Install local LLMs alongside OpenClaw
-- **Built-in monitoring** — CPU, memory, disk, network dashboards
-- **Docker management** — Visual container management
-- **Backup/restore** — One-click backup to cloud storage
-- **Firewall management** — Security hardening through the UI
-- **33,300+ GitHub stars** — Large, active community
-
-### Installing 1Panel
+[1Panel](https://github.com/1Panel-dev/1Panel) is an open-source (GPL-3.0) Linux server panel, about 37,200 GitHub stars as of 2026-10-18. Its App Store has a one-click OpenClaw app, and it can run Ollama next to it. It gives you a GUI for containers, logs, backups and the firewall.
 
 ```bash
-# One-line install on any Linux server
-bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)"
+# Third-party installer: read it before you run it
+curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh -o quick_start.sh
+less quick_start.sh
+sudo bash quick_start.sh
 ```
 
-After installation, access the web panel at `http://your-server:port` (the installer will show you the URL and credentials).
+:::warning
+This is a third-party script that runs as root. Download it, read it, and only then run it. The installer prints the panel URL and credentials; keep the panel port off the public internet or restrict it by source IP.
+:::
 
-### Installing OpenClaw via 1Panel
-
-1. Open the 1Panel web interface
-2. Navigate to **App Store**
-3. Search for **OpenClaw**
-4. Click **Install**
-5. Configure your LLM API key and other settings
-6. Click **Confirm**
-
-1Panel uses the `1panel/openclaw` Docker image and handles all the container management, volume mounts, and networking for you.
-
-### Managing OpenClaw in 1Panel
-
-Once installed, you can:
-- **Start/stop/restart** the OpenClaw container
-- **View logs** in real-time
-- **Update** to new versions with one click
-- **Configure** environment variables
-- **Monitor** resource usage (CPU, memory)
-- **Backup** configuration and memory data
-
-### 1Panel Specs
-
-| Detail | Value |
-|--------|-------|
-| Repository | [github.com/1Panel-dev/1Panel](https://github.com/1Panel-dev/1Panel) |
-| License | GPLv3 (Pro tier available) |
-| Stack | Go backend, Vue.js frontend |
-| Stars | 33,300+ |
-| OpenClaw image | `1panel/openclaw` on Docker Hub |
+To install OpenClaw: open the panel, go to **App Store**, search for **OpenClaw**, click **Install**, enter your provider key, and confirm. 1Panel uses its own `1panel/openclaw` image on Docker Hub, not an official OpenClaw image, so it may lag official releases. Check which OpenClaw version it runs before connecting channels.
 
 ## Coolify {#coolify}
 
-[Coolify](https://coolify.io) is a self-hosted PaaS (like Heroku) that supports OpenClaw deployment. The most popular community integration is [openclaw-coolify](https://github.com/essamamdani/openclaw-coolify) (96 stars).
+[Coolify](https://coolify.io) is a self-hosted PaaS with an OpenClaw entry in its service catalog; see the [Coolify OpenClaw docs](https://coolify.io/docs/services/openclaw). A separate community integration, [essamamdani/openclaw-coolify](https://github.com/essamamdani/openclaw-coolify) (about 150 stars, last push August 2026), adds a Docker sidecar proxy, Cloudflare Tunnel, SearXNG and pre-installed dev tools. Its build needs roughly 13 GB of free disk for the Docker build cache.
 
-Features of the Coolify integration:
-- **Docker Sidecar Proxy** for sandboxing
-- **Cloudflare Tunnel** integration for secure access
-- **SearXNG** private search engine
-- Pre-installed dev tools (GitHub CLI, Vercel, Bun, Python, ripgrep)
-- Bitwarden/GPG encryption support
+## DigitalOcean {#digitalocean}
 
-```bash
-# Deploy via Coolify's one-click service
-# (from the Coolify dashboard, select OpenClaw from the service catalog)
-```
-
-See the [official Coolify docs](https://coolify.io/docs/services/openclaw) or the [community integration repo](https://github.com/essamamdani/openclaw-coolify) for details.
-
-:::info
-The Coolify build requires ~13 GB free disk space for the Docker build cache.
-:::
-
-## DigitalOcean 1-Click {#digitalocean}
-
-DigitalOcean offers a pre-configured Droplet image with OpenClaw:
-
-- Security-hardened configuration out of the box
-- Starts at **$24/month** (4GB RAM Droplet)
-- Automatic updates available
-- Production-ready Gateway configuration
-
-Deploy from the [DigitalOcean Marketplace](https://marketplace.digitalocean.com/apps/openclaw).
+Upstream documents a plain Droplet: Ubuntu 24.04 LTS, Basic 1 vCPU / 1 GB RAM (about $6/month, add swap), then the normal install. Upstream warns: "Avoid third-party Marketplace 1-click images unless you have reviewed their startup scripts and firewall defaults." A [Marketplace listing](https://marketplace.digitalocean.com/apps/openclaw) exists; review it on those terms. Guide: [DigitalOcean](https://docs.openclaw.ai/install/digitalocean).
 
 ## Hostinger {#hostinger}
 
-Hostinger provides a one-click OpenClaw Docker template for their VPS plans:
+Hostinger offers a **1-Click** managed OpenClaw plan (infrastructure, Docker and updates handled for you, with optional pre-paid AI credits) or a **VPS** you run yourself with its Docker Manager. Guide: [Hostinger](https://docs.openclaw.ai/install/hostinger).
 
-- Budget-friendly starting at **~$5/month**
-- Docker template pre-configured
-- Step-by-step setup guide provided
+## Other upstream targets {#other-targets}
+
+The official docs have step-by-step guides for these, each linked to docs.openclaw.ai:
+
+| Kind | Guides |
+|------|--------|
+| VPS and cloud VMs | [Hetzner](https://docs.openclaw.ai/install/hetzner), [Oracle Cloud](https://docs.openclaw.ai/install/oracle) (Always Free ARM tier), [GCP](https://docs.openclaw.ai/install/gcp), [Azure](https://docs.openclaw.ai/install/azure), [exe.dev](https://docs.openclaw.ai/install/exe-dev) |
+| Platforms | [Fly.io](https://docs.openclaw.ai/install/fly), [Render](https://docs.openclaw.ai/install/render), [Railway](https://docs.openclaw.ai/install/railway), [Northflank](https://docs.openclaw.ai/install/northflank) |
+| Automation | [Ansible](https://docs.openclaw.ai/install/ansible) ([openclaw/openclaw-ansible](https://github.com/openclaw/openclaw-ansible)), [Nix](https://docs.openclaw.ai/install/nix), [Docker VM runtime](https://docs.openclaw.ai/install/docker-vm-runtime) |
+| Small hardware | [Raspberry Pi](https://docs.openclaw.ai/install/raspberry-pi) (Pi 4/5, 1 GB minimum) |
+
+The Ansible install uses a system unit, so on those hosts `sudo systemctl status openclaw` is correct; everywhere else the unit is the user unit described under [Local service](#local-service).
 
 ## Managed Hosting {#managed-hosting}
 
-35+ managed hosting providers have emerged for OpenClaw, ranging from $0.99/month shared containers to enterprise GDPR-compliant deployments. See the **[Hosting Providers guide](/guides/hosting-providers)** for a comprehensive comparison.
+Many third-party services host OpenClaw for you. See the **[Hosting Providers guide](/guides/hosting-providers)** for a comparison. A few examples (prices change; check each site):
 
-Highlights:
-- **Cheapest**: [Agent37](https://www.agent37.com/openclaw) at $0.99/mo (shared)
-- **Free**: [Oracle Cloud free tier](https://docs.openclaw.ai/platforms/oracle) — 4 ARM CPUs, 24 GB RAM
-- **Budget managed**: [MyClaw.ai](https://myclaw.ai) from $9/mo
-- **GDPR**: [WZ-IT](https://wz-it.com/en/expertises/openclaw/) (German enterprise), [RunClaw.ai](https://runclaw.ai) (Hetzner DE)
-- **Pay-as-you-go**: [Clowd.bot](https://clowd.bot) at $0.50 per launch
+- [Agent37](https://www.agent37.com) — low-cost shared containers
+- [MyClaw.ai](https://myclaw.ai) — budget managed plans
+- [WZ-IT](https://wz-it.com/en/managed-open-source/) — German managed open-source hosting
+- [Clowd.bot](https://clowd.bot) — pay per launch
+
+RunClaw.ai, listed here before, did not respond on 2026-10-18.
 
 :::warning
-With managed hosting, your conversations and data pass through a third party's infrastructure. Review the provider's privacy policy carefully. Self-hosting gives you full control over your data.
+With managed hosting, your conversations, credentials and data pass through a third party's infrastructure, and that party controls the host the agent runs commands on. Review the provider's privacy policy and how it handles upgrades. Self-hosting gives you full control over your data.
 :::
 
 ## Choosing the Right Option
@@ -275,25 +223,27 @@ With managed hosting, your conversations and data pass through a third party's i
 ```mermaid
 flowchart TD
     Start["How do you want<br/>to run OpenClaw?"] --> Tech{Comfortable with<br/>command line?}
-    Tech -- Yes --> Cloud{Own server<br/>or cloud?}
+    Tech -- Yes --> Cloud{Own machine<br/>or server?}
     Tech -- No --> GUI{Want to manage<br/>the server?}
 
-    Cloud -- Local --> Local["📦 Local Install"]
-    Cloud -- VPS --> Docker["🐳 Docker Compose"]
+    Cloud -- Own machine --> Local["Local service<br/>(openclaw gateway install)"]
+    Cloud -- VPS --> Docker["Docker Compose<br/>or plain install"]
 
-    GUI -- Yes --> Panel["🖥️ 1Panel"]
-    GUI -- No --> Managed["☁️ Managed Hosting"]
+    GUI -- Yes --> Panel["1Panel / Coolify"]
+    GUI -- No --> Managed["Managed hosting"]
 
     Docker --> Ollama{Need local<br/>LLMs?}
-    Ollama -- Yes --> DockerOllama["🐳 Docker + Ollama"]
-    Ollama -- No --> DockerAPI["🐳 Docker + API Key"]
+    Ollama -- Yes --> DockerOllama["Docker + Ollama"]
+    Ollama -- No --> DockerAPI["Docker + API key"]
 ```
 
 ### Minimum Server Requirements
 
+Rough guide. The API-only row follows upstream (1 GB works with swap added). Building the Docker image from source needs about 6 GB of RAM; pre-built images avoid that. Local-model figures depend on the model size.
+
 | Setup | RAM | CPU | Storage | GPU |
 |-------|-----|-----|---------|-----|
-| API-only (Anthropic/OpenAI) | 1 GB | 1 vCPU | 5 GB | None |
+| API-only (Anthropic/OpenAI) | 1 GB + swap | 1 vCPU | 5 GB | None |
 | With Ollama (small models) | 8 GB | 4 vCPU | 20 GB | Optional |
 | With Ollama (large models) | 32 GB | 8 vCPU | 50 GB | Recommended |
 
@@ -301,6 +251,7 @@ flowchart TD
 
 - [Installation](/getting-started/installation) — Local installation guide
 - [Local Models](/guides/local-models) — Running with Ollama or vLLM
+- [Monitoring](/guides/monitoring) — Health checks and logs for a running Gateway
 - [Security Hardening](/security/hardening) — Securing any deployment
-- [WebClaw](/guides/webclaw) — Browser-based client for remote access
-- [Ecosystem](/reference/ecosystem) — All community tools and projects
+- [Hosting Providers](/guides/hosting-providers) — Managed hosting comparison
+- [Ecosystem](/reference/ecosystem) — Community tools and projects
