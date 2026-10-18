@@ -11,8 +11,8 @@ keywords: [openclaw, privacy, gdpr, compliance, data protection, telemetry, upda
 
 This page sets out what OpenClaw sends off your machine, what it keeps on disk, and how to delete it. Facts come from the upstream docs for v2026.10.4 and were checked on 2026-10-18. It is not legal advice. Whether a deployment complies with GDPR, HIPAA or a SOC 2 control set depends on how you use it, so take the specifics to your own counsel or auditor.
 
-:::warning Gartner assessment (February 2026)
-Gartner called OpenClaw "a dangerous preview of agentic AI" with "insecure by default risks like plaintext credential storage", and recommended that enterprises block it unless it runs in isolated non-production VMs with throwaway credentials. Some of that has changed since: Gateway auth is now required by default, and SecretRefs can replace plaintext credentials ([Security Overview](/security/overview#what-is-on-by-default)).
+:::warning Gartner assessment (January 2026)
+Gartner's First Take of 29 January 2026, ["OpenClaw (Formerly Moltbot, Clawdbot): Agentic Productivity Comes With Unacceptable Cybersecurity Risk"](https://www.gartner.com/en/documents/7381830) (paywalled), recommended that enterprises block OpenClaw downloads and traffic, and that anyone who must run it do so only in isolated non-production VMs with throwaway credentials. [The Register's summary](https://www.theregister.com/2026/02/04/cloud_hosted_openclaw/) quotes it calling OpenClaw "a dangerous preview of agentic AI" with "insecure by default" risks, including plaintext credential storage. Two of those points have changed since: Gateway auth is now required by default, and SecretRefs can replace plaintext credentials ([Security Overview](/security/overview#what-is-on-by-default)). Most stored data is still unencrypted (see below).
 :::
 
 ---
@@ -228,10 +228,7 @@ OpenClaw can run fully offline with a local model, with these caveats:
 
 ### Network segmentation
 
-- Keep the Gateway on loopback and reach it through an SSH tunnel, Tailscale Serve or Cloudflare Access ([Security Hardening](/security/hardening#remote-access)).
-- Don't give it access to internal services or databases it doesn't need.
-- Docker: publish the port to `127.0.0.1` only. Docker-published ports bypass host firewalls such as ufw ([firewall](/security/hardening#firewall)).
-- Restrict outbound traffic to the providers you use.
+Keep the Gateway on loopback, publish Docker ports to `127.0.0.1` only (Docker-published ports bypass ufw), and restrict outbound traffic to the providers you use. The checklist is in [Security Hardening](/security/hardening#remote-access).
 
 ---
 
@@ -270,16 +267,7 @@ In February 2026, several Korean companies restricted OpenClaw on work networks,
 
 ## Known security incidents
 
-| Incident | Date | Impact |
-|----------|------|--------|
-| **CVE-2026-25253** (CVSS 8.8, High) | Fixed 2026-01-30, disclosed 2026-01-31 | One-click token theft from the Control UI |
-| **Moltbook database breach** | 2026-01-31 | 1.5M agent API tokens and 35K emails exposed by a separate service |
-| **Exposed instances** | Feb 2026 | 40,000+ reachable Gateways in third-party scans |
-| **ClawHavoc campaign** | Late Jan 2026 | 335 skills distributing Atomic Stealer macOS malware |
-| **ClawHub malicious skills** | Feb 2026 | 341 malicious skills; 283 leaking credentials |
-| **Advisory batches** | 2026-06-30, 2026-09-11 | 45 and 75 advisories, all fixed in released versions |
-
-Full details, the 14 critical advisories and the minimum version are on [Known Vulnerabilities](/security/known-vulnerabilities).
+For a compliance file, the relevant history is on [Known Vulnerabilities](/security/known-vulnerabilities): CVE-2026-25253 (one-click Gateway token theft, fixed in 2026.1.29), the ClawHavoc malicious-skill campaign on ClawHub, mass-exposed Gateways in early-2026 scans, the separate Moltbook database breach, and the June and September 2026 advisory batches. It also gives the minimum version to run.
 
 ---
 
