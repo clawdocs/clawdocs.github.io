@@ -1,597 +1,311 @@
 ---
 last_update:
-  date: 2026-06-10
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Configuration Reference
 sidebar_label: Configuration
-description: Complete reference for ~/.openclaw/openclaw.json — every section and setting explained
+description: How ~/.openclaw/openclaw.json works, the sections a self-hoster actually edits, one validated example each, and where the full reference lives
 keywords: [openclaw, openclaw config, openclaw.json, settings, configuration reference, json5, config file]
 ---
 
 # Configuration Reference
 
-OpenClaw reads an optional JSON5 config from `~/.openclaw/openclaw.json`. JSON5 supports comments and trailing commas. Override the path with the `OPENCLAW_CONFIG_PATH` environment variable.
+This page explains how OpenClaw's config works and shows the sections most self-hosters touch, each with one example that passes `openclaw config validate` on v2026.10.4. It is not a field-by-field reference. For every key and default, use the official [Configuration reference](https://docs.openclaw.ai/gateway/configuration-reference) or print the live schema with `openclaw config schema`.
 
-:::danger Do not paste the examples on this page
-Most keys on this page (`brain`, `hands`, top-level `sandbox` and `heartbeat`, `dm`, `permissions`, and many `memory`, `skills`, `gateway` and `logging` keys) are not part of OpenClaw's config schema. OpenClaw validates `openclaw.json` strictly and **refuses to start** when it finds an unknown key. This page is being rewritten. Until then, use the official [configuration reference](https://docs.openclaw.ai/gateway/configuration), print the real schema with `openclaw config schema`, and check your file with `openclaw config validate`.
+## How the config works
+
+- **One JSON5 file.** OpenClaw reads `~/.openclaw/openclaw.json` (override with `OPENCLAW_CONFIG_PATH`). JSON5 allows comments, unquoted keys and trailing commas. The file is optional; with no file, OpenClaw uses safe defaults. Keep it a regular file, not a symlink: OpenClaw writes it atomically, which replaces a symlink target.
+- **Strict schema.** Unknown keys, wrong types and invalid enum values make the Gateway **refuse to start**. Only `$schema` is allowed as an extra root key. Pasting a key from an old blog post is the most common way to break an install. See [Strict validation](https://docs.openclaw.ai/gateway/configuration#strict-validation).
+- **Two buckets.** Root sections (`gateway`, `channels`, `models`, `tools`, ...) hold infrastructure and cross-agent defaults. `agents.defaults` holds agent-loop behaviour (model, workspace, heartbeat, sandbox). `agents.entries.<id>` overrides either per agent.
+- **Hot reload.** The Gateway watches the file. Most changes apply live; a few (auth mode, listener topology, TLS) restart the Gateway automatically in the default `hybrid` reload mode. An invalid edit is skipped and the last good config keeps running. See [Config hot reload](https://docs.openclaw.ai/gateway/configuration/hot-reload).
+- **Repairs.** After an upgrade, `openclaw doctor --fix` migrates retired keys (for example `agents.list` to `agents.entries`, top-level `heartbeat` to `agents.defaults.heartbeat`). Some retired keys are refused rather than migrated; see [Config migrations](https://docs.openclaw.ai/gateway/doctor/config-migrations).
+
+## Editing it
+
+Prefer the CLI over hand edits. Every write goes through the same schema check, so a typo fails before it reaches the file.
+
+```bash
+openclaw config file                              # print the active config path
+openclaw config get agents.defaults.model         # read one value
+openclaw config set tools.exec.mode ask           # write one value
+openclaw config unset tools.deny                  # remove a value
+openclaw config patch --file ./change.json5 --dry-run   # validate a multi-key change
+openclaw config patch --file ./change.json5             # apply it in one write
+openclaw config validate                          # check the file without starting the Gateway
+openclaw config schema                            # print the JSON Schema used for validation
+```
+
+`config patch` merges objects recursively, replaces arrays and scalars, and deletes a path when you set it to `null`. `config set` takes JSON5 values (`openclaw config set gateway.port 19001 --strict-json`) and can build SecretRefs for you (see below). The interactive alternatives are `openclaw configure` and the **Config** tab of the Control UI at `http://127.0.0.1:18789/`. Reference: [`openclaw config`](https://docs.openclaw.ai/cli/config).
+
+:::tip Validate snippets before you paste them
+Save a snippet to a scratch file and run `OPENCLAW_CONFIG_PATH=./scratch.json5 openclaw config validate`. The output names the exact path that is wrong.
 :::
 
-:::tip
-After editing the config, restart the gateway to apply changes: `openclaw gateway restart`
-:::
+## Splitting the file with `$include`
 
----
+Large configs can be split. An object can be replaced by `{ $include: "./file.json5" }`, or a list of files that are merged in order; keys next to `$include` override the included values. `${VAR}` substitution works inside included files. Note that startup auto-migration skips configs that use `$include`, so run `openclaw doctor --fix` yourself after upgrades. See [Split config into multiple files](https://docs.openclaw.ai/gateway/configuration/common-tasks#split-config-into-multiple-files-include).
 
-## Full Example
+{/* snippet:skip the included files do not exist in the checker sandbox */}
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: { $include: "./agents.json5" },
+  channels: { $include: ["./channels/telegram.json5", "./channels/discord.json5"] },
+}
+```
+
+## Environment variable substitution {#environment-variable-substitution}
+
+Any string value can reference an environment variable with `${VAR_NAME}`. Only uppercase names (`[A-Z_][A-Z0-9_]*`) are substituted. A missing or empty variable stays visibly unresolved, logs a warning, and the feature that needs it is unavailable: it does not fall back to anything. Write `$${VAR}` for a literal `${VAR}`.
+
+Variables come from the process environment, then `./.env`, then `~/.openclaw/.env`, then the config's own `env.vars` block; none of these override a variable that is already set. `~/.openclaw/.env` is the usual place for API keys on a self-hosted box. Details: [Environment variables](/reference/environment-variables) and [upstream](https://docs.openclaw.ai/gateway/configuration/environment-variables).
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  // LLM Configuration
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-opus-4-6",
-    "api_key": "${ANTHROPIC_API_KEY}",
-    "temperature": 0.7,
-    "max_tokens": 4096,
-    "fallback": {
-      "provider": "openrouter",
-      "model": "deepseek/deepseek-v3.2"
-    },
-    "heartbeat_override": {
-      "provider": "anthropic",
-      "model": "claude-haiku-4-5-20251001"
-    }
-  },
-
-  // Model Providers
-  "models": {
-    "mode": "merge",
-    "providers": {
-      "ollama": {
-        "baseUrl": "http://localhost:11434",
-        "models": {
-          "qwen3:32b": {
-            "contextWindow": 32768,
-            "maxTokens": 4096
-          }
-        }
-      }
-    }
-  },
-
-  // Gateway
-  "gateway": {
-    "host": "127.0.0.1",
-    "port": 18789,
-    "max_connections": 10,
-    "log_level": "info",
-    "auth": {
-      "mode": "token",
-      "token": "${OPENCLAW_AUTH_TOKEN}"
-    },
-    "trustedProxies": ["127.0.0.1"]
-  },
-
-  // Execution Environment
-  "hands": {
-    "shell": {
-      "enabled": true,
-      "timeout": 30000,
-      "blocked_commands": ["rm -rf /", "sudo rm"]
-    },
-    "browser": {
-      "enabled": true,
-      "headless": true,
-      "timeout": 60000,
-      "allowed_domains": []
-    },
-    "filesystem": {
-      "writable_paths": [],
-      "blocked_paths": ["~/.ssh", "~/.gnupg"]
-    }
-  },
-
-  // Sandbox
-  "sandbox": {
-    "mode": "non-main",
-    "backend": "docker",
-    "scope": "agent"
-  },
-
-  // Tools
-  "tools": {
-    "profile": "coding",
-    "alsoAllow": ["lobster"],
-    "exec": {
-      "security": "allowlist",
-      "ask": "on-miss"
-    }
-  },
-
-  // Agents
-  "agents": {
-    "defaults": {
-      "model": "claude-sonnet-4-6",
-      "sandbox": { "mode": "non-main" }
-    },
-    "list": [
-      {
-        "id": "researcher",
-        "model": "claude-opus-4-8",
-        "workspace": "~/research"
-      },
-      {
-        "id": "monitor",
-        "model": "ollama/qwen3:14b"
-      }
-    ]
-  },
-
-  // Bindings (message routing)
-  "bindings": [
-    {
-      "match": { "channel": "telegram", "peer": "boss" },
-      "agentId": "researcher"
-    }
-  ],
-
-  // Session
-  "session": {
-    "dmScope": "per-channel-peer"
-  },
-
-  // DM Access Control
-  "dm": {
-    "accessPolicy": "pairing",
-    "pairing": {
-      "maxPending": 3,
-      "expireMinutes": 60
-    }
-  },
-
-  // Heartbeat
-  "heartbeat": {
-    "enabled": true,
-    "interval": 1800,
-    "model": "claude-haiku-4-5-20251001",
-    "isolatedSession": true,
-    "lightContext": false,
-    "ackMaxChars": 300,
-    "showOk": false,
-    "showAlerts": true,
-    "quiet_hours": {
-      "start": "22:00",
-      "end": "07:00",
-      "timezone": "America/Los_Angeles"
-    },
-    "dreaming": {
-      "enabled": false,
-      "idle_threshold": 3
-    }
-  },
-
-  // Memory
-  "memory": {
-    "enabled": true,
-    "path": "~/.openclaw/memory",
-    "max_context_tokens": 2000,
-    "auto_save": true
-  },
-
-  // Skills
-  "skills": {
-    "path": "~/.openclaw/skills",
-    "allow_install": true,
-    "allow_clawhub": true,
-    "auto_install_deps": false
-  },
-
-  // Permissions
-  "permissions": {
-    "mode": "ask",
-    "auto_approve": ["git status", "git diff", "ls", "cat"],
-    "always_deny": ["rm -rf /", "sudo rm"]
-  },
-
-  // MCP Servers
-  "mcp": {
-    "servers": {
-      "filesystem": {
-        "command": "npx @anthropic/mcp-filesystem",
-        "args": ["/home/user"]
-      },
-      "github": {
-        "command": "npx @anthropic/mcp-github",
-        "env": { "GITHUB_TOKEN": "${GITHUB_TOKEN}" }
-      }
-    }
-  },
-
-  // Channels
-  "channels": {
-    "telegram": {
-      "enabled": true,
-      "allowedContacts": ["user123"]
-    }
-  },
-
-  // Logging
-  "logging": {
-    "level": "info",
-    "path": "~/.openclaw/logs",
-    "max_size": "10m",
-    "max_files": 5,
-    "redactSensitive": "tools",
-    "audit": { "enabled": false }
-  }
+  gateway: { auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" } },
+  env: { vars: { OPENROUTER_API_KEY: "sk-or-replace-me" } },
 }
 ```
 
----
+## SecretRefs
 
-## Section Reference
+Credential fields that support it can take a SecretRef object instead of a string, so the secret never sits in `openclaw.json`. Sources are `env`, `file`, `exec` (a command such as a vault CLI) and `store` (OpenClaw's Secret Store). The `env` source uses a built-in `default` provider and needs no extra setup; `file` and `exec` need a provider under `secrets.providers`.
 
-### `brain`
+```json5 title="~/.openclaw/openclaw.json"
+{
+  models: {
+    providers: {
+      openai: {
+        baseUrl: "https://api.openai.com/v1",
+        apiKey: { source: "env", provider: "default", id: "OPENAI_API_KEY" },
+        models: [],
+      },
+    },
+  },
+}
+```
 
-Primary LLM configuration.
+The CLI can write the same ref: `openclaw config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN`. Which fields accept refs is listed in [SecretRef credential surface](https://docs.openclaw.ai/reference/secretref-credential-surface); providers and precedence are in [Secrets](https://docs.openclaw.ai/gateway/secrets).
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `provider` | string | `"anthropic"` | LLM provider: `anthropic`, `openai`, `openrouter`, `google`, `xai`, `deepseek`, `local` |
-| `model` | string | `"claude-opus-4-6"` | Model identifier |
-| `api_key` | string | — | API key (supports `${ENV_VAR}` syntax) |
-| `temperature` | float | `0.7` | Response randomness (0.0-1.0) |
-| `max_tokens` | int | `4096` | Max response tokens |
-| `fallback` | object | — | Fallback provider config (same fields as brain) |
-| `heartbeat_override` | object | — | Override model for heartbeat only |
+## The sections you will actually edit
 
-### `models`
-
-Advanced model provider configuration. See [Local Models](/guides/local-models) and [Model Selection](/guides/model-selection) for usage examples.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `mode` | string | `"replace"` | `"merge"` adds providers to defaults; `"replace"` overrides entirely |
-| `providers` | object | — | Provider-specific config (see below) |
-
-#### `models.providers.<name>`
-
-| Key | Type | Description |
-|-----|------|-------------|
-| `baseUrl` | string | Provider API endpoint |
-| `apiKey` | string | Provider API key |
-| `api` | string | API format: `openai-completions`, `ollama`, etc. |
-| `models` | object | Per-model overrides (see below) |
-
-#### `models.providers.<name>.models.<model>`
-
-| Key | Type | Description |
-|-----|------|-------------|
-| `contextWindow` | int | Model context window size |
-| `maxTokens` | int | Max output tokens |
-| `compat.thinkingFormat` | string | Thinking format compatibility |
-| `compat.supportsDeveloperRole` | bool | Model supports developer role |
-| `compat.supportsReasoningEffort` | bool | Model supports reasoning effort parameter |
-| `compat.maxTokensField` | string | Field name for max tokens |
-
----
+Each example below is a complete, valid file on its own. Combine them as you need.
 
 ### `gateway`
 
-Gateway server configuration.
+Port, bind address and auth for the WebSocket + HTTP server. `gateway.mode` must be `local` for this machine to run a Gateway. Bind is a mode, not an IP: `loopback` (default), `lan`, `tailnet`, `custom` (with `customBindHost`) or `auto`. Auth is required by default and onboarding generates a token; `auth.mode` is `token`, `password`, `trusted-proxy` or `none`. Port precedence is `--port` > `OPENCLAW_GATEWAY_PORT` > `gateway.port` > `18789`.
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `host` | string | `"127.0.0.1"` | Bind address |
-| `port` | int | `18789` | WebSocket port |
-| `max_connections` | int | `10` | Max concurrent connections |
-| `log_level` | string | `"info"` | Log verbosity: `debug`, `info`, `warn`, `error` |
-| `pid_file` | string | `"~/.openclaw/gateway.pid"` | PID file path |
-| `auth.mode` | string | `"token"` | Auth mode: `token` or `password` |
-| `auth.token` | string | — | Auth token (auto-generated on first run) |
-| `trustedProxies` | array | `[]` | Trusted reverse proxy IPs for header forwarding |
-
-:::caution
-Without `trustedProxies`, attackers can spoof `X-Forwarded-For` headers to bypass authentication. JFrog found 93.4% of exposed instances were vulnerable to this. See [Security Hardening](/security/hardening).
-:::
-
----
-
-### `hands`
-
-Execution environment settings.
-
-#### `hands.shell`
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `enabled` | bool | `true` | Enable shell command execution |
-| `timeout` | int | `30000` | Command timeout in milliseconds |
-| `blocked_commands` | array | `[]` | Commands that are always rejected |
-
-#### `hands.browser`
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `enabled` | bool | `true` | Enable browser automation |
-| `headless` | bool | `true` | Run browser without GUI |
-| `timeout` | int | `60000` | Browser operation timeout (ms) |
-| `allowed_domains` | array | `[]` | Restrict browsing to these domains (empty = all) |
-
-#### `hands.filesystem`
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `writable_paths` | array | `[]` | Restrict writes to these paths (empty = all) |
-| `blocked_paths` | array | `["~/.ssh", "~/.gnupg"]` | Always block access to these paths |
-
----
-
-### `sandbox`
-
-Agent sandboxing configuration. Controls how agents are isolated.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `mode` | string | `"off"` | `"off"`, `"non-main"` (sandbox every session except the agent's main session), or `"all"` |
-| `backend` | string | `"docker"` | `"docker"`, `"ssh"`, or `"openshell"` |
-| `scope` | string | `"agent"` | `"session"` (per-session), `"agent"` (per-agent), or `"shared"` |
-
-:::info
-Sandboxing is **off** by default. In OpenClaw the setting is `agents.defaults.sandbox.mode` (per agent: `agents.entries.<id>.sandbox`), not a top-level `sandbox` key. `"non-main"` sandboxes every session except the agent's main session, including group and channel sessions; `"all"` sandboxes everything. See [Sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
-:::
-
----
-
-### `tools`
-
-Tool execution configuration. Two independent axes control tool permissions.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `profile` | string | `"coding"` | Tool profile preset: `"coding"`, `"research"`, `"admin"` |
-| `alsoAllow` | array | `[]` | Additional tools to enable (e.g., `["lobster"]`) |
-| `exec.security` | string | `"allowlist"` | `"deny"` (block all), `"allowlist"` (approved list only), `"full"` (allow all) |
-| `exec.ask` | string | `"on-miss"` | `"off"` (never ask), `"on-miss"` (ask for unlisted commands), `"always"` |
-
-Both axes must be set together for the desired effect:
-
-| Desired Behavior | `exec.security` | `exec.ask` |
-|-----------------|-----------------|------------|
-| Block all exec | `"deny"` | any |
-| Ask for everything | `"allowlist"` | `"always"` |
-| Ask for unknown commands | `"allowlist"` | `"on-miss"` |
-| Allow everything silently | `"full"` | `"off"` |
-
----
-
-### `agents`
-
-Multi-agent configuration. See [Multi-Agent Guide](/guides/multi-agent) for patterns.
-
-#### `agents.defaults`
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `model` | string | — | Default model for all agents |
-| `sandbox.mode` | string | `"off"` | Default sandbox mode (`off`, `non-main`, `all`) |
-
-#### `agents.list[]`
-
-| Key | Type | Description |
-|-----|------|-------------|
-| `id` | string | Unique agent identifier |
-| `model` | string | Model override for this agent |
-| `workspace` | string | Agent's working directory |
-| `heartbeat.tasks` | array | Heartbeat task names assigned to this agent |
-
-### `bindings`
-
-Message routing rules. Routes incoming messages to specific agents based on channel, peer, or account.
-
-```json5
-"bindings": [
-  {
-    "match": {
-      "channel": "telegram",
-      "peer": "boss-user-id",
-      "accountId": "work-account"
-    },
-    "agentId": "researcher"
-  }
-]
-```
-
-| Key | Type | Description |
-|-----|------|-------------|
-| `match.channel` | string | Channel name filter |
-| `match.peer` | string | Peer/sender ID filter |
-| `match.accountId` | string | Account ID filter (multi-account setups) |
-| `agentId` | string | Target agent ID |
-
----
-
-### `session`
-
-Session isolation settings.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `dmScope` | string | `"main"` | Session isolation level (see table) |
-
-| `dmScope` Value | Behavior |
-|----------------|----------|
-| `"main"` | All DMs share one session |
-| `"per-peer"` | Separate session per sender |
-| `"per-channel-peer"` | Separate per channel + sender (recommended) |
-| `"per-account-channel-peer"` | Full isolation for multi-account setups |
-
----
-
-### `dm`
-
-DM (direct message) access control. Controls who can message the agent.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `accessPolicy` | string | `"pairing"` | Access policy (see table) |
-| `pairing.maxPending` | int | `3` | Max pending pairing codes |
-| `pairing.expireMinutes` | int | `60` | Pairing code expiration |
-
-| `accessPolicy` Value | Behavior |
-|---------------------|----------|
-| `"pairing"` | Require 1-hour expiring pairing codes (default) |
-| `"allowlist"` | Only pre-approved contacts can message |
-| `"open"` | Anyone can message (requires explicit `"*"` opt-in) |
-| `"disabled"` | Ignore all inbound DMs |
-
----
-
-### `heartbeat`
-
-Heartbeat configuration. See [Heartbeat Guide](/guides/heartbeat) for recipes and cost optimization.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `enabled` | bool | `true` | Enable heartbeat loop |
-| `interval` | int | `1800` | Seconds between heartbeats (default: 30 min) |
-| `model` | string | — | Override model for heartbeat (cost optimization) |
-| `isolatedSession` | bool | `false` | Run heartbeat in minimal context (2-5K tokens) |
-| `lightContext` | bool | `false` | Skip memory/history loading |
-| `ackMaxChars` | int | `300` | Suppress responses shorter than this |
-| `showOk` | bool | `false` | Show routine "all clear" messages |
-| `showAlerts` | bool | `true` | Show alert/warning messages |
-| `useIndicator` | bool | `true` | Show status indicator in clients |
-| `quiet_hours.start` | string | — | Quiet hours start (`HH:MM`) |
-| `quiet_hours.end` | string | — | Quiet hours end (`HH:MM`) |
-| `quiet_hours.timezone` | string | `"UTC"` | Timezone for quiet hours |
-| `dreaming.enabled` | bool | `false` | Enable dreaming mode during idle heartbeats |
-| `dreaming.idle_threshold` | int | `3` | Consecutive OK cycles before dreaming activates |
-
----
-
-### `memory`
-
-Persistent memory configuration.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `enabled` | bool | `true` | Enable persistent memory |
-| `path` | string | `"~/.openclaw/memory"` | Memory storage directory |
-| `max_context_tokens` | int | `2000` | Max tokens loaded per conversation |
-| `auto_save` | bool | `true` | Auto-save after each conversation |
-
----
-
-### `skills`
-
-Skill installation and management.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `path` | string | `"~/.openclaw/skills"` | Skills storage directory |
-| `allow_install` | bool | `true` | Allow installing new skills |
-| `allow_clawhub` | bool | `true` | Allow installing from ClawHub marketplace |
-| `auto_install_deps` | bool | `false` | Auto-install skill dependencies |
-
----
-
-### `permissions`
-
-**Not a real config key.** OpenClaw has no `permissions` section; approvals are `tools.exec.mode` (`deny`, `allowlist`, `ask`, `auto`, `full`), and the default on the gateway host is `full`, which runs commands without asking. See [Basic Usage](/guides/basic-usage#execution-approval) and the official [permission modes](https://docs.openclaw.ai/tools/permission-modes). The table below documents the old, invented shape and will be removed in the rewrite.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `mode` | string | — | (not a real key) |
-| `auto_approve` | array | `[]` | Commands that skip the approval prompt |
-| `always_deny` | array | `[]` | Commands that are always blocked |
-
----
-
-### `mcp`
-
-Model Context Protocol server configuration. See [MCP Servers Guide](/guides/mcp-servers).
-
-#### `mcp.servers.<name>`
-
-| Key | Type | Description |
-|-----|------|-------------|
-| `command` | string | Executable to run |
-| `args` | array | Command arguments |
-| `env` | object | Environment variables (supports `${VAR}` expansion) |
-
----
-
-### `channels`
-
-Channel configuration varies by platform. Each channel is configured under `channels.<name>`. Multi-account setups use `channels.<name>.accounts.<accountId>`.
-
-| Key | Type | Description |
-|-----|------|-------------|
-| `enabled` | bool | Enable/disable the channel |
-| `allowedContacts` | array | Restrict to specific contacts/IDs |
-| `accounts` | object | Multi-account configuration |
-
-See [Channels Guide](/guides/channels) for per-channel setup instructions.
-
----
-
-### `logging`
-
-Log configuration.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `level` | string | `"info"` | Log level: `debug`, `info`, `warn`, `error` |
-| `path` | string | `"~/.openclaw/logs"` | Log directory |
-| `max_size` | string | `"10m"` | Max size per log file |
-| `max_files` | int | `5` | Max rotated log files to keep |
-| `redactSensitive` | string | — | Redact sensitive data: `"tools"`, `"all"` |
-| `audit.enabled` | bool | `false` | Enable audit logging |
-
----
-
-## Environment Variable Substitution
-
-Any config value can reference environment variables with `${VAR_NAME}`:
-
-```json5
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "api_key": "${ANTHROPIC_API_KEY}"
+  gateway: {
+    mode: "local",
+    port: 18789,
+    bind: "loopback",
+    auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" },
   },
-  "mcp": {
-    "servers": {
-      "github": {
-        "env": { "GITHUB_TOKEN": "${GITHUB_TOKEN}" }
-      }
-    }
-  }
 }
 ```
 
----
+Our advice: keep `loopback` and reach the box over SSH or Tailscale Serve rather than `lan`. A non-loopback bind without auth is refused at startup. Reference: [Configuration - gateway](https://docs.openclaw.ai/gateway/config-gateway), [Network exposure](https://docs.openclaw.ai/gateway/security/network-exposure).
 
-## Backup and Recovery
+### `agents.defaults`: model, workspace, heartbeat
 
-Always back up your config before updating OpenClaw:
+Model refs are always `provider/model`. Onboarding picks the default for the provider you sign in with (a fresh Anthropic setup gets `anthropic/claude-opus-5-5`); with no model configured at all, the built-in fallback is `openai/gpt-6-astra`. The heartbeat runs every `30m` by default, `1h` when Anthropic auth is OAuth/token and `every` is unset; `every: "0m"` disables it.
 
-```bash
-cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.backup
-cp -r ~/.openclaw/credentials ~/.openclaw/credentials.backup
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+      model: {
+        primary: "anthropic/claude-opus-5-5",
+        fallbacks: ["anthropic/claude-sonnet-5-5"],
+      },
+      heartbeat: {
+        every: "1h",
+        model: "anthropic/claude-haiku-5-5",
+        activeHours: { start: "08:00", end: "22:00" },
+      },
+    },
+  },
+}
 ```
 
+`HEARTBEAT.md` is retired: the runtime no longer reads it. `openclaw doctor --fix` moves its contents into monitor scratch and turns scheduled tasks into Automations jobs. Reference: [Configuration - agents](https://docs.openclaw.ai/gateway/config-agents), [Heartbeat](https://docs.openclaw.ai/gateway/heartbeat), [Models](https://docs.openclaw.ai/concepts/models).
+
+### `agents.defaults.sandbox`
+
+Sandboxing is **off by default**: tools run on the host as your user. `mode` is `off`, `non-main` (every session except the agent's main session, including group and channel sessions) or `all`. The default backend is Docker with a locally built image.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    defaults: {
+      sandbox: { mode: "non-main", scope: "session", workspaceAccess: "ro" },
+    },
+  },
+}
+```
+
+Reference: [Sandboxing](https://docs.openclaw.ai/gateway/sandboxing), [Configuration - sandbox](https://docs.openclaw.ai/gateway/config-agents/sandbox).
+
+### `agents.entries` and `bindings`: more than one agent
+
+Agents are keyed by id under `agents.entries` (the old `agents.list` array is migrated by doctor). With several agents, set `ownership: "explicit"` and route channels to agents with top-level `bindings`.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    ownership: "explicit",
+    defaults: { heartbeat: { agentId: "home" }, systemAgent: { agentId: "home" } },
+    entries: {
+      home: { workspace: "~/.openclaw/workspace-home" },
+      work: { workspace: "~/.openclaw/workspace-work", model: "anthropic/claude-sonnet-5-5" },
+    },
+  },
+  bindings: [
+    { agentId: "home", match: { channel: "telegram" } },
+    { agentId: "work", match: { channel: "slack" } },
+  ],
+}
+```
+
+`match.peer` is an object (`{ kind: "direct" | "group" | "channel", id }`), not a string. Reference: [Multi-agent routing](https://docs.openclaw.ai/gateway/config-agents/entries-and-multi-agent).
+
+### `models.providers`: custom or local providers
+
+You only need this for providers that are not built in, or to point a built-in one at another URL. `models` is an **array** of `{ id, name, ... }` objects. `models.mode` defaults to `merge` (your entries are added to the built-in catalog).
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  models: {
+    providers: {
+      ollama: {
+        baseUrl: "http://127.0.0.1:11434",
+        api: "ollama",
+        models: [{ id: "qwen3:32b", name: "Qwen3 32B" }],
+      },
+    },
+  },
+  agents: { defaults: { model: { primary: "ollama/qwen3:32b" } } },
+}
+```
+
+Reference: [Custom providers](https://docs.openclaw.ai/gateway/config-tools/custom-providers), [Providers](https://docs.openclaw.ai/providers).
+
+### `channels`
+
+One block per channel. Who may DM the bot is per channel: `dmPolicy` is `pairing` (strangers get a one-hour code you approve with `openclaw pairing approve <channel> <code>`), `allowlist`, `open` or `disabled`, with `allowFrom` listing allowed senders.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  channels: {
+    telegram: {
+      enabled: true,
+      botToken: "${TELEGRAM_BOT_TOKEN}",
+      dmPolicy: "allowlist",
+      allowFrom: ["123456789"],
+    },
+  },
+}
+```
+
+Easiest path: `openclaw channels add telegram`, which writes this for you. Reference: [Configuration - channels](https://docs.openclaw.ai/gateway/config-channels), [Pairing](https://docs.openclaw.ai/channels/pairing).
+
+### `tools`: exec approvals and tool policy
+
+Host exec defaults to `tools.exec.mode: "full"`: **no approval prompts**. Modes are `deny`, `allowlist`, `ask` (allowlisted commands run, everything else asks you), `auto` (a reviewer model decides, asks you when unsure) and `full`. `tools.profile` (`minimal`, `coding`, `messaging`, `full`) sets the base tool set; unset means no filtering. `tools.deny` removes tools or groups.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  tools: {
+    profile: "coding",
+    exec: { mode: "ask" },
+    deny: ["browser"],
+  },
+}
+```
+
+Older `tools.exec.security` / `tools.exec.ask` fields are legacy; set `mode` instead. Reference: [Exec](https://docs.openclaw.ai/tools/exec), [Exec approvals](https://docs.openclaw.ai/tools/exec-approvals), [Tool policy](https://docs.openclaw.ai/gateway/config-tools/tool-policy).
+
 :::warning
-The v2026.5.7 auto-update contained a bug that wiped user configuration. The built-in `.bak` backup captured the already-corrupted state. Always maintain external backups. Fixed in v2026.5.8.
+Exec, browser and file tools act on your machine with your user's rights. Before connecting public channels, read [Security Hardening](/security/hardening): set `tools.exec.mode` to `ask` or `allowlist`, and consider turning on the sandbox.
 :::
 
----
+### `browser`
 
-## See Also
+The agent's dedicated Chromium. Headless by default. Navigation limits live in `ssrfPolicy`; there is no `allowed_domains` key.
 
-- [Environment Variables](/reference/environment-variables) — All supported env vars
-- [CLI Reference](/reference/cli) — `openclaw configure` command
-- [Security Hardening](/security/hardening) — Security-focused config
-- [Local Models](/guides/local-models) — Provider configuration for local models
-- [Model Selection](/guides/model-selection) — Per-task model routing
-- [Multi-Agent](/guides/multi-agent) — Agent and binding configuration
-- [Heartbeat Guide](/guides/heartbeat) — Heartbeat settings and cost optimization
+```json5 title="~/.openclaw/openclaw.json"
+{
+  browser: {
+    enabled: true,
+    headless: true,
+    ssrfPolicy: { blockedHostnames: ["internal.example.com"] },
+  },
+}
+```
+
+Reference: [Browser](https://docs.openclaw.ai/tools/browser), [Configuration - browser](https://docs.openclaw.ai/gateway/config-browser-ui-desktop).
+
+### `session`
+
+How conversations map to sessions. `dmScope` decides whether DMs share one session (`main`, the default) or are split `per-peer`, `per-channel-peer` or `per-account-channel-peer`. If more than one person can DM the bot, split them.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  session: { dmScope: "per-channel-peer" },
+}
+```
+
+Reference: [Configuration - sessions](https://docs.openclaw.ai/gateway/config-agents/sessions).
+
+### `skills`, `plugins` and `mcp`
+
+Skills are enabled or given keys under `skills.entries.<name>`. Plugins are configured under `plugins.entries.<id>.config` (for example memory dreaming lives at `plugins.entries.memory-core.config.dreaming`). MCP servers go under `mcp.servers.<name>` with an executable in `command` and arguments in `args`, or a `url` for remote servers.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  skills: { entries: { "image-lab": { enabled: false } } },
+  mcp: {
+    servers: {
+      filesystem: {
+        command: "npx",
+        args: ["-y", "@modelcontextprotocol/server-filesystem", "/home/me/projects"],
+      },
+    },
+  },
+}
+```
+
+Reference: [Configuration - MCP, skills, and plugins](https://docs.openclaw.ai/gateway/config-extensions), [`openclaw mcp`](https://docs.openclaw.ai/cli/mcp), [Memory config](https://docs.openclaw.ai/reference/memory-config).
+
+### `logging`
+
+File logs default to `/tmp/openclaw/openclaw-YYYY-MM-DD.log`. Useful keys are `level`, `consoleLevel`, `file`, `maxFileBytes` (default 100 MB) and `redactPatterns`. The metadata-only audit ledger (`logging.audit.enabled`) is on by default.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  logging: { level: "info", maxFileBytes: 52428800, redactPatterns: ["sk-[A-Za-z0-9]+"] },
+}
+```
+
+Reference: [Logging](https://docs.openclaw.ai/logging), [Configuration - observability](https://docs.openclaw.ai/gateway/config-observability).
+
+## Backups
+
+The Gateway keeps a `.bak` ring of previous configs and a last-known-good copy, but only `openclaw doctor --fix` restores from them; startup does not. Before an upgrade, take a real backup:
+
+```bash
+openclaw backup create --verify
+openclaw backup create --only-config --output ~/Backups
+```
+
+`backup create` covers config, credentials, sessions and workspaces. Reference: [`openclaw backup`](https://docs.openclaw.ai/cli/backup).
+
+## See also
+
+- [Configuration](https://docs.openclaw.ai/gateway/configuration) and [Configuration examples](https://docs.openclaw.ai/gateway/configuration-examples) (official)
+- [Environment Variables](/reference/environment-variables)
+- [CLI Reference](/reference/cli)
+- [Security Hardening](/security/hardening)
+- [Local Models](/guides/local-models), [Model Selection](/guides/model-selection), [Multi-Agent](/guides/multi-agent)
