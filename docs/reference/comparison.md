@@ -3,8 +3,8 @@ last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
 title: Comparison
-description: How OpenClaw compares to Auto-GPT, CrewAI, LangChain, Open Interpreter, Devin, Claude Code, Cursor, Copilot, n8n, and other AI agent frameworks
-keywords: [openclaw, openclaw vs, alternative, comparison, devin, cursor, copilot, autogpt]
+description: How OpenClaw compares to Hermes Agent, Auto-GPT, CrewAI, LangChain, Open Interpreter, Devin, Claude Code, Cursor, Copilot, n8n, and other AI agent frameworks
+keywords: [openclaw, openclaw vs, alternative, comparison, hermes agent, devin, cursor, copilot, autogpt]
 ---
 
 # Comparison
@@ -20,6 +20,7 @@ Star counts are from `gh api` and prices from each vendor's pricing page, **as o
 | Framework | Stars | Type | Price | Messaging apps | Runs locally | Multi-agent |
 |-----------|------:|------|-------|-----------|-------|-------------|
 | **OpenClaw** | 392k | Self-hosted agent gateway | Free (MIT) + model costs | Built in (dozens of channels) | Yes | Yes (agents, sub-agents) |
+| **Hermes Agent** | 255k | Self-hosted personal agent | Free (MIT) + model costs | Built in (Telegram, Discord, Slack, WhatsApp, Signal) | Yes | Sub-agents |
 | **AutoGPT** | 187.6k | Agent platform | Free (OSS) | No | Yes | Limited |
 | **n8n** | 207.9k | Workflow automation | Self-host free | Via nodes | Self-host | N/A |
 | **LangChain** | 148k | Framework | Free (OSS) | No | N/A | Via LangGraph |
@@ -32,13 +33,31 @@ Star counts are from `gh api` and prices from each vendor's pricing page, **as o
 | **Cursor** | — | AI IDE | Free tier; paid from $8/mo | No | Yes | No |
 | **GitHub Copilot** | — | IDE extension | Free tier; Pro $10/mo | No | No | No |
 
-Repos: [AutoGPT](https://github.com/Significant-Gravitas/AutoGPT), [n8n](https://github.com/n8n-io/n8n), [LangChain](https://github.com/langchain-ai/langchain), [MetaGPT](https://github.com/FoundationAgents/MetaGPT), [Open Interpreter](https://github.com/openinterpreter/openinterpreter), [CrewAI](https://github.com/crewAIInc/crewAI), [Goose](https://github.com/aaif-goose/goose).
+Repos: [Hermes Agent](https://github.com/NousResearch/hermes-agent), [AutoGPT](https://github.com/Significant-Gravitas/AutoGPT), [n8n](https://github.com/n8n-io/n8n), [LangChain](https://github.com/langchain-ai/langchain), [MetaGPT](https://github.com/FoundationAgents/MetaGPT), [Open Interpreter](https://github.com/openinterpreter/openinterpreter), [CrewAI](https://github.com/crewAIInc/crewAI), [Goose](https://github.com/aaif-goose/goose).
 
 A security column used to sit here. Security depends far more on how you deploy a tool than on which tool it is, so it now has its own [section below](#the-trade-off).
 
 ---
 
 ## Autonomous AI Agents
+
+### Hermes Agent
+
+The closest open-source alternative. [Hermes Agent](https://github.com/NousResearch/hermes-agent) is built by Nous Research: 254,820 stars, MIT licence, latest release [v0.22.2](https://github.com/NousResearch/hermes-agent/releases/tag/v0.22.2) published 2026-10-15 (GitHub API, 2026-10-18). Like OpenClaw, it is a self-hosted agent you reach from messaging apps through one gateway process, with scheduled automations, sub-agents and any model provider. Its README leads with a "learning loop": it writes skills from experience and refines them during use, and keeps agent-curated memory with cross-session search.
+
+| | Hermes Agent | OpenClaw |
+|---|---|---|
+| **Language** | Python | Node.js |
+| **Channels** | Telegram, Discord, Slack, WhatsApp, Signal, CLI | Dozens of channels plus Control UI and native apps |
+| **Skills** | Creates and refines its own; [agentskills.io](https://agentskills.io) format | ClawHub marketplace, plus [Skill Workshop](/guides/skill-workshop) for learned skills |
+| **Execution** | Local, Docker, SSH, Singularity, Modal, Daytona, Vercel Sandbox backends | Host by default; optional sandbox backends (Docker, Podman, SSH, OpenShell, Crabbox) |
+| **Licence** | MIT | MIT |
+
+**Choose Hermes Agent if:** you want a self-improving skill loop and serverless backends that sleep when idle.
+
+**Choose OpenClaw if:** you want the widest channel coverage, native apps and the ClawHub ecosystem.
+
+Several managed hosts run both; see [Hosting Providers](/guides/hosting-providers). The Control UI can import Hermes memory ([Memory Systems](/guides/memory-systems)).
 
 ### Auto-GPT
 
@@ -187,6 +206,15 @@ Traditional workflow automation vs AI-native approach.
 **Choose workflow automation if:** You need predictable, auditable, enterprise-grade automation with specific triggers and actions.
 
 **Choose OpenClaw if:** You want flexible, natural language automation that can reason about tasks and adapt dynamically. Accept the trade-off of less predictability.
+
+---
+
+## Built on OpenClaw, not competitors {#built-on-openclaw}
+
+Two vendor products that come up in comparisons run OpenClaw underneath, so choosing them means running OpenClaw with a vendor layer on top:
+
+- **Microsoft Autopilot**, formerly Microsoft Scout, is a "persistent, proactive personal agent" in Microsoft's Copilot experience, in preview since 2026-09-25. Its foundation is OpenClaw, and Microsoft contributes upstream ([OpenClaw blog, 2026-09-25](https://openclaw.ai/blog/microsoft-autopilot-openclaw)).
+- **NVIDIA NemoClaw** is an open-source reference stack (Apache-2.0, 22,764 stars on 2026-10-18, alpha) that runs agents inside NVIDIA OpenShell sandboxes with managed inference and network policy. OpenClaw is its default agent; it also supports Hermes and LangChain Deep Agents Code ([NVIDIA/NemoClaw](https://github.com/NVIDIA/NemoClaw), [docs](https://docs.nvidia.com/nemoclaw/latest/)). See [Ecosystem](/reference/ecosystem#nemoclaw).
 
 ---
 
