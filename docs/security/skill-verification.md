@@ -61,7 +61,7 @@ openclaw skills verify @owner/<slug> --version <version>
 
 `verify` exits non-zero when ClawHub marks verification as failed. When ClawHub has kept them, the JSON includes the full SkillSpector and AIG scanner reports under `security.scannerReports`. Use owner-qualified refs (`@owner/<slug>`) to avoid picking up a lookalike publisher.
 
-A pass is a signal, not a guarantee. A pending or stale scan can still allow installation with a warning, so installation is not proof that every scan completed ([why OpenClaw](https://docs.openclaw.ai/start/why-openclaw)).
+A pass is a signal, not a guarantee. Since 2026-10-13 new ClawHub releases stay unpublished until their pre-publication scans pass ([see below](#virustotal-integration-v202626)), but releases from before that date and later rescans can still show a pending or stale result, and installation may proceed with a warning. Installation is not proof that every scan completed ([why OpenClaw](https://docs.openclaw.ai/start/why-openclaw)).
 
 ### 2. Check Against Koi Security's Database
 

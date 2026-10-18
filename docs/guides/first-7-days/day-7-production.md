@@ -228,7 +228,7 @@ openclaw backup restore ~/Backups/openclaw/<archive>.tar.gz --target ~/openclaw-
 
 `backup restore` verifies the archive and extracts it into a fresh staging directory; it never overwrites your live install. Follow the rollback guide for putting the restored state back with the matching release. `openclaw gateway start` brings the service back up.
 
-If you're stuck, `openclaw triage` runs read-only checks and writes a sanitized diagnosis you can hand to a coding agent or paste into a bug report.
+If you're stuck, `openclaw triage --non-interactive` runs checks without offering a repair agent and writes a sanitized diagnosis you can hand to a coding agent or paste into a bug report.
 
 ---
 
