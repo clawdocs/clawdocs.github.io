@@ -1,292 +1,321 @@
 ---
 last_update:
-  date: 2026-07-08
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: MCP Servers
-description: Find, connect, and build MCP servers for OpenClaw — the protocol that powers most integrations
+description: Connect, filter, secure and build MCP servers for OpenClaw — the real mcp.servers config, transports, toolFilter, and vetted servers
 keywords: [openclaw, openclaw mcp, model context protocol, mcp servers, tools, integrations]
 ---
 
 # MCP Servers
 
-The **Model Context Protocol (MCP)** is how OpenClaw connects to external tools, databases, APIs, and services. Instead of hardcoding integrations, MCP provides a standard wire protocol — any tool that speaks MCP works with any agent that speaks MCP.
+The **Model Context Protocol (MCP)** is how an agent borrows tools from another program. An MCP server exposes tools, resources and prompts; OpenClaw connects to it and makes those tools available to your agents. Server definitions live under `mcp.servers` in `openclaw.json`, and the tools they expose go through the same tool profile and tool policy as every other tool.
 
-As of mid-2026, the MCP ecosystem has **32,600+ servers** exposing **229,800+ tools**. This guide covers how to find, connect, and build them.
+The official references are [Connect MCP servers](https://docs.openclaw.ai/tools/mcp) and the [`openclaw mcp` CLI](https://docs.openclaw.ai/cli/mcp).
 
 :::tip
-MCP is the recommended integration path for most use cases. Before building a custom [plugin](/guides/plugin-system) or [skill](/guides/skill-development), check if an MCP server already exists for what you need.
+Before building a custom [plugin](/guides/plugin-system) or [skill](/guides/skill-development), check whether the vendor already ships an MCP server.
 :::
 
 :::caution Security advisory
-Versions v2026.5.20 through v2026.6.5 had a High-severity flaw ([GHSA-52xj-c9p8-78cv](https://github.com/openclaw/openclaw/security/advisories/GHSA-52xj-c9p8-78cv), CVSS 8.3) where the MCP loopback could expose owner-only tools to non-owner runs. Patched in v2026.6.6 — see the [June 2026 advisory batch](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026).
+Versions v2026.5.20 through v2026.6.5 had a High-severity flaw ([GHSA-52xj-c9p8-78cv](https://github.com/openclaw/openclaw/security/advisories/GHSA-52xj-c9p8-78cv), CVSS 8.3) where the MCP loopback could expose owner-only tools to non-owner runs. Patched in v2026.6.6. See the [June 2026 advisory batch](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026).
 :::
 
 ---
 
 ## What MCP Provides
 
-MCP servers expose three capability types over a single connection:
-
-| Capability | What It Does | Example |
-|------------|-------------|---------|
+| Capability | What it does | Example |
+|---|---|---|
 | **Tools** | Functions the agent can call | `read_file`, `run_query`, `send_email` |
-| **Resources** | Data the agent can read | Database schemas, config files, documentation |
-| **Prompts** | Reusable prompt templates | Code review checklist, bug report format |
+| **Resources** | Data the agent can read | Database schemas, documentation |
+| **Prompts** | Reusable prompt templates | A code review checklist |
 
-Most servers expose tools. Resources and prompts are optional capabilities that richer servers provide.
+Most servers expose only tools. When a server also has resources or prompts, OpenClaw adds utility tools for them (`resources_list`, `resources_read`, `prompts_list`, `prompts_get`).
 
-### Wire Protocol
-
-MCP uses **JSON-RPC 2.0** — the same protocol used by VS Code's Language Server Protocol. Every message is a JSON object with a method name and parameters. You don't need to understand the wire format to use MCP, but it helps when debugging.
+MCP uses JSON-RPC 2.0 over one of three transports: stdio (a local child process), Streamable HTTP, or the older SSE.
 
 ---
 
-## Configuring MCP Servers
+## Adding a Server
 
-MCP servers are configured in `~/.openclaw/openclaw.json` under the `mcp.servers` key.
+Three ways, all writing the same `mcp.servers` entry:
 
-### Local Servers (stdio)
+1. **Control UI:** **Settings → MCP → Add server**, or in a chat **+ → Connectors → Add MCP server…**
+2. **CLI:** `openclaw mcp add` with flags (it probes the server before saving)
+3. **Config:** edit `openclaw.json` directly
 
-Local servers run as child processes. OpenClaw spawns them, communicates over stdin/stdout, and stops them when the gateway shuts down.
+Whichever you use, check that the server actually answers:
+
+```bash
+openclaw mcp doctor <name> --probe
+```
+
+### From the CLI
+
+```bash
+# Local stdio server
+openclaw mcp add filesystem \
+  --command npx \
+  --arg -y --arg @modelcontextprotocol/server-filesystem --arg /home/user/projects
+
+# Remote Streamable HTTP server, exposing only some tools
+openclaw mcp add docs \
+  --url https://mcp.example.com/mcp \
+  --transport streamable-http \
+  --include 'search,read_*'
+
+# Remote server that uses MCP OAuth
+openclaw mcp add tracker --url https://mcp.example.com/mcp --transport streamable-http --auth oauth
+openclaw mcp login tracker
+```
+
+Other flags: `--env KEY=value`, `--cwd`, `--header KEY=value`, `--timeout`, `--connect-timeout`, `--exclude`, `--disabled`, `--no-probe`.
+
+### Local servers (stdio)
+
+OpenClaw spawns the process and talks to it over stdin/stdout.
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "mcp": {
-    "servers": {
-      "filesystem": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"],
-        "env": {}
+  mcp: {
+    servers: {
+      filesystem: {
+        command: "npx",
+        args: ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"],
       },
-      "sqlite": {
-        "command": "uvx",
-        "args": ["mcp-server-sqlite", "--db-path", "/data/myapp.db"]
+      git: {
+        command: "uvx",
+        args: ["mcp-server-git", "--repository", "/home/user/projects/myapp"],
       },
-      "github": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-github"],
-        "env": {
-          "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
-        }
-      }
-    }
-  }
+    },
+  },
 }
 ```
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `command` | Yes | Executable to run (`npx`, `uvx`, `node`, `python`, etc.) |
-| `args` | No | Command-line arguments |
-| `env` | No | Environment variables (supports `${VAR}` expansion) |
+| Field | Description |
+|---|---|
+| `command` | Executable to spawn (required for stdio) |
+| `args` | Command-line arguments |
+| `env` | Extra environment variables. `${VAR}` substitution works here as in the rest of the config. |
+| `cwd` | Working directory |
+| `enabled` | `false` keeps the definition but does not connect |
 
-### Remote Servers (HTTP)
+OpenClaw silently drops interpreter and loader hooks from a stdio server's `env` (`NODE_OPTIONS`, `PYTHONSTARTUP`, `LD_*`, `DYLD_*`, `BASH_FUNC_*` and similar) and logs a warning. Ordinary credentials such as `GITHUB_TOKEN`, `DATABASE_URL` or `*_API_KEY` pass through.
 
-Remote servers run on a different machine. OpenClaw connects to them over HTTP.
+### Remote servers (HTTP)
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "mcp": {
-    "servers": {
-      "company-tools": {
-        "url": "https://mcp.internal.company.com/sse",
-        "transport": "sse",
-        "headers": {
-          "Authorization": "Bearer ${MCP_API_KEY}"
-        }
-      },
+  mcp: {
+    servers: {
       "cloud-service": {
-        "url": "https://api.example.com/mcp",
-        "transport": "streamable-http",
-        "headers": {
-          "X-API-Key": "${SERVICE_KEY}"
-        }
-      }
-    }
-  }
+        url: "https://api.example.com/mcp",
+        transport: "streamable-http",
+        headers: { "X-API-Key": "${SERVICE_KEY}" },
+        connectionTimeoutMs: 5000,
+        requestTimeoutMs: 20000,
+      },
+      "legacy-tools": {
+        url: "https://mcp.internal.example.com/sse",
+        transport: "sse",
+        headers: { Authorization: "Bearer ${MCP_API_KEY}" },
+      },
+    },
+  },
 }
 ```
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `url` | Yes | Server endpoint URL |
-| `transport` | No | `sse` (legacy) or `streamable-http` (modern, default) |
-| `headers` | No | HTTP headers for authentication |
+| Field | Description |
+|---|---|
+| `url` | Server endpoint (required for HTTP) |
+| `transport` | `streamable-http` or `sse`. **When omitted, OpenClaw uses `sse`**, so always set it for Streamable HTTP servers. |
+| `headers` | HTTP headers, for example auth tokens. Redacted in logs and status output. |
+| `auth` | `"oauth"` to use credentials saved by `openclaw mcp login`; static `Authorization` headers are then ignored |
+| `connectionTimeoutMs`, `requestTimeoutMs` | Per-server timeouts |
+| `sslVerify`, `clientCert`, `clientKey` | TLS verification and mutual TLS |
+| `supportsParallelToolCalls` | Hint that concurrent calls are safe |
 
-### Transport Types
+The name `__proto__` is reserved. `openclaw mcp doctor` warns when a header or env value looks like a literal secret.
 
-| Transport | When to Use | How It Works |
-|-----------|-------------|-------------|
-| **stdio** | Local servers, CLI tools, development | Spawns process, communicates via stdin/stdout |
-| **SSE** | Legacy remote servers | Server-Sent Events over HTTP (one-way streaming) |
-| **Streamable HTTP** | Modern remote servers | Bidirectional HTTP streaming (preferred for new servers) |
+### Transport types
 
-**Default to stdio for local servers and Streamable HTTP for remote ones.** SSE is supported for backwards compatibility but is being phased out.
+| Transport | When to use it |
+|---|---|
+| **stdio** | Local servers and CLI tools |
+| **Streamable HTTP** | Remote servers; preferred for anything new |
+| **SSE** | Older remote servers only |
 
 ---
 
 ## CLI Commands
 
+| Command | What it does |
+|---|---|
+| `openclaw mcp list` | List configured servers |
+| `openclaw mcp show [name]` | Print one server's definition, or all of them |
+| `openclaw mcp status [--verbose]` | Transport, auth, timeouts and filters, without connecting |
+| `openclaw mcp doctor [name] [--probe]` | Static checks; `--probe` also connects |
+| `openclaw mcp probe [name]` | Connect and list tools, resources and prompts |
+| `openclaw mcp add <name> [flags]` | Add a server from flags, probing first |
+| `openclaw mcp set <name> <json>` | Write one server from a JSON object |
+| `openclaw mcp configure <name>` | Change operator controls such as the Codex approval mode |
+| `openclaw mcp tools <name> --include/--exclude/--clear` | Set the server's tool filter |
+| `openclaw mcp login <name>` / `logout <name>` | OAuth sign-in and sign-out |
+| `openclaw mcp reload` | Drop cached MCP runtimes in this process |
+| `openclaw mcp unset <name>` | Remove a server |
+| `openclaw mcp serve` | Run OpenClaw as a stdio MCP server (see below) |
+
 ```bash
-openclaw mcp <subcommand>
-```
-
-| Command | What It Does |
-|---------|-------------|
-| `openclaw mcp list` | Show configured MCP servers and their status |
-| `openclaw mcp add <name>` | Interactive setup for a new server |
-| `openclaw mcp status` | Connection status for all servers |
-| `openclaw mcp probe <name>` | Test a server — list its tools, resources, prompts |
-| `openclaw mcp doctor` | Diagnose connection issues |
-| `openclaw mcp configure <name>` | Edit a server's config |
-| `openclaw mcp login <name>` | Authenticate with an OAuth-based server |
-| `openclaw mcp serve` | Expose your OpenClaw gateway as an MCP server |
-
-### Quick Examples
-
-```bash
-# Add a new MCP server interactively
-openclaw mcp add my-database
-
-# Check what tools a server exposes
 openclaw mcp probe filesystem
-
-# Something broken? Run doctor
-openclaw mcp doctor
-
-# See all connections at a glance
-openclaw mcp status
+openclaw mcp status --verbose
+openclaw mcp doctor --probe
 ```
+
+With Gateway hot reload, changed servers are picked up on the next turn. `openclaw mcp reload` only affects the CLI process it runs in; a Gateway elsewhere needs its own reload or restart. A server that fails to start is retried with exponential backoff (30 seconds, doubling up to 10 minutes).
 
 ---
 
-## Popular Servers
+## Filtering Tools
 
-### Official Reference Servers
+The real mechanism is `toolFilter` on each server, with `include` and `exclude` lists of tool names or `*` globs:
 
-Maintained by Anthropic under the `@modelcontextprotocol` npm scope:
-
-| Server | Tools | Use Case |
-|--------|-------|----------|
-| **Filesystem** | read, write, move, search files | File management |
-| **Git** | log, diff, commit, branch, status | Repository operations |
-| **GitHub** | issues, PRs, repos, search, actions | GitHub automation |
-| **PostgreSQL** | query, schema inspection | Database access |
-| **SQLite** | query, create tables, analyze | Local database |
-| **Google Drive** | search, read, export files | Document access |
-| **Brave Search** | web search, local search | Web queries |
-| **Memory** | store, retrieve, search knowledge | Persistent key-value memory |
-| **Sequential Thinking** | structured reasoning steps | Complex problem decomposition |
-| **Fetch** | HTTP GET/POST with content extraction | Web scraping |
-
-```bash
-# Install and configure the GitHub server
-openclaw mcp add github
-# Or manually:
-# "github": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"} }
+```json5 title="~/.openclaw/openclaw.json"
+{
+  mcp: {
+    servers: {
+      filesystem: {
+        command: "npx",
+        args: ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/safe-dir"],
+        toolFilter: {
+          include: ["read_*", "list_*", "search_files"],
+          exclude: ["write_file", "move_file"],
+        },
+      },
+    },
+  },
+}
 ```
 
-### Community Servers by Category
+Or from the CLI:
 
-#### Knowledge & RAG
+```bash
+openclaw mcp tools filesystem --include 'read_*,list_*,search_files' --exclude 'write_file,move_file'
+openclaw mcp tools filesystem --clear
+```
 
-| Server | What It Does |
-|--------|-------------|
-| **Qdrant** | Vector database for semantic search |
-| **Pinecone** | Managed vector search |
-| **Exa** | AI-native web search with content extraction |
-| **Tavily** | Real-time web research API |
-| **Obsidian** | Read and search Obsidian vaults |
+:::danger `allowed_tools` and `blocked_tools` do nothing
+Server entries accept unknown keys without an error. Keys such as `allowed_tools`, `blocked_tools` or `allowedTools` pass `openclaw config validate` and are **silently ignored**, so every tool stays exposed. Use `toolFilter`, then confirm with `openclaw mcp status --verbose` or `openclaw mcp probe <name>`.
+:::
 
-#### Smart Home & IoT
+Other layers:
 
-| Server | What It Does |
-|--------|-------------|
-| **Home Assistant** | Control lights, sensors, automations, scenes |
-| **Apple Shortcuts** | Trigger iOS/macOS shortcuts |
-
-#### Developer Tools
-
-| Server | What It Does |
-|--------|-------------|
-| **Sentry** | Query errors, releases, performance data |
-| **Linear** | Manage issues, projects, cycles |
-| **Docker** | Container management |
-| **Kubernetes** | Cluster operations via kubectl |
-| **Playwright** | Browser automation and testing |
-| **Puppeteer** | Web scraping and screenshots |
-
-#### Databases
-
-| Server | What It Does |
-|--------|-------------|
-| **MongoDB** | Document queries and aggregations |
-| **Redis** | Key-value operations |
-| **MySQL** | SQL queries with schema inspection |
-| **Neo4j** | Graph database queries (Cypher) |
-| **Supabase** | PostgreSQL + Auth + Storage |
-
-#### Communication
-
-| Server | What It Does |
-|--------|-------------|
-| **Slack** | Read/send messages, manage channels |
-| **Gmail** | Read, compose, search email |
-| **Notion** | Page and database operations |
-| **Todoist** | Task management |
-
-#### Cloud & Infrastructure
-
-| Server | What It Does |
-|--------|-------------|
-| **AWS** | S3, Lambda, EC2, CloudWatch operations |
-| **Cloudflare** | DNS, Workers, KV, R2, D1 |
-| **Vercel** | Deployments, domains, environment variables |
+- **Tool policy.** MCP tools are named `<server>__<tool>`. `tools.deny: ["filesystem__*"]` removes a whole server before it connects; `tools.deny: ["bundle-mcp"]` disables all MCP tools. The `minimal` tool profile hides MCP tools; `coding` and `messaging` include them.
+- **Per session.** In a Control UI chat, **+ → Connectors → Tool access** lets you deny individual tools for that session.
 
 ---
 
-## Finding Servers
+## Vetted Servers
 
-### MCP Registries
+An MCP server is code with your credentials. Prefer the [MCP reference servers](https://github.com/modelcontextprotocol/servers) or the vendor's own official server, and check the npm or PyPI publisher before you run anything (`npm view <pkg> maintainers repository.url`).
 
-Three main registries index the ecosystem:
+### MCP reference servers
 
-| Registry | Servers | URL |
-|----------|---------|-----|
-| **Glama** | 7,800+ | glama.ai/mcp/servers |
-| **Smithery** | 6,200+ | smithery.ai |
-| **Official Directory** | Curated | modelcontextprotocol.io/servers |
+Maintained by the MCP project. They are reference implementations, written to demonstrate the protocol, not hardened products:
 
-### From the CLI
+| Server | Package | Run with |
+|---|---|---|
+| Filesystem | `@modelcontextprotocol/server-filesystem` | `npx` |
+| Memory | `@modelcontextprotocol/server-memory` | `npx` |
+| Sequential Thinking | `@modelcontextprotocol/server-sequential-thinking` | `npx` |
+| Everything (test server) | `@modelcontextprotocol/server-everything` | `npx` |
+| Fetch | `mcp-server-fetch` | `uvx` (Python) |
+| Git | `mcp-server-git` | `uvx` (Python) |
+| Time | `mcp-server-time` | `uvx` (Python) |
 
-```bash
-# Browse available servers (searches ClawHub + registries)
-openclaw mcp add
-# Then search by keyword
+The former GitHub, PostgreSQL, SQLite, Google Drive, Brave Search and Puppeteer reference servers are archived. Their npm packages (`@modelcontextprotocol/server-github`, `server-postgres`, `server-brave-search`, `server-gdrive`, `server-puppeteer`) are deprecated and no longer maintained. There is no `@modelcontextprotocol/server-sentry` or `server-google-drive`, and nothing under `@anthropic/mcp-*`.
+
+### Vendor servers
+
+| Service | Official server |
+|---|---|
+| GitHub | [github/github-mcp-server](https://github.com/github/github-mcp-server): remote at `https://api.githubcopilot.com/mcp/`, or the `ghcr.io/github/github-mcp-server` Docker image |
+| Brave Search | `@brave/brave-search-mcp-server` ([brave/brave-search-mcp-server](https://github.com/brave/brave-search-mcp-server)) |
+| Browser automation | `@playwright/mcp` ([microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp)) |
+| Sentry | `@sentry/mcp-server` ([getsentry/sentry-mcp](https://github.com/getsentry/sentry-mcp)) |
+| Notion | `@notionhq/notion-mcp-server` ([makenotion/notion-mcp-server](https://github.com/makenotion/notion-mcp-server)) |
+| Home Assistant | The built-in [Model Context Protocol Server](https://www.home-assistant.io/integrations/mcp_server/) integration |
+
+For web search, OpenClaw also has a built-in `web_search` tool with a Brave provider, so you may not need an MCP server at all.
+
+### Finding more
+
+- [Official MCP Registry](https://registry.modelcontextprotocol.io) and the [servers repository](https://github.com/modelcontextprotocol/servers)
+- Community directories such as [Glama](https://glama.ai/mcp/servers) and [Smithery](https://smithery.ai). Listing there is not a security review.
+- `npm search mcp-server` or [pypi.org](https://pypi.org/search/?q=mcp-server). (`pip search` no longer works.)
+
+---
+
+## Recipes
+
+### GitHub (remote, official)
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  mcp: {
+    servers: {
+      github: {
+        url: "https://api.githubcopilot.com/mcp/",
+        transport: "streamable-http",
+        headers: { Authorization: "Bearer ${GITHUB_MCP_PAT}" },
+        toolFilter: { exclude: ["delete_*", "merge_pull_request"] },
+      },
+    },
+  },
+}
 ```
 
-### From npm / PyPI
+Use a fine-grained personal access token limited to the repositories the agent needs.
 
-Most servers are published as packages:
+### Research: search plus fetch
 
-```bash
-# Search npm for MCP servers
-npm search @modelcontextprotocol
-
-# Search PyPI for Python MCP servers
-pip search mcp-server  # or browse pypi.org
+```json5 title="~/.openclaw/openclaw.json"
+{
+  mcp: {
+    servers: {
+      "brave-search": {
+        command: "npx",
+        args: ["-y", "@brave/brave-search-mcp-server"],
+        env: { BRAVE_API_KEY: "${BRAVE_API_KEY}" },
+      },
+      fetch: {
+        command: "uvx",
+        args: ["mcp-server-fetch"],
+      },
+    },
+  },
+}
 ```
+
+### Databases
+
+Give the agent a **read-only** database user, and use a server from the database vendor or one whose source you have read. Several popular names on PyPI and npm, such as `mcp-server-postgres` on PyPI, are unrelated packages from unknown authors. Do not hand them production credentials.
+
+### Pinning
+
+`npx -y` and `uvx` fetch the latest published version every time. For anything with credentials, pin a version (`@brave/brave-search-mcp-server@2.1.4`, `mcp-server-git==2026.10.10`) or install it once and point `command` at the installed binary.
 
 ---
 
 ## Building Custom Servers
 
-When no existing server fits, build your own. The official SDKs handle the protocol — you just define your tools.
+When no server fits, write your own with an official SDK.
 
-### TypeScript (recommended for most cases)
+### TypeScript
 
 ```bash
 npm init -y
-npm install @modelcontextprotocol/sdk
+npm install @modelcontextprotocol/sdk zod
 ```
 
 ```typescript title="src/server.ts"
@@ -294,41 +323,33 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const server = new McpServer({
-  name: "my-tools",
-  version: "1.0.0",
-});
+const server = new McpServer({ name: "my-tools", version: "1.0.0" });
 
-server.tool(
+server.registerTool(
   "get_weather",
-  "Get current weather for a city",
-  { city: z.string().describe("City name") },
+  {
+    description: "Get current weather for a city",
+    inputSchema: { city: z.string().describe("City name") },
+  },
   async ({ city }) => {
-    const response = await fetch(
-      `https://wttr.in/${encodeURIComponent(city)}?format=j1`
-    );
-    const data = await response.json();
+    const res = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
+    const data = await res.json();
     return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(data.current_condition[0], null, 2),
-        },
-      ],
+      content: [{ type: "text", text: JSON.stringify(data.current_condition[0], null, 2) }],
     };
-  }
+  },
 );
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
+await server.connect(new StdioServerTransport());
 ```
 
-```bash
-# Run it
-npx tsx src/server.ts
+Resources and prompts use `server.registerResource(...)` and `server.registerPrompt(...)` in the same way.
 
-# Configure in OpenClaw
-# "my-tools": { "command": "npx", "args": ["tsx", "src/server.ts"] }
+Register it with OpenClaw:
+
+```bash
+npm install -D typescript && npx -p typescript tsc --init && npx -p typescript tsc
+openclaw mcp add my-tools --command node --arg ./dist/server.js --cwd /path/to/project
 ```
 
 ### Python (FastMCP)
@@ -348,299 +369,114 @@ async def get_weather(city: str) -> str:
     """Get current weather for a city."""
     async with httpx.AsyncClient() as client:
         resp = await client.get(f"https://wttr.in/{city}?format=j1")
-        data = resp.json()
-        return str(data["current_condition"][0])
+        return str(resp.json()["current_condition"][0])
 
 if __name__ == "__main__":
     mcp.run()
 ```
 
 ```bash
-# Run it
-python server.py
-
-# Or with uvx for zero-install usage
-# "my-tools": { "command": "uvx", "args": ["my-tools-package"] }
+openclaw mcp add my-py-tools --command python --arg server.py --cwd /path/to/project
 ```
 
-### Server Capabilities
-
-Beyond tools, servers can expose resources and prompts:
-
-```typescript
-// Resource — expose data the agent can read
-server.resource(
-  "config://app",
-  "Application configuration",
-  async () => ({
-    contents: [{
-      uri: "config://app",
-      mimeType: "application/json",
-      text: JSON.stringify(loadConfig()),
-    }],
-  })
-);
-
-// Prompt — reusable template
-server.prompt(
-  "code-review",
-  "Review code for issues",
-  { language: z.string() },
-  ({ language }) => ({
-    messages: [{
-      role: "user",
-      content: {
-        type: "text",
-        text: `Review this ${language} code for bugs, security issues, and style problems.`,
-      },
-    }],
-  })
-);
-```
-
-### Testing Your Server
+### Testing your server
 
 ```bash
-# Probe to see what your server exposes
-openclaw mcp probe my-tools
-
-# Interactive test — sends tool calls and shows responses
+openclaw mcp doctor my-tools --probe
 npx @modelcontextprotocol/inspector
 ```
 
-The MCP Inspector is a browser-based debugging UI that connects to any stdio or HTTP server and lets you call tools interactively.
+The MCP Inspector is a browser UI that connects to a stdio or HTTP server and lets you call its tools by hand.
 
 ---
 
-## Expose OpenClaw as an MCP Server
+## OpenClaw as an MCP Server
 
-OpenClaw can itself act as an MCP server, allowing other tools to call into your agent:
+`openclaw mcp serve` runs the other way round: it is a **stdio** MCP server that an MCP client (Claude Code, Codex, Cursor and others) spawns. It connects to your Gateway over WebSocket and exposes **channel conversations**: listing conversations, reading messages, sending messages, waiting for events and handling approvals. It does not expose your agent's skills or memory, and it does not listen on an HTTP port.
 
-```bash
-openclaw mcp serve
-```
+Example client entry (for an MCP client's own config file, not `openclaw.json`):
 
-This exposes your agent's tools (skills, memory, heartbeat) over MCP, so other MCP clients — Claude Desktop, Cursor, VS Code, or another OpenClaw instance — can call them.
-
-```json5 title="Example: connect from another OpenClaw instance"
+```json title="MCP client config"
 {
-  "mcp": {
-    "servers": {
-      "remote-agent": {
-        "url": "https://your-server.com:3000/mcp",
-        "transport": "streamable-http",
-        "headers": {
-          "Authorization": "Bearer ${AGENT_TOKEN}"
-        }
-      }
-    }
+  "mcpServers": {
+    "openclaw": { "command": "openclaw", "args": ["mcp", "serve"] }
   }
 }
 ```
+
+See [Run OpenClaw as an MCP server](https://docs.openclaw.ai/cli/mcp/serve).
 
 ---
 
 ## Security
 
-MCP servers have significant access — they can read files, query databases, call APIs, and execute code. Treat them with the same care as shell scripts.
+MCP servers can read files, query databases, call APIs and run code. Treat them like shell scripts you are about to run.
 
-### Trust Model
+### Trust model
 
-| Trust Level | What to Check |
-|-------------|--------------|
-| **Official servers** | Maintained by Anthropic/protocol authors — generally safe |
-| **Popular community** | Check stars, recent commits, open issues |
-| **Unknown/new** | Read the source code before running |
+| Source | What to check |
+|---|---|
+| MCP reference servers | Maintained, but examples rather than hardened products |
+| Vendor's official server | Publisher on npm/PyPI matches the vendor; linked from the vendor's docs |
+| Community server | Read the source, check activity and issues, pin the version |
 
-### Credential Safety
+### Credentials
 
-- Use `${ENV_VAR}` expansion for all secrets — never hardcode tokens in config
-- Scope API keys narrowly (read-only when possible)
-- Rotate credentials regularly
-- Review what environment variables a server's `env` block requests
+- Use `${ENV_VAR}` substitution or SecretRefs for secrets; never commit tokens in config
+- Scope API keys narrowly (read-only where possible)
+- Prefer `auth: "oauth"` with `openclaw mcp login` where the server supports it
+- Read what environment variables a server asks for
 
-### Tool Filtering
+### Containment
 
-Restrict which tools an agent can call from a specific server:
+- **stdio servers** run as child processes with the Gateway user's permissions
+- **Filesystem servers**: pass only the directories they need
+- **Database servers**: use read-only users
+- **Internal HTTP servers**: keep them behind a firewall or VPN
 
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "mcp": {
-    "servers": {
-      "filesystem": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/safe-dir"],
-        "allowed_tools": ["read_file", "list_directory"],
-        "blocked_tools": ["write_file", "move_file"]
-      }
-    }
-  }
-}
-```
-
-### Sandboxing
-
-- **stdio servers** run as child processes with your user's permissions
-- **Filesystem servers** — restrict to specific directories (pass them as args)
-- **Database servers** — use read-only database users when possible
-- **Network servers** — run behind a firewall or VPN for internal tools
-
-### Common Risks
+### Common risks
 
 | Risk | Mitigation |
-|------|-----------|
+|---|---|
 | Server reads sensitive files | Restrict filesystem paths in server args |
-| Server exfiltrates data | Monitor network traffic, use local-only servers |
-| Malicious server in registry | Review source before installing, check maintainer reputation |
-| Credential leak via env | Use `${VAR}` expansion, never commit config with tokens |
-| Tool misuse by agent | Use `allowed_tools` / `blocked_tools` filtering |
+| Server exfiltrates data | Prefer local servers; watch outbound traffic |
+| Malicious or typosquatted package | Check the publisher, pin versions, read the source |
+| Credential leak via config | `${VAR}` substitution or SecretRefs; `openclaw mcp doctor` warns on literals |
+| Agent misuses a tool | `toolFilter.exclude`, `tools.deny`, approvals |
 
----
-
-## Patterns & Recipes
-
-### Database Assistant
-
-Give your agent read access to a production database for answering questions:
-
-```json5
-{
-  "mcp": {
-    "servers": {
-      "prod-db": {
-        "command": "uvx",
-        "args": ["mcp-server-postgres"],
-        "env": {
-          "DATABASE_URL": "${READONLY_DB_URL}"
-        }
-      }
-    }
-  }
-}
-```
-
-### Multi-Source Research
-
-Combine web search, document access, and note-taking:
-
-```json5
-{
-  "mcp": {
-    "servers": {
-      "brave-search": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-brave-search"],
-        "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
-      },
-      "google-drive": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-google-drive"],
-        "env": { "GOOGLE_CREDENTIALS": "${GOOGLE_CREDS_PATH}" }
-      },
-      "obsidian": {
-        "command": "npx",
-        "args": ["-y", "mcp-obsidian", "--vault", "/path/to/vault"]
-      }
-    }
-  }
-}
-```
-
-### DevOps Toolkit
-
-GitHub + Sentry + Docker for a development workflow:
-
-```json5
-{
-  "mcp": {
-    "servers": {
-      "github": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-github"],
-        "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
-      },
-      "sentry": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-sentry"],
-        "env": { "SENTRY_AUTH_TOKEN": "${SENTRY_TOKEN}" }
-      },
-      "docker": {
-        "command": "npx",
-        "args": ["-y", "mcp-docker"]
-      }
-    }
-  }
-}
-```
-
-### Smart Home Control
-
-```json5
-{
-  "mcp": {
-    "servers": {
-      "home-assistant": {
-        "command": "uvx",
-        "args": ["mcp-server-home-assistant"],
-        "env": {
-          "HA_URL": "http://homeassistant.local:8123",
-          "HA_TOKEN": "${HA_LONG_LIVED_TOKEN}"
-        }
-      }
-    }
-  }
-}
-```
+:::warning
+An MCP server that can run commands, send email or messages, drive a browser or move money gives that power to every agent with access to it. Combine tool filters with approvals and sandboxing; see [Security hardening](/security/hardening).
+:::
 
 ---
 
 ## Troubleshooting
 
 **Server won't connect:**
+
 ```bash
-openclaw mcp doctor            # Diagnose all servers
-openclaw mcp probe <name>      # Test a specific server
+openclaw mcp doctor <name> --probe
+openclaw mcp status --verbose
 ```
 
-**"Tool not found" errors:**
-```bash
-# List what tools the server actually exposes
-openclaw mcp probe <name>
-# Check for typos in allowed_tools / blocked_tools
-```
+For stdio servers, check that `command` resolves in the Gateway's environment and that `cwd` exists. Debug logs prefix server stderr with `bundle-mcp:<name>:`.
 
-**Server crashes on startup:**
-```bash
-# Test the server command directly
-npx -y @modelcontextprotocol/server-filesystem /tmp
-# Check for missing dependencies or bad args
-```
+**Connects but no tools:** run `openclaw mcp probe <name>` and check `toolFilter.include` and `exclude`. A Streamable HTTP server without `transport: "streamable-http"` is treated as SSE and may fail.
 
-**Slow tool calls:**
-- stdio servers have no network overhead — if slow, the server itself is slow
-- Remote servers add network latency — consider running them on the same machine
-- Check if the server is doing expensive work per call (e.g., full table scans)
+**Server crashes on startup:** run the command directly to see its error, for example `npx -y @modelcontextprotocol/server-filesystem /tmp`.
 
-**Authentication failures:**
-```bash
-# Verify the env var is set
-echo $GITHUB_TOKEN
+**Authentication failures:** check that the env var is set in the Gateway's environment, not just your shell. For OAuth servers, run `openclaw mcp login <name>` again.
 
-# For OAuth servers, re-authenticate
-openclaw mcp login <name>
-```
+**Changes not visible:** the Gateway reloads changed servers on the next turn. A CLI `openclaw mcp reload` does not reset a separate Gateway process.
 
-**Too many tools confusing the agent:**
-- Use `allowed_tools` to expose only what's needed
-- Remove servers the agent doesn't need for its current role
-- Split complex setups into task-specific configurations
+**Too many tools confusing the agent:** narrow each server with `toolFilter.include`, or remove servers the agent does not need.
 
 ---
 
 ## See Also
 
-- [Plugin System](/guides/plugin-system) — Gateway-level extensions (different from MCP)
-- [Configuration Reference](/reference/configuration) — Full `mcp.servers` config options
-- [Advanced Recipes](/guides/recipes/advanced-recipes) — Multi-server integration patterns
-- [Security Hardening](/security/hardening) — Protecting your gateway
-- [Skill Development](/guides/skill-development) — Teaching agents new capabilities via Markdown
+- [Plugin System](/guides/plugin-system): Gateway extensions written in code
+- [Configuration Reference](/reference/configuration): the full `mcp` block
+- [Advanced Recipes](/guides/recipes/advanced-recipes): multi-server patterns
+- [Security hardening](/security/hardening)
+- Upstream: [Connect MCP servers](https://docs.openclaw.ai/tools/mcp), [`openclaw mcp`](https://docs.openclaw.ai/cli/mcp), [MCP transports](https://docs.openclaw.ai/cli/mcp/transports)
