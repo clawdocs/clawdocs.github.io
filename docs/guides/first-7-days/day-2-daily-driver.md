@@ -1,6 +1,7 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: "Day 2: Your Daily Driver"
 description: "Put OpenClaw to work — summaries, research, file management, and real daily tasks"
 keywords: [openclaw, daily use, everyday tasks, productivity, chat commands, summarize, file management]
@@ -12,11 +13,13 @@ Yesterday you gave your bot a personality. Today you put it to work on the thing
 
 **Time:** ~30 minutes
 
+Type the prompts below into whichever chat you use: the Control UI (`openclaw dashboard`), the terminal UI (`openclaw tui`), or a connected channel such as Telegram. To send a single prompt from the shell, use `openclaw agent --agent main --message "..."`.
+
 ---
 
 ## Summarize Anything
 
-OpenClaw can digest content from URLs, local files, or raw text you paste in.
+OpenClaw can digest content from URLs, local files, or raw text you paste in. Fetching a URL uses the `web_fetch` tool, and the bundled `summarize` skill helps with long pages, videos and podcasts ([web fetch](https://docs.openclaw.ai/tools/web-fetch)).
 
 ### Summarize a web page
 
@@ -76,6 +79,8 @@ What's the recommended way to handle authentication in a Next.js 15 app?
 
 The bot will search the web, pull from documentation, and synthesize what it finds. If you need it to go deeper, ask follow-up questions — the context carries between messages.
 
+Web search needs a search provider. OpenClaw auto-detects one from the credentials you have configured; if the bot says it cannot search, set one up as described in [web tools](https://docs.openclaw.ai/tools/web).
+
 ---
 
 ## File Management
@@ -106,8 +111,17 @@ Rename all files in ~/screenshots to the format YYYY-MM-DD_HH-MM-SS.png based on
 Create a project structure for a Python CLI tool called "timetrack" with src, tests, docs, and config directories, including __init__.py files and a pyproject.toml
 ```
 
-:::warning
-By default the bot does **not** ask before running commands, including destructive ones (deleting, moving, overwriting): `tools.exec.mode` defaults to `full`. Asking it to "show me the plan first" is a request the model may or may not honour, not a safety control. For a real confirmation step, turn on approvals with `openclaw config set tools.exec.mode ask` and restart the gateway. See [permission modes](https://docs.openclaw.ai/tools/permission-modes).
+:::warning The bot does not ask first by default
+By default OpenClaw runs commands **without asking**, including destructive ones (deleting, moving, overwriting): `tools.exec.mode` defaults to `full` and the sandbox is off. Asking it to "show me the plan first" is a request the model may or may not honour, not a safety control.
+
+For a real confirmation step, turn on approvals and check the result:
+
+```bash
+openclaw config set tools.exec.mode ask
+openclaw exec-policy show
+```
+
+In `ask` mode, allowlisted commands run and everything else waits for you to approve it in the chat or Control UI. `openclaw approvals get` shows the requested policy, the host approvals file and the effective result. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and the [hardening checklist](/security/hardening#exec-approvals).
 :::
 
 ---
@@ -165,7 +179,7 @@ Install htop if it's not already installed
 ```
 
 :::info
-System access depends on the permissions of the user running OpenClaw. The bot can't do anything you couldn't do yourself in a terminal. For privileged operations, it'll tell you the `sudo` command to run.
+System access depends on the permissions of the user running OpenClaw. The bot can do anything that user can do in a terminal. If that user has passwordless `sudo`, the bot can install packages and change system files without asking you, unless approvals are on. Run OpenClaw as an ordinary user without passwordless `sudo`, turn on approvals (above), and consider the [sandbox](/security/hardening#sandboxing) for anything that reads untrusted input.
 :::
 
 ---
@@ -213,16 +227,17 @@ Show my current git branches across all repos in ~/projects and flag any with un
 ```
 Find all large log files in /var/log
 > now compress any that are older than 7 days
-> create a cron job that does this weekly
+> create an automation that does this weekly
 ```
 
-**Use configuration for recurring preferences.** If you always want concise answers, add it to `~/.openclaw/openclaw.json`:
+The last step creates an OpenClaw automation (a scheduled job inside the Gateway), not an entry in your system crontab. You'll set these up properly on [Day 3](./day-3-automation.md).
 
-```json5
-{
-  // Default instructions appended to every message
-  "systemPromptSuffix": "Be concise. Prefer bullet points over paragraphs."
-}
+**Save recurring preferences as directives.** If you always want concise answers, add a directive to `~/.openclaw/workspace/USER.md` (see [Day 1](./day-1-make-it-yours.md#tell-it-about-you)), or simply tell the bot "save this as a directive":
+
+```markdown title="~/.openclaw/workspace/USER.md"
+<!-- observed: 2026-10-18 | status: active -->
+
+- Prefer concise answers with bullet points over paragraphs.
 ```
 
 This saves you from repeating "be brief" every session.
@@ -240,4 +255,4 @@ This saves you from repeating "be brief" every session.
 
 You're now using OpenClaw for real work. Tomorrow you stop babysitting it.
 
-**Next: [Day 3: Set It Free](day-3-automation) — automate tasks with the heartbeat**
+**Next: [Day 3: Set It Free](day-3-automation) — schedule automations and tune the heartbeat**
