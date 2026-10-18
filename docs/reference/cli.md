@@ -189,7 +189,7 @@ See [Security Hardening](/security/hardening) before giving the agent shell, bro
 
 Commands exit `0` on success and nonzero on failure. OpenClaw does not define a general table of exit codes. With `--json`, a failure prints one JSON document to stdout:
 
-<!-- snippet:skip CLI error output, not openclaw.json -->
+{/* snippet:skip CLI error output, not openclaw.json */}
 ```json title="CLI --json failure envelope"
 { "ok": false, "error": { "type": "cli_error", "message": "Description of the failure" } }
 ```
