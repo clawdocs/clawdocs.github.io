@@ -237,10 +237,7 @@ Keep the Gateway on loopback, publish Docker ports to `127.0.0.1` only (Docker-p
 1. **Prefer SecretRefs** (`env`, `file`, `exec` or `store` sources) over plaintext in `openclaw.json` ([secrets management](https://docs.openclaw.ai/gateway/secrets)). Exec providers integrate with 1Password, Bitwarden, Vault, `pass` and `sops`.
 2. **Environment variables and `.env` are plaintext too.** Upstream warns that plaintext in `openclaw.json`, `.env` and similar files stays readable by the agent.
 3. **The global env file is `~/.openclaw/.env`**, with the leading dot. Provider keys and `OPENCLAW_*` variables are blocked from workspace `.env` files.
-4. **Check for leftovers** with `openclaw secrets audit --check`.
-5. **Set file permissions:** `chmod 700 ~/.openclaw` and `chmod 600` on its files, or run `openclaw security audit --fix`.
-6. **Never commit** `openclaw.json`, `.env` or `credentials/` to version control.
-7. **Rotate keys** after any incident ([incident response](/security/hardening#incident-response)).
+4. **Check for leftovers** with `openclaw secrets audit --check`, keep `~/.openclaw` at `700` and its files at `600` (`openclaw security audit --fix` sets this), and never commit `openclaw.json`, `.env` or `credentials/`. The rest of the checklist, including key rotation after an incident, is in [Security Hardening](/security/hardening#incident-response).
 
 ```bash title="~/.openclaw/.env (chmod 600)"
 ANTHROPIC_API_KEY=sk-ant-xxxxx

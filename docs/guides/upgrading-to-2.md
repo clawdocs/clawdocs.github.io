@@ -145,7 +145,7 @@ npm install -g openclaw@latest --allow-scripts=openclaw &&
 | JSON/JSONL session files | SQLite (2026.8.1) | Migrates. Older releases cannot read sessions created afterwards (see [Rollback](#rollback)). |
 | OpenProse plugin, `/prose` | Removed (2026.8.1) | Cleans up the config; your `.prose` files stay. |
 | TypeScript Code Mode cells | JavaScript only (2026.9.6) | Removes `tools.codeMode.languages`. **Rewrite TS cells yourself.** |
-| `plugins.entries.webhooks` (TaskFlow Webhooks) | Removed; use Gateway HTTP hooks | Ignored with a warning; Doctor removes the entry. |
+| `plugins.entries.webhooks` (TaskFlow Webhooks) | Removed; use Gateway HTTP hooks ([API & Webhooks](/guides/api-webhooks#webhook-ingress-external-to-agent)) | Ignored with a warning; Doctor removes the entry. |
 
 The rest of the refusal list includes `agents.defaults.llm`, `embeddedPi`, agent `model.timeoutMs`, `gateway.webchat`, `channels.webchat`, `routing.allowFrom`, the top-level `talk.*` selectors, Telegram flat streaming keys, `threadBindings.ttlHours`, Slack `channels.<id>.allow` and Matrix `dm.policy: "trusted"`. All of them get the same answer: pass through the bridge. The list is summarised on [Migration Guide → Config keys Doctor refuses](/guides/migration#refused-keys), and the canonical list is upstream [Retired state and config formats](https://docs.openclaw.ai/gateway/doctor/config-migrations#retired-state-and-config-formats).
 
