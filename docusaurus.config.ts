@@ -128,9 +128,9 @@ const config: Config = {
     },
 
     announcementBar: {
-      id: 'reverification_2026_10',
-      content: '⚠️ <strong>These pages are being re-checked against OpenClaw v2026.10.4.</strong> Many config examples predate OpenClaw 2.0 and will be rejected by current versions. Until a page says it is verified, check the <a href="https://docs.openclaw.ai/">official docs</a> before pasting config or commands.',
-      backgroundColor: '#dc2626',
+      id: 'verified_2026_10_4',
+      content: '✅ <strong>Verified against OpenClaw v2026.10.4</strong> (October 2026): every config example passes <code>openclaw config validate</code> and every command exists. Running a newer release? Check the <a href="https://docs.openclaw.ai/">official docs</a> and <a href="/security/known-vulnerabilities">known vulnerabilities</a>.',
+      backgroundColor: '#15803d',
       textColor: '#fff',
       isCloseable: true,
     },
