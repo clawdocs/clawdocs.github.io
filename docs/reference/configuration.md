@@ -1,5 +1,4 @@
 ---
-sidebar_position: 2
 title: Configuration Reference
 sidebar_label: Configuration
 description: Complete reference for ~/.openclaw/openclaw.json — every section and setting explained

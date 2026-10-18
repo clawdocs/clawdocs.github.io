@@ -1,5 +1,4 @@
 ---
-sidebar_position: 3
 title: Skill Development
 description: Build custom OpenClaw skills — from simple prompts to multi-file automations with config, state, dependencies, and conditional activation
 keywords: [openclaw, openclaw skills, build skill, skill development, clawhub, yaml skill]

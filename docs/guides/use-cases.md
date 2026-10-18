@@ -1,5 +1,4 @@
 ---
-sidebar_position: 11
 title: Real-World Use Cases
 description: 20 verified use cases — what people are actually building with OpenClaw, from DevOps automation to smart home control
 keywords: [openclaw, use cases, examples, what can openclaw do, applications]

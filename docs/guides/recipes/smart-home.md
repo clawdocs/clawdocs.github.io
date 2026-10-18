@@ -1,5 +1,4 @@
 ---
-sidebar_position: 3
 title: "Recipe: Smart Home"
 description: Control lights, devices, and home automation through OpenClaw
 keywords: [openclaw, smart home, home automation, iot, hue lights, voice control, device management]

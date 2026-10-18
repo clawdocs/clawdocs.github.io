@@ -1,5 +1,4 @@
 ---
-sidebar_position: 23
 title: Monitoring & Observability
 description: Monitor your OpenClaw agent in production — metrics, logs, alerts, dashboards, and OpenTelemetry tracing
 keywords: [openclaw, monitoring, observability, metrics, alerting, dashboard]

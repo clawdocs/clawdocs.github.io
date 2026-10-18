@@ -1,5 +1,4 @@
 ---
-sidebar_position: 22
 title: Video Generation with Remotion
 description: Comprehensive guide to programmatic video creation with OpenClaw and Remotion — skills, MCP servers, templates, rendering pipelines, and production recipes
 keywords: [openclaw, remotion, video generation, programmatic video, tiktok, youtube shorts, ai video, mcp video, remotion agent skills]

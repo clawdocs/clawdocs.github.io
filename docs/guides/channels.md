@@ -1,5 +1,4 @@
 ---
-sidebar_position: 2
 title: Channels & Integrations
 description: Connect OpenClaw to WhatsApp, Telegram, Discord, Slack, and 20+ other platforms — setup, configuration, security, and troubleshooting
 keywords: [openclaw, openclaw channels, whatsapp, telegram, discord, slack, messaging integration]

@@ -1,5 +1,4 @@
 ---
-sidebar_position: 1
 title: Introduction to OpenClaw
 sidebar_label: Introduction
 description: What is OpenClaw and why it matters — the open-source autonomous AI agent with 377k+ stars

@@ -1,5 +1,4 @@
 ---
-sidebar_position: 1
 title: Contributing to These Docs
 description: How to contribute to the ClaweDocs community documentation
 keywords: [openclaw, contributing, documentation, help, community docs, how to contribute, open source]
@@ -27,15 +26,14 @@ This starts a local dev server at `http://localhost:3000` with hot reload.
 ## Adding a New Page
 
 1. Create a Markdown file in the appropriate `docs/` subdirectory
-2. Add frontmatter with `sidebar_position`, `title`, and `description`
-3. Add the page to `sidebars.ts`
+2. Add frontmatter with `title` and `description`
+3. Add the page to `sidebars.ts` — this is the only thing that sets sidebar order
 4. Submit a PR
 
 ### Frontmatter Template
 
 ```markdown
 ---
-sidebar_position: 1
 title: Your Page Title
 description: A brief description for SEO
 ---

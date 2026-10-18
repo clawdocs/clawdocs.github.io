@@ -1,5 +1,4 @@
 ---
-sidebar_position: 10
 title: Skill Workshop
 description: Create and review skills through a governed proposal queue — with security scanning, versioning, and rollback
 keywords: [openclaw, openclaw skill workshop, proposal queue, skill governance, security scanning, versioning]
