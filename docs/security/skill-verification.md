@@ -1,5 +1,4 @@
 ---
-sidebar_position: 4
 title: Skill Verification
 description: How to review OpenClaw skills for safety before installation — detection tools, red flags, and defense against supply-chain attacks
 keywords: [openclaw, openclaw skill security, clawhub security, malicious skills, skill scanning, supply chain attack, skill verification]

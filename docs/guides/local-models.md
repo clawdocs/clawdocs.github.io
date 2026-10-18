@@ -1,5 +1,4 @@
 ---
-sidebar_position: 5
 title: Running with Local Models
 sidebar_label: Local Models
 description: Run OpenClaw with local LLMs via Ollama, LM Studio, vLLM, or any OpenAI-compatible server — zero API costs, full privacy

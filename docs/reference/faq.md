@@ -1,5 +1,4 @@
 ---
-sidebar_position: 6
 title: Frequently Asked Questions
 sidebar_label: FAQ
 description: Frequently asked questions about OpenClaw — setup, cost, security, troubleshooting, and ecosystem

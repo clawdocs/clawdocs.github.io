@@ -1,5 +1,4 @@
 ---
-sidebar_position: 7
 title: Resources
 description: Official links, community spaces, learning resources, hosting providers, SDKs, and curated collections for OpenClaw
 keywords: [openclaw, openclaw resources, community, learning, tutorials, sdks, hosting]

@@ -1,5 +1,4 @@
 ---
-sidebar_position: 8
 title: Glossary
 description: Definitions of OpenClaw-specific terms, components, tools, and concepts
 keywords: [openclaw, openclaw glossary, terms, definitions, openclaw terminology, concepts, vocabulary]
