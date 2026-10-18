@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.6.8"
+  },
+  "heartbeat": {
+    "every": "30m",
+    "activeHours": { "start": "08:00", "end": "22:00" }
+  },
+  "agents": {
+    "defaults": {
+      "model": "anthropic/claude-sonnet-4-5"
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "botToken": "123456:fixture-not-a-real-token",
+      "requireMention": true,
+      "streamMode": "partial"
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "auth": { "mode": "token", "token": "fixture-gateway-token-0123456789abcdef" }
+  }
+}
