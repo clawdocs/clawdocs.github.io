@@ -1,18 +1,22 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Lobster Workflows
-description: Build composable, typed automation pipelines with Lobster — OpenClaw's official workflow shell
-keywords: [openclaw, lobster, workflow engine, automation pipeline, yaml workflow, typed pipeline]
+description: Build typed, resumable workflow pipelines with approval gates using Lobster, OpenClaw's official workflow shell
+keywords: [openclaw, lobster, workflow engine, automation pipeline, yaml workflow, typed pipeline, approval gate]
 ---
 
 # Lobster Workflows
 
-**Lobster** is OpenClaw's official workflow shell — a typed, local-first macro engine that turns skills and tools into composable pipelines. Instead of asking the agent to figure out multi-step processes every time (consuming tokens and introducing non-determinism), you define the sequence once in a YAML file and let Lobster execute it reliably.
+**Lobster** is OpenClaw's official workflow shell: a small, typed (JSON-first) pipeline runtime with approval and input gates that can pause and resume. Instead of letting the agent work out a multi-step process every time, you write the sequence once in a workflow file and Lobster runs it the same way each time. The model is only called where a step explicitly asks for it.
 
-- **Repository**: [openclaw/lobster](https://github.com/openclaw/lobster) | 1,222 stars | MIT license
-- **Stack**: TypeScript (99.7%) | npm: `@clawdbot/lobster`
-- **Latest release**: v2026.5.22 (234 passing tests)
+- **Repository**: [openclaw/lobster](https://github.com/openclaw/lobster), MIT, about 1,275 stars as of 2026-10-18
+- **Runtime / CLI**: npm `@clawdbot/lobster` (latest release v2026.9.16, 2026-10-01)
+- **Gateway plugin**: npm `@openclaw/lobster` (ships with each OpenClaw release, 2026.10.4 at the time of writing)
+- **Official docs**: [docs.openclaw.ai/tools/lobster](https://docs.openclaw.ai/tools/lobster)
+
+This page tracks Lobster at commit `8ecbfe1` (2026-10-15). The syntax below comes from the Lobster source (`src/workflows/types.ts`, `load.ts`) and README. Lobster rejects unknown shapes at load time, so a workflow that loads is a good first test.
 
 ---
 
@@ -20,319 +24,370 @@ keywords: [openclaw, lobster, workflow engine, automation pipeline, yaml workflo
 
 | Without Lobster | With Lobster |
 |----------------|-------------|
-| Agent decides steps each time (non-deterministic) | Steps defined once in YAML (deterministic) |
-| Full LLM call per step decision | No LLM call for step sequencing |
-| Token cost grows with complexity | Fixed token cost per workflow |
-| No approval gates | Built-in human approval gates |
-| Hard to audit or replay | Full execution log, `lobster graph` visualization |
+| The agent decides the steps each time | Steps are fixed in a file |
+| One model round trip per step | One tool call for the whole pipeline |
+| Side effects happen when the model decides | Side effects wait behind an explicit `approval:` step |
+| A paused job has to be re-run from the start | A paused job returns a resume token and continues from the gate |
+| Hard to review | The file is data: easy to diff, review and graph (`lobster graph`) |
 
-Lobster's design philosophy: **visibility and human-supervised approval gating over autonomous agent loops**. Workflows are deterministic pipelines with explicit control flow, not free-form agent reasoning.
+Lobster is deliberately a small DSL, not a general scripting language. Each step can still call any CLI or script.
 
 ---
 
 ## Installation
 
-Lobster runs in two modes:
+Lobster runs in two modes.
 
 ### Standalone CLI
 
-Install globally and run workflows directly:
+For development, cron-style command jobs and external pipelines:
 
 ```bash
 npm install -g @clawdbot/lobster
+lobster doctor
 lobster run path/to/workflow.lobster
 ```
 
-### Embedded Gateway Plugin
+The package installs three executables: `lobster`, `openclaw.invoke` and its alias `clawd.invoke`.
 
-Lobster ships as a bundled optional plugin inside the OpenClaw gateway, running workflows in-process (no external subprocess). Enable it in config:
+### Embedded Gateway plugin
+
+The `@openclaw/lobster` plugin runs workflows **in-process** inside the Gateway, using the same runtime. It is not installed or enabled by default.
+
+```bash
+openclaw plugins install @openclaw/lobster
+```
+
+Then allow the tool, either globally:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "tools": {
-    "alsoAllow": ["lobster"]
-  }
+  tools: {
+    alsoAllow: ["lobster"],
+  },
 }
 ```
 
-Once enabled, the agent can invoke workflows through the gateway's `/tools/invoke` REST endpoint or by calling the Lobster tool directly in conversation.
+or for one agent:
 
-:::caution Embedded mode limitation
-In embedded mode, Lobster does **not** automatically inherit gateway URL/auth context for nested OpenClaw CLI calls via `openclaw.invoke`. This means nested invocations that call back to the gateway may fail. This is a known limitation as of June 2026 — documented in PR #78736.
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    entries: {
+      main: {
+        tools: { alsoAllow: ["lobster"] },
+      },
+    },
+  },
+}
+```
+
+`alsoAllow` adds `lobster` on top of the active tool profile without restricting other tools. The tool is **disabled entirely in sandboxed tool contexts**. See [Lobster plugin reference](https://docs.openclaw.ai/plugins/reference/lobster).
+
+:::caution Embedded mode and `openclaw.invoke`
+In embedded mode, `openclaw.invoke` does **not** inherit the Gateway URL or auth for nested tool calls, so steps that call back into the Gateway with it are not reliable there (upstream [openclaw#78736](https://github.com/openclaw/openclaw/pull/78736)). Use `openclaw.invoke` from the standalone CLI with `OPENCLAW_URL` set, or call the tool directly outside Lobster.
 :::
 
 ---
 
-## Workflow Syntax
+## Workflow syntax
 
-Workflow files use a YAML-based DSL and support `.lobster`, `.yaml`, and `.json` extensions.
+Workflow files are YAML or JSON (`.lobster`, `.yaml`, `.yml`, `.json`).
 
-### Basic Structure
+### Basic structure
 
 ```yaml title="workflows/hello.lobster"
-name: Hello World
+name: hello
+description: Greets someone
 args:
-  greeting: "Hello"
+  greeting:
+    default: Hello
+    description: Word to greet with
 env:
-  MY_VAR: "some-value"
+  MY_VAR: some-value
 steps:
   - id: say-hello
-    run: echo "{{ args.greeting }}, World!"
+    run: echo "$LOBSTER_ARG_GREETING, World!"
   - id: show-date
     run: date "+%Y-%m-%d"
 ```
 
-### Top-Level Fields
+Run it with an argument override:
+
+```bash
+lobster run --file workflows/hello.lobster --args-json '{"greeting":"Hi"}'
+```
+
+### Top-level fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | string | Workflow display name |
-| `args` | object | Input arguments with defaults |
-| `env` | object | Environment variables for all steps |
-| `steps` | array | Ordered list of steps to execute |
+| `name` | string | Workflow name |
+| `description` | string | Optional description |
+| `args` | object | `{ <name>: { default, description } }` |
+| `env` | object | Environment variables for every step |
+| `cwd` | string | Working directory for every step |
+| `steps` | array | Non-empty, ordered list of steps |
+| `cost_limit` | object | `{ max_usd, action: warn \| stop }` (see [Cost tracking](#cost-tracking)) |
 
----
+### Arguments and step references
 
-## Step Types
+| Syntax | Where | Resolves to |
+|--------|-------|-------------|
+| `${name}` | command text, `env:` values, `cwd`, `workflow_args` | The arg value, by raw string replacement |
+| `$LOBSTER_ARG_<NAME>` | inside the shell | The arg value as an env var (name uppercased, other characters become `_`) |
+| `$LOBSTER_ARGS_JSON` | inside the shell | All resolved args as one JSON string |
+| `$step.stdout` | `stdin:`, `env:`, `when:`, command text | The step's standard output |
+| `$step.json` / `$step.json.field` | same | The parsed JSON output, or one field of it |
+| `$step.approved`, `$step.skipped`, `$step.error`, `$step.errorMessage` | same | Approval and error state |
 
-Lobster has three step types:
+There is no `{{ … }}` template engine and there are no filters. Text in double braces is passed through literally.
 
-### 1. Shell Commands (`run:` / `command:`)
-
-Execute OS commands:
-
-```yaml
-steps:
-  - id: list-files
-    run: ls -la /path/to/dir
-
-  - id: run-tests
-    command: npm test
-    timeout_ms: 60000
-```
-
-### 2. Native Pipeline Stages (`pipeline:`)
-
-Invoke Lobster-native operations like LLM calls:
+:::danger Shell safety
+`${name}` is a raw string replace into the shell command. An arg containing quotes, `$`, backticks or newlines can change the command. For anything that might come from a user or another system, read the value from the environment instead:
 
 ```yaml
+args:
+  text:
+    default: ""
 steps:
-  - id: analyze
-    pipeline: llm.invoke
-    stdin: "Analyze this code for bugs: {{ $list-files.stdout }}"
-
-  - id: summarize
-    pipeline: llm.invoke
-    stdin: "Summarize in 3 bullets: {{ $analyze.stdout }}"
+  - id: safe
+    run: jq -n --arg text "$LOBSTER_ARG_TEXT" '{"result": $text}'
 ```
 
-### 3. Approval Gates (`approval:`)
-
-Pause for human approval before continuing:
-
-```yaml
-steps:
-  - id: review-deploy
-    approval: "Deploy to production?"
-    initiated_by: "dev-team"
-    required_approver: "ops-team"
-    require_different_approver: true
-```
-
-Approval gates support identity constraints:
-
-| Field | Description |
-|-------|-------------|
-| `initiated_by` | Who can trigger this approval request |
-| `required_approver` | Who must approve (different from initiator) |
-| `require_different_approver` | Enforce separation of duties |
-
----
-
-## Data Flow
-
-Steps pass data to each other using `$step` references:
-
-```yaml
-steps:
-  - id: fetch-data
-    run: curl -s https://api.example.com/data
-
-  - id: process
-    run: jq '.items | length'
-    stdin: "{{ $fetch-data.stdout }}"
-
-  - id: report
-    pipeline: llm.invoke
-    stdin: "There are {{ $process.stdout }} items. Generate a summary."
-```
-
-| Reference | Returns |
-|-----------|---------|
-| `$step-id.stdout` | Standard output of the step |
-| `$step-id.json` | Parsed JSON output |
-| `{{ args.name }}` | Input argument value |
-
----
-
-## Control Flow
-
-### Conditionals
-
-Run steps based on conditions:
-
-```yaml
-steps:
-  - id: check-branch
-    run: git branch --show-current
-
-  - id: deploy-staging
-    run: ./deploy.sh staging
-    when: "$check-branch.stdout == 'main'"
-
-  - id: skip-deploy
-    run: echo "Not on main, skipping deploy"
-    when: "$check-branch.stdout != 'main'"
-```
-
-Supported operators: `==`, `!=`, `&&`, `||`, `<`, `>`, `<=`, `>=`
-
-### Parallel Steps
-
-Run steps concurrently:
-
-```yaml
-steps:
-  - id: lint
-    run: npm run lint
-    parallel: true
-
-  - id: typecheck
-    run: npm run typecheck
-    parallel: true
-
-  - id: test
-    run: npm test
-    parallel: true
-    wait: all   # wait for all parallel steps before continuing
-```
-
-| Wait Mode | Behavior |
-|-----------|----------|
-| `all` | Wait for every parallel step to complete |
-| `any` | Continue as soon as one parallel step finishes |
-
-### For-Each Loops
-
-Iterate over items:
-
-```yaml
-steps:
-  - id: get-repos
-    run: gh repo list myorg --json name -q '.[].name'
-
-  - id: audit-each
-    for_each: "$get-repos.json"
-    batch_size: 3
-    steps:
-      - id: audit
-        run: cd {{ item }} && npm audit --json
-      - id: report
-        pipeline: llm.invoke
-        stdin: "Audit results for {{ item }}: {{ $audit.stdout }}"
-```
-
-| Field | Description |
-|-------|-------------|
-| `for_each` | Array to iterate over (from a previous step's output) |
-| `batch_size` | Number of items to process concurrently |
-| `pause_ms` | Delay between batches |
-
-### Sub-Workflows
-
-Compose workflows from other workflows:
-
-```yaml
-steps:
-  - id: lint-and-test
-    workflow: workflows/ci.lobster
-    args:
-      target: "src/"
-
-  - id: deploy
-    workflow: workflows/deploy.lobster
-    when: "$lint-and-test.exitCode == 0"
-```
-
-Sub-workflow composition includes cycle detection — Lobster will error if workflow A calls workflow B which calls workflow A.
-
-:::info
-Loop semantics (maxIterations, shell-condition loops) were proposed in PR #20 but closed as "not planned" — the maintainers considered the control-flow surface too large. Use `for_each` for iteration instead.
+The same applies to step output: `run: echo "$prev.stdout"` pastes the output into the command. Pass data with `stdin:`, or map it into a variable with `env:` (env values are not shell-expanded), and quote the variable.
 :::
 
 ---
 
-## Error Handling
+## Step types
 
-### Per-Step Retry
+Each step has an `id` and exactly one of `run`/`command`, `pipeline`, `workflow`, `parallel` or `for_each`, or is an `approval` or `input` gate.
+
+### Shell commands (`run:` / `command:`)
+
+`run:` and `command:` are equivalent; `run:` is the preferred spelling.
+
+```yaml
+steps:
+  - id: list-files
+    run: ls -la
+    cwd: /path/to/dir
+
+  - id: run-tests
+    run: npm test
+    timeout_ms: 60000
+```
+
+### Native pipeline stages (`pipeline:`)
+
+Use `pipeline:` for Lobster commands that are not shell executables, such as `llm.invoke` and `openclaw.agent`. The prompt goes in `--prompt`; `stdin:` passes earlier output as artifacts.
+
+```yaml
+steps:
+  - id: diff
+    run: git diff --stat HEAD~1
+
+  - id: summarize
+    pipeline: llm.invoke --prompt "Summarize this change in three bullets."
+    stdin: $diff.stdout
+```
+
+### Approval gates (`approval:`)
+
+An approval step halts the workflow. In an interactive terminal Lobster asks on the TTY. Otherwise (tool mode, the embedded plugin, a scheduled job) it returns `needs_approval` with a resume token and the run ends at the gate.
+
+The short forms are `approval: required` or `approval: "Prompt text"`. Identity checks must be **nested inside** the `approval` object:
+
+```yaml
+steps:
+  - id: review-deploy
+    approval:
+      prompt: Deploy to production?
+      required_approver: ops-lead
+      require_different_approver: true
+    stdin: $build.json
+```
+
+| Field (under `approval:`) | Description |
+|-------|-------------|
+| `prompt` | Text shown with the request |
+| `preview`, `items` | Optional material for the approver |
+| `initiated_by` | Initiator id; defaults to `LOBSTER_APPROVAL_INITIATED_BY` |
+| `required_approver` | The approver id must match exactly |
+| `require_different_approver` | The approver id must differ from the initiator |
+
+The approver id is read from `LOBSTER_APPROVAL_APPROVED_BY` at resume time. Lobster compares ids; it does not authenticate them, so treat this as a separation-of-duties check and keep the resume token private. If you put these fields beside `approval:` instead of under it, they are ignored and the check does not happen.
+
+### Input gates (`input:`)
+
+An `input` step asks a structured question and resumes with an answer that must match a JSON Schema:
+
+```yaml
+steps:
+  - id: feedback
+    input:
+      prompt: What feedback should be included?
+      responseSchema:
+        type: string
+```
+
+The run returns `needs_input`; resume it with `lobster resume --token <token> --response-json '"Shorten the intro."'`. Read the answer later as `$feedback.response`.
+
+---
+
+## Control flow
+
+### Conditions
+
+`when:` (or `condition:`) gates a step on earlier results:
+
+```yaml
+steps:
+  - id: branch
+    run: git branch --show-current | tr -d '\n'
+
+  - id: deploy-staging
+    run: ./deploy.sh staging
+    when: $branch.stdout == 'main'
+
+  - id: not-main
+    run: echo "Not on main, skipping deploy"
+    when: $branch.stdout != 'main'
+```
+
+Operators: `==`, `!=`, `<`, `>`, `<=`, `>=`, `&&`, `||`, `!`, and parentheses. Conditions can reference steps but not `${args}`. To branch on an arg, add a step that prints it (`printf '%s' "$LOBSTER_ARG_TARGET"`) and compare that step's stdout. Strip trailing newlines from command output before comparing, as above.
+
+### Parallel steps
+
+`parallel` is an object with a `branches` list. Each branch has an `id` and one of `run`, `command` or `pipeline`:
+
+```yaml
+steps:
+  - id: checks
+    parallel:
+      wait: all          # or "any": keep the first branch to finish, cancel the rest
+      timeout_ms: 600000
+      branches:
+        - id: lint
+          run: npm run lint
+        - id: typecheck
+          run: npm run typecheck
+        - id: test
+          run: npm test
+
+  - id: report
+    run: echo "all checks passed"
+```
+
+With `wait: all`, one failing branch fails the step. Branch results are available as `$lint.stdout` and so on, and `$checks.json` holds an object keyed by branch id.
+
+### For-each loops
+
+`for_each` takes a step reference that resolves to an array and runs its nested `steps` once per item, **in order** (not concurrently). The current item is `$item` (rename with `item_var`) and its position is `$index` (`index_var`):
+
+```yaml
+args:
+  org:
+    default: my-org
+steps:
+  - id: repos
+    run: gh repo list "$LOBSTER_ARG_ORG" --json name --limit 20
+
+  - id: audit-each
+    for_each: $repos.json
+    item_var: repo
+    batch_size: 5
+    pause_ms: 2000
+    steps:
+      - id: alerts
+        env:
+          REPO_NAME: $repo.json.name
+        run: gh api "repos/$LOBSTER_ARG_ORG/$REPO_NAME/dependabot/alerts" --jq length
+```
+
+| Field | Description |
+|-------|-------------|
+| `for_each` | Step reference to an array |
+| `item_var` / `index_var` | Names for the item and index (default `item`, `index`) |
+| `batch_size` | Group size for pauses: after every `batch_size` items, wait `pause_ms` |
+| `pause_ms` | Pause between batches (useful for rate limits) |
+
+Loop sub-steps cannot be approvals, inputs, workflows, parallel steps or nested loops; put a gate after the loop. The loop's `$audit-each.json` is an array with one object per item.
+
+### Sub-workflows
+
+A `workflow:` step runs another workflow file (relative paths resolve from the calling file). Pass args with `workflow_args`:
+
+```yaml
+steps:
+  - id: lint-and-test
+    workflow: ci.lobster
+    workflow_args:
+      target: src/
+    on_error: continue
+
+  - id: deploy
+    workflow: deploy.lobster
+    when: "!$lint-and-test.error"
+```
+
+A workflow that would call itself, directly or through another file, fails with a cycle error. Step results have no `exitCode`; use `.error`, `.errorMessage` and `.skipped`.
+
+:::info
+Loop semantics such as `maxIterations` or shell-condition loops were proposed in [lobster#20](https://github.com/openclaw/lobster/pull/20), which was closed without merging. Use `for_each`.
+:::
+
+---
+
+## Error handling
+
+### Retry
 
 ```yaml
 steps:
   - id: flaky-api
-    run: curl -f https://api.example.com/data
+    run: curl -fsS https://api.example.com/data
     retry:
       max: 3
       delay_ms: 1000
+      max_delay_ms: 10000
       backoff: exponential
       jitter: true
 ```
 
 | Field | Description |
 |-------|-------------|
-| `max` | Maximum retry attempts |
-| `delay_ms` | Base delay between retries |
+| `max` | Maximum attempts (positive integer) |
+| `delay_ms` | Base delay between attempts |
+| `max_delay_ms` | Cap on the delay |
 | `backoff` | `fixed` or `exponential` |
 | `jitter` | Add random variation to delays |
 
-### Per-Step Timeout
+Steps that dispatch to OpenClaw (`openclaw.invoke`, `clawd.invoke`, `openclaw.agent`) are **not retried** once dispatch was attempted, because the remote action may already have happened. Check the outcome before re-running by hand. On a `for_each` step, a retry restarts the whole loop, so only enable it for work that is safe to repeat.
+
+### Timeout
 
 ```yaml
 steps:
   - id: slow-task
     run: ./long-running-script.sh
-    timeout_ms: 300000   # 5 minutes, then SIGKILL
+    timeout_ms: 300000   # 5 minutes
 ```
 
-### On-Error Policies
+### On-error policies
 
-```yaml
-steps:
-  - id: optional-check
-    run: ./optional-lint.sh
-    on_error: continue    # keep going even if this fails
-
-  - id: critical-test
-    run: npm test
-    on_error: stop        # halt the entire workflow on failure
-
-  - id: cleanup
-    run: ./cleanup.sh
-    on_error: skip_rest   # skip remaining steps but don't fail
-```
-
-| Policy | Behavior |
+| Policy | Behaviour |
 |--------|----------|
-| `stop` (default) | Halt the entire workflow |
-| `continue` | Log the error, move to next step |
-| `skip_rest` | Skip remaining steps, exit gracefully |
+| `stop` (default) | Halt the workflow |
+| `continue` | Record `$step.error` / `$step.errorMessage` and go on |
+| `skip_rest` | Skip the remaining steps |
 
 ---
 
-## LLM Integration
+## LLM steps
 
-### Calling the LLM
-
-Use `pipeline: llm.invoke` to make LLM calls within workflows:
+### `llm.invoke`
 
 ```yaml
 steps:
@@ -340,135 +395,193 @@ steps:
     run: cat src/auth.ts
 
   - id: review
-    pipeline: llm.invoke
-    stdin: |
-      Review this code for security issues:
-      {{ $read-code.stdout }}
-
-  - id: fix
-    pipeline: llm.invoke
-    stdin: |
-      Based on this review, generate fixed code:
-      {{ $review.stdout }}
+    pipeline: >
+      llm.invoke --prompt "Review this code for security issues.
+      Return JSON with a findings array."
+      --output-schema '{"type":"object","properties":{"findings":{"type":"array"}},"required":["findings"]}'
+    stdin: $read-code.stdout
 ```
 
-### LLM Provider Configuration
+Provider resolution: `--provider` on the `llm.invoke` line, then `LOBSTER_LLM_PROVIDER`, then auto-detect from the environment.
 
-Lobster supports multiple LLM providers with this resolution order:
+| Provider | Env vars | Notes |
+|----------|----------|-------|
+| `openclaw` | `OPENCLAW_URL`, `OPENCLAW_TOKEN` | Calls the Gateway's `llm-task` tool, which must be enabled |
+| `pi` | `LOBSTER_PI_LLM_ADAPTER_URL` | Usually supplied by the Pi extension |
+| `http` | `LOBSTER_LLM_ADAPTER_URL` | Generic HTTP adapter |
 
-1. `--provider` CLI flag
-2. `LOBSTER_LLM_PROVIDER` environment variable
-3. Auto-detect from available environment
+To use the `openclaw` provider, enable `llm-task` as well:
 
-| Provider | Env Vars | Description |
-|----------|----------|-------------|
-| `openclaw` | `OPENCLAW_URL`, `OPENCLAW_TOKEN` | Route through OpenClaw gateway (default) |
-| `pi` | `LOBSTER_PI_LLM_ADAPTER_URL` | Pi adapter endpoint |
-| `http` | `LOBSTER_LLM_ADAPTER_URL` | Generic HTTP LLM endpoint |
+```json5 title="~/.openclaw/openclaw.json"
+{
+  plugins: {
+    entries: {
+      "llm-task": { enabled: true },
+    },
+  },
+  tools: {
+    alsoAllow: ["lobster", "llm-task"],
+  },
+}
+```
 
-### Cost Tracking
+See [LLM Task](https://docs.openclaw.ai/tools/llm-task).
 
-Lobster tracks LLM token usage per workflow:
+### `openclaw.agent`
+
+To hand work to a configured OpenClaw agent (its model, session and auth) rather than make a bare model call:
 
 ```yaml
-name: Research Pipeline
-cost_limit:
-  warn: 5.00       # warn when cost exceeds $5
-  stop: 20.00      # halt workflow at $20
 steps:
-  - id: research
-    pipeline: llm.invoke
-    stdin: "Research the topic: {{ args.topic }}"
+  - id: logs
+    run: journalctl -u myapp --since "1 hour ago" --no-pager | tail -n 200
+  - id: triage
+    pipeline: openclaw.agent --agent ops --prompt "Summarize these logs and flag errors."
+    stdin: $logs.stdout
 ```
 
-After execution, the `_meta.cost` summary shows per-step usage and total cost. Configure custom pricing with the `LOBSTER_LLM_PRICING_JSON` environment variable.
+It delegates to the installed `openclaw agent` CLI and accepts `--agent`, `--session-key`, `--session-id`, `--model`, `--thinking`, `--timeout` and `--local`.
+
+### Cost tracking
+
+```yaml
+name: research
+cost_limit:
+  max_usd: 20
+  action: stop      # or "warn"
+steps:
+  - id: design
+    run: cat docs/design.md
+
+  - id: research
+    pipeline: llm.invoke --provider http --prompt "Outline the main risks of this design."
+    stdin: $design.stdout
+```
+
+After a run, `_meta.cost` lists tokens and estimated cost per step. Prices come from a built-in table plus `LOBSTER_LLM_PRICING_JSON` (a JSON string such as `{"my-model":{"input":1.0,"output":2.0}}`, USD per million tokens). Unknown models record tokens at zero cost with a warning.
+
+:::warning
+The `openclaw` provider does not return token usage, so `cost_limit` cannot see or stop spend made through it. Set budgets on the OpenClaw side as well (see [Cost Management](/guides/cost-management)).
+:::
 
 ---
 
-## OpenClaw Integration
+## OpenClaw integration
 
-### Invoking OpenClaw from Lobster
+### Calling OpenClaw tools: `openclaw.invoke`
 
-Use `openclaw.invoke` (preferred) or `clawd.invoke` (legacy alias) to call OpenClaw tools from workflow steps:
+`openclaw.invoke` calls one Gateway tool over HTTP (`/tools/invoke`). `--tool` and `--action` are required; tool arguments go in `--args-json`. It is a real executable, so use it from `run:` steps.
 
 ```yaml
+args:
+  chat:
+    default: "123456789"
 steps:
-  - id: search-web
-    run: openclaw.invoke web-search "latest TypeScript features"
+  - id: tests
+    run: npm test
+    on_error: continue
 
-  - id: check-email
-    run: openclaw.invoke gmail-check --unread --from "boss@company.com"
-
-  - id: send-alert
-    run: openclaw.invoke telegram-send "Build failed: {{ $run-tests.stdout }}"
+  - id: alert
+    when: $tests.error
+    env:
+      CHAT: ${chat}
+    run: >
+      openclaw.invoke --tool message --action send
+      --args-json "$(jq -nc --arg t "$CHAT" '{channel:"telegram", target:$t, message:"Build failed"}')"
 ```
 
-### Gateway Plugin Invocation
+Requirements:
 
-When running as an embedded plugin, the agent can trigger workflows directly:
+- `OPENCLAW_URL` must be set (for example `http://127.0.0.1:18789`) or pass `--url`. There is no default.
+- `OPENCLAW_TOKEN` (or `--token`) when Gateway auth is on. The ambient token is only sent to `localhost`, `127.0.0.1` or `[::1]`; for any other host pass `--token` explicitly.
+- The Gateway HTTP tool surface denies some tools by default (`exec`, `cron`, `gateway`, `sessions_spawn` and others). See [Tools invoke API](https://docs.openclaw.ai/gateway/tools-invoke-http-api).
 
+`--each --item-key message` maps each pipeline item into one call, for example `... | openclaw.invoke --tool message --action send --each --item-key message --args-json '{"channel":"telegram","target":"123456789"}'` in an inline pipeline.
+
+### Running workflows from the agent (embedded plugin)
+
+With the plugin installed, the agent calls the `lobster` tool with a pipeline string or a workflow file path:
+
+```json title="lobster tool call"
+{
+  "action": "run",
+  "pipeline": "workflows/deploy.lobster",
+  "argsJson": "{\"environment\":\"staging\"}",
+  "timeoutMs": 60000
+}
 ```
-> Run the deploy workflow for staging
-Using tool: lobster
-Running workflow: workflows/deploy.lobster
-  Step 1/4: lint... done
-  Step 2/4: test... done
-  Step 3/4: approval... waiting
-  [Approval required: Deploy to staging?]
-  > approve
-  Step 4/4: deploy... done
+
+If the run reaches a gate, the tool returns an envelope and the call ends there:
+
+```json title="lobster tool result"
+{
+  "ok": true,
+  "status": "needs_approval",
+  "output": [],
+  "requiresApproval": {
+    "type": "approval_request",
+    "prompt": "Deploy to production?",
+    "items": [],
+    "resumeToken": "..."
+  }
+}
 ```
 
-### Heartbeat Integration
+The agent shows the prompt in chat, and after your decision it resumes with `{ "action": "resume", "token": "<resumeToken>", "approve": true }` (or `false` to cancel). Earlier steps are not re-run. Defaults: `timeoutMs` 20000, `maxStdoutBytes` 512000. Resume state lives under `~/.lobster/state` (override with `LOBSTER_STATE_DIR`). Anyone allowed to use the tool who holds a token can resume it.
 
-Trigger workflows from heartbeat tasks:
+### Scheduled runs (Automations)
 
-```markdown title="~/.openclaw/HEARTBEAT.md"
-## Every 6 hours
-- Run the Lobster workflow at ~/.openclaw/workflows/security-scan.lobster
-- If any step fails, alert me on Slack
+`HEARTBEAT.md` is no longer read by OpenClaw, so do not put workflow triggers there. Use an [Automation](/guides/automation) job instead.
+
+`openclaw automations` is the current name for `openclaw cron`, and `create` is an alias of `add`. A workflow with no gates can run as a **command job** on the Gateway host, with no model call. The output is delivered to chat:
+
+```bash
+openclaw automations add "0 3 * * *" \
+  --name "Nightly system check" \
+  --command "lobster run --file $HOME/workflows/system-check.lobster" \
+  --announce --channel telegram --to "123456789"
 ```
+
+A workflow with approval gates is better run by the agent, so the gate reaches you in chat:
+
+```bash
+openclaw automations add "every 6h" \
+  "Run the Lobster workflow workflows/security-scan.lobster with the lobster tool and report the result. If it needs approval, ask me." \
+  --name "Security scan" --agent main --session isolated --announce
+```
+
+A command job that hits a gate stops and prints the `needs_approval` envelope; resume it with `lobster resume --token <token> --approve yes`.
 
 ---
 
 ## Visualization
 
-Lobster can generate workflow graphs in multiple formats:
-
 ```bash
-# Mermaid diagram (paste into GitHub, Notion, etc.)
-lobster graph workflows/deploy.lobster --format mermaid
-
-# Graphviz DOT format
-lobster graph workflows/deploy.lobster --format dot
-
-# ASCII art (terminal-friendly)
-lobster graph workflows/deploy.lobster --format ascii
+lobster graph --file workflows/deploy.lobster                 # Mermaid (flowchart TD), the default
+lobster graph --file workflows/deploy.lobster --format dot    # Graphviz DOT
+lobster graph --file workflows/deploy.lobster --format ascii  # terminal-friendly list
+lobster graph --file workflows/deploy.lobster --args-json '{"environment":"production"}'
 ```
 
-Example Mermaid output:
-
-```mermaid
-graph TD
-    lint[lint] --> test[test]
-    test --> approval{Deploy approval}
-    approval --> deploy[deploy-staging]
-```
+Steps become nodes, `stdin:` references and `when:` conditions become edges, and approval gates are drawn as diamonds in Mermaid and DOT.
 
 ---
 
-## Real-World Patterns
+## Real-world patterns
 
-### Deploy Pipeline
+### Deploy pipeline
 
 ```yaml title="workflows/deploy.lobster"
-name: Deploy Pipeline
+name: deploy
 args:
-  environment: staging
+  environment:
+    default: staging
 steps:
+  - id: target
+    run: printf '%s' "$LOBSTER_ARG_ENVIRONMENT"
+
   - id: lint
     run: npm run lint
-    on_error: stop
 
   - id: test
     run: npm test
@@ -481,236 +594,194 @@ steps:
     run: npm run build
 
   - id: approve-deploy
-    approval: "Deploy to {{ args.environment }}?"
-    required_approver: "ops-team"
-    when: "args.environment == 'production'"
+    when: $target.stdout == 'production'
+    approval:
+      prompt: Deploy to production?
+      required_approver: ops-lead
+      require_different_approver: true
 
   - id: deploy
-    run: ./scripts/deploy.sh {{ args.environment }}
+    when: $target.stdout != 'production' || $approve-deploy.approved
+    run: ./scripts/deploy.sh "$LOBSTER_ARG_ENVIRONMENT"
 
   - id: healthcheck
-    run: curl -f https://{{ args.environment }}.myapp.com/health
+    when: "!$deploy.skipped"
+    run: curl -fsS "https://$LOBSTER_ARG_ENVIRONMENT.example.com/health"
     retry:
       max: 5
       delay_ms: 10000
       backoff: exponential
-
-  - id: notify
-    run: openclaw.invoke slack-send "#deploys" "Deployed to {{ args.environment }} successfully"
 ```
 
-### Code Review Chain
+`environment` only ever reaches the shell through `$LOBSTER_ARG_ENVIRONMENT`. Restrict it in `deploy.sh` to known values.
 
-Multi-agent review with up to three iterations:
+### Code review chain
+
+Two reviews in parallel, then a synthesis and a merge gate:
 
 ```yaml title="workflows/code-review.lobster"
-name: Code Review Chain
+name: code-review
 args:
-  branch: "feature/new-auth"
+  branch:
+    default: feature/new-auth
 steps:
   - id: get-diff
-    run: git diff main...{{ args.branch }}
+    run: git diff "main...$LOBSTER_ARG_BRANCH"
 
-  - id: programmer-review
-    pipeline: llm.invoke
-    stdin: |
-      You are a senior programmer. Review this diff for correctness,
-      edge cases, and potential bugs:
-      {{ $get-diff.stdout }}
-
-  - id: security-review
-    pipeline: llm.invoke
-    stdin: |
-      You are a security reviewer. Check this diff for vulnerabilities,
-      injection risks, and auth issues:
-      {{ $get-diff.stdout }}
+  - id: reviews
+    parallel:
+      wait: all
+      branches:
+        - id: correctness
+          pipeline: llm.invoke --prompt "Review this diff for correctness, edge cases and bugs."
+          stdin: $get-diff.stdout
+        - id: security
+          pipeline: llm.invoke --prompt "Review this diff for vulnerabilities, injection risks and auth issues."
+          stdin: $get-diff.stdout
 
   - id: synthesize
-    pipeline: llm.invoke
-    stdin: |
-      Combine these two reviews into a final assessment with action items:
-      Programmer review: {{ $programmer-review.stdout }}
-      Security review: {{ $security-review.stdout }}
+    pipeline: llm.invoke --prompt "Combine these two reviews into one assessment with action items."
+    stdin: $reviews.json
 
   - id: approve-merge
-    approval: "Merge {{ args.branch }}? Review summary above."
+    approval:
+      prompt: Merge this branch?
+    stdin: $synthesize.json
 ```
 
-### Overnight Research
+Remember that the diff is untrusted input to the model. Keep this workflow read-only up to the gate.
 
-Cron-triggered research that runs while you sleep:
-
-```yaml title="workflows/overnight-research.lobster"
-name: Overnight Research
-args:
-  topic: "AI agent security best practices"
-cost_limit:
-  warn: 10.00
-  stop: 30.00
-steps:
-  - id: search
-    run: openclaw.invoke web-search "{{ args.topic }} 2026"
-
-  - id: deep-read
-    for_each: "$search.json[0:5]"
-    batch_size: 2
-    steps:
-      - id: fetch
-        run: openclaw.invoke web-fetch "{{ item.url }}"
-      - id: extract
-        pipeline: llm.invoke
-        stdin: "Extract key findings from: {{ $fetch.stdout }}"
-
-  - id: synthesize
-    pipeline: llm.invoke
-    stdin: |
-      Synthesize these research findings into a structured report
-      with citations:
-      {{ $deep-read.stdout }}
-
-  - id: save-report
-    run: echo "{{ $synthesize.stdout }}" > ~/research/{{ args.topic | slugify }}.md
-
-  - id: notify
-    run: openclaw.invoke telegram-send "Research complete: {{ args.topic }}"
-```
-
-### System Monitoring
+### System monitoring
 
 ```yaml title="workflows/system-check.lobster"
-name: System Health Check
+name: system-check
 steps:
   - id: disk
     run: df -h --output=pcent,target | awk 'NR>1 && int($1)>85'
 
   - id: docker
-    run: docker ps --filter "health=unhealthy" --format "{{.Names}}"
+    run: docker ps --filter "health=unhealthy" --format '{{.Names}}'
 
-  - id: ssl
-    run: |
-      echo | openssl s_client -connect mysite.com:443 2>/dev/null |
-      openssl x509 -noout -enddate
-
-  - id: alert
-    pipeline: llm.invoke
-    stdin: |
-      Generate a concise health alert if any issues found:
-      Disk: {{ $disk.stdout }}
-      Unhealthy containers: {{ $docker.stdout }}
-      SSL expiry: {{ $ssl.stdout }}
-    when: "$disk.stdout != '' || $docker.stdout != ''"
-
-  - id: send-alert
-    run: openclaw.invoke slack-send "#ops-alerts" "{{ $alert.stdout }}"
-    when: "$disk.stdout != '' || $docker.stdout != ''"
+  - id: report
+    when: $disk.stdout != '' || $docker.stdout != ''
+    env:
+      DISK: $disk.stdout
+      DOCKER: $docker.stdout
+    run: printf 'Disk over 85%%:\n%s\nUnhealthy containers:\n%s\n' "$DISK" "$DOCKER"
 ```
+
+The `{{.Names}}` here is Docker's own Go template, not Lobster syntax. Before scheduling it as a command job (see [Scheduled runs](#scheduled-runs-automations)), run it once by hand to see exactly what `lobster run` prints, because that output is what reaches chat. Then trigger the job once with `openclaw cron run <jobId>`.
 
 ---
 
-## CLI Reference
+## CLI reference
 
 | Command | Description |
 |---------|-------------|
-| `lobster run <file>` | Execute a workflow file |
-| `lobster run <file> --arg key=value` | Pass arguments |
-| `lobster run <file> --provider openclaw` | Override LLM provider |
-| `lobster run <file> --dry-run` | Show steps without executing |
-| `lobster graph <file>` | Generate workflow visualization |
-| `lobster graph <file> --format mermaid` | Mermaid diagram output |
-| `lobster graph <file> --format dot` | Graphviz DOT output |
-| `lobster graph <file> --format ascii` | ASCII art output |
-| `lobster exec <command>` | Run a single OS command |
-| `lobster approve <workflow-id>` | Approve a pending gate |
-| `lobster workflows.run <name>` | Run a named/registered workflow |
+| `lobster run <file>` / `lobster run --file <file>` | Run a workflow file |
+| `lobster run --file <file> --args-json '{"k":"v"}'` | Run with args |
+| `lobster run --dry-run --file <file>` | Validate and print the plan without running anything |
+| `lobster run --mode tool '<pipeline>'` | Print a single JSON envelope (for integrations) |
+| `lobster '<pipeline>'` | Run an inline pipeline, for example `lobster 'exec --json "echo [1,2,3]" \| json'` |
+| `lobster resume --token <t> --approve yes\|no` | Continue or cancel at an approval gate |
+| `lobster resume --token <t> --response-json '<json>'` | Answer an input gate |
+| `lobster resume --token <t> --cancel` | Cancel a paused run |
+| `lobster graph --file <file> [--format mermaid\|dot\|ascii]` | Visualize a workflow |
+| `lobster doctor` | Check the installation |
+| `lobster version` | Print the version |
+| `lobster help <command>` | Help for one pipeline command |
 
-### Data Shaping Operators
+Named workflows run as a pipeline command: `lobster run --mode tool "workflows.run --name github.pr.monitor.notify --args-json '{\"repo\":\"openclaw/lobster\",\"pr\":167}'"`. `workflows.list` lists them.
 
-Lobster includes built-in data manipulation:
+### Pipeline commands
 
-| Operator | Description | Example |
-|----------|-------------|---------|
-| `where` | Filter items | `lobster exec "..." \| where status == "failed"` |
-| `pick` | Select fields | `lobster exec "..." \| pick name,status` |
-| `head` | First N items | `lobster exec "..." \| head 5` |
-| `json` | Format as JSON | `lobster exec "..." \| json` |
-| `table` | Format as table | `lobster exec "..." \| table` |
+| Command | Description |
+|---------|-------------|
+| `exec` | Run an OS command (`--json` parses stdout, `--stdin raw\|json\|jsonl` feeds input) |
+| `where`, `pick`, `head --n N` | Filter, select fields, take the first N items |
+| `json`, `table` | Render output |
+| `approve --prompt "…"` | Inline approval gate (`--preview-from-stdin --limit N` attaches a preview) |
+| `ask` | Inline structured question |
+| `llm.invoke`, `openclaw.agent`, `openclaw.invoke` | Model, agent and tool calls (above) |
+| `state.get`, `state.set`, `diff.last` | Small persisted state, for "only notify on change" |
 
 ---
 
 ## Configuration
 
-### Environment Variables
+### Environment variables
 
 | Variable | Description |
 |----------|-------------|
-| `OPENCLAW_URL` | Gateway URL for openclaw.invoke (default: `ws://localhost:18789`) |
-| `OPENCLAW_TOKEN` | Gateway auth token |
-| `LOBSTER_LLM_PROVIDER` | LLM provider override (`openclaw`, `pi`, `http`) |
+| `OPENCLAW_URL` | Gateway URL for `openclaw.invoke` and the `openclaw` LLM provider. No default; for example `http://127.0.0.1:18789` |
+| `OPENCLAW_TOKEN` | Gateway bearer token (sent ambiently only to loopback hosts) |
+| `LOBSTER_LLM_PROVIDER` | `openclaw`, `pi` or `http` |
 | `LOBSTER_LLM_ADAPTER_URL` | Generic HTTP LLM endpoint |
 | `LOBSTER_PI_LLM_ADAPTER_URL` | Pi adapter endpoint |
-| `LOBSTER_LLM_PRICING_JSON` | Custom token pricing file path |
+| `LOBSTER_LLM_PRICING_JSON` | Pricing overrides as a JSON string |
+| `LOBSTER_STATE_DIR` | Resume-state directory (default `~/.lobster/state`) |
+| `LOBSTER_MAX_OUTPUT_BYTES` | Optional per-stream, per-process output cap (unset means unlimited) |
+| `LOBSTER_MAX_HTTP_RESPONSE_BYTES` | Optional cap on HTTP response bodies |
+| `LOBSTER_APPROVAL_INITIATED_BY` / `LOBSTER_APPROVAL_APPROVED_BY` | Identity ids for approval checks |
 
-### Gateway Plugin Config
+---
 
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "tools": {
-    "alsoAllow": ["lobster"]
-  }
-}
-```
+## Safety
+
+Lobster steps run shell commands as the user who runs Lobster: on your machine for the CLI, inside the Gateway process for the embedded plugin, and on the Gateway host for a command job. Treat a workflow file like a script you are about to run.
+
+- Put every send, post, delete or deploy behind an `approval:` step.
+- Pass untrusted values through `$LOBSTER_ARG_*`, `stdin:` or `env:`, never through `${arg}` or `$step.stdout` in command text.
+- Keep tokens out of workflow files; Lobster does not manage secrets, it calls OpenClaw tools that do.
+- Automation command jobs run as operator-admin automations and are not covered by agent exec approvals.
+
+See [Security hardening](/security/hardening) for approvals, sandboxing and tool allowlists.
 
 ---
 
 ## Debugging
 
 ```bash
-# Dry run (shows steps without executing)
-lobster run workflow.lobster --dry-run
-
-# Verbose logging
-lobster run workflow.lobster --verbose
-
-# View workflow graph
-lobster graph workflow.lobster --format ascii
-
-# Check Lobster version
-lobster --version
+lobster doctor
+lobster run --dry-run --file workflow.lobster
+lobster graph --file workflow.lobster --format ascii
+lobster version
 ```
-
-### Common Issues
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| `openclaw.invoke: connection refused` | Gateway not running or wrong URL | Check `OPENCLAW_URL` and `openclaw gateway status` |
-| Embedded mode auth failures | Plugin doesn't inherit gateway auth for nested CLI calls | Known limitation — use standalone mode for nested invocations |
-| `llm-task tool not allowed` | Tool allowlist bug in v2026.4.26-4.29 | Update to v2026.4.30+ |
-| Workflow cycle detected | Workflow A calls B which calls A | Restructure to avoid circular sub-workflow references |
-| Cost limit exceeded | LLM calls exceeded `cost_limit.stop` | Increase limit or reduce LLM steps |
-| Step timeout | `timeout_ms` exceeded | Increase timeout or optimize the command |
+| `openclaw.invoke requires --url or OPENCLAW_URL` | No Gateway URL | Export `OPENCLAW_URL` or pass `--url` |
+| `openclaw.invoke: connection refused` | Gateway not running or wrong port | `openclaw gateway status` |
+| Nested `openclaw.invoke` fails in the plugin | Embedded mode does not pass Gateway auth | Run the workflow with the standalone CLI |
+| `... parallel must be an object` | Old `parallel: true` syntax | Use `parallel: { branches: [...] }` |
+| `Workflow cost_limit.max_usd must be a non-negative number` | Old `warn`/`stop` keys | Use `cost_limit: { max_usd, action }` |
+| `... creates a cycle` | A sub-workflow calls back into a running file | Restructure the composition |
+| Literal `{{ ... }}` in output | Wrong template syntax | Use `${arg}` / `$step.stdout`, or env vars |
+| `lobster runtime timed out` (plugin) | `timeoutMs` exceeded | Raise `timeoutMs` or split the pipeline |
 
 ---
 
-## Lobster vs Alternatives
+## Lobster vs alternatives
 
-| Tool | Approach | LLM-Native | Approval Gates | Local-First |
-|------|----------|-----------|---------------|-------------|
-| **Lobster** | YAML workflow shell | Yes (llm.invoke) | Yes (built-in) | Yes |
-| **LangGraph** | Python graph library | Yes | No | No (cloud-first) |
-| **CrewAI** | Python agent framework | Yes | No | No |
-| **n8n** | Visual workflow builder | Plugin | Manual | Self-hosted |
-| **Temporal** | Distributed workflows | No | No | Self-hosted |
-| **GitHub Actions** | CI/CD YAML | No | Environment gates | Cloud |
+| Tool | Approach | Human approval | Runs locally |
+|------|----------|----------------|--------------|
+| **Lobster** | YAML workflow shell, typed pipes | Built-in gates with resume tokens | Yes |
+| **LangGraph** | Python/JS graph library | Interrupts (human-in-the-loop) | Yes (open source library) |
+| **CrewAI** | Python agent framework | Human input on tasks | Yes |
+| **n8n** | Visual workflow builder | Wait/approval nodes | Self-hosted |
+| **Temporal** | Durable distributed workflows | Signals | Self-hosted |
+| **GitHub Actions** | CI/CD YAML | Environment protection rules | Hosted or self-hosted runners |
 
-Lobster's unique strengths: typed data flow between steps (objects, not just text pipes), built-in LLM cost tracking, approval gates with identity constraints, and zero-overhead integration with OpenClaw skills and tools.
+Lobster's niche is small, reviewable pipelines that plug directly into OpenClaw tools and agents, with typed data between steps and approval gates that survive a pause.
 
 ---
 
-## See Also
+## See also
 
-- [Automation Guide](/guides/automation) — Broader automation patterns including cron, webhooks, and Lobster
-- [Multi-Agent Guide](/guides/multi-agent) — Agent orchestration and routing
-- [Skill Development](/guides/skill-development) — Building skills that Lobster workflows can invoke
-- [CI/CD & Testing](/guides/cicd-testing) — Using Lobster for CI/CD pipelines
-- [Ecosystem](/reference/ecosystem#lobster) — Lobster project details
-- [Cost Management](/guides/cost-management) — Controlling LLM costs in workflows
+- [Automation Guide](/guides/automation): Automations (cron), hooks and other triggers
+- [Multi-Agent Guide](/guides/multi-agent): agent orchestration and routing
+- [Skill Development](/guides/skill-development): building skills that workflows can call
+- [CI/CD & Testing](/guides/cicd-testing)
+- [Ecosystem](/reference/ecosystem#lobster): Lobster project details
+- [Cost Management](/guides/cost-management)
+- Upstream: [Lobster](https://docs.openclaw.ai/tools/lobster), [Lobster plugin reference](https://docs.openclaw.ai/plugins/reference/lobster), [Automations](https://docs.openclaw.ai/automation)
