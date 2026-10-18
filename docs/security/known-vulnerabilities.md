@@ -7,11 +7,13 @@ description: OpenClaw security advisories by severity and month, every critical 
 keywords: [openclaw, openclaw cve, openclaw vulnerability, security advisory, ghsa, cve-2026-25253, clawhavoc, minimum safe version]
 ---
 
+import {AdvisoryGenerated, AdvisoryChart, AdvisoryTable, MinimumSafeVersion} from '@site/src/components/AdvisoryTimeline';
+
 # Known Vulnerabilities
 
-A readable record of OpenClaw's published security advisories and the major incidents around it. Advisory numbers are as of 2026-10-18 and come from `gh api repos/openclaw/openclaw/security-advisories --paginate`. To regenerate them, run `node scripts/advisories.mjs` in this site's repository.
+A readable record of OpenClaw's published security advisories and the major incidents around it. The advisory chart and table are generated from GitHub's [security advisories API](https://github.com/openclaw/openclaw/security/advisories) by `node scripts/advisories.mjs --json static/data/openclaw-advisories.json` in this site's repository, and a weekly workflow opens a pull request when the data changes. The prose sections below were last checked on 2026-10-18.
 
-:::danger Minimum safe version: the latest stable release
+:::danger[Minimum safe version: the latest stable release]
 As of 2026-10-18 the latest stable release is **v2026.10.4** (published 2026-10-16). Always run the latest stable release, and update plugins with it:
 
 ```bash
@@ -20,36 +22,20 @@ openclaw plugins update --all
 openclaw --version
 ```
 
-There is no older "safe" version to pin. The most recent advisories (2026-09-11) have fixes up to **2026.9.2** in core and **2026.9.3** in the `@openclaw/discord` and `@openclaw/diagnostics-prometheus` plugins. Many fixes ship only in separate `@openclaw/*` channel plugins, so updating core alone is not enough.
+There is no older "safe" version to pin. Many fixes ship only in separate `@openclaw/*` channel plugins, so updating core alone is not enough.
 
 Advisories list **stable** patched versions. The extended-stable channel uses monthly patch numbers of 33 and higher ([release channels](https://docs.openclaw.ai/install/development-channels)), which don't compare directly. If you run extended-stable, check the release notes, or switch to stable.
 :::
+
+<MinimumSafeVersion latest="2026.10.4" />
 
 ---
 
 ## Advisories at a glance
 
-**722** published repository advisories as of 2026-10-18 ([openclaw/openclaw security advisories](https://github.com/openclaw/openclaw/security/advisories)). 39 of them have a CVE ID.
+<AdvisoryGenerated />
 
-| Severity | Count |
-|---|---|
-| Critical | 14 |
-| High | 249 |
-| Medium | 390 |
-| Low | 69 |
-
-| Month published | Critical | High | Medium | Low | Total |
-|---|---|---|---|---|---|
-| 2026-01 | 0 | 3 | 0 | 0 | 3 |
-| 2026-02 | 3 | 61 | 128 | 28 | 220 |
-| 2026-03 | 10 | 70 | 107 | 17 | 204 |
-| 2026-04 | 1 | 39 | 53 | 15 | 108 |
-| 2026-05 | 0 | 13 | 50 | 4 | 67 |
-| 2026-06 | 0 | 33 | 12 | 0 | 45 |
-| 2026-07 | 0 | 0 | 0 | 0 | 0 |
-| 2026-08 | 0 | 0 | 0 | 0 | 0 |
-| 2026-09 | 0 | 30 | 40 | 5 | 75 |
-| 2026-10 (to the 18th) | 0 | 0 | 0 | 0 | 0 |
+<AdvisoryChart />
 
 The June and September advisories were each published on one day (2026-06-30 and 2026-09-11) as coordinated disclosures of issues already fixed in released versions.
 
@@ -57,26 +43,11 @@ The June and September advisories were each published on one day (2026-06-30 and
 
 ## Critical advisories {#critical-advisories}
 
-All 14 critical-severity advisories. None has a CVE ID. Four were published without a numeric score; their severity is GitHub's label.
+The table starts filtered to critical-severity advisories, newest first. Pick another severity, or **All**, to see the rest; search matches the summary, GHSA and CVE IDs and the fixed-in versions. Click a column heading to sort.
 
-| Published | Advisory | CVSS | Summary | Fixed in |
-|---|---|---|---|---|
-| 2026-02-14 | [GHSA-gv46-4xfq-jv58](https://github.com/openclaw/openclaw/security/advisories/GHSA-gv46-4xfq-jv58) | 9.9 | Remote code execution via node invoke approval bypass in the Gateway | 2026.2.14 |
-| 2026-02-14 | [GHSA-4rj2-gpmh-qq5x](https://github.com/openclaw/openclaw/security/advisories/GHSA-4rj2-gpmh-qq5x) | 9.4 | Voice-call inbound allowlist bypass (empty caller ID plus suffix matching) | 2026.2.2 |
-| 2026-02-14 | [GHSA-qrq5-wjgg-rvqw](https://github.com/openclaw/openclaw/security/advisories/GHSA-qrq5-wjgg-rvqw) | 9.3 | Path traversal in plugin installation | 2026.2.1 |
-| 2026-03-12 | [GHSA-4jpw-hj22-2xmc](https://github.com/openclaw/openclaw/security/advisories/GHSA-4jpw-hj22-2xmc) | 9.9 | Pairing-scoped device tokens could mint `operator.admin` and reach node RCE | 2026.3.11 |
-| 2026-03-13 | [GHSA-rqpp-rjj8-7wv8](https://github.com/openclaw/openclaw/security/advisories/GHSA-rqpp-rjj8-7wv8) | 9.9 | WebSocket shared-auth connections could self-declare elevated scopes | 2026.3.12 |
-| 2026-03-24 | [GHSA-hf68-49fm-59cq](https://github.com/openclaw/openclaw/security/advisories/GHSA-hf68-49fm-59cq) | not scored | `device.pair.approve` let `operator.pairing` escalate a new device to `operator.admin` | 2026.3.22 |
-| 2026-03-26 | [GHSA-9hjh-fr4f-gxc4](https://github.com/openclaw/openclaw/security/advisories/GHSA-9hjh-fr4f-gxc4) | not scored | Backend reconnect let non-admin operator scopes self-claim `operator.admin` | 2026.3.25 |
-| 2026-03-26 | [GHSA-fqw4-mph7-2vr8](https://github.com/openclaw/openclaw/security/advisories/GHSA-fqw4-mph7-2vr8) | not scored | Local shared-auth reconnect widened a paired device from `operator.read` to `operator.admin` | 2026.3.25 |
-| 2026-03-29 | [GHSA-hc5h-pmr3-3497](https://github.com/openclaw/openclaw/security/advisories/GHSA-hc5h-pmr3-3497) | 9.4 (CVSS 4.0) | `/pair approve` omitted caller scope subsetting and reopened pairing escalation | 2026.3.28 |
-| 2026-03-29 | [GHSA-8rh7-6779-cjqq](https://github.com/openclaw/openclaw/security/advisories/GHSA-8rh7-6779-cjqq) | 9.6 | A `.env` in the working directory could inject variables and take over config | 2026.3.28 |
-| 2026-03-29 | [GHSA-j7p2-qcwm-94v4](https://github.com/openclaw/openclaw/security/advisories/GHSA-j7p2-qcwm-94v4) | 9.6 | Incomplete host-env blocklist allowed supply-chain redirection via package-manager variables | 2026.3.22 |
-| 2026-03-31 | [GHSA-9p3r-hh9g-5cmg](https://github.com/openclaw/openclaw/security/advisories/GHSA-9p3r-hh9g-5cmg) | 9.4 (CVSS 4.0) | Sandbox escape via a TOCTOU race in the remote FS bridge `readFile` | 2026.3.31 |
-| 2026-03-31 | [GHSA-g5cg-8x5w-7jpm](https://github.com/openclaw/openclaw/security/advisories/GHSA-g5cg-8x5w-7jpm) | 9.5 (CVSS 4.0) | Heartbeat context inheritance bypassed the sandbox via `senderIsOwner` escalation | 2026.3.31 |
-| 2026-04-16 | [GHSA-xh72-v6v9-mwhc](https://github.com/openclaw/openclaw/security/advisories/GHSA-xh72-v6v9-mwhc) | not scored | Feishu webhook and card-action validation did not fail closed | 2026.4.15 |
+<AdvisoryTable initialSeverity="critical" />
 
-Scores are CVSS 3.1 unless marked. Also notable from February: [GHSA-g6q9-8fvw-f7rf](https://github.com/openclaw/openclaw/security/advisories/GHSA-g6q9-8fvw-f7rf) (CVE-2026-26322, High), a second `gatewayUrl` override issue in the Gateway tool, fixed in 2026.2.14.
+Also notable from February: [GHSA-g6q9-8fvw-f7rf](https://github.com/openclaw/openclaw/security/advisories/GHSA-g6q9-8fvw-f7rf) (CVE-2026-26322, High), a second `gatewayUrl` override issue in the Gateway tool, fixed in 2026.2.14.
 
 ---
 

@@ -1,0 +1,253 @@
+/* Severity is ordinal, so it uses one red ramp: more severe = more ink.
+   Light: darker is more severe. Dark: lighter is more severe. Both ramps
+   were checked for monotone lightness, visible step gaps and >= 2:1
+   contrast of the faintest step against the page background. Identity is
+   never colour alone: the legend, tooltips and table carry the labels. */
+.figure,
+.tableWrap,
+.callout,
+.generated {
+  --sev-critical: #6e1410;
+  --sev-high: #a62a22;
+  --sev-medium: #c84438;
+  --sev-low: #e8877c;
+  --sev-critical-ink: #fff;
+  --sev-high-ink: #fff;
+  --sev-medium-ink: #fff;
+  --sev-low-ink: #2b0705;
+}
+
+[data-theme='dark'] .figure,
+[data-theme='dark'] .tableWrap,
+[data-theme='dark'] .callout,
+[data-theme='dark'] .generated {
+  --sev-critical: #f9b5ac;
+  --sev-high: #ec7a6d;
+  --sev-medium: #c0443a;
+  --sev-low: #9a362e;
+  --sev-critical-ink: #2b0705;
+  --sev-high-ink: #1b0302;
+  --sev-medium-ink: #fff;
+  --sev-low-ink: #fff;
+}
+
+.generated {
+  font-size: 0.95rem;
+}
+
+.figure {
+  margin: 1rem 0 1.5rem;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--ifm-color-emphasis-800);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 2px;
+}
+
+.swatch[data-sev='critical'],
+.seg[data-sev='critical'] { background: var(--sev-critical); fill: var(--sev-critical); }
+.swatch[data-sev='high'],
+.seg[data-sev='high'] { background: var(--sev-high); fill: var(--sev-high); }
+.swatch[data-sev='medium'],
+.seg[data-sev='medium'] { background: var(--sev-medium); fill: var(--sev-medium); }
+.swatch[data-sev='low'],
+.seg[data-sev='low'] { background: var(--sev-low); fill: var(--sev-low); }
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 340px;
+  font-family: var(--ifm-font-family-base);
+}
+
+.seg {
+  /* 2px gap between stacked segments, in the page background colour. */
+  stroke: var(--ifm-background-color);
+  stroke-width: 2px;
+}
+
+.hit {
+  fill: transparent;
+}
+
+.month:hover .hit {
+  fill: var(--ifm-color-emphasis-100);
+}
+
+.grid {
+  stroke: var(--ifm-color-emphasis-200);
+  stroke-width: 1px;
+}
+
+.axis {
+  stroke: var(--ifm-color-emphasis-500);
+  stroke-width: 1px;
+}
+
+.tick {
+  fill: var(--ifm-color-emphasis-700);
+  font-size: 13px;
+}
+
+.total {
+  fill: var(--ifm-color-emphasis-900);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.caption {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+  margin-top: 0.25rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.controls select,
+.controls input {
+  font: inherit;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: var(--ifm-global-radius);
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+}
+
+.search {
+  flex: 1 1 16rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+}
+
+.count {
+  color: var(--ifm-color-emphasis-700);
+}
+
+.scroll {
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+
+.table {
+  display: table;
+  width: 100%;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.table th,
+.table td {
+  vertical-align: top;
+  padding: 0.4rem 0.5rem;
+}
+
+.table td:nth-child(4) {
+  min-width: 11rem;
+}
+
+.ghsa {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+}
+
+.cvss {
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-700);
+  white-space: nowrap;
+}
+
+.cvss abbr {
+  text-decoration: none;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.cve {
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.sortBtn {
+  all: unset;
+  cursor: pointer;
+  font-weight: inherit;
+  white-space: nowrap;
+}
+
+.sortBtn:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge[data-sev='critical'] { background: var(--sev-critical); color: var(--sev-critical-ink); }
+.badge[data-sev='high'] { background: var(--sev-high); color: var(--sev-high-ink); }
+.badge[data-sev='medium'] { background: var(--sev-medium); color: var(--sev-medium-ink); }
+.badge[data-sev='low'] { background: var(--sev-low); color: var(--sev-low-ink); }
+
+.note {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+  margin-top: 0.75rem;
+}
+
+.callout {
+  border-left: 4px solid var(--sev-high);
+  background: var(--ifm-color-emphasis-100);
+  border-radius: var(--ifm-global-radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: var(--ifm-leading);
+}
+
+.callout p:last-child {
+  margin-bottom: 0;
+}
+
+@media (forced-colors: active) {
+  .seg { stroke: CanvasText; }
+  .badge { border: 1px solid CanvasText; }
+}
