@@ -168,11 +168,16 @@ skip() {
 # skip_step "<page step that is not a command>" "<why>"
 skip_step() { _record page skip "" "$1" "$2"; }
 
-# setup [-x codes] [-e regex] "<label>" "<command>": CI scaffolding, not from the page
+# setup [-x codes] [-e regex] "<label>" "<command>": CI scaffolding, not from
+# the page. <placeholders> are filled as in run.
 setup() {
   _opts "$@"; local label=$TT_ARG; shift $(($# - 1)); local cmd=$1
   [[ "$label" == "$cmd" ]] && { echo "setup needs a label and a command"; return 1; }
-  _exec setup "" "$label" "$cmd" "$TT_CODES" "$TT_EXPECT" "$TT_T"
+  local filled
+  if ! filled=$(_fill "$cmd"); then
+    _record setup fail "" "$label" "no value for placeholder <${filled#__MISSING__}>"; return 1
+  fi
+  _exec setup "" "$label" "$filled" "$TT_CODES" "$TT_EXPECT" "$TT_T"
 }
 
 # config_block N [--dry-run]: merge the page's Nth openclaw.json block into the

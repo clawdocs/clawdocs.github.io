@@ -168,7 +168,7 @@ openclaw channels add discord
 Each command opens guided setup for that channel. By default, unknown senders who DM your bot get a pairing code instead of the agent. Approve them with:
 
 ```bash
-openclaw pairing list
+openclaw pairing list telegram
 openclaw pairing approve telegram <code>
 ```
 

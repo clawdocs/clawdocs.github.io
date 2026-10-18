@@ -38,14 +38,14 @@ file_block "~/.openclaw/workspace/SOUL.md"
 skip "openclaw channels add telegram" "needs a Telegram bot token"
 skip "openclaw channels add whatsapp" "needs a phone to scan the QR code"
 skip "openclaw channels add discord" "needs a Discord bot token"
-run "openclaw pairing list"
+skip "openclaw pairing list telegram" "needs a configured channel"
 skip "openclaw pairing approve telegram <code>" "needs a pairing code from a real DM"
 
 # Step 8: Heartbeat and scheduled tasks
 config_block 2
 run -e 'Morning brief' "openclaw cron add --name \"Morning brief\" --cron \"0 9 * * *\"..."
 run -e 'Heartbeat \(main\)' "openclaw cron list --all"
-capture jobId "openclaw cron list --all --json" '(j.jobs||j).find(x=>/Heartbeat/.test(x.name||x.displayName||"")).id'
+capture jobId "openclaw cron list --all --json" '(j.jobs||j).find(x=>/Heartbeat/.test(x.displayName||x.name||"")).id'
 run "openclaw cron scratch <jobId> --set \"...\""
 
 # Verify your setup

@@ -14,7 +14,7 @@ config_block 1
 run "openclaw config set commands.ownerAllowFrom '[\"telegram:123456789\"]'"
 skip "openclaw gateway restart" "needs an installed service; the running Gateway reloads config itself"
 run "openclaw cron list --all"
-capture jobId "openclaw cron list --all --json" '(j.jobs||j).find(x=>/Heartbeat \(main\)/.test(x.name||x.displayName||"")).id'
+capture jobId "openclaw cron list --all --json" '(j.jobs||j).find(x=>/Heartbeat \(main\)/.test(x.displayName||x.name||"")).id'
 run "openclaw cron scratch <jobId> --set \"- Anything urgent..."
 skip "openclaw system event --text \"Check for urgent follow-ups\" --mode now" "wakes a heartbeat turn: needs a model provider key"
 run "openclaw system heartbeat last"
@@ -24,14 +24,14 @@ run -e 'Anything urgent' "openclaw cron scratch <jobId>"
 run "openclaw cron scratch <jobId> --set \"...\""
 setup "write checklist.md" "printf -- '- If a task is blocked, say what is missing.\n' > checklist.md"
 run "openclaw cron scratch <jobId> --file checklist.md"
-setup -e 'blocked' "scratch now holds the file" "openclaw cron scratch $PH_jobId"
+setup -e 'blocked' "scratch now holds the file" "openclaw cron scratch <jobId>"
 run "openclaw cron scratch <jobId> --unset"
 
 # Migrating from HEARTBEAT.md: a legacy file is imported into scratch
 setup "write a legacy HEARTBEAT.md" "printf '# Heartbeat\n\n- Check whether the nightly backup finished.\n' > ~/.openclaw/workspace/HEARTBEAT.md"
 run "openclaw doctor --fix"
 setup -e '^ok$' "HEARTBEAT.md was removed from the workspace" "test ! -e ~/.openclaw/workspace/HEARTBEAT.md && echo ok"
-setup -e 'nightly backup' "its text is now the monitor scratch" "openclaw cron scratch $PH_jobId"
+setup -e 'nightly backup' "its text is now the monitor scratch" "openclaw cron scratch <jobId>"
 setup -e '^ok$' "the original was archived under backups/heartbeat-migration/" "ls ~/.openclaw/backups/heartbeat-migration/ | grep -q . && echo ok"
 
 # Quiet replies and visibility

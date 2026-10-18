@@ -28,9 +28,9 @@ run -e 'Weekly summary' "openclaw cron list --all"
 # The heartbeat monitor
 config_block 1
 run "openclaw config validate"
-capture heartbeatJobId "openclaw cron list --all --json" '(j.jobs||j).find(x=>/Heartbeat/.test(x.name||x.displayName||"")).id'
+capture heartbeatJobId "openclaw cron list --all --json" '(j.jobs||j).find(x=>/Heartbeat/.test(x.displayName||x.name||"")).id'
 run "openclaw cron scratch <heartbeatJobId> --set \"If a background job..."
-setup -e 'background job' "scratch reads back" "openclaw cron scratch $PH_heartbeatJobId"
+setup -e 'background job' "scratch reads back" "openclaw cron scratch <heartbeatJobId>"
 
 # Model choice and cost
 run "openclaw gateway usage-cost --days 7"
@@ -51,6 +51,6 @@ skip "openclaw system event --text \"Check whether my backup finished\" --mode n
 skip "openclaw logs --follow" "streams until interrupted"
 run "openclaw gateway status"
 run "openclaw cron rm <jobId>"
-setup -e '^gone$' "the job is gone" "openclaw cron list --all --json | grep -q '\"$PH_jobId\"' && echo still-there || echo gone"
+setup -e '^gone$' "the job is gone" "openclaw cron list --all --json | grep -q '\"<jobId>\"' && echo still-there || echo gone"
 
 finish

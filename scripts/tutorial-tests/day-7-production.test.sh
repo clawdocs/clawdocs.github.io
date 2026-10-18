@@ -9,9 +9,9 @@ skip "openclaw plugins update --all" "nothing installed from a registry on a fre
 
 # A baseline config: the token comes from ~/.openclaw/.env, as the comment says
 setup "put the Gateway token in ~/.openclaw/.env" \
-  "printf 'OPENCLAW_GATEWAY_TOKEN=%s\n' \"\$(openclaw config get gateway.auth.token)\" > ~/.openclaw/.env && chmod 600 ~/.openclaw/.env"
+  "printf 'OPENCLAW_GATEWAY_TOKEN=%s\n' '$TT_TOKEN' > ~/.openclaw/.env && chmod 600 ~/.openclaw/.env"
 config_block 1
-setup -e 'OPENCLAW_GATEWAY_TOKEN' "openclaw.json no longer holds the token itself" "openclaw config get gateway.auth.token --json 2>/dev/null || grep -o 'OPENCLAW_GATEWAY_TOKEN' ~/.openclaw/openclaw.json"
+setup -e 'OPENCLAW_GATEWAY_TOKEN' "openclaw.json no longer holds the token itself" "grep -o 'OPENCLAW_GATEWAY_TOKEN' ~/.openclaw/openclaw.json && ! grep -qF '$TT_TOKEN' ~/.openclaw/openclaw.json"
 run "openclaw config validate"
 gateway_start
 skip "openclaw gateway restart" "needs an installed service; CI started the Gateway with the new config instead"
@@ -36,7 +36,7 @@ run -e 'Daily self-check' "openclaw cron add \"30 7 * * *\"..."
 run "mkdir -p ~/Backups/openclaw"
 run -e 'erif' "openclaw backup create --output ~/Backups/openclaw --verify"
 capture archive "ls -t ~/Backups/openclaw/*.tar.gz | head -1 | xargs -n1 basename | sed 's/\\.tar\\.gz\$//' | node -e 'process.stdout.write(JSON.stringify([require(\"fs\").readFileSync(0,\"utf8\").trim()]))'" 'j[0]'
-setup "openclaw backup verify <archive> (inline on the page)" "openclaw backup verify ~/Backups/openclaw/$PH_archive.tar.gz"
+setup "openclaw backup verify <archive> (inline on the page)" "openclaw backup verify ~/Backups/openclaw/<archive>.tar.gz"
 
 # Upgrades
 run "openclaw backup create --output ~/Backups/openclaw --verify"
