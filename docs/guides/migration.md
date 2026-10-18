@@ -159,7 +159,7 @@ The supported route:
    ```
 
    The archive contains credentials. Store it with owner-only permissions.
-2. **Update with `openclaw update`** rather than a raw `npm i -g`. It stages the new version, runs Doctor, verifies the Gateway, keeps the previous package during activation, and rolls back automatically when post-update checks fail. Preview with `openclaw update --dry-run`.
+2. **Update with `openclaw update`** rather than a raw `npm i -g`. It stages the new version, runs Doctor, verifies the Gateway and keeps the previous package during activation. If verification fails, it rolls back automatically only when no database schema changed (upstream calls this schema-neutral rollback). Once Doctor has migrated a database, the updater keeps the new state, reports `state-migrated-no-rollback`, and you recover from your backup. Preview with `openclaw update --dry-run`.
 3. **To go back to an older release**, restore a verified pre-update backup together with the OpenClaw release that made it. Do not run an older release against migrated state.
 4. **Clean up only after verifying.** `openclaw update cleanup` retires recovery originals; run it only once your sessions and channels work.
 
@@ -221,16 +221,9 @@ Credentials are imported only when you accept the prompt or pass `--include-secr
 
 **Do not run anything older.** [CVE-2026-25253](https://nvd.nist.gov/vuln/detail/CVE-2026-25253) (CVSS 8.8, High): before 2026.1.29, the Control UI took a `gatewayUrl` from the query string and connected to it without prompting, sending the gateway token. A crafted link could hand an attacker your token and, through it, command execution on the host. The same release removed the old implicit no-auth mode (an explicit loopback-only `none` mode was later reintroduced, see above).
 
-### v2026.1.30: CLI improvements (January 31)
-
-- Shell completion: `openclaw completion` (Zsh, Bash, PowerShell, Fish)
-- Per-agent model status: `openclaw models status --agent <id>`
-- New providers: Kimi K2.5, MiniMax OAuth
-
 ### v2026.2.6: code safety scanner (February 6)
 
-- New model support: Claude Opus 4.6, GPT-5.3-Codex, xAI Grok
-- Built-in code safety scanner for skills and plugins; credentials redacted from `config.get` gateway responses
+Added a built-in code safety scanner for skills and plugins, and redacted credentials from `config.get` Gateway responses.
 
 ClawHub added VirusTotal scanning on publish in the same month, in response to the [ClawHavoc campaign](/security/known-vulnerabilities#the-clawhavoc-campaign). See [Skill Verification](/security/skill-verification) for how scanning works today.
 
