@@ -13,7 +13,7 @@ keywords: [openclaw, smart home, home automation, philips hue, openhue, iot cont
 These recipes give an agent real powers (shell, SSH, email, smart-home devices). By default OpenClaw runs host commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off**. Before you try one, turn on approvals (`openclaw config set tools.exec.mode ask`), use a strong model for anything that runs tools unattended, and give the agent only the accounts and devices the recipe needs. Config blocks on this page were checked with `openclaw config validate` on 2026.10.4. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
 :::
 
-Turn lights on and off, dim rooms and set scenes from chat. This recipe covers Philips Hue. For locks, alarms, thermostats and other devices, see the [Home Assistant recipe](/guides/recipes/advanced-recipes), which needs stricter guardrails.
+Turn lights on and off, dim rooms and set scenes from chat. This recipe covers Philips Hue. For locks, alarms, thermostats and other devices, see the [Home Assistant recipe](/guides/recipes/advanced-recipes#home-assistant-control), which needs stricter guardrails.
 
 ## The Skill
 
@@ -91,6 +91,6 @@ openclaw cron add "30 22 * * *" \
 
 ## See Also
 
-- [Advanced Recipes: Home Assistant](/guides/recipes/advanced-recipes): more devices, more guardrails
+- [Advanced Recipes: Home Assistant](/guides/recipes/advanced-recipes#home-assistant-control): more devices, more guardrails
 - [Day 5: Channels](/guides/first-7-days/day-5-multi-channel): `dmPolicy` and allowlists
 - [Skill Development](/guides/skill-development): building your own integrations
