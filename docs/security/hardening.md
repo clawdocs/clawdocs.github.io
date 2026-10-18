@@ -59,7 +59,6 @@ openclaw skills update --all
 - Docker: pin an exact image tag such as `ghcr.io/openclaw/openclaw:2026.10.4` if you want reproducible deploys, but bump it on every release. Use only `ghcr.io/openclaw/openclaw` or `openclaw/openclaw` images ([Docker install](https://docs.openclaw.ai/install/docker)).
 - The `extended-stable` channel trails stable by about a month and never auto-applies ([release channels](https://docs.openclaw.ai/install/development-channels)). If you use it, check each new advisory's patched versions against what you run.
 - Watch the repository for security alerts: on GitHub, **Watch → Custom → Security alerts** on [openclaw/openclaw](https://github.com/openclaw/openclaw/security/advisories).
-
 - Background auto-update for stable package installs is opt-in: `update.auto.enabled: true` (default `false`; [updating](https://docs.openclaw.ai/install/updating)).
 
 ## Keep the Gateway on loopback {#bind}
@@ -400,18 +399,7 @@ The effective policy is the **stricter** of `tools.exec.*` in `openclaw.json` an
 - `tools.fs.workspaceOnly` keeps file tools inside the workspace. Exec can still reach the rest of the filesystem, which is why the sandbox matters.
 - `sessions.visibility` and `agentToAgent` default to Gateway-wide reach. Narrow them when agents have different trust levels.
 
-For an agent that only chats and should never touch the host, upstream's 60-second baseline denies whole tool groups:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  tools: {
-    profile: "messaging",
-    deny: ["group:automation", "group:runtime", "group:fs", "sessions_spawn", "sessions_send"],
-    exec: { mode: "deny" },
-    elevated: { enabled: false },
-  },
-}
-```
+For an agent that only chats and should never touch the host, start from upstream's 60-second baseline, which denies the runtime, file and automation tool groups: it is reproduced on [Security Overview](/security/overview#2-start-from-a-hardened-baseline).
 
 Allowlists and approvals are guardrails for operator intent, not a sandbox. Upstream says they don't model every interpreter path. Text blocklists such as "block `rm -rf`" are not a security boundary either ([SECURITY.md](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)). Pair them with the sandbox for anything that reads untrusted input.
 
@@ -503,7 +491,9 @@ openclaw secrets audit --check     # non-zero exit while plaintext or unresolved
 openclaw secrets configure         # interactive migration helper
 ```
 
-Give the agent its own scoped, short-lived credentials: a read-only GitHub token, a separate email account, a bot number. Don't hand it your personal ones. In v2026.10.4, sensitive-value redaction is always on and masks matching secrets before file-log lines and transcript text are written. It is best-effort pattern matching, so `logging.redactPatterns` for your own token formats is worth adding (it replaces the default string list; built-in structural protections still apply). Share `openclaw status --all` (redacted) rather than raw logs. This masking also covers tool payloads before they reach the model.
+Give the agent its own scoped, short-lived credentials: a read-only GitHub token, a separate email account, a bot number. Don't hand it your personal ones.
+
+In v2026.10.4, sensitive-value redaction is always on. It masks matching secrets in tool payloads before they reach the model, and before file-log lines and transcript text are written. It is best-effort pattern matching, so add `logging.redactPatterns` for your own token formats (it replaces the default string list; built-in structural protections still apply). Share `openclaw status --all` (redacted) rather than raw logs.
 
 :::warning Changing in 2026.10.10 (beta)
 2026.10.10-beta.1 (npm `beta`, 2026-10-15; not in 2026.10.4) removes automatic secret masking of tool payloads. Tool arguments, tool results and `.env` reads keep their original text, credentials included, in model context, transcripts, session history and UI tool events. Log tails, console output, support bundles and telemetry export stay masked; the log files themselves are written raw with `0600` permissions. Before upgrading, assume anything a tool reads will reach your provider and the session store: keep secrets in SecretRefs rather than in files the agent can read, and protect `~/.openclaw` and the log directory like a credentials store ([PR #169063](https://github.com/openclaw/openclaw/pull/169063)).
@@ -623,7 +613,7 @@ openclaw devices remove <deviceId>
 - `openclaw logs` and `openclaw audit` for the time window.
 - The transcripts of the affected sessions.
 - Config changes that widened access: `gateway.bind`, `gateway.auth`, DM and group policies, `tools.elevated`, `tools.exec.mode`, plugins.
-- Recently installed skills and plugins. Remove ClawHub skills with `clawhub uninstall @owner/<slug>` (`npm i -g clawhub` first). Remove plugins with `openclaw plugins uninstall <id>`.
+- Recently installed skills and plugins. Remove ClawHub skills with `clawhub --workdir <agent-workspace> uninstall @owner/<slug>` (`npm i -g clawhub` first; see [Skill Verification](/security/skill-verification#post-incident-if-you-installed-a-malicious-skill)). Remove plugins with `openclaw plugins uninstall <id>`.
 - Workspace files (`SOUL.md`, `AGENTS.md`, `MEMORY.md`) and scheduled jobs (`openclaw cron list`) for persistence.
 - To drop the derived memory index without deleting sessions: `openclaw memory reset --agent <id> --yes`.
 

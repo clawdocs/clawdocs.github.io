@@ -11,27 +11,11 @@ keywords: [openclaw, openclaw skill security, clawhub security, malicious skills
 
 Skills are instructions, and often scripts, that your agent follows with its own tools. Upstream's guidance is to treat third-party skills as **untrusted code** and read them before enabling them ([skills: security](https://docs.openclaw.ai/tools/skills)). The commands below were checked against OpenClaw v2026.10.4 on 2026-10-18.
 
-Why it matters: in February 2026, researchers found **341 malicious skills** on ClawHub, **283 skills leaking credentials**, and security flaws in **36%** of the skills sampled (details on [Known Vulnerabilities](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026)). Snyk called this "the first documented supply-chain attack specifically targeting AI agent skills."
-
-:::danger Supply chain risk
-Snyk's ToxicSkills study found that **91% of malicious skills** combined prompt injection with traditional malware. A skill doesn't need to contain malicious code. It can simply tell the agent to do something harmful.
-:::
+Why it matters: in February 2026, researchers found 341 malicious skills on ClawHub, and Snyk found security flaws in 36% of the 3,984 skills it sampled. The studies, and what ClawHub changed afterwards, are on [Known Vulnerabilities](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026). These are early-2026 figures; ClawHub's scanning has changed since (see [ClawHub scanning](#virustotal-integration-v202626)).
 
 ---
 
 ## The Threat Landscape
-
-### What was found on ClawHub (February 2026)
-
-| Study | Skills analysed | Malicious / flawed | Key finding |
-|-------|----------------|-------------------|-------------|
-| **Koi Security** | 2,857 | 341 malicious (12%) | ClawHavoc campaign: 335 skills distributing AMOS malware |
-| **Snyk ToxicSkills** | 3,984 | 1,467 flawed (36%), 534 critical (13.4%), 76 confirmed malicious | Hybrid prompt-injection and malware attacks |
-| **Snyk credential leaks** | 3,984 | 283 leaking credentials (7.1%) | Popular skills push API keys through the model context |
-| **Bitdefender** | not stated | ~900 malicious (~20%, Bitdefender's estimate) | Highest published estimate |
-| **Cisco AI Defense** | The top-ranked skill | 9 vulnerabilities (2 critical) | Data exfiltration and prompt injection without user awareness |
-
-These are third-party figures from early 2026. ClawHub's scanning and moderation have changed since then (see [ClawHub scanning](#virustotal-integration-v202626)).
 
 ### How malicious skills work
 
