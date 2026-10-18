@@ -761,21 +761,6 @@ lobster version
 
 ---
 
-## Lobster vs alternatives
-
-| Tool | Approach | Human approval | Runs locally |
-|------|----------|----------------|--------------|
-| **Lobster** | YAML workflow shell, typed pipes | Built-in gates with resume tokens | Yes |
-| **LangGraph** | Python/JS graph library | Interrupts (human-in-the-loop) | Yes (open source library) |
-| **CrewAI** | Python agent framework | Human input on tasks | Yes |
-| **n8n** | Visual workflow builder | Wait/approval nodes | Self-hosted |
-| **Temporal** | Durable distributed workflows | Signals | Self-hosted |
-| **GitHub Actions** | CI/CD YAML | Environment protection rules | Hosted or self-hosted runners |
-
-Lobster's niche is small, reviewable pipelines that plug directly into OpenClaw tools and agents, with typed data between steps and approval gates that survive a pause.
-
----
-
 ## See also
 
 - [Automation Guide](/guides/automation): Automations (cron), hooks and other triggers
