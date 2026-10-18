@@ -543,9 +543,9 @@ openclaw gateway restart
 # Diagnose
 openclaw plugins doctor
 
-# Clean reinstall
-openclaw plugins uninstall workboard
-openclaw plugins install workboard
+# Bundled plugins (such as workboard) are re-enabled, not reinstalled
+openclaw plugins disable workboard
+openclaw plugins enable workboard
 openclaw gateway restart
 ```
 

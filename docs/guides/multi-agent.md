@@ -444,11 +444,7 @@ Best for: **production teams** needing fleet monitoring, cost tracking, and inte
 
 ### Antfarm
 
-[Antfarm](https://github.com/snarktank/antfarm) orchestrates multi-agent workflows with zero external infrastructure:
-
-```bash
-npx antfarm create my-team
-```
+[Antfarm](https://github.com/snarktank/antfarm) orchestrates multi-agent workflows with zero external infrastructure. It installs from GitHub, not npm: the `antfarm` package on npm is an unrelated project, so do not `npx antfarm`. Follow the install steps in the [Antfarm README](https://github.com/snarktank/antfarm#install), and read its install script before running it.
 
 - **YAML-defined teams** — plain Markdown and YAML configuration
 - **SQLite state tracking** at `~/.openclaw/antfarm/antfarm.db`

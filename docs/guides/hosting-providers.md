@@ -142,7 +142,7 @@ Open-source hosting platform with CLI deployment.
 
 - **URL**: [clawhost.dev](https://www.clawhost.dev)
 - **Price**: $25/month | 99.9% uptime
-- **Setup**: `npx clawd deploy`
+- **Setup**: see the provider's own instructions. (Earlier versions of this page said `npx clawd deploy`; the `clawd` npm package belongs to an unrelated project, so do not run it.)
 - **Features**: Custom domains, isolated containers with E2E encryption, supports Claude/GPT/Gemini Pro
 
 ### RunClaw.ai {#runclawai}
