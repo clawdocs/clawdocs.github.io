@@ -47,7 +47,7 @@ Koi Security's [pre-install skill check](https://koisecurity.com/clawdex) agains
 
 ## ClawHub {#clawhub}
 
-OpenClaw's skill and plugin registry at [clawhub.ai](https://clawhub.ai). Each release gets an audit status from VirusTotal, ClawScan and static analysis; `openclaw skills verify @owner/<slug>` fetches it. Target of the [ClawHavoc](#clawhavoc) campaign. See [ClawHub Guide](/guides/clawhub).
+OpenClaw's skill and plugin registry at [clawhub.ai](https://clawhub.ai). Since 2026-10-13 a new release stays unpublished until its TruffleHog and ClawScan checks pass; `openclaw skills verify @owner/<slug>` fetches a release's audit verdict. Target of the [ClawHavoc](#clawhavoc) campaign. See [ClawHub Guide](/guides/clawhub).
 
 ## ClawHavoc {#clawhavoc}
 
@@ -75,7 +75,7 @@ VirusTotal's AI-based package analysis, which early-2026 reports said [ClawHub](
 
 ## Companion apps
 
-Official native clients: the macOS app (macOS 15.0+ in v2026.10.4; the next release requires 26.2), the iOS app on the App Store, the Android app on Google Play, and the [Windows Hub](#windows-hub). See [Platforms](https://docs.openclaw.ai/platforms).
+Official native clients: the macOS app (macOS 15.0+ in v2026.10.4; the 2026.10.10 beta raises it to 26.2), the iOS app on the App Store, the Android app on Google Play, and the [Windows Hub](#windows-hub). See [Platforms](https://docs.openclaw.ai/platforms).
 
 ## openclaw.json
 
@@ -155,7 +155,7 @@ OpenClaw's second name (January 27-30, 2026), adopted after the [Clawdbot](#claw
 
 ## Monitor scratch {#monitor-scratch}
 
-The heartbeat's instruction text, stored in the state database instead of a file. Edit it with `openclaw cron scratch <jobId>`, or let the agent update it during a heartbeat turn. Replaces [HEARTBEAT.md](#heartbeatmd). See [Heartbeat](https://docs.openclaw.ai/gateway/heartbeat).
+The heartbeat's instruction text, stored in the state database instead of a file. The heartbeat runs as an automation job: find its id with `openclaw cron list --all`, then read the scratch with `openclaw cron scratch <jobId>` or replace it with `--set "..."`. Replaces [HEARTBEAT.md](#heartbeatmd). See [Heartbeat](https://docs.openclaw.ai/gateway/heartbeat).
 
 ## NanoClaw
 
