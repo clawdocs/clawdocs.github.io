@@ -1,324 +1,253 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Cost Management
-description: Control OpenClaw spending — horror stories, cost breakdowns, optimization strategies, monitoring tools, and a documented 97% cost reduction
-keywords: [openclaw, openclaw cost, reduce cost, save money, api cost, token optimization]
+description: What drives OpenClaw API spend, how to estimate it, and the settings and habits that cut it, for any model provider
+keywords: [openclaw, openclaw cost, reduce cost, save money, api cost, token optimization, heartbeat cost]
 ---
 
 # Cost Management
 
-OpenClaw's default configuration sends everything to one model, includes full conversation history, and heartbeats fire every 30 minutes. Without tuning, **active use can cost $300-750/month**. This guide covers what drives costs, how to control them, and real strategies that have achieved up to **97% cost reductions**.
+OpenClaw itself is free (MIT licence). What you pay for is model usage: every agent turn, heartbeat, utility task (titles, summaries), embedding and paid tool call goes to a provider that bills per token or draws on a plan quota. This page explains where the tokens go, how to estimate a bill, and which settings reduce it. It is provider-neutral; prices below are examples.
 
-:::danger Real Horror Stories
-These are documented incidents, not hypotheticals:
-- **$3,600/month** — Federico Viticci's "Navi" assistant consumed 180M Anthropic tokens in one month
-- **$20 overnight** — Benjamin De Kraker's heartbeat drained his entire balance checking "is it daytime yet?" every 30 minutes at $0.75/check
-- **$200/day** — An automated task stuck in an infinite loop, churning tokens while accomplishing nothing
-- **$8 per 30 min** — Processing Moltbook browsing content, adding up to $380+/day
+:::warning OpenClaw has no built-in spend cap
+There is no `daily_budget_usd` or `monthly_budget_usd` setting. The config schema is strict, so invented keys like these stop the Gateway from starting ([configuration](https://docs.openclaw.ai/gateway/configuration)). Set hard limits where billing happens: in your provider's console, on an OpenRouter or ClawRouter key, or by using a subscription plan with fixed quotas.
 :::
 
----
+## Where the money goes
 
-## Where Does the Money Go?
+| Spend | What it is | Main lever |
+|---|---|---|
+| Agent turns | Your messages and the tool loop that follows. Each request resends the system prompt, workspace bootstrap files, tool definitions and session history. | Model choice, `/compact`, `/new`, prompt caching |
+| Heartbeats | Scheduled main-session turns, every `30m` by default (`1h` with Anthropic OAuth or Claude CLI auth) | `every`, `activeHours`, `isolatedSession`, `lightContext`, a cheaper `heartbeat.model` |
+| Automations | Each cron/automation job is its own agent run | Job schedule and `--model` |
+| Utility tasks | Session titles, progress narration, recaps, summaries | `agents.defaults.utilityModel` |
+| Other paid features | Media understanding, image and video generation, memory embeddings, web search and fetch, speech | Turn off what you don't use |
 
-### Cost Breakdown by Component
+Upstream lists every feature that can spend a key in [API usage and costs](https://docs.openclaw.ai/reference/api-usage-costs), and explains how the prompt is built in [Token use](https://docs.openclaw.ai/reference/token-use).
 
-```mermaid
-pie title Typical Token Consumption
-    "Heartbeat checks" : 35
-    "Chat/conversation" : 25
-    "Skill execution" : 20
-    "Context overhead" : 15
-    "Sub-agent spawning" : 5
+### Runaway patterns
+
+| Cause | What happens |
+|---|---|
+| Context snowball | A long session grows, and every request carries all of it. Cost per turn rises steadily. |
+| Tool loop | A failing tool appends its error, the model retries, and the history keeps growing. |
+| Large tool output | A huge file listing or web page lands in context and is resent every iteration. |
+| Expensive heartbeat | The main model with full context runs 48 times a day while nothing is happening. |
+| High thinking effort everywhere | Reasoning tokens are billed as output. |
+
+## Estimate before you pay
+
+Use one formula for any provider:
+
+```text
+cost per request = (input_tokens x input_price + output_tokens x output_price) / 1,000,000
+monthly cost     = cost per request x requests per day x 30
 ```
 
-### Heartbeat Costs
+Cached input is billed at the provider's cache-read price instead of the full input price. Anthropic charges 0.1x the input price for cache reads on most models and 0.05x on Opus 5.5 and Sonnet 5.5.
 
-The heartbeat is the biggest silent cost driver. Each heartbeat sends the **entire context window** to the API:
+### Model prices used on this page
 
-| Model | Cost per Heartbeat (~120K tokens) | Monthly (48/day) |
-|-------|----------------------------------|-------------------|
-| Claude Opus 4.5 | ~$0.75 | ~$1,080 |
-| Claude Sonnet 4.5 | ~$0.45 | ~$648 |
-| Claude Haiku | ~$0.15 | ~$216 |
-| Gemini 2.5 Flash | ~$0.05 | ~$72 |
-| Gemini 2.5 Flash-Lite | ~$0.01 | ~$14 |
-| Local (Ollama) | $0.00 | **$0** |
+Per million tokens (input / output), as of 2026-10-18, from [Anthropic pricing](https://platform.claude.com/docs/en/about-claude/pricing):
 
-> "Using Opus for a heartbeat is like hiring a lawyer to check your mailbox."
+| Model | Ref | Input / output | Cache read |
+|---|---|---|---|
+| Claude Fable 5.1 | `anthropic/claude-fable-5-1` | $10 / $50 | $0.25 |
+| Claude Opus 5.5 | `anthropic/claude-opus-5-5` | $4 / $20 | $0.20 |
+| Claude Sonnet 5.5 | `anthropic/claude-sonnet-5-5` | $2 / $10 | $0.10 |
+| Claude Haiku 5.5 (prompt up to 100K tokens) | `anthropic/claude-haiku-5-5` | $0.10 / $0.50 | $0.01 |
+| Claude Haiku 5.5 (prompt over 100K tokens) | `anthropic/claude-haiku-5-5` | $0.50 / $2.50 | $0.05 |
+| Legacy: Opus 4.6 to 4.8, Sonnet 4.6, Haiku 4.5 | | $5 / $25, $3 / $15, $1 / $5 | 0.1x input |
 
-### Context Accumulation
+For other providers, use the provider's own price page. OpenClaw's bundled estimate for `deepseek/deepseek-flash` is $0.30 / $1.20 at peak rates ([DeepSeek provider](https://docs.openclaw.ai/providers/deepseek)). Local models cost nothing per token.
 
-Every request sends the full conversation history. One user's session grew to **1.4 MB / 100K tokens** of pure overhead. System prompts alone are 5,000-10,000 tokens and are resent with every API call.
+### Heartbeat costs {#heartbeat-costs}
 
-### What Causes Runaway Costs
+This is the one heartbeat cost method used across clawdocs. Two scenarios:
 
-| Cause | Impact | Example |
-|-------|--------|---------|
-| **Infinite loops** | Tokens burn on repeated failures | Tool validation fails, error appended to context, model retries endlessly |
-| **Context snowball** | Cost per request grows over time | Session at 56-58% of 400K window means 200K+ cached tokens per query |
-| **Wrong model for task** | 60x overpayment | Opus for heartbeat vs. Flash-Lite |
-| **Thinking mode** | 10-50x token explosion | Extended reasoning on simple tasks |
-| **No spending limits** | Unpredictable bills | Overnight drain with no caps configured |
-| **Large tool outputs** | Massive context per loop | 1M file paths sent with full history on every iteration |
+- **Full context**: a heartbeat in the main session with history and bootstrap files. Assume 120K input tokens, 500 output tokens, no cache hits.
+- **Lean**: `isolatedSession: true` and `lightContext: true`, so no conversation history and no workspace bootstrap files. Assume 10K input tokens, 500 output tokens.
 
----
+The token counts are assumptions. Measure your own with `/usage full` on a heartbeat turn, then put your numbers into the formula.
 
-## Optimization Strategies
+| Model | Full context, per beat | Full, 30m (48/day) | Full, 1h (24/day) | Lean, per beat | Lean, 30m | Lean, 1h |
+|---|---:|---:|---:|---:|---:|---:|
+| Opus 5.5 | $0.490 | $705.60 | $352.80 | $0.050 | $72.00 | $36.00 |
+| Sonnet 5.5 | $0.245 | $352.80 | $176.40 | $0.025 | $36.00 | $18.00 |
+| Haiku 5.5 | $0.061 | $88.20 | $44.10 | $0.00125 | $1.80 | $0.90 |
+| Local (Ollama, llama.cpp) | $0 | $0 | $0 | $0 | $0 | $0 |
 
-### 1. Model Routing (Biggest Impact)
+Worked example, Opus 5.5 full context: (120,000 x $4 + 500 x $20) / 1,000,000 = $0.49 per beat; x 48 x 30 = $705.60 a month. Haiku 5.5 at 120K is above its 100K threshold, so the higher tier applies: (120,000 x $0.50 + 500 x $2.50) / 1,000,000 = $0.061.
 
-Use different models for different tasks. The cost difference between Opus and Flash-Lite is **60x**.
+Two things move these numbers more than the model does. Isolated, light-context heartbeats cut input by roughly 10x. Restricting `activeHours` to 14 hours a day removes about 42% of beats. If most of the prompt is a cache hit, the input cost falls further. The flip side: a heartbeat that fires after the cache has expired pays to rewrite it.
 
-| Task Type | Recommended Model | Approx. Cost/1M Tokens | Notes |
-|-----------|------------------|----------------|-------|
-| Heartbeat checks | Local model (Qwen3 14B) | **$0** | Zero cost, runs on your hardware |
-| Heartbeat checks | Gemini 2.5 Flash | **~$0.20** | If no local GPU available |
-| Simple tasks | DeepSeek V3.2 | **~$0.40** | Great quality-per-dollar |
-| Quick responses | Claude Haiku 4.5 | **~$3.00** | 90% of Sonnet quality at 1/3 price |
-| General use | Claude Sonnet 4.6 | **~$9.00** | Best balance |
-| Complex reasoning | Claude Opus 4.8 | **~$15.00** | Reserve for complex tasks only |
+## Settings that reduce cost
 
-See the **[Model Selection Guide](/guides/model-selection)** for the full breakdown by use case, budget, and hardware.
+Every block below passes `openclaw config validate` on 2026.10.4. Merge the parts you want into your config.
 
-Configure hybrid routing:
+### 1. Route work to the right model
+
+Keep a capable primary model, and send background work somewhere cheaper:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6",
-    // Use local model for heartbeat
-    "heartbeat_override": {
-      "provider": "local",
-      "local": {
-        "endpoint": "http://localhost:11434",
-        "model": "qwen3:14b",
-        "type": "ollama"
-      }
-    }
-  }
+  agents: {
+    defaults: {
+      model: {
+        primary: "anthropic/claude-sonnet-5-5",
+        fallbacks: ["anthropic/claude-haiku-5-5"],
+      },
+      // Short internal tasks: titles, narration, recaps, summaries
+      utilityModel: "anthropic/claude-haiku-5-5",
+      heartbeat: {
+        every: "1h",
+        model: "anthropic/claude-haiku-5-5",
+        isolatedSession: true,
+        lightContext: true,
+        activeHours: { start: "08:00", end: "22:00" },
+      },
+    },
+  },
 }
 ```
 
-### 2. Context Window Management
+- `model.primary` and `model.fallbacks` select the chat model; fallbacks are tried in order ([Models](https://docs.openclaw.ai/concepts/models)).
+- `utilityModel` handles short internal tasks. When unset, OpenClaw uses the primary provider's small-model default if it has one, otherwise the primary model.
+- `heartbeat.model` runs heartbeats on a different model from chat. A local model works too, for example `"ollama/qwen3:14b"` once the Ollama provider is set up ([Local Models](/guides/local-models)).
+- Per-agent overrides go under `agents.entries.<id>.model`, never `agents.list`.
 
-| Strategy | How | Impact |
-|----------|-----|--------|
-| **Start fresh sessions** | Use `/new` or `/reset` regularly | Prevents context snowball |
-| **Compact context** | Use `/compact` to summarize old messages | Frees window space |
-| **Limit context size** | `openclaw config set max_context_tokens 8000` | Per-session cost dropped from $0.40 to $0.05 |
-| **Limit response size** | `openclaw config set max_tokens_per_request 4000` | Prevents verbose responses |
-| **Daily auto-reset** | Default 4:00 AM local time | Creates fresh session automatically |
-
-### 3. Heartbeat Tuning
-
-Configure active hours to stop overnight token drain:
-
-```json title="~/.openclaw/openclaw.json"
-{
-  "heartbeat": {
-    "every": "1h",
-    "activeHours": {
-      "start": "08:00",
-      "end": "22:00"
-    }
-  }
-}
-```
-
-| Setting | Cost Impact |
-|---------|-------------|
-| Increase interval from 30m to 1h | **-50%** heartbeat cost |
-| Increase interval from 30m to 2h | **-75%** heartbeat cost |
-| Set active hours (14h/day vs 24h) | **-42%** heartbeat cost |
-| Use local model for heartbeat | **-100%** heartbeat cost |
-| Set to `0m` | Disables heartbeats entirely |
-
-### 4. Disable Thinking Mode for Routine Tasks
-
-Thinking/reasoning mode can increase token usage by **10-50x**. Disable it for routine tasks:
-
-```json5 title="~/.config/openclaw/config.json5"
-{
-  "thinking": "disabled"
-}
-```
-
-### 5. Leverage Prompt Caching
-
-Anthropic prompt caching charges cache hits at only **10% of normal cost**:
-
-- OpenClaw automatically applies `cacheRetention: "short"` (5-minute cache)
-- System prompts (5K-10K tokens) only charged once during cache validity
-- High-frequency users save **30-50%** with caching
-- Extend with `cacheRetention: "long"` in model config
-
-### 6. Use Existing Subscriptions (Zero Additional Cost)
-
-If you already pay for a subscription, connect it to OpenClaw with **no additional API costs**:
-
-| Subscription | Monthly Cost | How to Connect |
-|-------------|-------------|----------------|
-| Claude Pro | $20/month | Authenticate via claude-cli |
-| Claude Max | $100/month | Same method, higher limits |
-| ChatGPT Plus | $20/month | Connect API key |
-| Google One AI Premium | $20/month | Connect API key |
-
-During onboarding, select "Anthropic" as your provider, then choose "Claude Code CLI" as the auth method to use your existing subscription.
-
----
-
-## Budget Controls
-
-### Set Spending Limits
+You can make the same changes from the CLI:
 
 ```bash
-# OpenClaw built-in limits
-openclaw config set daily_budget_usd 5.00
-openclaw config set monthly_budget_usd 50.00
+openclaw models set anthropic/claude-sonnet-5-5
+openclaw models fallbacks add anthropic/claude-haiku-5-5
+openclaw config set agents.defaults.heartbeat.every '"1h"'
 ```
 
-### Provider-Level Alerts
+See the [Model Selection Guide](/guides/model-selection) for which models suit which tasks.
 
-| Provider | How | Recommendation |
-|----------|-----|---------------|
-| **Anthropic** | Dashboard spending alerts | Set alerts at 50%, 75%, 90% of budget |
-| **OpenAI** | Hard monthly spending caps | Configure directly in dashboard |
-| **OpenRouter** | Built-in spending tracking | Monitor across all routed models |
+### 2. Tune the heartbeat
 
-### Model Failover Chain
+| Change | Effect on heartbeat spend |
+|---|---|
+| `every: "30m"` to `"1h"` | About -50% |
+| `every: "30m"` to `"2h"` | About -75% |
+| `activeHours` of 14h instead of 24h | About -42% |
+| `isolatedSession: true` + `lightContext: true` | Roughly -90% in the scenarios above |
+| Cheaper `heartbeat.model` | Proportional to the price difference |
+| `every: "0m"` | Stops the recurring heartbeat. Event-driven wakes, such as a background command finishing, can still run a turn. |
 
-```json title="~/.openclaw/openclaw.json"
+Recurring checks (inbox, calendar, health pings) belong in [automations](https://docs.openclaw.ai/automation/cron-jobs), each with its own schedule and model, not in the heartbeat. The old `HEARTBEAT.md` file is retired; `openclaw doctor --fix` migrates it into the heartbeat monitor's scratch. See [Heartbeat](https://docs.openclaw.ai/gateway/heartbeat).
+
+### 3. Keep context small
+
+| Habit | Why |
+|---|---|
+| `/new` or `/reset` when you change topic | Starts a session without the old history |
+| `/compact` on long sessions | Summarises older messages |
+| Opt into an automatic reset if you want one | The default is no automatic reset. Set `session.reset.mode` to `"daily"` (with `atHour`, default 4) or `"idle"` ([Sessions](https://docs.openclaw.ai/concepts/session)). |
+| Trim tool output | Ask for summaries, not full dumps |
+| Keep skill descriptions short | The skill list is injected into every prompt |
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "models": {
-    "primary": "anthropic/claude-sonnet-4-6",
-    "fallback": "anthropic/claude-haiku",
-    "complex": "anthropic/claude-opus-4-8"
-  }
+  session: {
+    reset: { mode: "daily", atHour: 4 },
+  },
 }
 ```
 
----
+### 4. Lower thinking effort for routine work
 
-## Real Cost Data
+Reasoning tokens are billed as output. Set a lower default and raise it per message when needed with `/think high`:
 
-### Monthly Spending by Usage Pattern
-
-| Usage Pattern | Monthly Cost | Description |
-|--------------|-------------|-------------|
-| **Free / Minimal** | $0-8 | Local models (Ollama) or existing subscription |
-| **Light / Casual** | $10-30 | Few commands per day, basic automation |
-| **Moderate** | $30-70 | Regular file tasks, research, moderate chat |
-| **Power User** | $70-200 | Constant automation, long sessions |
-| **Heavy / Always-On** | $300-750 | Full proactive assistant, multiple integrations |
-| **Enterprise / Opus** | $500-5,000 | Full-time Opus agent, heavy tool usage |
-
-> The median: **90% of users spend under $12/day**, and the average developer spends roughly **$100-200/month**.
-
-### Additional Costs
-
-| Component | Cost | Notes |
-|-----------|------|-------|
-| OpenClaw software | **$0** | MIT open source |
-| Local hardware | **$0** | Your own machine |
-| VPS hosting | **$5-20/month** | Optional, for always-on |
-| API keys | Variable | See usage patterns above |
-
----
-
-## The $1,200 to $36 Case Study
-
-A documented case achieved a **97% cost reduction** by combining five changes:
-
-| Change | Effect |
-|--------|--------|
-| 1. Local search (QMDskill with BM25 + vector) | Token usage dropped 95% |
-| 2. Session context reduction (50KB to 8KB) | Per-session cost: $0.40 to $0.05 |
-| 3. Free web search via Exa AI | Eliminated paid search tokens |
-| 4. Automatic model routing | Right model for each task |
-| 5. Local heartbeat handling | Eliminated recurring paid heartbeats |
-
-These reductions **compound multiplicatively** — $1,200/month became $36/month.
-
----
-
-## Monitoring Tools
-
-### Built-in
-
-| Command | What It Shows |
-|---------|--------------|
-| `/status` | Agent reachability, context usage, current model |
-| `/usage full` | Token usage for every response |
-
-### Third-Party Dashboards
-
-| Tool | Features |
-|------|----------|
-| [**Clawalytics**](https://www.clawalytics.com/) | Real-time spending dashboard, per-agent breakdowns, daily cost charts, suspicious activity alerts |
-| [**ClawWatcher**](https://news.ycombinator.com/item?id=46954200) | Real-time token usage, cost per model, skills/actions tracking |
-| [**claw-dash**](https://github.com/openclaw/openclaw/discussions/8277) | Sessions, tokens (24h), costs, model info, cron jobs, system health gauges |
-| [**openclaw-dashboard**](https://github.com/tugcantopaloglu/openclaw-dashboard) | Browser notifications for usage limits, cost analysis by model |
-| [**OpenClaw Cost Calculator**](https://calculator.vlvt.sh/) | Pre-deployment cost estimation |
-
-### OpenRouter Auto-Routing
-
-For centralized model routing, OpenRouter can automatically select the most cost-effective model per prompt using `openrouter/openrouter/auto` — single API key for all providers with built-in cost tracking.
-
----
-
-## Quick-Start: Cut Costs Today
-
-If you're spending too much right now, apply these changes immediately:
-
-1. **Switch heartbeat to a cheap model** — biggest single savings
-2. **Set active hours** — stop overnight token drain
-3. **Set daily and monthly budget limits** — prevent surprises
-4. **Use `/compact` regularly** — prevent context snowball
-5. **Disable thinking mode** for routine tasks
-
-```json5 title="~/.openclaw/openclaw.json — Minimum cost configuration"
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6",
-    "heartbeat_override": {
-      "provider": "local",
-      "local": {
-        "endpoint": "http://localhost:11434",
-        "model": "llama3.1:8b",
-        "type": "ollama"
-      }
-    }
-  }
+  agents: {
+    defaults: {
+      thinkingDefault: "low",
+    },
+  },
 }
 ```
 
-```json title="~/.openclaw/openclaw.json — Budget limits"
+Claude Opus 5.5 always thinks: a stored `off` maps to `low` ([Anthropic provider](https://docs.openclaw.ai/providers/anthropic)). On other models `off` is available. See [Thinking levels](https://docs.openclaw.ai/tools/thinking).
+
+### 5. Use prompt caching well
+
+OpenClaw sets cache breakpoints for Anthropic and other providers that support caching. `cacheRetention` accepts `"none"`, `"short"` (the provider's default window, 5 minutes on Anthropic) or `"long"` (1 hour on Anthropic). Set it globally, per model, or per agent:
+
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "heartbeat": {
-    "every": "1h",
-    "activeHours": {
-      "start": "08:00",
-      "end": "22:00"
-    }
-  }
+  agents: {
+    defaults: {
+      params: { cacheRetention: "long" },
+      // Keep the 1h cache warm across idle gaps
+      heartbeat: { every: "55m" },
+      // Drop old tool results once the cache has expired
+      contextPruning: { mode: "cache-ttl", ttl: "1h" },
+    },
+  },
 }
 ```
 
-```bash
-openclaw config set daily_budget_usd 5.00
-openclaw config set monthly_budget_usd 50.00
-```
+A 1-hour cache write costs more than a 5-minute one (2x input instead of 1.25x on Anthropic), so `"long"` pays off only when you come back within the hour. See [Prompt caching](https://docs.openclaw.ai/reference/prompt-caching).
 
----
+### 6. Use a subscription you already have
 
-## See Also
+| Plan | How OpenClaw uses it | Caveat |
+|---|---|---|
+| Claude Pro or Max | Claude CLI auth (`claude-cli/*` route), reusing your Claude Code login | Usage draws on your plan's limits, and Anthropic's terms for this can change. API-key billing is more predictable for shared automation ([Anthropic provider](https://docs.openclaw.ai/providers/anthropic)). |
+| ChatGPT plans | Sign in with Codex OAuth (`openai/gpt-6-astra` by default) | An OpenAI API key is separate pay-as-you-go billing ([OpenAI models](https://docs.openclaw.ai/providers/openai/models)) |
+| Google One AI plans | Not usable as Gemini API credit | Gemini API keys are billed separately |
 
-- [Local Models](/guides/local-models) — Zero-cost local inference
-- [Cloud GPU & Self-Hosted Models](/guides/cloud-gpu-models) — Cost comparison of cloud GPU options
-- [Heartbeat System](/architecture/heartbeat) — How heartbeat scheduling works
-- [Configuration Reference](/reference/configuration) — All cost-related settings
-- [Real-World Use Cases](/guides/use-cases) — Cost data from real deployments
+## Track what you spend
+
+| Where | What it shows |
+|---|---|
+| `/status` in chat | Session tokens and estimated cost (API-key models) |
+| `/usage full` in chat | Usage footer on every reply |
+| `/usage cost` in chat | Cost summary from OpenClaw's session logs |
+| `openclaw gateway usage-cost --days 7` | The same summary from the CLI. Add `--all-agents` or `--agent <id>`, and `--json` for scripts. |
+| `openclaw status --usage` | Provider-reported quota and usage snapshots |
+| Control UI, **Usage** | Session-derived estimates, plus provider-reported spend when an admin key is set |
+
+OpenClaw's own figures are estimates from session logs. For actual billing, set `ANTHROPIC_ADMIN_KEY` or `OPENAI_ADMIN_KEY`; the Control UI then shows 30 days of provider-reported cost alongside them ([Usage tracking](https://docs.openclaw.ai/concepts/usage-tracking)).
+
+### Hard limits, at the provider
+
+| Where | How |
+|---|---|
+| Anthropic Console | Workspace spend limits and alerts |
+| OpenAI dashboard | Project budgets and usage alerts |
+| OpenRouter | Per-key credit limits. Model ref `openrouter/auto` lets OpenRouter pick the model per prompt ([OpenRouter provider](https://docs.openclaw.ai/providers/openrouter)). |
+| ClawRouter | Monthly budget per key, shown in `openclaw status --usage` ([ClawRouter](https://docs.openclaw.ai/providers/clawrouter)) |
+
+### Community dashboards
+
+These are third-party projects, not reviewed by clawdocs. Check what they read and where they send it before connecting them to your Gateway.
+
+| Tool | What it does |
+|---|---|
+| [openclaw-dashboard](https://github.com/tugcantopaloglu/openclaw-dashboard) | Usage-limit notifications and cost analysis by model |
+| [ClawWatcher](https://news.ycombinator.com/item?id=46954200) | Token usage and cost per model |
+| [OpenClaw Cost Calculator](https://calculator.vlvt.sh/) | Pre-deployment estimates |
+
+## Quick start: cut costs today
+
+1. Run `/usage full` for a day and `openclaw gateway usage-cost --days 1` to see where tokens go.
+2. Make heartbeats lean: `isolatedSession: true`, `lightContext: true`, `activeHours`, and `every: "1h"` or longer.
+3. Put heartbeats and `utilityModel` on a cheap model (Haiku 5.5 or a local model).
+4. Start new sessions with `/new` when the topic changes, and `/compact` long ones.
+5. Lower `thinkingDefault` and raise it per message when needed.
+6. Set a spend limit in your provider's console.
+
+## See also
+
+- [Model Selection](/guides/model-selection): which model for which task
+- [Local Models](/guides/local-models): zero per-token cost
+- [Cloud GPU & Self-Hosted Models](/guides/cloud-gpu-models): renting GPUs and inference APIs
+- [Performance Tuning](/guides/performance-tuning): latency and resource tuning
+- [Monitoring](/guides/monitoring): logs, health and metrics
