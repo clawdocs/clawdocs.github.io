@@ -338,6 +338,7 @@ For a repeatable test with no Gateway and a temporary state directory, use `open
 - Declare every environment variable the skill reads, in `requires.env`, `primaryEnv` or ClawHub's `envVars`. ClawHub's scanner flags undeclared ones.
 - Treat input from messages, web pages and files as untrusted. Do not paste it into shell commands unquoted.
 - Ask for confirmation before destructive steps (deleting, restarting, sending)
+- Name every external script, API or package the skill fetches, and pin versions
 
 ### Don't
 
@@ -348,15 +349,6 @@ For a repeatable test with no Gateway and a temporary state directory, use `open
 - Edit `SOUL.md` or other agent configuration
 - Put secrets in the skill text. Use `skills.entries.<name>.apiKey` or `env` instead.
 - Use `chmod 777` or loosen file permissions
-
-### Supply Chain Awareness
-
-If your skill fetches external resources (APIs, scripts, packages):
-
-- Document every external dependency
-- Pin versions where possible
-- Prefer well-known, trusted sources
-- Consider what happens if an external resource is compromised
 
 ---
 
@@ -496,7 +488,10 @@ openclaw skills workshop list
 clawhub login
 clawhub skill publish <dir> [--dry-run] [--version <v>] [--owner <handle>]
 clawhub sync --all
-clawhub uninstall <slug>
+
+# Remove a ClawHub skill: --workdir is the root it was installed into
+clawhub --workdir ~/.openclaw/workspace uninstall @owner/slug   # agent workspace skill
+clawhub --workdir ~/.openclaw uninstall @owner/slug             # shared skill (installed with --global)
 ```
 
 There is no `openclaw skill` (singular) or `openclaw clawhub` command.
