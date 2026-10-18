@@ -1,412 +1,380 @@
 ---
 last_update:
-  date: 2026-07-08
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Model Selection Guide
-description: Which LLM to use with OpenClaw — by use case, budget, and deployment type, with provider comparison and routing strategies
+description: Which LLM to use with OpenClaw, by use case, budget and hardware, with current model refs, dated prices and routing config that validates
 keywords: [openclaw, openclaw model, which model, claude vs gpt, model comparison, cheapest model]
 ---
 
 # Model Selection Guide
 
-OpenClaw is model-agnostic — it works with 30+ bundled provider plugins covering both cloud and local models. This page helps you choose the right model for your setup and configure routing across multiple providers.
+OpenClaw is model-agnostic. It ships provider plugins for the major cloud APIs, for OpenRouter and other aggregators, and for local servers such as Ollama, llama.cpp, LM Studio and vLLM. This page helps you choose a model and configure routing. Upstream keeps the authoritative per-provider pages under [Providers](https://docs.openclaw.ai/providers), and the model config reference at [Models](https://docs.openclaw.ai/concepts/models).
 
-:::tip
-**Model pricing changes frequently.** Check [OpenRouter pricing](https://openrouter.ai/models) or your provider's dashboard for current rates. Prices below are approximate as of June 2026.
+Model refs are always `provider/model`, for example `anthropic/claude-sonnet-5-5`. To see what your credentials can use, run `openclaw models list` (configured models) or `openclaw models list --all` (full catalog).
+
+:::tip Prices change
+Prices below are per million input/output tokens, **as of 2026-10-18**. Anthropic prices are from [Anthropic's pricing page](https://platform.claude.com/docs/en/about-claude/pricing). Where no source is given, check the provider's pricing page before you rely on a number.
 :::
 
 ---
 
-## Quick Pick
+## Quick pick
 
-| Your priority | Model | Provider | Approx. cost |
-|--------------|-------|----------|-------------|
-| **Best quality** | Claude Opus 4.8 | Anthropic / OpenRouter | ~$15/$75 per M tokens |
-| **Best balance** | Claude Sonnet 4.6 | Anthropic / OpenRouter | ~$3/$15 per M tokens |
-| **Cheapest cloud** | DeepSeek V3.2 | DeepSeek / OpenRouter | ~$0.27/$1.10 per M tokens |
-| **Near-free cloud** | Gemini 2.5 Flash | Google / OpenRouter | ~$0.15/$0.60 per M tokens |
-| **Free (local)** | Qwen3 32B | Ollama / LM Studio | $0 (your hardware) |
-| **Free (hosted)** | OpenRouter Free tier | OpenRouter | $0 (rate-limited) |
-
----
-
-## Recently Added Model Support (June–July 2026)
-
-Model catalog additions in recent releases, per the [official changelog](https://github.com/openclaw/openclaw/blob/main/CHANGELOG.md):
-
-| Version | What was added |
-|---------|----------------|
-| **v2026.6.6** | Claude Fable 5 (adaptive thinking); OpenRouter OAuth onboarding |
-| **v2026.6.7** | Kimi K2.7 Code |
-| **v2026.6.8** | GLM-5.2 and Claude Haiku 4.5 catalog entries, with normalized provider-qualified IDs across OpenRouter and Google Vertex |
-| **v2026.6.11** | Gemini 3.5 Flash (full 1,048,576-token context); Ollama Cloud `glm-5.2:cloud` (1M context, reasoning, tools); Xiaomi Token Plan `mimo-v2.5` / `mimo-v2.5-pro` (up to 128K output tokens); fix for OpenRouter short DeepSeek V4 model IDs (`model_not_found` from a duplicated provider prefix) |
-| **v2026.7.1** (beta) | OpenAI GPT-5.6 model family; bundled ClawRouter provider plugin (credential-scoped dynamic model discovery, OpenAI-compatible plus native Anthropic/Gemini transports, budget reporting); Ollama inference-node auto-discovery |
+| Your priority | Model ref | Price (in / out) |
+|---|---|---|
+| Most capable | `anthropic/claude-fable-5-1` | $10 / $50 |
+| Best default for agent work | `anthropic/claude-opus-5-5` (fresh Anthropic setups pick this) | $4 / $20 |
+| Balance of cost and quality | `anthropic/claude-sonnet-5-5` | $2 / $10 |
+| Cheap and fast | `anthropic/claude-haiku-5-5` | $0.10 / $0.50 up to 100K-token prompts; $0.50 / $2.50 above |
+| OpenAI default | `openai/gpt-6-astra` (also the built-in fallback when no model is configured) | See [OpenAI pricing](https://openai.com/api/pricing/) |
+| Google default | `google/gemini-4-argon` | See [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing) |
+| Budget cloud | `deepseek/deepseek-flash` (V4.1 Flash) | About $0.30 / $1.20 at peak hours (OpenClaw's bundled estimate) |
+| Free, local | `ollama/qwen3:32b` or similar | $0 per token, your hardware |
+| One key for many providers | `openrouter/auto` | Pass-through pricing |
 
 ---
 
-## By Use Case
+## Recently added model support
 
-### Heartbeat (runs every 30 min — cost adds up)
+From the release notes ([CHANGELOG](https://github.com/openclaw/openclaw/tree/main/CHANGELOG), [releases](https://docs.openclaw.ai/releases)):
 
-Use the cheapest model that can follow instructions reliably:
+| Version | Added |
+|---|---|
+| v2026.6.6 | Claude Fable 5; OpenRouter OAuth onboarding |
+| v2026.6.7 | Kimi K2.7 Code |
+| v2026.6.8 | GLM-5.2 |
+| v2026.6.11 | Gemini 3.5 Flash; Ollama Cloud `glm-5.2:cloud` |
+| v2026.7.1 | Claude Sonnet 5 and Claude Mythos 5 (limited access); OpenAI GPT-5.6 family; bundled ClawRouter provider |
+| v2026.9.1 | Claude Fable 5.1 |
+| v2026.9.2 | OpenAI GPT-6 Astra |
+| v2026.9.6 | Claude Opus 5.5; GPT-6 Sol and Luna; Grok 4.7 |
+| v2026.9.7 | Claude Sonnet 5.5 (the `sonnet` alias now selects it) |
+| v2026.9.9 | GPT-6.1 Sol; Claude Haiku 5.5 |
 
-| Model | Why | Monthly Cost (48 cycles/day) |
-|-------|-----|-----|
-| **Local model** (Qwen3 14B) | Zero cost | $0 |
-| **Gemini 2.5 Flash** | Very cheap, good instruction following | $15-60 |
-| **DeepSeek V3.2** | Budget cloud, decent quality | $15-60 |
-| **Claude Haiku 4.5** | More capable but pricier | $30-90 |
+Retired or hidden upstream, so do not configure them for new setups: DeepSeek `deepseek-chat` and `deepseek-reasoner` (retired by DeepSeek on 2026-07-24), Gemini 3 Pro Preview (retired 2026-03-09), and GPT-4o/GPT-4.1 (hidden from the picker, still selectable by exact ref). Claude 4.x models still work but cost more than their 5.5 successors.
+
+---
+
+## By use case
+
+### Heartbeat and background work
+
+The heartbeat is a scheduled agent turn, every 30 minutes by default. Run it on a cheap model and keep its context small. [Cost Management](./cost-management.md#heartbeat-costs) has the cost formula and worked numbers for each model.
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "heartbeat": {
-    "model": "claude-haiku-4-5-20251001"
-  }
+  agents: {
+    defaults: {
+      heartbeat: {
+        every: "1h",
+        model: "anthropic/claude-haiku-5-5",
+        isolatedSession: true,
+        lightContext: true,
+      },
+      // Short internal tasks: titles, narration, recaps, summaries
+      utilityModel: "anthropic/claude-haiku-5-5",
+    },
+  },
 }
 ```
 
-### Complex Reasoning & Planning
+### Complex reasoning, planning and coding
 
-| Model | Why | Cost |
-|-------|-----|------|
-| **Claude Opus 4.8** | Best reasoning, most capable | ~$15/$75 per M tokens |
-| **Claude Opus 4.6** | Previous gen, still excellent | ~$15/$75 per M tokens |
-| **Claude Sonnet 4.6** | 80% of Opus quality at lower cost | ~$3/$15 per M tokens |
+| Model ref | Notes | Price (in / out) |
+|---|---|---|
+| `anthropic/claude-fable-5-1` | Most capable Claude. Long turns on hard tasks. | $10 / $50 |
+| `anthropic/claude-opus-5-5` | Strong default for agent and coding work. Thinking is always on; use `/think low` to reduce it. | $4 / $20 |
+| `openai/gpt-6.1-sol` | OpenAI's top tier. Reasoning cannot be disabled. | See OpenAI pricing |
+| `anthropic/claude-sonnet-5-5` | Most coding at half the Opus price | $2 / $10 |
+| `deepseek/deepseek-v4-pro` | DeepSeek's onboarding default | See [DeepSeek pricing](https://api-docs.deepseek.com/quick_start/pricing) |
 
-### Coding Tasks
+### General chat and daily tasks
 
-| Model | Why | Cost |
-|-------|-----|------|
-| **Claude Opus 4.8** | Best code generation and debugging | ~$15/$75 per M tokens |
-| **Claude Sonnet 4.6** | Great for most coding, much cheaper | ~$3/$15 per M tokens |
-| **DeepSeek V3.2** | Surprisingly good at code, very cheap | ~$0.27/$1.10 per M tokens |
-| **Qwen3 32B** (local) | Best local coding model | $0 |
-| **Qwen 2.5 Coder** (local) | Optimized for coding | $0 |
+| Model ref | Notes |
+|---|---|
+| `anthropic/claude-sonnet-5-5` | Good quality per dollar |
+| `anthropic/claude-haiku-5-5` | Cheapest Claude. Text and image input, 1M context. |
+| `openai/gpt-6-luna` | Lower-cost GPT-6 tier; check your account's catalog |
+| `google/gemini-3.8-flash` | Google's bundled Flash model (alias `gemini-flash`) |
+| `deepseek/deepseek-flash` | Budget option |
 
-### General Chat & Daily Tasks
+### Long context
 
-| Model | Why | Cost |
-|-------|-----|------|
-| **DeepSeek V3.2** | Best quality-per-dollar for general use | ~$0.27/$1.10 per M tokens |
-| **Gemini 2.5 Flash** | Fast, cheap, good for summaries | ~$0.15/$0.60 per M tokens |
-| **Claude Sonnet 4.6** | Premium quality when needed | ~$3/$15 per M tokens |
+Current Claude models (Fable 5.1, Opus 5.5, Sonnet 5.5, Haiku 5.5) and Opus/Sonnet 4.6 and later have a 1M-token context window; Haiku 4.5 has 200K. `google/gemini-4-argon` has 1,048,576 tokens and DeepSeek V4 models 1M. A large window is not free: every token you send is billed, so keep sessions compact either way.
 
-### Long Context (large files, codebases)
+### Tool use (agent workloads)
 
-| Model | Context Window | Cost |
-|-------|---------------|------|
-| **Gemini 2.5 Flash** | 1M tokens | ~$0.15/$0.60 per M tokens |
-| **Gemini 2.5 Pro** | 1M tokens | ~$1.25/$10 per M tokens |
-| **Claude Sonnet 4.6** | 200K tokens | ~$3/$15 per M tokens |
+OpenClaw relies on reliable function calling with streamed tool-call deltas and well-formed JSON arguments.
 
-### Tool Use (Agent Workloads)
-
-Not all models handle OpenClaw's tool-call protocol reliably. Requirements:
-
-- Function calling / tool use support in the model's training
-- Streaming tool call delta emission
-- Reliable JSON argument formatting
-
-| Model | Tool Use Reliability | Notes |
-|-------|---------------------|-------|
-| **Claude Opus/Sonnet** | Excellent | Purpose-built for tool use |
-| **GPT-5.3-Codex / GPT-4o** | Excellent | Strong function calling |
-| **Gemini 2.5 Flash/Pro** | Good | Improving rapidly |
-| **DeepSeek V3.2** | Good | Good for the price |
-| **Qwen3 32B** (local) | Good | Best local option |
-| **Llama 3.3 70B** (local) | Good | Needs big GPU |
-| **Models under 14B** (local) | Unreliable | Often fails multi-step tool chains |
+| Model class | Tool-use reliability |
+|---|---|
+| Current Claude, GPT-6 and Gemini models | Reliable |
+| DeepSeek V4 | Good |
+| Local 30B+ models (Qwen3 32B, Llama 3.3 70B) | Good, with enough context (`num_ctx`) configured |
+| Local models under ~14B | Often fail multi-step tool chains |
 
 :::caution
-Local models smaller than ~14B parameters often struggle with complex multi-step tool calling. For reliable agent behavior, use 30B+ local models or cloud providers.
+Local models smaller than about 14B parameters often struggle with multi-step tool calling. For reliable agent behaviour, use 30B+ local models or a cloud model. Small local models are also easier to manipulate with prompt injection, so keep approvals on for tools that act on your system ([Hardening](/security/hardening)).
 :::
 
 ---
 
-## By Budget
+## By budget
 
-### $0/month (Local Models Only)
+### $0 per token (local only)
 
-Run models on your own hardware via [Ollama](https://ollama.ai), [LM Studio](https://lmstudio.ai), or vLLM. No API key needed.
+Run models on your own hardware with Ollama, llama.cpp, LM Studio, vLLM or SGLang. No API key is needed.
 
-| Your VRAM | Recommended Model | Quality |
-|-----------|------------------|---------|
-| 8 GB | Qwen3 8B, Llama 3.3 8B | Basic tasks |
+| VRAM | Example model | Quality |
+|---|---|---|
+| 8 GB | Qwen3 8B, Llama 3.1 8B | Basic tasks |
 | 12-16 GB | Qwen3 14B | Good for most tasks |
-| 24 GB (RTX 4090) | Qwen3 32B (Q4_K_M) | Excellent daily driver |
-| 40-80 GB (A100) | Llama 3.3 70B | Near-cloud quality |
+| 24 GB | Qwen3 32B (Q4_K_M) | A capable daily driver |
+| 48-80 GB | Llama 3.3 70B (quantized) | Close to cloud quality |
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "local",
-    "model": "qwen3:32b",
-    "endpoint": "http://localhost:11434"
-  }
-}
-```
-
-See [Local Models Guide](/guides/local-models) for full setup instructions.
-
-### $5-30/month (Budget Cloud)
-
-Use cheap cloud models via [OpenRouter](https://openrouter.ai) or direct:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "brain": {
-    "provider": "openrouter",
-    "model": "deepseek/deepseek-v3.2"
+  models: {
+    providers: {
+      ollama: {
+        baseUrl: "http://127.0.0.1:11434",
+        api: "ollama",
+        apiKey: "ollama-local",
+        models: [
+          { id: "qwen3:32b", name: "qwen3:32b", params: { num_ctx: 32768 } },
+        ],
+      },
+    },
   },
-  "heartbeat": {
-    "model": "google/gemini-2.5-flash"
-  }
+  agents: {
+    defaults: {
+      model: { primary: "ollama/qwen3:32b" },
+    },
+  },
 }
 ```
 
-### $30-150/month (Premium Cloud)
+The [Local Models guide](/guides/local-models) covers setup, the `/v1` pitfall and `num_ctx`.
 
-Use Anthropic models directly for best quality, with a cheap fallback for heartbeat:
+### Budget cloud
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6"
+  agents: {
+    defaults: {
+      model: {
+        primary: "deepseek/deepseek-flash",
+        fallbacks: ["anthropic/claude-haiku-5-5"],
+      },
+    },
   },
-  "heartbeat": {
-    "model": "claude-haiku-4-5-20251001"
-  }
 }
 ```
 
-### Hybrid (Best of Both)
-
-Route expensive tasks to cloud, cheap tasks to local:
+### Premium cloud
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6",
-    "fallback": {
-      "provider": "local",
-      "model": "qwen3:32b"
-    }
+  agents: {
+    defaults: {
+      model: {
+        primary: "anthropic/claude-opus-5-5",
+        fallbacks: ["anthropic/claude-sonnet-5-5"],
+      },
+      heartbeat: { model: "anthropic/claude-haiku-5-5" },
+      utilityModel: "anthropic/claude-haiku-5-5",
+    },
   },
-  "heartbeat": {
-    "provider": "local",
-    "model": "qwen3:14b"
-  }
 }
 ```
 
-See [Cost Management](/guides/cost-management) for advanced routing strategies.
+### Hybrid: cloud primary, local fallback
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  models: {
+    providers: {
+      ollama: {
+        baseUrl: "http://127.0.0.1:11434",
+        api: "ollama",
+        apiKey: "ollama-local",
+        models: [
+          { id: "qwen3:32b", name: "qwen3:32b", params: { num_ctx: 32768 } },
+          { id: "qwen3:14b", name: "qwen3:14b", params: { num_ctx: 32768 } },
+        ],
+      },
+    },
+  },
+  agents: {
+    defaults: {
+      model: {
+        primary: "anthropic/claude-sonnet-5-5",
+        fallbacks: ["ollama/qwen3:32b"],
+      },
+      heartbeat: { model: "ollama/qwen3:14b" },
+    },
+  },
+}
+```
 
 ---
 
 ## Model Routing
 
-OpenClaw routes different tasks to different models based on your configuration.
+OpenClaw picks a model in this order: the primary, then each fallback in order. Inside one provider, it rotates auth profiles before moving to the next fallback ([selection order](https://docs.openclaw.ai/concepts/models)).
 
-### Per-Task Routing
+### Where each model is set
 
-| Config Key | Controls | Typical Choice |
-|-----------|----------|---------------|
-| `brain.model` | Default model for chat and reasoning (the real key is `agents.defaults.model`) | Chosen by onboarding per provider: a fresh Anthropic setup picks `anthropic/claude-opus-5-5`; with no model configured the built-in fallback is `openai/gpt-6-astra` |
-| `heartbeat.model` | Heartbeat cycles | Haiku 4.5 or local |
-| `agents.list[].model` | Per-agent model | Varies by agent role |
-| `brain.fallback` | Fallback when primary is down | Different provider |
+| Config key | Controls |
+|---|---|
+| `agents.defaults.model.primary` | Default chat and agent model. A fresh Anthropic setup picks `anthropic/claude-opus-5-5`; with no model configured the built-in fallback is `openai/gpt-6-astra`. |
+| `agents.defaults.model.fallbacks` | Ordered list tried when the primary fails |
+| `agents.defaults.heartbeat.model` | Heartbeat turns |
+| `agents.defaults.utilityModel` | Short internal tasks (titles, narration, recaps, summaries) |
+| `agents.defaults.imageModel` | Used only when the primary cannot accept images |
+| `agents.entries.<id>.model` | Per-agent override |
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6",
-    "fallback": {
-      "provider": "openrouter",
-      "model": "deepseek/deepseek-v3.2"
-    }
+  agents: {
+    // Required once you define more than one agent
+    ownership: "explicit",
+    defaults: {
+      model: {
+        primary: "anthropic/claude-sonnet-5-5",
+        fallbacks: ["openai/gpt-6-astra", "deepseek/deepseek-flash"],
+      },
+      heartbeat: { model: "anthropic/claude-haiku-5-5" },
+    },
+    entries: {
+      main: {},
+      researcher: { model: "anthropic/claude-opus-5-5" },
+      worker: { model: "anthropic/claude-haiku-5-5" },
+    },
   },
-  "heartbeat": {
-    "model": "claude-haiku-4-5-20251001"
-  },
-  "agents": {
-    "list": [
-      { "id": "researcher", "model": "claude-opus-4-6" },
-      { "id": "monitor", "model": "ollama/qwen3:14b" },
-      { "id": "worker", "model": "claude-haiku-4-5-20251001" }
-    ]
-  }
 }
 ```
 
-### Three Hybrid Strategies
+`agents.list` is rejected in current releases. If an older config has it, `openclaw doctor --fix` migrates it to `agents.entries`.
 
-| Strategy | How It Works | Best For |
-|----------|-------------|----------|
-| **Primary with fallbacks** | Cloud primary, local kicks in when cloud is down or rate-limited | Reliability |
-| **Local-first** | Local primary, cloud safety net for complex tasks | Cost savings |
-| **Merge mode** | Both cloud and local models available, route per-task | Maximum flexibility |
+### From the CLI and chat
 
-#### Merge Mode
-
-Use `models.mode: "merge"` to add local providers without losing cloud defaults:
-
-```json5
-{
-  "models": {
-    "mode": "merge",
-    "providers": {
-      "ollama": {
-        "models": {
-          "qwen3:32b": { "contextWindow": 32768 }
-        }
-      }
-    }
-  }
-}
+```bash
+openclaw models set anthropic/claude-sonnet-5-5
+openclaw models fallbacks add openai/gpt-6-astra
+openclaw models fallbacks list
+openclaw models status
 ```
 
-Without merge mode, custom providers replace the defaults entirely.
+In chat, `/model` shows or switches the session's model. Choosing a model other than the default pins it to that session and turns off fallback for it; `/model default` clears the pin ([selection rules](https://docs.openclaw.ai/concepts/models#selection-source-and-fallback-strictness)).
+
+### Restricting which models can be used
+
+`agents.defaults.modelPolicy.allow` is an optional allowlist of exact refs or trailing wildcards such as `anthropic/*`. Leave it unset to allow any model.
+
+### Adding providers: merge vs replace
+
+Custom providers under `models.providers` are merged with the built-in catalog by default. Set `models.mode: "replace"` only if you want pickers to list nothing but your own providers' `models` arrays. Each custom provider needs a `baseUrl` and a `models` array of `{ id, name, ... }` objects. A map keyed by model name is rejected.
 
 ---
 
-## Provider Comparison
+## Provider comparison
 
-### Cloud Providers
+### Cloud providers
 
-| Provider | Key Models | Input/Output Cost | Context | Setup |
-|----------|-----------|-------------------|---------|-------|
-| **Anthropic** | Opus 4.8, Sonnet 4.6, Haiku 4.5 | $0.25-$15 / $1.25-$75 per M | 200K | [console.anthropic.com](https://console.anthropic.com) |
-| **OpenAI** | GPT-5.3-Codex, GPT-4o | $2.50-$15 / $10-$60 per M | 128K | [platform.openai.com](https://platform.openai.com) |
-| **Google** | Gemini 2.5 Flash, 2.5 Pro | $0.15-$1.25 / $0.60-$10 per M | 1M | [aistudio.google.com](https://aistudio.google.com) |
-| **DeepSeek** | V3.2, R1 | $0.27-$0.55 / $1.10-$2.19 per M | 128K | [platform.deepseek.com](https://platform.deepseek.com) |
-| **xAI** | Grok | $5 / $15 per M | 128K | [console.x.ai](https://console.x.ai) |
-| **OpenRouter** | 200+ models | Varies (pass-through) | Varies | [openrouter.ai](https://openrouter.ai) |
+| Provider | Current refs | Context | Pricing |
+|---|---|---|---|
+| Anthropic | `claude-fable-5-1`, `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5` | 1M | $0.10 / $0.50 (Haiku 5.5) to $10 / $50 (Fable 5.1), [source](https://platform.claude.com/docs/en/about-claude/pricing) |
+| OpenAI | `gpt-6-astra`, `gpt-6-sol`, `gpt-6.1-sol`, `gpt-6-luna`, `gpt-5.6-*` | Varies by model | [openai.com/api/pricing](https://openai.com/api/pricing/) |
+| Google | `gemini-4-argon`, `gemini-3.8-flash` | 1,048,576 (Argon) | [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing) |
+| DeepSeek | `deepseek-v4-pro`, `deepseek-v4-flash`, `deepseek-flash` | 1M | [DeepSeek pricing](https://api-docs.deepseek.com/quick_start/pricing) |
+| xAI | `grok-4.7` and earlier 4.x | Varies | [xAI pricing](https://docs.x.ai/docs/models) |
+| OpenRouter | `openrouter/auto` or `openrouter/<author>/<slug>` | Varies | Pass-through, [openrouter.ai/models](https://openrouter.ai/models) |
 
-### Local Providers
+Provider setup pages: [Anthropic](https://docs.openclaw.ai/providers/anthropic), [OpenAI](https://docs.openclaw.ai/providers/openai/models), [Google](https://docs.openclaw.ai/providers/google), [DeepSeek](https://docs.openclaw.ai/providers/deepseek), [xAI](https://docs.openclaw.ai/providers/xai), [OpenRouter](https://docs.openclaw.ai/providers/openrouter).
 
-| Provider | Setup | GUI | Multi-GPU | Best For |
-|----------|-------|-----|-----------|----------|
-| **LM Studio** | Download app | Yes | No | Beginners, quick setup |
-| **Ollama** | One command | No | Limited | CLI users, auto-discovery |
-| **vLLM** | pip install | No | Yes (tensor parallel) | Production, high throughput |
-| **SGLang** | pip install | No | Yes | High throughput, RadixAttention |
+### Local providers
+
+| Provider | Setup | Best for |
+|---|---|---|
+| llama.cpp (managed) | `openclaw onboard`, then "Managed local server" | A hardware-aware default that OpenClaw starts for you |
+| Ollama | One installer | CLI users; auto-discovery of pulled models |
+| LM Studio | Desktop app | Beginners; a GUI |
+| vLLM | `pip install vllm` | Production, multi-GPU throughput |
+| SGLang | `pip install sglang` | High throughput |
 
 ---
 
 ## OpenRouter
 
-[OpenRouter](https://openrouter.ai) is a meta-provider — one API key gives you access to 200+ models across all major providers with usage-based billing.
-
-### Why Use OpenRouter
-
-- **Single API key** for Claude, GPT, Gemini, DeepSeek, open-source models
-- **Cost arbitrage** — find the cheapest provider for any model
-- **Rate limit pooling** — automatic fallback across providers
-- **Free tier** — rate-limited access to select models at $0
-- **Usage tracking** — detailed per-model spending dashboard
-
-### Configuration
+[OpenRouter](https://openrouter.ai) gives one API key for many providers. Onboarding defaults to `openrouter/auto`, which lets OpenRouter pick a model per request. Use `openrouter/<author>/<slug>` for a specific model; `openclaw models list --provider openrouter` shows what is available.
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "openrouter",
-    "model": "anthropic/claude-sonnet-4-6",
-    "api_key": "${OPENROUTER_API_KEY}"
-  }
+  agents: {
+    defaults: {
+      model: { primary: "openrouter/auto" },
+    },
+  },
 }
 ```
 
-### Advanced Routing Metadata
+### Provider routing
 
-OpenRouter supports 13 routing fields that OpenClaw passes through (via PR #17148):
+OpenRouter's `provider` routing object goes under `models.providers.openrouter.params.provider`, and OpenClaw forwards it unchanged. Fields use OpenRouter's snake_case names: `sort`, `only`, `ignore`, `order`, `allow_fallbacks`, `require_parameters`, `data_collection`, `quantizations`, `max_price`, `preferred_max_latency`, `preferred_min_throughput`, `zdr` and `enforce_distillable_text`.
 
-```json5
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "models": {
-    "providers": {
-      "openrouter": {
-        "providerRouting": {
-          "sort": "price",
-          "allow_fallbacks": true,
-          "require_parameters": true,
-          "data_collection": "deny",
-          "quantizations": ["fp16", "bf16"],
-          "max_price": { "prompt": 0.001, "completion": 0.005 },
-          "preferred_max_latency": 10000,
-          "preferred_min_throughput": 50
-        }
-      }
-    }
-  }
+  models: {
+    providers: {
+      openrouter: {
+        params: {
+          provider: {
+            sort: "price",
+            require_parameters: true,
+            data_collection: "deny",
+          },
+        },
+      },
+    },
+  },
 }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `sort` | Sort providers by `price`, `latency`, or `throughput` |
-| `only` | Restrict to specific providers |
-| `ignore` | Exclude specific providers |
-| `order` | Explicit provider priority order |
-| `allow_fallbacks` | Allow fallback to other providers |
-| `require_parameters` | Only use providers that support all parameters |
-| `data_collection` | `deny` to opt out of training data |
-| `quantizations` | Preferred quantization levels |
-| `max_price` | Maximum price per token (prompt/completion) |
-| `preferred_max_latency` | Target latency in milliseconds |
-| `preferred_min_throughput` | Target tokens per second |
+A per-model override goes in `agents.defaults.models["openrouter/<author>/<slug>"].params.provider`. Routing params apply only on OpenRouter routes ([OpenRouter provider](https://docs.openclaw.ai/providers/openrouter)).
 
 ---
 
-## Cost Optimization Tips
+## Cost tips
 
-### The 97% Reduction Strategy
+1. Put heartbeats and `utilityModel` on a cheap model, and make heartbeats lean with `isolatedSession` and `lightContext`.
+2. Use Opus or Fable only where they earn their price; Sonnet 5.5 or Haiku 5.5 cover most routine work.
+3. Lower thinking effort for routine turns (`agents.defaults.thinkingDefault`, or `/think low`).
+4. Keep sessions short with `/new` and `/compact`.
+5. Set spend limits at the provider. OpenClaw has no built-in spend cap.
 
-Combine five changes to cut costs from ~$1,200/month to ~$36/month:
-
-| Change | Savings | How |
-|--------|---------|-----|
-| Switch heartbeat from Opus to Haiku | ~90% of heartbeat cost | `heartbeat.model: "claude-haiku-4-5-20251001"` |
-| Increase heartbeat interval to 60 min | 50% of remaining heartbeat | `heartbeat.interval: 3600` |
-| Enable quiet hours (8h/night) | 33% of remaining heartbeat | `heartbeat.quiet_hours` |
-| Use local model for heartbeat | 100% of heartbeat cost | `heartbeat.model: "ollama/qwen3:14b"` |
-| Route sub-agents to Haiku | ~80% of sub-agent cost | `agents.defaults.model` |
-
-### General Tips
-
-1. **Heartbeat is the biggest cost driver** — it fires every 30 min, 24/7. Use the cheapest model that works
-2. **Increase heartbeat interval** — 60 min instead of 30 cuts heartbeat costs in half
-3. **Set quiet hours** — no heartbeat while you sleep (saves ~33%)
-4. **Keep sessions short** — context accumulates; each message gets more expensive
-5. **Route by task** — use Opus only for complex work, cheap models for everything else
-6. **Use OpenRouter** — compare prices, leverage free tiers, pool rate limits
-7. **Use `max_context_tokens`** — limit memory loaded per message (default 2,000 tokens)
-8. **Monitor spending** — check provider dashboards regularly
-
-See [Cost Management](/guides/cost-management) for real-world case studies and the [Performance Tuning guide](/guides/performance-tuning) for advanced optimization.
+[Cost Management](/guides/cost-management) has the full method and settings.
 
 ---
 
-## Known Issues
+## Known issues
 
-| Issue | Status | Workaround |
-|-------|--------|------------|
-| Ollama `/v1` streaming breaks tool calls | Fixed (v2026.3.2+) | Use native `/api/chat` endpoint (default) |
-| Fallback permanently overwrites primary config (#47705) | Open | Update to latest, report if persists |
-| Stale merge data in provider config (#30395) | Open | Restart gateway after config changes |
-| Missing `api` field gives vague error (#6054) | Won't fix | Always include `"api": "openai-completions"` |
-| Timeout ignored for slow models | Intermittent | Set `timeoutSeconds: 300` as safety net |
+| Issue | Status |
+|---|---|
+| Ollama through its OpenAI-compatible `/v1` URL breaks tool calls | Use the native URL without `/v1` and `api: "ollama"` ([Ollama provider](https://docs.openclaw.ai/providers/ollama)) |
+| Fallback overwrote the primary model in config ([#47705](https://github.com/openclaw/openclaw/issues/47705)) | Closed as fixed. Update to a current release. |
+| Missing `api` on a custom provider ([#6054](https://github.com/openclaw/openclaw/issues/6054)) | Obsolete: `api` now defaults to `openai-completions` when a `baseUrl` is set |
+| Slow local models time out | Set `timeoutSeconds` on the provider, for example `300` |
 
 ---
 
-## See Also
+## See also
 
-- [Local Models](/guides/local-models) — Full Ollama/LM Studio/vLLM setup guide
-- [Cloud GPU Models](/guides/cloud-gpu-models) — Self-hosted models on RunPod, Lambda, etc.
-- [Cost Management](/guides/cost-management) — Monitoring and reducing API costs
-- [Performance Tuning](/guides/performance-tuning) — Token optimization and cost reduction
-- [Privacy & Compliance](/guides/privacy-compliance) — Data residency and air-gapped operation
-- [Brain & Hands Architecture](/architecture/brain-and-hands) — Provider integration internals
-- [Configuration Reference](/reference/configuration) — All brain/model config options
+- [Local Models](/guides/local-models): Ollama, llama.cpp, LM Studio and vLLM setup
+- [Cloud GPU Models](/guides/cloud-gpu-models): self-hosted models on rented GPUs
+- [Cost Management](/guides/cost-management): estimating and reducing spend
+- [Performance Tuning](/guides/performance-tuning): latency and resource tuning
+- [Privacy & Compliance](/guides/privacy-compliance): data residency and air-gapped operation
+- [Brain & Hands Architecture](/architecture/brain-and-hands): provider integration internals
+- [Configuration Reference](/reference/configuration)
