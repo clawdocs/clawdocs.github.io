@@ -36,7 +36,7 @@ pnpm build
 pnpm dev
 ```
 
-Run focused tests for what you touched rather than the whole suite: `pnpm test <file> --maxWorkers=1`, plus `pnpm test:extension <name>` for a plugin. PR CI runs the full suite.
+CONTRIBUTING.md asks for `pnpm build && pnpm check && pnpm test` before review. For a plugin change, start with the fast lane, `pnpm test:extension <name>`. If you add or change tests, the repo's `AGENTS.md` asks the PR to state the wall time of `pnpm test <file> --maxWorkers=1`.
 
 ## Pull requests
 
