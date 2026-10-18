@@ -9,7 +9,7 @@ keywords: [openclaw, openclaw custom channel, channel plugin, plugin sdk, create
 
 # Custom Channels
 
-OpenClaw 2026.10.4 supports 31 chat channels plus WebChat (see [Channels](/guides/channels)). If your platform is not among them, you can write a **channel plugin**. This page gives a short, correct skeleton and tells you where the upstream reference goes deeper. It was checked against OpenClaw **v2026.10.4** on 2026-10-18.
+OpenClaw 2026.10.4 supports 31 chat channels plus WebChat (see [Channels](/guides/channels)). If your platform is not among them, you can write a **channel plugin**. This page gives a minimal skeleton and points to the upstream reference for the rest.
 
 The authoritative guide is [Building channel plugins](https://docs.openclaw.ai/plugins/sdk-channel-plugins). The SDK moves quickly (several subpaths were removed in 2026.8 to 2026.10), so check it before you start.
 
@@ -23,7 +23,7 @@ Often you do not. Check these first:
 |----------------|-----|
 | Use a platform someone already supports | `openclaw channels list --all`, `openclaw plugins search <name>`, or [clawhub.ai](https://clawhub.ai) |
 | Let your app, CI or Home Assistant send the agent a task | [Webhooks (`/hooks/agent`)](/guides/api-webhooks), no plugin needed |
-| Build your own chat UI or client | The [Gateway WebSocket protocol](/guides/api-webhooks#websocket-api) and `@openclaw/gateway-client` |
+| Build your own chat UI or client | The [Gateway WebSocket protocol](/reference/gateway-api#websocket-protocol-v4) and `@openclaw/gateway-client` |
 | Let another MCP client read and send through your existing channels | `openclaw mcp serve` |
 | React to or rewrite messages on existing channels | A plugin with [hooks](#hooks-instead-of-a-channel) |
 
@@ -387,6 +387,8 @@ clawhub package publish myorg/openclaw-acme-chat --dry-run
 clawhub package publish myorg/openclaw-acme-chat
 ```
 
+The argument is a GitHub `owner/repo[@ref]`, a URL, or a local package folder such as `.`.
+
 Users then install it with `openclaw plugins install clawhub:myorg/openclaw-acme-chat` (ClawHub) or `openclaw plugins install @myorg/openclaw-acme-chat` (npm). In 2026.10.4 a bare package spec installs from npm, so the `clawhub:` prefix is required for ClawHub. Name packages `@<scope>/openclaw-<name>`; the `@openclaw/` scope belongs to the OpenClaw project. Reference: [Building plugins](https://docs.openclaw.ai/plugins/building-plugins).
 
 ---
@@ -420,7 +422,8 @@ The hook names and their merge rules are in [Plugin hooks](https://docs.openclaw
 ## See Also
 
 - [Channels & Integrations](/guides/channels): built-in channels, pairing and group policy
-- [API & Webhooks](/guides/api-webhooks): `/hooks/agent`, the Gateway protocol
+- [API & Webhooks](/guides/api-webhooks): `/hooks/agent`
+- [Gateway API](/reference/gateway-api): the WebSocket protocol
 - [Plugin System](/guides/plugin-system): plugin basics
 - [Security Hardening](/security/hardening): what an in-process plugin can reach
 - Upstream: [Building channel plugins](https://docs.openclaw.ai/plugins/sdk-channel-plugins), [Channel outbound API](https://docs.openclaw.ai/plugins/sdk-channel-outbound)
