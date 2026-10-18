@@ -230,7 +230,7 @@ clawhub sync --all [--dry-run] [--bump minor]
 clawhub scan download <slug> --version <v>
 ```
 
-Full reference: [ClawHub CLI](https://docs.openclaw.ai/clawhub/cli) and [`openclaw skills`](https://docs.openclaw.ai/cli/skills).
+Full reference: [ClawHub CLI](https://docs.openclaw.ai/clawhub/cli), [`openclaw skills`](https://docs.openclaw.ai/cli/skills) and the site [CLI Reference](/reference/cli#skills-plugins-and-mcp).
 
 ---
 
