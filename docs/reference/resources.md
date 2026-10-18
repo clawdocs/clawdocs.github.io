@@ -142,27 +142,12 @@ For self-hosting, see [Deployment Options](/guides/deployment-options).
 | Template | Stars | Platform | Notes |
 |----------|------:|----------|-------|
 | [Railway template](https://github.com/arjunkomath/openclaw-railway-template) | 51 | Railway | Gateway + Control UI, persistent volume; upstream guide at [docs.openclaw.ai/install/railway](https://docs.openclaw.ai/install/railway) |
-| [Helm chart (XROW)](https://artifacthub.io/packages/helm/openclaw/openclaw) | — | Kubernetes | Version 1.111.0 on Artifact Hub |
-| [Helm chart (community)](https://github.com/serhanekicii/openclaw-helm) | 192 | Kubernetes | **Archived** (last push 2026-05-24) |
-| [Coolify template](https://github.com/essamamdani/openclaw-coolify) | 154 | Coolify | Docker sidecar, Cloudflare Tunnel, SearXNG |
-| [Moltworker](https://github.com/cloudflare/moltworker) | 9,948 | Cloudflare Workers | Experimental proof of concept, not officially supported; about $34.50/month 24/7 per its README |
 
-Upstream maintains its own guides for Kubernetes (Kustomize), Cloudflare (Workers + Durable Object) and more: [docs.openclaw.ai/install](https://docs.openclaw.ai/install).
+Helm charts, the Coolify template and Cloudflare's Moltworker are covered in [Ecosystem: Deployment tools](/reference/ecosystem#deployment-tools). Upstream maintains its own guides for Kubernetes (Kustomize), Cloudflare (Workers + Durable Object) and more: [docs.openclaw.ai/install](https://docs.openclaw.ai/install).
 
 ### Docker images
 
-:::warning
-Upstream says to use `ghcr.io/openclaw/openclaw` or `openclaw/openclaw` and to "avoid unofficial mirrors" ([Docker install](https://docs.openclaw.ai/install/docker)).
-:::
-
-| Image | Maintainer | Notes |
-|-------|-----------|-------|
-| `ghcr.io/openclaw/openclaw` | OpenClaw | **Official**, primary; `-slim` and `-browser` variants |
-| `openclaw/openclaw` | OpenClaw | **Official** Docker Hub mirror |
-| `1panel/openclaw` | 1Panel | Unofficial |
-| `coollabsio/openclaw` | Coolify team | Unofficial |
-| `alpine/openclaw` | Community | Unofficial; last updated 2026-06-21 |
-| `land007/webclaw` | Community | Unofficial WebClaw frontend image; WebClaw cannot connect to current Gateways |
+Use the official images, `ghcr.io/openclaw/openclaw` or its Docker Hub mirror `openclaw/openclaw`. Unofficial images are listed, with warnings, in [Ecosystem: Docker images](/reference/ecosystem#docker-images).
 
 ### Cloud platforms
 
@@ -218,52 +203,13 @@ For a comparison, see [Memory Systems](/guides/memory-systems).
 | [Known Vulnerabilities](/security/known-vulnerabilities) | CVE history |
 | [Skill Verification](/security/skill-verification) | Checking skills before install |
 
-### Community tools
-
-| Tool | Stars | Status |
-|------|------:|--------|
-| [ClawSec](https://github.com/prompt-security/clawsec) | 1,122 | Active; security skill suite |
-| [Security Monitor](https://github.com/adibirzu/openclaw-security-monitor) | 49 | Active; scheduled threat checks |
-| [ClawBands](https://github.com/SeyZ/clawbands) | 196 | No push since 2026-02-09; approval middleware |
-| [Clawprint](https://github.com/tsyrulb/clawprint) | 1 | **Archived**; "historical personal project" |
-| [SkillGuard](https://github.com/bossondehiggs/skillguard) | 0 | Abandoned; not recommended |
+Community security tools (ClawSec, ClawBands and others) are reviewed in [Ecosystem: Security tools](/reference/ecosystem#security-tools).
 
 ---
 
-## Browser and desktop frontends
+## Apps and alternative agents
 
-| Frontend | Stars | Status | Notes |
-|----------|------:|--------|-------|
-| **Control UI** (built in) | — | Official | Served by the Gateway at `http://127.0.0.1:18789/`; chat, files, approvals, settings ([docs](https://docs.openclaw.ai/web/control-ui)) |
-| [Windows Hub](https://github.com/openclaw/openclaw-windows-node) | 2,158 | Official | Native WinUI app ([Ecosystem](/reference/ecosystem#openclaw-windows-hub)) |
-| [WebClaw](https://github.com/ibelick/webclaw) | 647 | No push since 2026-03-17; protocol 3 only, cannot connect to current Gateways (use the Control UI) | [WebClaw Guide](/guides/webclaw) |
-| [PinchChat](https://github.com/MarlBurroW/pinchchat) | 187 | Last push 2026-06-18 | [WebClaw Guide](/guides/webclaw#pinchchat-alternative-frontend) |
-
----
-
-## Companion apps
-
-| Platform | Status | Notes |
-|----------|--------|-------|
-| **macOS** | Released | OpenClaw.app, macOS 15.0 or later in v2026.10.4 (the next release requires 26.2) ([docs](https://docs.openclaw.ai/platforms/macos)) |
-| **iOS / iPadOS** | App Store | iOS 18.0 or later in v2026.10.4 (the next release requires 26.2) ([docs](https://docs.openclaw.ai/platforms/ios)) |
-| **Android** | Google Play | Companion node, minSdk 31; signed APK on some GitHub releases ([docs](https://docs.openclaw.ai/platforms/android)) |
-| **Windows** | Official | [Windows Hub](https://docs.openclaw.ai/platforms/windows), x64 and ARM64 |
-
----
-
-## Lightweight alternatives
-
-| Project | Stars | Language | Notes |
-|---------|------:|----------|-------|
-| [Nanobot](https://github.com/HKUDS/nanobot) | 49,143 | Python | HKUDS; many chat apps and providers |
-| [NanoClaw](https://github.com/nanocoai/nanoclaw) | 30,964 | TypeScript | Agents in containers |
-| [PicoClaw](https://github.com/sipeed/picoclaw) | 30,087 | Go | $10 hardware; pre-1.0 |
-| [IronClaw](https://github.com/nearai/ironclaw) | 12,661 | Rust | NEAR AI; WASM-sandboxed tools |
-| [MimiClaw](https://github.com/memovai/mimiclaw) | 5,799 | C | ESP32-S3 |
-| [TinyAGI](https://github.com/TinyAGI/tinyagi) | 3,621 | TypeScript | Agent teams; formerly `jlia0/tinyclaw` |
-
-More in [Lightweight Variants](/guides/lightweight-variants) and [Ecosystem](/reference/ecosystem#lightweight-alternatives).
+The official apps (macOS, iOS, Android, Windows Hub), third-party frontends and lightweight alternative agents are listed once, with stars and status, in [Ecosystem & Community Tools](/reference/ecosystem). The built-in Control UI at `http://127.0.0.1:18789/` is the supported browser client.
 
 ---
 

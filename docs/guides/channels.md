@@ -50,7 +50,7 @@ Upstream sorts channels into four groups:
 | **A2A**, **Reef** | `a2a`, `reef` | bundled | Agent-to-agent protocols |
 | **Buzz**, **ClickClack**, **Raft** | `buzz`, `clickclack`, `raft` | `@openclaw/<id>` | See the upstream page for each |
 | **WeChat** | — | external: `@tencent-weixin/openclaw-weixin` | Tencent's plugin |
-| **QQ Bot** | `qqbot` | external: `@tencent-connect/openclaw-qqbot` | Tencent's plugin |
+| **QQ Bot** | `qqbot` | `@tencent-connect/openclaw-qqbot` (official, published by Tencent) | Older `@openclaw/qqbot` installs are rewritten on update |
 | **WeCom**, **Yuanbao**, **Zalo ClawBot** | — | external | See the upstream page for each |
 
 **Voice Call** (`@openclaw/voice-call`, telephony via Plivo, Telnyx or Twilio) is a communication plugin, not a chat channel: [docs.openclaw.ai/plugins/voice-call](https://docs.openclaw.ai/plugins/voice-call).
@@ -471,7 +471,7 @@ OpenClaw sanitizes incoming channel content to make prompt injection harder:
 2. **Wraps external content in boundary markers**: it is enclosed in `<<<EXTERNAL_UNTRUSTED_CONTENT ...>>>` with `Source: External` metadata.
 
 :::info
-This closes tokenizer-level bypasses. It does not make untrusted messages safe to act on. See [Security Hardening](/security/hardening) for the rest of the defense stack.
+Token stripping matters mainly for self-hosted backends (vLLM, LM Studio and similar) that would otherwise read those strings as real role boundaries. Neither step makes untrusted messages safe to act on. See [Security Hardening](/security/hardening) for the rest of the defense stack.
 :::
 
 ### Credentials
@@ -485,13 +485,13 @@ Channel tokens accept plain strings, `${ENV_VAR}` substitution, or a **SecretRef
 | Exec (password manager CLI) | `{ source: "exec", provider: "<name>", id: "..." }`, same |
 | Secret Store | `{ source: "store", provider: "default", id: "..." }` |
 
-Plaintext tokens in config or `.env` are readable by the agent itself. SecretRefs keep them out of reach. Telegram's `tokenFile` must be a regular file; symlinks are rejected. Reference: [Secrets](https://docs.openclaw.ai/gateway/secrets).
+Plaintext tokens in `openclaw.json` or `.env` are readable by an agent that can read files. SecretRefs reduce that exposure once every credential is migrated; `openclaw secrets audit --check` reports any plaintext left. Telegram's `tokenFile` must be a regular file; symlinks are rejected. Reference: [Secrets](https://docs.openclaw.ai/gateway/secrets).
 
 ### Encryption comparison
 
 | Channel | Encryption | Metadata exposure | Self-hostable |
 |---------|-----------|-------------------|---------------|
-| **Signal** | E2E | Minimal | No (you run `signal-cli`) |
+| **Signal** | E2E | Minimal | No (Signal's servers; you run only the `signal-cli` client) |
 | **WhatsApp** | E2E | Meta collects metadata | No |
 | **Matrix** | Optional E2E | Depends on homeserver | Yes |
 | **Telegram** | TLS to Telegram servers (bots cannot use secret chats) | Moderate | Partial (Bot API server) |

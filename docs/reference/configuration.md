@@ -14,7 +14,7 @@ This page explains how OpenClaw's config works and shows the sections most self-
 
 ## How the config works
 
-- **One JSON5 file.** OpenClaw reads `~/.openclaw/openclaw.json` (override with `OPENCLAW_CONFIG_PATH`). JSON5 allows comments, unquoted keys and trailing commas. The file is optional; with no file, OpenClaw uses safe defaults. Keep it a regular file, not a symlink: OpenClaw writes it atomically, which replaces a symlink target.
+- **One JSON5 file.** OpenClaw reads `~/.openclaw/openclaw.json` (override with `OPENCLAW_CONFIG_PATH`). JSON5 allows comments, unquoted keys and trailing commas. The file is optional; with no file, OpenClaw uses built-in defaults (which include host exec without approval prompts; see [`tools`](#tools-exec-approvals-and-tool-policy)). Keep it a regular file, not a symlink: OpenClaw writes it atomically, which replaces a symlink target.
 - **Strict schema.** Unknown keys, wrong types and invalid enum values make the Gateway **refuse to start**. Only `$schema` is allowed as an extra root key. Pasting a key from an old blog post is the most common way to break an install. See [Strict validation](https://docs.openclaw.ai/gateway/configuration#strict-validation).
 - **Two buckets.** Root sections (`gateway`, `channels`, `models`, `tools`, ...) hold infrastructure and cross-agent defaults. `agents.defaults` holds agent-loop behaviour (model, workspace, heartbeat, sandbox). `agents.entries.<id>` overrides either per agent.
 - **Hot reload.** The Gateway watches the file. Most changes apply live; a few (auth mode, listener topology, TLS) restart the Gateway automatically in the default `hybrid` reload mode. An invalid edit is skipped and the last good config keeps running. See [Config hot reload](https://docs.openclaw.ai/gateway/configuration/hot-reload).
@@ -57,7 +57,7 @@ Large configs can be split. An object can be replaced by `{ $include: "./file.js
 
 Any string value can reference an environment variable with `${VAR_NAME}`. Only uppercase names (`[A-Z_][A-Z0-9_]*`) are substituted. A missing or empty variable stays visibly unresolved, logs a warning, and the feature that needs it is unavailable: it does not fall back to anything. Write `$${VAR}` for a literal `${VAR}`.
 
-Variables come from the process environment, then `./.env`, then `~/.openclaw/.env`, then the config's own `env.vars` block; none of these override a variable that is already set. `~/.openclaw/.env` is the usual place for API keys on a self-hosted box. Details: [Environment variables](/reference/environment-variables) and [upstream](https://docs.openclaw.ai/gateway/configuration/environment-variables).
+Variables come from the process environment, then `./.env`, then `~/.openclaw/.env`, then the config's own `env.vars` block; none of these override a variable that is already set. `~/.openclaw/.env` (mode `600`) is the usual place for API keys on a self-hosted box; `env.vars` (below) also works, but it puts the key in `openclaw.json` itself, which ends up in backups and screen shares. Details: [Environment variables](/reference/environment-variables) and [upstream](https://docs.openclaw.ai/gateway/configuration/environment-variables).
 
 ```json5 title="~/.openclaw/openclaw.json"
 {

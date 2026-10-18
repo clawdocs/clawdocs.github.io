@@ -9,7 +9,7 @@ keywords: [openclaw, openclaw api, webhook, hooks, websocket, gateway protocol, 
 
 # API & Webhooks
 
-Everything external talks to one place: the Gateway, on one port (default `18789`). This page covers the surfaces you can integrate with, how to authenticate, and how to expose them safely. Checked against OpenClaw **v2026.10.4** on 2026-10-18.
+Everything external talks to the Gateway on one port (default `18789`). This page covers webhooks in, results out, the client library, and how to expose them safely.
 
 ---
 
@@ -215,40 +215,11 @@ OpenClaw has no generic outbound-webhook system (`webhooks.outgoing` does not ex
 
 ## WebSocket API
 
-The Gateway's WebSocket protocol is what the CLI, Control UI and native apps use. It is a typed RPC protocol, currently **version 4**. Clients that only speak v3 (except node-role devices) are rejected.
+The Gateway's WebSocket protocol (version 4) is what the CLI, Control UI and native apps use. Frames, the `connect.challenge` handshake, scopes and the method list are summarised in the [Gateway API reference](/reference/gateway-api); this section covers what an integrator does differently.
 
-### Frames
-
-- Request: `{ "type": "req", "id", "method", "params" }`
-- Response: `{ "type": "res", "id", "ok", "payload" | "error" }`
-- Event: `{ "type": "event", "event", "payload", "seq"? }`
-
-### Handshake
-
-1. The client opens the socket. The Gateway sends a `connect.challenge` event with a `nonce` and `ts`.
-2. The client's first frame **must** be a `connect` request:
-
-{/* snippet:skip: Gateway protocol frame, not openclaw.json */}
-```json title="connect request (abridged)"
-{
-  "type": "req",
-  "id": "1",
-  "method": "connect",
-  "params": {
-    "minProtocol": 4,
-    "maxProtocol": 4,
-    "client": { "id": "my-dashboard", "version": "0.1.0", "platform": "linux", "mode": "operator" },
-    "role": "operator",
-    "scopes": ["operator.read", "operator.write"],
-    "auth": { "token": "<gateway token>" },
-    "device": { "id": "…", "publicKey": "…", "signature": "…", "signedAt": 1737264000000, "nonce": "…" }
-  }
-}
-```
-
-3. The Gateway replies with `hello-ok` (negotiated protocol, granted role and scopes, method and event lists, limits) and, after device pairing, a `deviceToken` to use on later connections.
-
-The token goes in `connect.params.auth.token`, **never** in the URL. A third-party UI client signs the challenge with its own Ed25519 device key and must be approved once on the Gateway host (`openclaw devices list`, then `openclaw devices approve <requestId>`). Request only the scopes you need: `operator.read` (history, sessions), `operator.write` (`chat.send`), `operator.approvals` (exec approvals). `operator.admin` is full control.
+- The token goes in `connect.params.auth.token`, **never** in the URL.
+- A third-party UI client signs the challenge with its own Ed25519 device key and must be approved once on the Gateway host (`openclaw devices list`, then `openclaw devices approve <requestId>`). After pairing, `hello-ok` returns a `deviceToken` for later connections.
+- Request only the scopes you need: `operator.read` (history, sessions), `operator.write` (`chat.send`), `operator.approvals` (exec approvals). `operator.admin` is full control.
 
 ### Use the reference client
 
@@ -299,7 +270,7 @@ The Gateway can serve `POST /v1/chat/completions`, `GET /v1/models` and `POST /v
 }
 ```
 
-The `model` field selects an OpenClaw **agent**, not a raw provider model. `POST /tools/invoke` runs a single tool under tool policy and is always on.
+The `model` field selects an OpenClaw **agent** (`openclaw/<agentId>`), not a raw provider model. `POST /tools/invoke` runs a single tool under tool policy and is always on. Endpoint details are in the [Gateway API reference](/reference/gateway-api#http-endpoints).
 
 :::danger Full operator access
 With token or password auth, a request to `/v1/*` or `/tools/invoke` carrying the Gateway token is treated as the owner, with every operator scope including `operator.admin`. If the agent may use exec or other sensitive tools, so may the caller. Keep these endpoints on loopback or a tailnet; never publish them.

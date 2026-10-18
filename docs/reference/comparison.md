@@ -9,8 +9,6 @@ keywords: [openclaw, openclaw vs, alternative, comparison, hermes agent, devin, 
 
 # Comparison
 
-How does OpenClaw compare to other AI agent frameworks, coding assistants, and automation tools? This page is a side-by-side comparison with the trade-offs left in.
-
 Star counts are from `gh api` and prices from each vendor's pricing page, **as of 2026-10-18**. Both drift; check before you decide.
 
 ---
@@ -19,7 +17,7 @@ Star counts are from `gh api` and prices from each vendor's pricing page, **as o
 
 | Framework | Stars | Type | Price | Messaging apps | Runs locally | Multi-agent |
 |-----------|------:|------|-------|-----------|-------|-------------|
-| **OpenClaw** | 392k | Self-hosted agent gateway | Free (MIT) + model costs | Built in (dozens of channels) | Yes | Yes (agents, sub-agents) |
+| **OpenClaw** | 392k | Self-hosted agent gateway | Free (MIT) + model costs | Built in (about 30 channels, most as official plugins) | Yes | Yes (agents, sub-agents) |
 | **Hermes Agent** | 255k | Self-hosted personal agent | Free (MIT) + model costs | Built in (Telegram, Discord, Slack, WhatsApp, Signal) | Yes | Sub-agents |
 | **AutoGPT** | 187.6k | Agent platform | Free (OSS) | No | Yes | Limited |
 | **n8n** | 207.9k | Workflow automation | Self-host free | Via nodes | Self-host | N/A |
@@ -35,7 +33,7 @@ Star counts are from `gh api` and prices from each vendor's pricing page, **as o
 
 Repos: [Hermes Agent](https://github.com/NousResearch/hermes-agent), [AutoGPT](https://github.com/Significant-Gravitas/AutoGPT), [n8n](https://github.com/n8n-io/n8n), [LangChain](https://github.com/langchain-ai/langchain), [MetaGPT](https://github.com/FoundationAgents/MetaGPT), [Open Interpreter](https://github.com/openinterpreter/openinterpreter), [CrewAI](https://github.com/crewAIInc/crewAI), [Goose](https://github.com/aaif-goose/goose).
 
-A security column used to sit here. Security depends far more on how you deploy a tool than on which tool it is, so it now has its own [section below](#the-trade-off).
+There is no security column: security depends more on how you deploy a tool than on which tool it is. See [The trade-off](#the-trade-off).
 
 ---
 
@@ -61,7 +59,7 @@ Several managed hosts run both; see [Hosting Providers](/guides/hosting-provider
 
 ### Auto-GPT
 
-The OG autonomous agent. One of the first projects to demonstrate LLM-driven autonomous behavior (launched 2023).
+One of the first LLM-driven autonomous agent projects (2023), now a low-code agent platform.
 
 | | Auto-GPT | OpenClaw |
 |---|---|---|
@@ -81,7 +79,7 @@ The closest conceptual relative — both give LLMs local system access through n
 
 | | Open Interpreter | OpenClaw |
 |---|---|---|
-| **Interface** | Terminal only | 50+ messaging platforms |
+| **Interface** | Terminal only | About 30 chat channels, Control UI, native apps |
 | **Focus** | Code execution via conversation | General-purpose life automation |
 | **Memory** | Conversation-scoped by default | Persistent across sessions |
 | **Autonomy** | Reactive | Proactive (heartbeat, scheduled Automations) |
@@ -114,7 +112,7 @@ Purpose-built for multi-agent collaboration with role-based agent design.
 
 ### LangChain / LangGraph
 
-The enterprise standard for building AI applications.
+A developer library for building LLM applications; LangGraph adds stateful, multi-agent graphs.
 
 | | LangChain/LangGraph | OpenClaw |
 |---|---|---|
@@ -122,11 +120,11 @@ The enterprise standard for building AI applications.
 | **Stability** | Versioned library releases | Rapidly evolving; doctor migrates or refuses retired config keys |
 | **Enterprise** | Widely used in production apps | Built for a single trusted operator per Gateway; team features are newer |
 | **Observability** | LangSmith platform | Official [`diagnostics-otel`](https://docs.openclaw.ai/plugins/reference/diagnostics-otel) OpenTelemetry plugin, audit ledger |
-| **Learning curve** | Steep (significant abstraction) | Low (just configure and chat) |
+| **Learning curve** | Steep (significant abstraction) | Low to start; running it safely takes config and [hardening](/security/hardening) |
 
 **Choose LangChain if:** You're building a production AI application and need enterprise observability, reliability, and support.
 
-**Choose OpenClaw if:** You want something that works out of the box without writing code.
+**Choose OpenClaw if:** You want a ready-made assistant rather than a library to build one.
 
 ### MetaGPT
 
@@ -135,7 +133,7 @@ Multi-agent framework modeled on a software company (PM, architect, engineer rol
 | | MetaGPT | OpenClaw |
 |---|---|---|
 | **Approach** | Software company simulation | Personal assistant |
-| **Agents** | PM → Architect → Engineer → QA | Single agent with skills |
+| **Agents** | PM → Architect → Engineer → QA | One default agent; more via `agents.entries` and sub-agents |
 | **Best for** | Generating entire software projects from one-line requirements | General-purpose automation |
 | **Stars** | 70.9k | 392k |
 | **Activity** | No push since 2026-01-21 | Daily |
@@ -157,7 +155,7 @@ AI software engineer with its own cloud IDE, browser, and terminal.
 | **Autonomy** | End-to-end coding tasks | Any automation task |
 | **Data** | Goes to Cognition's servers | Files stay local; prompts go to your model provider unless you run local models |
 
-**Choose Devin if:** You need an AI junior developer for end-to-end coding with enterprise security.
+**Choose Devin if:** You want end-to-end coding tasks run in a vendor-hosted sandbox.
 
 **Choose OpenClaw if:** You want a free, general-purpose agent that runs locally.
 

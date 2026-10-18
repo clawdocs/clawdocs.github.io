@@ -35,7 +35,7 @@ There is no global `--config`, `--json`, `--verbose` or `--quiet`. Use `OPENCLAW
 | [`setup`](https://docs.openclaw.ai/cli/setup) | Chat with OpenClaw, onboarding first if setup is incomplete. `setup --baseline` just writes the baseline config and workspace. |
 | [`configure`](https://docs.openclaw.ai/cli/configure) | Interactive editor for an existing setup (models, Gateway, channels, plugins, skills). |
 | [`config`](https://docs.openclaw.ai/cli/config) | Non-interactive `get`, `set`, `patch`, `unset`, `file`, `schema`, `validate`. See [Configuration](/reference/configuration). |
-| [`doctor`](https://docs.openclaw.ai/cli/doctor) | Health checks; `--fix` applies repairs and config migrations. Run it after every upgrade. |
+| [`doctor`](https://docs.openclaw.ai/cli/doctor) | Health checks; `--fix` applies repairs and config migrations. Run it after every upgrade. Plain `doctor` can still migrate state; `--lint` is the read-only mode. |
 | [`update`](https://docs.openclaw.ai/cli/update) | Update OpenClaw (`--channel stable\|extended-stable\|beta\|dev`, `--dry-run`, `status`). |
 | [`backup`](https://docs.openclaw.ai/cli/backup) | `create`, `verify`, `restore` archives of config, credentials, sessions and workspaces. |
 | [`reset`](https://docs.openclaw.ai/cli/reset) / [`uninstall`](https://docs.openclaw.ai/cli/uninstall) | Reset local state, or remove the service and local data. |
