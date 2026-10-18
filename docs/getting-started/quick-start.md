@@ -1,326 +1,292 @@
 ---
 last_update:
-  date: 2026-07-08
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Quick Start
-description: Get OpenClaw running and talking to you in under 5 minutes — from install to first conversation
+description: Get OpenClaw running and talking to you in about 5 minutes, from install to first conversation
 keywords: [openclaw, openclaw getting started, openclaw tutorial, openclaw quick start, openclaw first steps, how to use openclaw, openclaw beginner guide]
 ---
 
 # Quick Start
 
-Get from zero to a working OpenClaw agent in under 5 minutes.
+Get from zero to a working OpenClaw agent in about 5 minutes. The official version of this walkthrough is [Getting started](https://docs.openclaw.ai/start/getting-started).
 
-**What you'll have at the end:** A running OpenClaw gateway with CLI chat, able to execute shell commands, read/write files, and answer questions using your chosen LLM. Optionally connected to a messaging app so you can talk to it from your phone.
+**What you'll have at the end:** a Gateway running as a background service, the Control UI open in your browser, and an agent that can answer questions, read and write files, and run shell commands. Optionally, a chat app on your phone connected to it.
 
 **Prerequisites:**
-- Node.js 24.16+ or 26.1+ (26 recommended; 22, 23 and 25 are unsupported) — check with `node --version`
-- An API key from [Anthropic](https://console.anthropic.com), [OpenAI](https://platform.openai.com), [OpenRouter](https://openrouter.ai), [Google AI](https://aistudio.google.com), or [DeepSeek](https://platform.deepseek.com) — *or* a local model running via [Ollama](https://ollama.ai)
+- Node.js 24.16+ or 26.1+ (26 recommended; 22, 23 and 25 are unsupported). Check with `node --version`. The installer script installs Node for you if needed.
+- One of: an existing Claude Code or Codex CLI login, an API key from [Anthropic](https://console.anthropic.com), [OpenAI](https://platform.openai.com), [OpenRouter](https://openrouter.ai), [Google AI](https://aistudio.google.com) or another supported provider, or a local model via [Ollama](https://ollama.com).
 
 :::tip No API key?
-You can use OpenClaw with **free options**: [OpenRouter's free tier](https://openrouter.ai) (rate-limited), [Google Gemini free tier](https://aistudio.google.com), or a local model via Ollama (requires 8+ GB VRAM). See [Local Models](/guides/local-models) for the zero-cost path.
+Free tiers (OpenRouter, Google Gemini) or a local model via Ollama work. See [Local Models](/guides/local-models) for the zero-cost path.
 :::
 
 ---
 
 ## Step 1: Install
 
+macOS, Linux and WSL2:
+
 ```bash
 curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
-Or via npm:
+Windows: run `iwr -useb https://openclaw.ai/install.ps1 | iex` in PowerShell, or install the [Windows Hub](https://docs.openclaw.ai/platforms/windows) app.
+
+Already manage Node yourself? With npm 12 or 11.16+:
 
 ```bash
-npm i -g openclaw
+npm install -g openclaw@latest --allow-scripts=openclaw
 ```
 
 :::info Other methods
-Docker, git clone, and platform-specific options are in the [Installation Guide](/getting-started/installation).
+Docker, desktop apps, pnpm, Raspberry Pi and source builds are in the [Installation Guide](/getting-started/installation).
 :::
 
 ## Step 2: Onboard
 
-```bash
-openclaw onboard
-```
-
-The onboarding wizard walks you through three steps:
-
-1. **Choose your LLM provider** — Select from Anthropic (recommended), OpenAI, Google, DeepSeek, xAI, OpenRouter, or local model
-2. **Enter your API key** — Paste your key when prompted (stored locally in `~/.openclaw/credentials/`)
-3. **Connect channels (optional)** — Skip this for now; you can add WhatsApp, Telegram, Discord, Slack later
-
-```
-🦞 Welcome to OpenClaw!
-
-? Choose your LLM provider:
-  ❯ Anthropic (Claude) — recommended
-    OpenAI (GPT)
-    Google (Gemini)
-    DeepSeek
-    OpenRouter (200+ models)
-    Local model (Ollama/LM Studio)
-
-? Enter your Anthropic API key: sk-ant-api03-****
-
-? Connect a messaging channel now?
-  ❯ Skip for now
-    WhatsApp
-    Telegram
-    Discord
-    Slack
-
-✓ Configuration saved to ~/.openclaw/openclaw.json
-✓ Run 'openclaw gateway' to start your agent
-```
-
-## Step 3: Start the Gateway
+The installer script starts onboarding automatically. If you installed with npm, run:
 
 ```bash
-openclaw gateway
+openclaw onboard --install-daemon
 ```
 
-You should see:
+What onboarding does:
 
-```
-🦞 OpenClaw Gateway v2026.6.11
-   WebSocket control plane: ws://localhost:18789
-   Heartbeat interval: 30m
-   Model: claude-sonnet-4-6
-   Status: RUNNING
+1. **Finds AI access.** On **Quick start** it looks for a Claude Code or Codex login or a provider API key, checks it with a real completion, and saves it. If nothing usable is found it opens provider setup. **Custom setup** walks through every option; `openclaw onboard --classic` is the older step-by-step wizard.
+2. **Creates your workspace** at `~/.openclaw/workspace` and the config at `~/.openclaw/openclaw.json`, with a generated Gateway token.
+3. **Installs the Gateway service** (because of `--install-daemon`): LaunchAgent on macOS, systemd user service on Linux and WSL2, Scheduled Task on Windows.
+
+Model credentials are stored in the per-agent database (`~/.openclaw/agents/main/agent/openclaw-agent.sqlite`) or the secret store, not in `openclaw.json`. For a fresh Anthropic setup, the default model is `anthropic/claude-opus-5-5`.
+
+:::note
+If you skipped `--install-daemon`, Quick start may leave the Gateway running in the foreground of that terminal. Press Ctrl+C and run `openclaw gateway install` to move it to the background.
+:::
+
+## Step 3: Check the Gateway
+
+```bash
+openclaw gateway status
 ```
 
-The gateway is now running. Leave this terminal open — it's the agent's brain.
+You should see the service running and the RPC probe succeed on port 18789.
 
 :::caution Port conflict?
-If port 18789 is already in use, you'll see an error. Check what's using it with `lsof -i :18789` and either stop that process or change OpenClaw's port in `~/.openclaw/openclaw.json`:
-```json5
-{ "gateway": { "port": 18790 } }
+If port 18789 is taken, find the process with `lsof -i :18789`, or move OpenClaw to another port:
+
+```json5 title="~/.openclaw/openclaw.json"
+{ gateway: { port: 18790 } }
 ```
+
+Then run `openclaw gateway restart`.
 :::
 
 ## Step 4: Chat
 
-Open a **new terminal** and start chatting:
+Open the Control UI:
 
 ```bash
-openclaw chat "What files are in my home directory?"
+openclaw dashboard
 ```
 
-OpenClaw will use the LLM to understand your request, execute shell commands, and return the results.
+This opens `http://127.0.0.1:18789/` with your token. Type a message in the chat. If you get a reply, everything works.
 
-### Interactive Mode
-
-For back-and-forth conversation:
+From the terminal, you have two more options:
 
 ```bash
-openclaw chat
-> What files changed in git today?
-> Summarize the largest one
-> exit
+# Interactive terminal UI connected to the Gateway
+openclaw tui
+
+# One-shot turn through the Gateway; the reply is printed
+openclaw agent --agent main --message "What files are in my home directory?"
 ```
 
-Each message builds on the previous. Type `exit` or press Ctrl+C to leave.
+`openclaw chat` is a shortcut for `openclaw tui --local`: it runs the agent in-process instead of through the Gateway. To start it with a first message use `openclaw chat --message "..."`. A bare positional argument (`openclaw chat "hi"`) is read as a session target, not a message.
 
-## Step 5: Try Some Real Tasks
+## Step 5: Try some real tasks
 
-```bash
-# Summarize a file
-openclaw chat "Summarize the contents of ~/README.md"
+Send these from the Control UI, the TUI, or with `openclaw agent --agent main --message "..."`:
 
-# Write code
-openclaw chat "Create a Python script that monitors CPU usage and alerts if it goes above 80%"
+- "Summarize the contents of ~/README.md"
+- "Create a Python script that alerts me when CPU usage goes above 80%"
+- "What are the top Hacker News stories right now?"
+- "Show me what changed in my git repo since yesterday"
+- "Check disk usage and tell me if any filesystem is above 80%"
 
-# Search the web
-openclaw chat "What are the top Hacker News stories right now?"
-
-# Work with git
-openclaw chat "Show me what changed in my repo since yesterday"
-
-# System admin
-openclaw chat "Check disk usage and tell me if anything is above 80%"
-```
-
-### Execution Approval
+### Execution approval
 
 :::danger Commands run without asking by default
-By default OpenClaw runs host shell commands **without asking** (`tools.exec.mode` is `full` on the gateway host) and the sandbox is **off** (`agents.defaults.sandbox.mode: "off"`). To review commands before they run, set `openclaw config set tools.exec.mode ask` (or `auto`, which adds an automatic reviewer) and restart the gateway. See the official [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing) docs.
+By default OpenClaw runs host shell commands **without asking** (`tools.exec.mode` is `full`) and the sandbox is **off** (`agents.defaults.sandbox.mode: "off"`). Before you connect channels, turn approvals on:
+
+```bash
+openclaw config set tools.exec.mode ask
+```
+
+The Gateway applies tool changes without a restart. `auto` adds an automatic reviewer that can approve or deny low-risk commands. See the official [exec tool](https://docs.openclaw.ai/tools/exec), [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing) docs, and [Security Hardening](/security/hardening).
 :::
 
-With approvals turned on, OpenClaw shows each command that is not already allowlisted before it runs:
-
-```
-Agent wants to execute:
-  $ df -h
-
-  [approve] [deny] [approve all similar]
-```
-
-That is `ask` mode, which you have to turn on. See [Basic Usage](/guides/basic-usage#execution-approval) for details.
+In `ask` mode, commands that are not on the allowlist wait for you to approve or deny them in the Control UI (or the app or chat where you are talking to the agent). Check the effective policy with `openclaw approvals get`.
 
 ---
 
-## Step 6: Personalize Your Agent (Optional)
+## Step 6: Personalize your agent (optional)
 
-Give your agent a name and personality by editing `SOUL.md`:
+The agent's persona lives in `SOUL.md` in the workspace:
 
 ```bash
-vim ~/.openclaw/SOUL.md
+vim ~/.openclaw/workspace/SOUL.md
 ```
 
-```markdown title="~/.openclaw/SOUL.md"
+```markdown title="~/.openclaw/workspace/SOUL.md"
 # Agent Identity
 
 You are Jarvis, a helpful and efficient personal assistant.
 
 ## Rules
-- Be concise — prefer short answers unless asked for detail
+- Be concise; prefer short answers unless asked for detail
 - Always confirm before making destructive changes (deleting files, etc.)
 - Summarize long content instead of dumping raw output
 ```
 
-The gateway picks up SOUL.md changes automatically — no restart needed.
+Workspace files (`SOUL.md`, `AGENTS.md`, `USER.md`, `IDENTITY.md`) are loaded at the start of each session, so start a new one (`/new` in chat) to see the change. You can also edit them in the Control UI under **Settings → Agents → Files**. See the [SOUL.md Guide](/guides/soul-md).
 
-See [SOUL.md Guide](/guides/soul-md) for advanced personality configuration.
-
-## Step 7: Connect a Messaging Channel (Optional)
-
-To talk to OpenClaw from your phone:
+## Step 7: Connect a messaging channel (optional)
 
 ```bash
-# Connect WhatsApp (scan QR code)
-openclaw channels add whatsapp
-
-# Connect Telegram (enter BotFather token)
+# Telegram (paste a BotFather token): the quickest to set up
 openclaw channels add telegram
 
-# Connect Discord (enter bot token)
+# WhatsApp (scan a QR code)
+openclaw channels add whatsapp
+
+# Discord (bot token)
 openclaw channels add discord
 ```
 
-Each channel walks you through authentication. Once connected, message your agent from that platform just like texting a friend.
-
-:::tip
-Start with one channel. WhatsApp is the most popular choice — you scan a QR code and it's connected in seconds. Note: the QR code expires quickly, so scan it promptly.
-:::
-
-## Step 8: Enable the Heartbeat (Optional)
-
-The heartbeat makes OpenClaw truly autonomous — it checks for tasks periodically without prompting:
-
-```markdown title="~/.openclaw/HEARTBEAT.md"
-## Every 30 minutes
-- Check my Gmail for urgent emails and summarize them
-- Monitor the GitHub repo myorg/myrepo for new issues
-
-## Daily at 9am
-- Give me a weather briefing for my city
-- Summarize my calendar for today
-```
-
-Edit `~/.openclaw/HEARTBEAT.md` with your preferences, then restart the gateway:
+Each command opens guided setup for that channel. By default, unknown senders who DM your bot get a pairing code instead of the agent. Approve them with:
 
 ```bash
-openclaw gateway restart
+openclaw pairing list
+openclaw pairing approve telegram <code>
 ```
 
-:::caution Cost awareness
-Each heartbeat tick costs tokens. With a 30-minute interval and Claude Opus, expect ~$5-20/day in API costs. **For beginners, start with a 60-minute interval and a cheap model:**
+See the [Channels Guide](/guides/channels) and the official [pairing docs](https://docs.openclaw.ai/channels/pairing).
+
+## Step 8: Heartbeat and scheduled tasks (optional)
+
+The **heartbeat** is already on: a periodic turn in the main session, every 30 minutes by default (1 hour when Anthropic is authenticated with OAuth or a Claude CLI token). It lets the agent surface anything that needs attention. Its cost depends on your model. For a beginner, a cheaper model, a longer interval and waking hours only are sensible:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "heartbeat": {
-    "interval": 3600,
-    "model": "claude-haiku-4-5-20251001"
-  }
+  agents: {
+    defaults: {
+      heartbeat: {
+        every: "1h",
+        model: "anthropic/claude-haiku-5-5",
+        activeHours: { start: "08:00", end: "22:00" },
+        isolatedSession: true,
+        lightContext: true,
+      },
+    },
+  },
 }
 ```
 
-This cuts heartbeat costs by ~95%. See [Heartbeat Guide](/guides/heartbeat) for all cost optimization options and [Performance Tuning](/guides/performance-tuning) for broader strategies.
-:::
+`every: "0m"` turns the recurring heartbeat off.
 
----
-
-## Verify Your Setup
-
-Run through this checklist to confirm everything is working:
+**Scheduled tasks** ("every morning at 9") are automations, not heartbeat instructions:
 
 ```bash
-# 1. Check OpenClaw version
-openclaw --version
-
-# 2. Check gateway status
-openclaw status
-
-# 3. Send a test message
-openclaw chat "Hello! Tell me what you can do."
-
-# 4. Test file access
-openclaw chat "List the files in my current directory"
-
-# 5. Test shell execution
-openclaw chat "What's my current disk usage?"
-
-# 6. Check connected channels (if any)
-openclaw channels list
-
-# 7. Test heartbeat (if configured)
-openclaw heartbeat --dry-run
+openclaw cron add --name "Morning brief" --cron "0 9 * * *" --session isolated \
+  --message "Give me a weather briefing and summarize my calendar." --announce
 ```
 
-If any step fails, check the [Troubleshooting Guide](/reference/troubleshooting) or the [FAQ](/reference/faq).
+`openclaw automations` is the same command under its new name. To give the heartbeat a short standing checklist, store it in its monitor scratch: find the job with `openclaw cron list --all` (it is listed as `Heartbeat (main)`), then `openclaw cron scratch <jobId> --set "..."`.
+
+:::note Coming from an older version?
+`HEARTBEAT.md` is retired and no longer read. `openclaw doctor --fix` imports an existing file into the heartbeat's monitor scratch and converts its `tasks:` entries into automations.
+:::
+
+See the [Heartbeat Guide](/guides/heartbeat), [Automation](/guides/automation) and the official [heartbeat docs](https://docs.openclaw.ai/gateway/heartbeat).
 
 ---
 
-## Common Gotchas
+## Verify your setup
+
+```bash
+# 1. CLI version
+openclaw --version
+
+# 2. Config and environment checks
+openclaw doctor
+
+# 3. Gateway service and RPC probe
+openclaw gateway status
+
+# 4. Channels, models and recent sessions
+openclaw status
+
+# 5. A test turn
+openclaw agent --agent main --message "Hello! Tell me what you can do."
+
+# 6. Connected channels (if any)
+openclaw channels list
+
+# 7. Last heartbeat run
+openclaw system heartbeat last
+```
+
+If a step fails, `openclaw triage` collects sanitized diagnostics and can hand them to a coding agent. See also the [Troubleshooting Guide](/reference/troubleshooting) and the [FAQ](/reference/faq).
+
+---
+
+## Common gotchas
 
 | Problem | Cause | Fix |
-|---------|-------|-----|
-| `Error: port 18789 already in use` | Previous gateway or another service on the port | `lsof -i :18789` to find it, then kill the process or change the port |
-| `Error: invalid API key` | Wrong key format or wrong provider | Double-check you're using the right key for your chosen provider (Anthropic keys start with `sk-ant-`) |
-| `Node.js version error` | Node.js outside 24.16+ / 26.1+ (22, 23 and 25 are unsupported) | Install Node.js 24: `curl -fsSL https://deb.nodesource.com/setup_24.x \| sudo bash -` |
-| Gateway starts but chat hangs | Firewall blocking outbound HTTPS | Ensure your network allows HTTPS to your LLM provider's API |
-| `EACCES permission denied` | npm global install without permissions | Use `sudo npm i -g openclaw` or fix npm permissions |
-| Heartbeat running up costs | Default interval is 30 min with your primary model | Set `heartbeat.model` to a cheap model and increase `heartbeat.interval` |
-| WhatsApp QR expired | QR code has a short timeout | Run `openclaw channels add whatsapp` again and scan quickly |
-| Agent won't run commands | Approvals or an allowlist are on (`tools.exec.mode` `ask`, `auto`, `allowlist` or `deny`) | Approve the command when prompted; check the effective policy with `openclaw approvals get` |
+|---|---|---|
+| `port 18789 already in use` | Another Gateway or service on the port | `lsof -i :18789`, then stop it or change `gateway.port` |
+| Gateway refuses to start after a config edit | Unknown or invalid key (config is validated strictly) | `openclaw config validate`, then `openclaw doctor --fix` |
+| Invalid API key | Wrong key or wrong provider | `openclaw models status` shows which provider auth is failing |
+| Node.js version error | Node outside 24.16+ / 26.1+ | Install Node 24 or 26, e.g. `curl -fsSL https://deb.nodesource.com/setup_24.x \| sudo bash -` on Debian/Ubuntu |
+| Dashboard asks for a token | Browser opened without it | Run `openclaw dashboard` again, or `openclaw dashboard --no-open` to print the tokenized URL |
+| `EACCES` on `npm install -g` | npm's global prefix is not writable | Set a user-owned prefix (`npm config set prefix ~/.npm-global`); do not use `sudo npm` |
+| Heartbeat running up costs | Default cadence with your primary model | Set `agents.defaults.heartbeat.model` to a cheap model and raise `agents.defaults.heartbeat.every` |
+| WhatsApp QR expired | QR has a short timeout | Run `openclaw channels add whatsapp` again and scan promptly |
+| Agent won't run commands | Approvals or an allowlist are on (`ask`, `auto`, `allowlist` or `deny`) | Approve when prompted; check the policy with `openclaw approvals get` |
 
 ---
 
-## What's Next?
+## What's next?
 
-You now have a working OpenClaw agent. Here's where to go from here, roughly in order:
-
-### Immediate (do these first)
-
-| Goal | Time | Guide |
-|------|------|-------|
-| Learn everyday commands | 10 min | [Basic Usage](/guides/basic-usage) |
-| Lock down security | 15 min | [Security Hardening](/security/hardening) |
-| Understand the architecture | 10 min | [Core Concepts](/getting-started/core-concepts) |
-
-### First Week
-
-| Goal | Time | Guide |
-|------|------|-------|
-| Structured learning path | 30-60 min/day | [First 7 Days](/guides/first-7-days) |
-| Customize your agent's personality | 15 min | [SOUL.md Guide](/guides/soul-md) |
-| Connect messaging channels | 10 min each | [Channels Guide](/guides/channels) |
-| Set up autonomous tasks | 15 min | [Heartbeat Guide](/guides/heartbeat) |
-
-### Going Deeper
+### Do these first
 
 | Goal | Guide |
-|------|-------|
-| Choose the right LLM for each task | [Model Selection](/guides/model-selection) |
+|---|---|
+| Learn everyday commands | [Basic Usage](/guides/basic-usage) |
+| Lock down security | [Security Hardening](/security/hardening) |
+| Understand the moving parts | [Core Concepts](/getting-started/core-concepts) |
+
+### First week
+
+| Goal | Guide |
+|---|---|
+| Structured learning path | [First 7 Days](/guides/first-7-days) |
+| Customize your agent's personality | [SOUL.md Guide](/guides/soul-md) |
+| Connect messaging channels | [Channels Guide](/guides/channels) |
+| Set up scheduled tasks | [Automation](/guides/automation) |
+
+### Going deeper
+
+| Goal | Guide |
+|---|---|
+| Choose the right model for each task | [Model Selection](/guides/model-selection) |
 | Run without API costs | [Local Models](/guides/local-models) |
-| Browse 10,700+ community skills | [ClawHub](/guides/clawhub) |
+| Find community skills | [ClawHub](/guides/clawhub) |
 | Build your own skills | [Skill Development](/guides/skill-development) |
 | Run multi-agent workflows | [Multi-Agent](/guides/multi-agent) |
-| Set up a web interface | [WebClaw](/guides/webclaw) |
-| Reduce API costs by 97% | [Performance Tuning](/guides/performance-tuning) |
+| Keep costs down | [Cost Management](/guides/cost-management) |
 | Build integrations | [API & Webhooks](/guides/api-webhooks) |
 
 :::tip
-Join the [OpenClaw Discord](https://discord.gg/clawd) (~176,000 members) to share setups, ask questions, and find community-built skills. Also check out [r/OpenClaw](https://reddit.com/r/OpenClaw) on Reddit.
+Ask questions in the official [OpenClaw Discord](https://discord.gg/clawd), or on [r/OpenClaw](https://reddit.com/r/OpenClaw).
 :::

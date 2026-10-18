@@ -1,220 +1,203 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: CLI Reference
-description: Complete reference for all OpenClaw CLI commands and flags
+description: The real openclaw command tree, grouped by task, with the commands a self-hoster uses most and links to the official per-command pages
 keywords: [openclaw, openclaw cli, commands, openclaw chat, terminal, cli reference, command line]
 ---
 
 # CLI Reference
 
-Complete reference for the `openclaw` command-line interface.
+This is a map of the `openclaw` command tree as of v2026.10.4, grouped by what you are trying to do. It lists the commands most self-hosters need and links each to its official page. For flags, run `openclaw <command> --help` (the authoritative list for your installed version) or read the [official CLI reference](https://docs.openclaw.ai/cli).
 
-## Global Flags
+## Global flags
 
-| Flag | Description |
-|------|-------------|
-| `--version` | Print version |
-| `--help` | Show help |
-| `--config <path>` | Use custom config file |
-| `--verbose` | Enable verbose output |
-| `--quiet` | Suppress non-essential output |
-| `--json` | Output in JSON format |
+These go before the command, for example `openclaw --profile work status`.
 
-## Commands
-
-### `openclaw onboard`
-
-Interactive setup wizard.
-
-```bash
-openclaw onboard [--install-daemon] [--skip-channels]
-```
-
-| Flag | Description |
-|------|-------------|
-| `--install-daemon` | Install gateway as a system service |
-| `--skip-channels` | Skip messaging channel setup |
-| `--provider <name>` | Pre-select LLM provider |
-
-### `openclaw dashboard`
-
-Launch the Control UI in your browser for system monitoring and management.
-
-```bash
-openclaw dashboard [--no-open]
-```
-
-| Flag | Description |
-|------|-------------|
-| `--no-open` | Print the tokenized URL without opening a browser |
-
-The Control UI runs on `localhost:18789` and requires your gateway auth token. For remote access, use SSH port forwarding:
-
-```bash
-ssh -N -L 18789:127.0.0.1:18789 root@your-server-ip
-```
-
-### `openclaw gateway`
-
-Manage the gateway process.
-
-```bash
-openclaw gateway [start|stop|restart|status] [flags]
-```
-
-| Flag | Description |
-|------|-------------|
-| `--daemon` | Run as background daemon |
-| `--port <number>` | Override gateway port (default: 18789) |
-| `--host <addr>` | Override bind address (default: 127.0.0.1) |
-
-### `openclaw chat`
-
-Send messages to the agent.
-
-```bash
-openclaw chat [message] [flags]
-```
-
-| Flag | Description |
-|------|-------------|
-| `--format <type>` | Output format: `markdown`, `plain`, `json` |
-| `--model <name>` | Override model for this message |
-| `--no-memory` | Don't load or save memory |
-| `--context <file>` | Load additional context from file |
-
-Without a message argument, starts an interactive chat session.
-
-### `openclaw channel`
-
-Manage messaging channels.
-
-```bash
-openclaw channel <add|remove|list|status|reconnect> [channel-name]
-```
-
-### `openclaw skill`
-
-Manage installed skills.
-
-```bash
-openclaw skill <install|remove|list|test|config> [skill-name|path]
-```
-
-| Subcommand | Description |
-|------------|-------------|
-| `install <path>` | Install a skill from file |
-| `remove <name>` | Remove an installed skill |
-| `list` | List all installed skills |
-| `test <path> <msg>` | Test a skill without installing |
-| `config <name>` | View/set skill configuration |
-
-### `openclaw plugins`
-
-Manage installed plugins.
-
-```bash
-openclaw plugins <list|inspect|install|uninstall|update|enable|disable|doctor|marketplace> [args]
-```
-
-| Subcommand | Description |
-|------------|-------------|
-| `list` | Show installed plugins |
-| `inspect <name>` | View plugin details |
-| `install <name>` | Install a plugin |
-| `uninstall <name>` | Remove a plugin |
-| `update [name]` | Upgrade plugins (all or specific) |
-| `enable <name>` | Enable a disabled plugin |
-| `disable <name>` | Disable a plugin |
-| `doctor` | Diagnose plugin issues |
-| `marketplace list` | Browse available plugins |
-
-### `openclaw clawhub`
-
-Interact with the ClawHub marketplace.
-
-```bash
-openclaw clawhub <search|install|publish|browse|info|view|login|outdated|update|report|security-report|validate> [args]
-```
-
-### `openclaw heartbeat`
-
-Manage the heartbeat system.
-
-```bash
-openclaw heartbeat [--now] [--dry-run]
-```
-
-| Flag | Description |
-|------|-------------|
-| `--now` | Trigger an immediate heartbeat |
-| `--dry-run` | Show what would happen without executing |
-
-### `openclaw logs`
-
-View gateway logs.
-
-```bash
-openclaw logs [--filter <component>] [--follow] [--lines <n>]
-```
-
-| Flag | Description |
-|------|-------------|
-| `--filter` | Filter by component: `heartbeat`, `channel`, `brain`, `hands` |
-| `--follow` | Stream logs in real-time |
-| `--lines <n>` | Show last N lines (default: 50) |
-
-### `openclaw status`
-
-Show gateway and system status.
-
-```bash
-openclaw status [--json]
-```
-
-### `openclaw stats`
-
-Show usage statistics.
-
-```bash
-openclaw stats [heartbeat|tokens|channels] [--period <days>]
-```
-
-### `openclaw security`
-
-Security tools.
-
-```bash
-openclaw security <check|scan> [--all]
-```
-
-| Subcommand | Description |
-|------------|-------------|
-| `check` | Audit current security configuration |
-| `scan <path>` | Scan a skill file for security issues |
-| `scan --all` | Scan all installed skills |
-
-### `openclaw config`
-
-View and modify configuration.
-
-```bash
-openclaw config <get|set|list> [key] [value]
-```
-
-## Exit Codes
-
-| Code | Meaning |
+| Flag | Purpose |
 |------|---------|
-| `0` | Success |
-| `1` | General error |
-| `2` | Configuration error |
-| `3` | Gateway not running |
-| `4` | Authentication failure |
-| `5` | Network error |
+| `--profile <name>` | Isolate state and config under `~/.openclaw-<name>` |
+| `--dev` | Dev profile: state under `~/.openclaw-dev`, Gateway on port 19001 |
+| `--container <name>` | Run the CLI inside a running Docker/Podman container (not a sandbox) |
+| `--log-level <level>` | `silent`, `fatal`, `error`, `warn`, `info`, `debug` or `trace` |
+| `--no-color` | Disable ANSI colours (`NO_COLOR=1` also works) |
+| `--update` | Shorthand for `openclaw update` |
+| `-V`, `--version` | Print the version |
 
-## See Also
+There is no global `--config`, `--json`, `--verbose` or `--quiet`. Use `OPENCLAW_CONFIG_PATH` to point at another config file; `--json` is a per-command flag (`openclaw status --json`).
 
-- [Configuration Reference](/reference/configuration) — Config file format
-- [Environment Variables](/reference/environment-variables) — Env var overrides
+## Set up and change your install
+
+| Command | What it does |
+|---------|--------------|
+| [`onboard`](https://docs.openclaw.ai/cli/onboard) | Guided first-time setup: model auth, Gateway, workspace, channels, skills. `--install-daemon` also installs the background service. |
+| [`setup`](https://docs.openclaw.ai/cli/setup) | Chat with OpenClaw, onboarding first if setup is incomplete. `setup --baseline` just writes the baseline config and workspace. |
+| [`configure`](https://docs.openclaw.ai/cli/configure) | Interactive editor for an existing setup (models, Gateway, channels, plugins, skills). |
+| [`config`](https://docs.openclaw.ai/cli/config) | Non-interactive `get`, `set`, `patch`, `unset`, `file`, `schema`, `validate`. See [Configuration](/reference/configuration). |
+| [`doctor`](https://docs.openclaw.ai/cli/doctor) | Health checks; `--fix` applies repairs and config migrations. Run it after every upgrade. |
+| [`update`](https://docs.openclaw.ai/cli/update) | Update OpenClaw (`--channel stable\|extended-stable\|beta\|dev`, `--dry-run`, `status`). |
+| [`backup`](https://docs.openclaw.ai/cli/backup) | `create`, `verify`, `restore` archives of config, credentials, sessions and workspaces. |
+| [`reset`](https://docs.openclaw.ai/cli/reset) / [`uninstall`](https://docs.openclaw.ai/cli/uninstall) | Reset local state, or remove the service and local data. |
+| [`migrate`](https://docs.openclaw.ai/cli/migrate) | Import state from another agent system (`list`, `plan`, `apply`). |
+
+```bash
+openclaw onboard --install-daemon
+openclaw config set tools.exec.mode ask
+openclaw doctor --fix
+openclaw update --dry-run
+openclaw backup create --verify
+```
+
+## Talk to the agent
+
+| Command | What it does |
+|---------|--------------|
+| [`tui`](https://docs.openclaw.ai/cli/tui) | Terminal UI connected to the Gateway. |
+| `chat`, `terminal` | Aliases for `tui --local`: the terminal UI against the embedded local runtime. |
+| [`agent`](https://docs.openclaw.ai/cli/agent) | One agent turn through the Gateway (`--local` for embedded); good for scripts. `agent exec` runs an isolated headless turn. |
+| [`resume`](https://docs.openclaw.ai/cli/resume) | Reopen a recent Gateway session in the TUI. |
+| [`message`](https://docs.openclaw.ai/cli/message) | Send, read, react to and manage messages on a channel directly. |
+| [`dashboard`](https://docs.openclaw.ai/cli/dashboard) | Open the Control UI (web chat, settings, approvals) with your token; `--no-open` prints the URL. |
+| [`attach`](https://docs.openclaw.ai/cli/attach) | Attach Claude Code to a Gateway session with scoped MCP tools. |
+
+```bash
+openclaw chat --message "What can you do?"
+openclaw agent --agent main --message "Summarise today's inbox" --json
+openclaw message send --channel telegram --target @mychat --message "Hi"
+openclaw dashboard --no-open
+```
+
+A positional argument to `chat` or `tui` is a session **target**, not a message, and `chat` rejects targets because it runs in local mode. `openclaw chat "hello"` fails; use `--message`.
+
+## Run the Gateway
+
+| Command | What it does |
+|---------|--------------|
+| [`gateway`](https://docs.openclaw.ai/cli/gateway) | `run` (foreground), `install` / `uninstall` / `start` / `stop` / `restart` / `status` (service), plus `health`, `probe`, `call`, `usage-cost`, `discover`, `auth-token`. |
+| [`daemon`](https://docs.openclaw.ai/cli/daemon) | Legacy alias for the Gateway service subcommands. |
+| [`status`](https://docs.openclaw.ai/cli/status) | Gateway, channel, model and session overview (`--all`, `--deep`, `--usage`, `--json`). |
+| [`health`](https://docs.openclaw.ai/cli/health) | Health from the running Gateway. |
+| [`logs`](https://docs.openclaw.ai/cli/logs) | Tail Gateway file logs (`--follow`, `--limit`, `--json`, `--max-bytes`). There is no `--filter`; pipe to `grep`. |
+| [`system`](https://docs.openclaw.ai/cli/system) | `heartbeat last\|enable\|disable`, `event`, `presence`. |
+| [`triage`](https://docs.openclaw.ai/cli/triage) | Collect sanitised diagnostics and open a local coding agent to repair. |
+
+```bash
+openclaw gateway status
+openclaw gateway run --port 18789 --bind loopback
+openclaw gateway restart
+openclaw gateway usage-cost
+openclaw status --all
+openclaw logs --follow --limit 100
+openclaw system heartbeat last
+```
+
+`gateway run` has no `--daemon` or `--host`: use `gateway install` for a background service and `--bind loopback|lan|tailnet|custom|auto` for the listen address. Gateway flags are on the [running page](https://docs.openclaw.ai/cli/gateway/running).
+
+## Channels, pairing and devices
+
+| Command | What it does |
+|---------|--------------|
+| [`channels`](https://docs.openclaw.ai/cli/channels) | `add`, `remove`, `list`, `status`, `login`, `logout`, `logs`, `capabilities`, `resolve`, `dead-letters`. |
+| [`pairing`](https://docs.openclaw.ai/cli/pairing) | DM pairing: `list` and `approve <channel> <code>` for strangers who messaged the bot. |
+| [`devices`](https://docs.openclaw.ai/cli/devices) | Device pairing and tokens for Control UI, apps and CLI clients (`list`, `approve`, `reject`, `revoke`, `rotate`). |
+| [`qr`](https://docs.openclaw.ai/cli/qr) | Mobile pairing QR code and setup code. |
+| [`nodes`](https://docs.openclaw.ai/cli/nodes) / [`node`](https://docs.openclaw.ai/cli/node) | Manage paired nodes (phones, other machines) / run this machine as a headless node. |
+| [`directory`](https://docs.openclaw.ai/cli/directory) | Look up contact and group IDs on a channel. |
+
+```bash
+openclaw channels add telegram
+openclaw channels status
+openclaw pairing list
+openclaw devices list
+```
+
+## Models, agents and memory
+
+| Command | What it does |
+|---------|--------------|
+| [`models`](https://docs.openclaw.ai/cli/models) | `list`, `status`, `set`, `fallbacks`, `aliases`, `auth`, `scan`. |
+| [`agents`](https://docs.openclaw.ai/cli/agents) | Isolated agents: `list`, `add`, `delete`, `bind`, `unbind`, `bindings`, `set-identity`. |
+| [`memory`](https://docs.openclaw.ai/cli/memory) | `status`, `search`, `index`, `forget`, `reset`, `rem-harness`. |
+| [`sessions`](https://docs.openclaw.ai/cli/sessions) | List, tail, export, archive and clean up stored sessions. |
+| [`infer`](https://docs.openclaw.ai/cli/infer) | Provider-backed inference from the CLI (model, image, audio, TTS, web, embeddings). Alias: `capability`. |
+
+```bash
+openclaw models status
+openclaw models set anthropic/claude-sonnet-5-5
+openclaw agents list
+openclaw memory status --deep
+openclaw memory search "invoice"
+```
+
+## Automation
+
+| Command | What it does |
+|---------|--------------|
+| [`cron`](https://docs.openclaw.ai/cli/cron) (alias `automations`) | Scheduled jobs: `add`, `list`, `edit`, `run`, `runs`, `enable`, `disable`, `rm`, and `scratch` for a job's notes (where the old `HEARTBEAT.md` checklist went). |
+| [`hooks`](https://docs.openclaw.ai/cli/hooks) | Internal agent hooks. |
+| [`webhooks`](https://docs.openclaw.ai/cli/webhooks) | Webhook helpers (Gmail). |
+
+```bash
+openclaw cron list --all
+openclaw cron status
+```
+
+There is no `openclaw heartbeat` command. Heartbeat settings live in `agents.defaults.heartbeat`; inspect it with `openclaw system heartbeat last`.
+
+## Skills, plugins and MCP
+
+| Command | What it does |
+|---------|--------------|
+| [`skills`](https://docs.openclaw.ai/cli/skills) | `search`, `install`, `update`, `list`, `info`, `check`, `verify`, `workshop`, `library`. Installs from ClawHub go through here. |
+| [`plugins`](https://docs.openclaw.ai/cli/plugins) | `list`, `search`, `inspect`, `install`, `uninstall`, `update`, `enable`, `disable`, `doctor`, plus authoring commands (`init`, `build`, `validate`, `pack`). |
+| [`mcp`](https://docs.openclaw.ai/cli/mcp) | Manage `mcp.servers` (`add`, `list`, `show`, `probe`, `tools`, `login`) and `serve` OpenClaw as an MCP server. |
+
+```bash
+openclaw skills search weather
+openclaw skills check
+openclaw plugins list
+openclaw mcp list
+```
+
+`openclaw clawhub` and `openclaw skill` (singular) do not exist. ClawHub also has its own separate `clawhub` CLI for publishing; see the [ClawHub CLI docs](https://docs.openclaw.ai/clawhub/cli).
+
+## Security, approvals and sandbox
+
+| Command | What it does |
+|---------|--------------|
+| [`security`](https://docs.openclaw.ai/cli/security) | `audit` (`--deep`, `--fix`, `--json`): checks config and state for common mistakes. |
+| [`approvals`](https://docs.openclaw.ai/cli/approvals) (alias `exec-approvals`) | Approval policy, the exec allowlist (`allowlist add\|remove`), pending requests and grants. |
+| `exec-policy` | Show or sync the requested exec policy with host approvals; see [approvals](https://docs.openclaw.ai/cli/approvals). |
+| [`sandbox`](https://docs.openclaw.ai/cli/sandbox) | `list`, `recreate`, `explain` sandbox containers. |
+| [`secrets`](https://docs.openclaw.ai/cli/secrets) | `reload`, `audit`, `configure`, `apply`, `store`. |
+
+```bash
+openclaw security audit --deep
+openclaw approvals get
+openclaw sandbox explain
+openclaw secrets audit
+```
+
+See [Security Hardening](/security/hardening) before giving the agent shell, browser or channel access.
+
+## Everything else
+
+`acp`, `audit`, `browser`, `clawbot` (legacy), `completion`, `connect`, `database`, `dns`, `docs` (search the live docs), `file-transfer`, `fleet`, `googlemeet`, `promos`, `proxy`, `storage`, `teamsmeetings`, `telemetry`, `transcripts`, `users`, `worker`, `worktrees`, `zoommeetings`. Plugins can add more (for example `workboard`). All are listed in the [command index](https://docs.openclaw.ai/cli).
+
+## Exit codes and JSON errors
+
+Commands exit `0` on success and nonzero on failure. OpenClaw does not define a general table of exit codes. With `--json`, a failure prints one JSON document to stdout:
+
+{/* snippet:skip CLI error output, not openclaw.json */}
+```json title="CLI --json failure envelope"
+{ "ok": false, "error": { "type": "cli_error", "message": "Description of the failure" } }
+```
+
+Scripts should parse stdout and still check the exit status. Set `OPENCLAW_DEBUG=1` to include diagnostics when you rerun a failing command.
+
+## See also
+
+- [Configuration Reference](/reference/configuration)
+- [Environment Variables](/reference/environment-variables)
+- [Slash commands](https://docs.openclaw.ai/tools/slash-commands) (the `/...` commands inside a chat)

@@ -1,111 +1,129 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Core Concepts
-description: The fundamental building blocks of OpenClaw — Gateway, Brain, Hands, Memory, and Heartbeat
-keywords: [openclaw, openclaw architecture, how openclaw works, openclaw gateway, openclaw brain hands, openclaw core concepts, openclaw heartbeat, openclaw memory system]
+description: The building blocks of OpenClaw — Gateway, agent runtime, tools, workspace and memory, heartbeat and automations, channels, skills and MCP
+keywords: [openclaw, openclaw architecture, how openclaw works, openclaw gateway, openclaw workspace, openclaw core concepts, openclaw heartbeat, openclaw memory system]
 ---
 
 # Core Concepts
 
-Before diving deeper, understand these five core components that make OpenClaw work.
+Before going deeper, learn the handful of parts that make OpenClaw work. Upstream's own overview is [Architecture](https://docs.openclaw.ai/concepts/architecture).
 
 ## The Gateway
 
-The **Gateway** is the central nervous system — a single long-running process that orchestrates everything.
+The **Gateway** is a single long-running process that owns everything: sessions, the agent loop, tools, channel connections, automations and the web UI.
 
-```
-openclaw gateway
+```bash
+openclaw gateway status
 ```
 
 It provides:
-- A **WebSocket control plane** on port 18789 (default)
-- Bridges between the Brain (LLM) and Hands (execution)
-- Channel management for all connected messaging platforms
-- The heartbeat loop for autonomous operation
+- One port (default **18789**, loopback only) that carries both the **WebSocket** control protocol and **HTTP** (Control UI, health probes, optional OpenAI-compatible API).
+- Connections to every configured chat channel.
+- The Automations scheduler, which also drives the heartbeat.
+- Token auth by default; onboarding generates the token.
 
-The Gateway is designed to run as a **daemon** (background service) that starts on boot.
+It normally runs as a background service (`openclaw gateway install`, or `openclaw onboard --install-daemon`). See [Gateway](/architecture/gateway).
 
-## The Brain (Reasoning Engine)
+## Clients
 
-The Brain is the LLM that powers OpenClaw's intelligence:
+Everything you use to talk to the agent is a client of the Gateway:
 
-- Makes API calls to your chosen provider (Anthropic, OpenAI, xAI, or local)
-- Handles multi-step reasoning and task decomposition
-- Decides *what* to do based on context and instructions
-- Model-agnostic — swap providers without changing your setup
+- **Control UI**: the web app at `http://127.0.0.1:18789/` (`openclaw dashboard`).
+- **TUI**: `openclaw tui`. (`openclaw chat` runs a local embedded agent instead.)
+- **CLI**: `openclaw agent --message "..."`, `openclaw status`, and the rest of the [CLI](/reference/cli).
+- **Apps**: macOS, Windows Hub, Linux, iOS and Android.
 
-## The Hands (Execution Environment)
+## The agent runtime and models
 
-The Hands are what let OpenClaw *do things*:
+Each **agent** has an id (the first one is `main`), a workspace, a model and its own sessions. On each turn the runtime builds a prompt from the workspace files and conversation, calls the model, runs any tool calls, and loops until the model answers.
 
-- **Shell access** — Run commands, install packages, manage processes
-- **File system** — Read, write, modify files anywhere on your machine
-- **Browser automation** — Fill forms, scrape pages, interact with web apps
-- **API calls** — Hit any HTTP endpoint, manage webhooks
+- Models are referenced as `provider/model`, for example `anthropic/claude-opus-5-5`. Onboarding picks the default for your provider.
+- Set the model with `agents.defaults.model.primary` (and `fallbacks`), or `openclaw models set`.
+- Coding harnesses such as Codex and Claude Code can be plugged in as agent runtimes.
+
+This site's [Brain and Hands](/architecture/brain-and-hands) page explains the runtime and tools in more detail.
+
+## Tools
+
+**Tools** are how the agent acts: `exec` (shell), `read`, `write`, `edit` and `apply_patch` (files), `browser`, `web_search`, `web_fetch`, memory tools, messaging and more. Control them with:
+
+- `tools.profile` (`minimal`, `coding`, `messaging`, `full`) and `tools.allow` / `tools.deny`.
+- `tools.exec.mode` (`deny`, `allowlist`, `ask`, `auto`, `full`). **The default is `full`: no approval prompts.**
+- `agents.defaults.sandbox.mode` (`off`, `non-main`, `all`). **The default is `off`: tools run on the host.**
 
 :::warning
-The Hands have the same permissions as the user running OpenClaw. This is powerful but dangerous. See [Security Hardening](/security/hardening) for how to limit access.
+Tools run with the permissions of the user running OpenClaw. Turn on approvals (`openclaw config set tools.exec.mode ask`) and read [Security Hardening](/security/hardening) before you connect channels that other people can message.
 :::
 
-## The Memory System
+## Nodes
 
-OpenClaw remembers things across conversations using **local Markdown files**:
+A **node** is a paired device (iPhone, Android phone, Mac, Windows PC, or a headless `openclaw node` host) that offers device-local capabilities to the Gateway: camera, screen, location, canvas, notifications or running commands on that machine. Pairing is approved with `openclaw devices` / `openclaw nodes`. See [Nodes](https://docs.openclaw.ai/nodes).
+
+## The workspace and memory
+
+Each agent has a **workspace**, by default `~/.openclaw/workspace`. It holds plain Markdown files you can read and edit:
 
 ```
 ~/.openclaw/
-├── memory/
-│   ├── preferences.md    # Your preferences and habits
-│   ├── contacts.md       # People it's learned about
-│   ├── projects.md       # Active projects and context
-│   └── learnings.md      # Things it's figured out
-├── HEARTBEAT.md          # Autonomous task definitions
-└── openclaw.json         # Main configuration
+├── openclaw.json              # Config (not in the workspace)
+├── agents/main/agent/         # Per-agent database: auth profiles, sessions, transcripts
+└── workspace/
+    ├── AGENTS.md              # Operating instructions (incl. a "## Tools" notes section)
+    ├── SOUL.md                # Persona, tone, boundaries
+    ├── USER.md                # Stable facts and preferences about you (optional)
+    ├── IDENTITY.md            # Name, vibe, emoji
+    ├── MEMORY.md              # Curated long-term memory (optional)
+    ├── DREAMS.md              # Dreaming sweep summaries (optional)
+    ├── memory/
+    │   └── 2026-10-18.md      # Daily notes
+    └── skills/                # Workspace skills
 ```
 
+`AGENTS.md`, `SOUL.md`, `USER.md`, `IDENTITY.md` and `MEMORY.md` are injected at the start of a session (with size limits). Daily notes are searched on demand with the memory tools. A nightly **dreaming** sweep, on by default, promotes durable facts into `MEMORY.md`.
+
 Memory is:
-- **Persistent** — Survives restarts and updates
-- **Local** — Never sent to any cloud service
-- **Human-readable** — It's just Markdown, you can edit it directly
-- **Growing** — The agent builds context over time
+- **Persistent**: it survives restarts and updates.
+- **Yours**: files on your disk, in Markdown, editable by hand.
+- **Not private from your model provider**: memory text goes into prompts, and memory search uses **OpenAI embeddings by default**, so chunks are sent to the embedding API too. Use a local embedding provider if that matters.
 
-## The Heartbeat
+See [Memory System](/architecture/memory-system) and upstream [Memory](https://docs.openclaw.ai/concepts/memory).
 
-The Heartbeat is what makes OpenClaw *autonomous* rather than just *reactive*.
+## Heartbeat and automations
 
-Every N minutes (default: 30), the Gateway sends the agent a heartbeat prompt. The agent:
+The **heartbeat** makes OpenClaw proactive. It is a scheduled turn in the agent's main session, every **30 minutes** by default, or **1 hour** when Anthropic is authenticated with OAuth or a Claude CLI token (and you have not set `every`). The agent checks for anything that needs attention and replies `NO_REPLY` when there is nothing to say, so you are not spammed.
 
-1. Reads `HEARTBEAT.md` for defined tasks
-2. Checks for pending work (unread messages, monitored events)
-3. Either responds `HEARTBEAT_OK` (nothing to do) or takes action
+- Configure it under `agents.defaults.heartbeat` (`every`, `activeHours`, `model`, `isolatedSession`, `lightContext`, `target`).
+- A short standing checklist lives in the heartbeat's monitor scratch (`openclaw cron scratch <jobId> --set "..."`).
+- Jobs on a fixed schedule ("daily at 9am", "every Monday") are **automations**: `openclaw automations create` (alias `openclaw cron`). They can run in an isolated session and deliver results to a channel.
 
-This enables proactive behaviors like:
-- Monitoring your inbox and flagging urgent messages
-- Watching GitHub repos for new issues
-- Running scheduled tasks (daily summaries, reports)
-- Alerting you about system events
+`HEARTBEAT.md` is retired: the runtime no longer reads it, and `openclaw doctor --fix` migrates an old one. See [Heartbeat](/architecture/heartbeat) and the official [heartbeat docs](https://docs.openclaw.ai/gateway/heartbeat).
 
-## How They Fit Together
+## How they fit together
 
 ```mermaid
 graph TD
-    subgraph Gateway["⚡ Gateway"]
-        Brain["🧠 Brain<br/>(LLM)"]
-        Hands["🤖 Hands<br/>(Shell, Files, Browser)"]
-        HB["⏱️ Heartbeat<br/>(30m loop)"]
-        Brain <--> Hands
-        Brain --- Memory["💾 Memory<br/>(~/.openclaw/memory/*.md)"]
-        HB --- Memory
+    Clients["Clients<br/>Control UI · TUI · CLI · apps"] --> Gateway
+    Channels["Channels<br/>WhatsApp · Telegram · Discord · Slack · Signal · ..."] --> Gateway
+    subgraph Gateway["Gateway (port 18789)"]
+        Runtime["Agent runtime<br/>(model calls)"]
+        Tools["Tools<br/>exec · files · browser · web"]
+        Sched["Automations scheduler<br/>(incl. heartbeat)"]
+        Runtime <--> Tools
+        Sched --> Runtime
     end
-
-    Channels["🔗 Channels<br/>WhatsApp · Telegram · Discord<br/>Slack · Signal · WebChat"] --> Gateway
+    Runtime --- Workspace["Workspace<br/>~/.openclaw/workspace/*.md"]
+    Tools -.-> Sandbox["Sandbox (optional)<br/>Docker · Podman · SSH"]
+    Gateway <--> Nodes["Nodes<br/>phones · desktops · node hosts"]
 ```
 
-## SOUL.md (Identity & Personality)
+## SOUL.md (persona)
 
-The **SOUL.md** file defines *who* the agent is — its name, personality, tone, rules, and behavioral boundaries:
+`SOUL.md` in the workspace defines *who* the agent is: name, personality, tone, rules and boundaries.
 
-```markdown title="~/.openclaw/SOUL.md"
+```markdown title="~/.openclaw/workspace/SOUL.md"
 # Agent Identity
 
 You are Jarvis, a helpful personal assistant.
@@ -116,58 +134,56 @@ You are Jarvis, a helpful personal assistant.
 - Summarize long emails instead of forwarding them in full
 ```
 
-SOUL.md is loaded into every conversation as system context. It's the primary way to customize the agent's behavior — and also the [#1 attack surface](/security/hardening#soulmd-protection) for prompt injection. Protect it with appropriate file permissions.
+It is loaded into every session. Operating rules ("how to work") belong in `AGENTS.md`; persona ("who to be") in `SOUL.md`. Because the agent can write to its own workspace, these files are also an [attack surface](/security/hardening#soulmd-protection) for prompt injection. See the [SOUL.md Guide](/guides/soul-md).
 
 ## Skills
 
-Skills are OpenClaw's extension system — Markdown files with YAML frontmatter that define reusable agent capabilities:
+**Skills** are directories containing a `SKILL.md` file: YAML front matter with a `name` and `description`, and Markdown instructions that teach the agent when and how to use its tools.
 
-```yaml title="skills/weather.md"
+```markdown title="~/.openclaw/workspace/skills/weather-briefing/SKILL.md"
 ---
 name: weather-briefing
-trigger: "weather|forecast|temperature"
-tools: [web-search, chat]
+description: Give a short weather briefing when the user asks about weather or a forecast.
 ---
 
 # Weather Briefing
 
-When asked about weather, search for current conditions
-and provide a concise briefing with temperature, conditions,
-and any weather alerts.
+When asked about the weather, use `web_search` for current conditions
+and reply with temperature, conditions and any weather alerts.
 ```
 
-Over **10,700 skills** are available on [ClawHub](/guides/clawhub), the community marketplace. Skills can also be written from scratch — see [Skill Development](/guides/skill-development).
+Skills load from the workspace `skills/` folder (highest precedence), `~/.openclaw/skills/` (managed), bundled skills and a few other locations. Community skills are on [ClawHub](/guides/clawhub) and are installed with `openclaw skills install`. See [Skill Development](/guides/skill-development) and upstream [Skills](https://docs.openclaw.ai/tools/skills).
 
 :::warning
-ClawHub has been targeted by malicious actors. Always [verify skills](/guides/clawhub#security) before installing.
+Malicious skills have been published to ClawHub. Read a skill before installing it, and see [Skill Verification](/security/skill-verification).
 :::
 
 ## MCP (Model Context Protocol)
 
-**MCP** is the open protocol that connects OpenClaw to external tools and services. With 32,600+ MCP servers and 229,800+ tools available, it's how the agent accesses databases, APIs, cloud services, and more without custom code.
+**MCP** connects the agent to external tool servers: databases, APIs, SaaS apps. Servers are configured under `mcp.servers`. A local (stdio) server takes an executable in `command` and its arguments in `args`:
 
-```json title="~/.openclaw/openclaw.json (excerpt)"
+```json5 title="~/.openclaw/openclaw.json"
 {
-  "mcp": {
-    "servers": {
-      "filesystem": { "command": "npx @anthropic/mcp-filesystem" },
-      "github": { "command": "npx @anthropic/mcp-github" }
-    }
-  }
+  mcp: {
+    servers: {
+      filesystem: {
+        command: "npx",
+        args: ["-y", "@modelcontextprotocol/server-filesystem", "/home/me/projects"],
+      },
+    },
+  },
 }
 ```
 
-See [MCP Servers](/guides/mcp-servers) for setup and the full ecosystem.
+Remote servers use `url` instead. For GitHub, use GitHub's own [github-mcp-server](https://github.com/github/github-mcp-server); the old `@modelcontextprotocol/server-github` package is deprecated. You can also manage entries with `openclaw mcp set` / `openclaw mcp list`. See [MCP Servers](/guides/mcp-servers).
 
-## Multi-Agent
+## Multiple agents
 
-OpenClaw can spawn **sub-agents** for parallel work — an orchestrator delegates tasks to specialized workers, each with their own context and tools. This enables complex workflows like research pipelines, DevOps fleets, and virtual companies.
+You can run several **agents** on one Gateway, each with its own workspace, model and channel bindings (configured under `agents.entries.<id>`), and agents can spawn **sub-agents** for parallel work. Every extra agent turn costs tokens, so use parallelism where it pays off. See [Multi-Agent Workflows](/guides/multi-agent).
 
-Multi-agent comes with a 15x token cost multiplier, so it's best for tasks that genuinely benefit from parallelism. See [Multi-Agent Workflows](/guides/multi-agent) for patterns and cost management.
+## Next steps
 
-## Next Steps
-
-- [Architecture Overview](/architecture/overview) — Deep dive into each component
-- [Basic Usage](/guides/basic-usage) — Common patterns and workflows
-- [Configuration](/reference/configuration) — Tune every setting
-- [First 7 Days](/guides/first-7-days) — Hands-on structured learning path
+- [Architecture Overview](/architecture/overview): each component in more depth
+- [Basic Usage](/guides/basic-usage): common patterns and workflows
+- [Configuration](/reference/configuration): how `openclaw.json` works
+- [First 7 Days](/guides/first-7-days): a structured learning path

@@ -1,238 +1,190 @@
 ---
 last_update:
-  date: 2026-06-10
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Introduction to OpenClaw
 sidebar_label: Introduction
-description: What is OpenClaw and why it matters — the open-source autonomous AI agent with 377k+ stars
+description: What OpenClaw is, what it can do, what it costs, and what to read before you install it
 keywords: [openclaw, what is openclaw, openclaw overview, openclaw features, open source ai agent, autonomous ai agent, openclaw introduction, ai agent framework]
 ---
 
 # Introduction to OpenClaw
 
-**OpenClaw** is a free, open-source, autonomous AI agent that runs locally on your machine. It connects large language models — Claude, GPT, Gemini, DeepSeek, Grok, or fully local models — to your files, shell, browser, messaging apps, and dozens of other services.
+**OpenClaw** is a free, open-source AI assistant that runs on your own computer or server. A long-running **Gateway** connects a language model (Claude, GPT, Gemini, a local model, and many others) to tools on your machine (shell, files, browser) and to the chat apps you already use (WhatsApp, Telegram, Slack, Discord, iMessage, Teams, and 20+ more).
 
-Think of it as a personal AI assistant that actually *does things*, not just answers questions.
+It is an assistant that *does things*, not only answers questions. That is also why it needs more care than a chatbot.
 
----
-
-## What Makes OpenClaw Different
-
-Unlike chatbots that wait for you to type, OpenClaw is an **autonomous agent**:
-
-| Feature | Traditional Chatbot | OpenClaw |
-|---------|-------------------|----------|
-| Execution | Responds to prompts | Acts proactively via heartbeat |
-| Scope | Text in, text out | Full system access (files, shell, browser, APIs) |
-| Memory | Session-based | Persistent local Markdown memory |
-| Integrations | None or few | 50+ platforms (WhatsApp, Slack, Gmail, GitHub...) |
-| Hosting | Cloud service | Runs on your machine |
-| Privacy | Data sent to provider | All data stays local |
-| Extensibility | Limited | 10,700+ community skills, 32,600+ MCP servers |
-| Autonomy | None | Heartbeat fires every 30 min, takes action without prompting |
+This site is a community companion to the official docs at [docs.openclaw.ai](https://docs.openclaw.ai). Pages here are tested against a specific OpenClaw release (see `verified_with` at the top of each page) and link to the official reference for details.
 
 ---
 
-## Key Capabilities
+## What makes OpenClaw different
 
-### Agent Fundamentals
+| | Typical chatbot | OpenClaw |
+|---|---|---|
+| Where it runs | Vendor cloud | Your machine or server |
+| What it can touch | Text in, text out | Shell, files, browser, APIs, paired devices |
+| Memory | Per-session, or vendor-held | Markdown files in your workspace (`~/.openclaw/workspace`) |
+| How you reach it | One web app | Control UI, terminal UI, desktop and mobile apps, 20+ chat channels |
+| Proactivity | Waits for you | Optional [heartbeat](/architecture/heartbeat) and scheduled automations |
+| Models | One vendor | Any supported provider, or local models |
 
-- **Autonomous operation** — The [heartbeat system](/architecture/heartbeat) checks for pending tasks every 30 minutes and takes action without prompting
-- **Persistent memory** — Remembers facts, preferences, and context across sessions using local Markdown files
-- **Multi-step reasoning** — Breaks complex tasks into steps, executes them, and reports results
-- **Execution approval** — Optional review of shell commands via `tools.exec.mode` (`deny`, `allowlist`, `ask`, `auto`, `full`). The default is `full`: commands run without asking until you turn approvals on
+"Runs locally" does not mean "nothing leaves your machine". Your prompts, memory snippets and tool output go to the model provider you configure, and memory search uses OpenAI embeddings by default. See [Privacy and compliance](/guides/privacy-compliance).
 
-### Integrations
+---
 
-- **50+ messaging channels** — WhatsApp, Telegram, Discord, Slack, Signal, iMessage, Teams, Matrix, Feishu/Lark, and more
-- **MCP ecosystem** — 32,600+ Model Context Protocol servers with 229,800+ tools for databases, APIs, cloud services
-- **Browser automation** — Fill forms, scrape pages, interact with web apps
-- **Email** — Gmail integration with label management, auto-reply, digest generation
+## Key capabilities
+
+### Agent fundamentals
+
+- **Agent runtime and tools.** The agent plans multi-step work and calls tools such as `exec` (shell), `read`/`write`/`edit`, `browser`, `web_search` and `web_fetch`.
+- **Persistent memory.** `MEMORY.md`, `USER.md` and daily notes in `memory/YYYY-MM-DD.md` inside the workspace. A nightly "dreaming" sweep (on by default) consolidates them. See [Memory System](/architecture/memory-system).
+- **Heartbeat and automations.** The heartbeat is a periodic main-session turn (default every 30 minutes, or 1 hour when Anthropic is authenticated with OAuth or a Claude CLI token). Recurring jobs such as "every morning at 9" are [automations](https://docs.openclaw.ai/automation/cron-jobs) (`openclaw cron`).
+- **Execution approval.** Shell commands are governed by `tools.exec.mode` (`deny`, `allowlist`, `ask`, `auto`, `full`). The default is **`full`: commands run without asking** until you turn approvals on.
+
+### Ways to talk to it
+
+- **Control UI.** A web app served by the Gateway at `http://127.0.0.1:18789/`: chat, files, approvals, settings, terminals and dashboards. Open it with `openclaw dashboard`.
+- **Terminal UI.** `openclaw tui` (connected to the Gateway) or `openclaw chat` (local embedded runtime).
+- **Official apps.** macOS menu bar app, Windows Hub, a Linux desktop companion, and iOS and Android apps (App Store and Google Play). The mobile apps are companion nodes that pair with your Gateway. See [Platforms](https://docs.openclaw.ai/platforms).
+- **Chat channels.** WhatsApp, Telegram, Discord, Slack, Signal, iMessage, Microsoft Teams, Matrix, Feishu, LINE and more. See the [Channels guide](/guides/channels).
 
 ### Extensibility
 
-- **10,700+ skills** — Reusable task templates on [ClawHub](/guides/clawhub), the community marketplace with security scanning
-- **Model-agnostic** — Works with any LLM provider (Anthropic, OpenAI, Google, DeepSeek, xAI) or [local models](/guides/local-models) via Ollama, LM Studio, vLLM
-- **Multi-agent** — Spawn sub-agents for parallel work: research pipelines, DevOps fleets, specialized workers
-- **Plugin system** — Extend the gateway with custom functionality
-
-### Advanced Features
-
-- **Workboard** — Visual task management for tracking multi-step agent work
-- **Voice and multimodal** — Voice input/output, image understanding, screen reading
-- **Dreaming mode** — Self-directed exploration during idle heartbeat cycles
-- **Self-improving** — Can write code for its own new capabilities
+- **Skills.** Directories with a `SKILL.md` file that teach the agent a task. Bundled skills ship with OpenClaw; community skills are on [ClawHub](/guides/clawhub). Treat third-party skills as untrusted code.
+- **Plugins.** Channels, model providers and many features are plugins. See [Plugin System](/guides/plugin-system).
+- **MCP.** Connect Model Context Protocol servers under `mcp.servers`. See [MCP Servers](/guides/mcp-servers).
+- **Multiple agents.** Separate agents with their own workspace, model and channels, plus sub-agents for parallel work. See [Multi-Agent](/guides/multi-agent).
 
 ---
 
-## A Brief History
+## A brief history
 
-OpenClaw has had one of the most dramatic trajectories in open-source history:
+1. **November 2025.** Peter Steinberger starts the project as **Clawdbot** (the lobster was called Clawd).
+2. **January 27, 2026.** Renamed **Moltbot** after Anthropic asked for a name change over the trademark.
+3. **January 30, 2026.** Renamed **OpenClaw**. The same week, **CVE-2026-25253** (a one-click token leak through the Control UI's `gatewayUrl` parameter) was fixed in v2026.1.29.
+4. **February 2026.** The ClawHavoc campaign: 341 malicious skills found on ClawHub. See [Known Vulnerabilities](/security/known-vulnerabilities).
+5. **August 2026.** v2026.8.1, billed as "OpenClaw 2.0": rebuilt Control UI, sessions in SQLite, cron renamed Automations, `HEARTBEAT.md` retired.
+6. **October 2026.** Current stable release is **v2026.10.4** (published 2026-10-16).
 
-1. **November 2025** — Created by **Peter Steinberger** (founder of PSPDFKit) as **Clawdbot**
-2. **January 27, 2026** — Renamed to **Moltbot** after Anthropic filed trademark complaints over the "Clawd" name being too close to "Claude"
-3. **January 28, 2026** — **Moltbook** launches — a social network where AI agents autonomously post, comment, and vote. Andrej Karpathy calls it *"the most incredible sci-fi takeoff-adjacent thing"*
-4. **January 30, 2026** — Renamed again to **OpenClaw** ("Moltbot never quite rolled off the tongue") — completing the fastest triple rebrand in open-source history
-5. **January 30, 2026** — **CVE-2026-25253** disclosed: a critical one-click RCE vulnerability. Patched in v2026.1.29
-6. **Late January 2026** — Goes massively viral, gaining **100,000+ GitHub stars in ~2 days** — the fastest repo to reach 100K stars in GitHub history
-7. **February 2026** — 341 malicious ClawHub skills discovered; VirusTotal partnership announced; 40,000+ exposed instances found; adopted by Alibaba and Tencent; banned by Korean tech firms
-8. **March 2026** — Structured heartbeat tasks, plugin system v2, and major security hardening
-9. **June 2026** — **377,000+ GitHub stars**, 78,900+ forks, 365+ contributors
-
-:::info
-Steinberger has said he *"ships code he doesn't read"* — having made 6,600 commits in January alone using AI coding tools. This philosophy of rapid AI-assisted development is both OpenClaw's strength and a source of its security challenges.
-:::
+The project is stewarded by the [OpenClaw Foundation](https://openclaw.org), an independent 501(c)(3) that employs the core team and signs releases. It has no paid tier, hosted service or token. The code is MIT-licensed, copyright OpenClaw Foundation. Upstream's [lore page](https://docs.openclaw.ai/start/lore) tells the naming story.
 
 ---
 
-## Community and Ecosystem
+## Community and ecosystem
 
-| Metric | Count |
-|--------|-------|
-| GitHub stars | 377,000+ |
-| GitHub forks | 78,900+ |
-| Contributors | 365+ |
-| Discord members | ~176,000 |
-| Reddit subscribers | 143,000+ (r/OpenClaw + r/Clawdbot) |
-| ClawHub skills | 10,700+ |
-| MCP servers | 32,600+ |
-| MCP tools | 229,800+ |
+As of 2026-10-18, [openclaw/openclaw](https://github.com/openclaw/openclaw) has about **392,000 GitHub stars** and **82,000 forks**. Releases use calendar versions (`YYYY.M.N`) and ship every few days on four channels: `stable`, `extended-stable`, `beta` and `dev` ([release channels](https://docs.openclaw.ai/install/development-channels)).
 
-Notable community projects include **Nanobot** (15.9K stars, lightweight alternative), **memU** (8.8K stars, memory system), **Moltworker** (8.4K stars, Docker deployment), and **NanoClaw** (6.9K stars, minimal fork). See [Ecosystem](/reference/ecosystem) for the full landscape.
+- Chat: the official [Discord](https://discord.gg/clawd).
+- Skills: [ClawHub](https://clawhub.ai).
+- Related projects, forks and lightweight alternatives: [Ecosystem](/reference/ecosystem).
 
 ---
 
-## Who Is This For?
+## Who is this for?
 
-OpenClaw is aimed at:
-
-- **Developers** who want an AI that can read/write code, run tests, manage repos, and automate DevOps
-- **Power users** who want to automate email triage, messaging, scheduling, and research
-- **Self-hosters** who value privacy and local-first architecture
-- **Tinkerers** who want to build custom AI skills and workflows
-- **Teams** who want a shared AI agent for monitoring, alerting, and coordination
+- **Developers** who want an agent that can work in repos, run tests and automate chores.
+- **Power users** who want help with email, messaging, scheduling and research.
+- **Self-hosters** who want state, memory and credentials on their own hardware.
+- **Tinkerers** who want to write skills, plugins and workflows.
+- **Small teams** sharing one Gateway (see upstream [Teams](https://docs.openclaw.ai/start/teams)). It is not a multi-tenant system: one Gateway is one trust boundary.
 
 ---
 
-## What OpenClaw is NOT
+## What OpenClaw is not
 
-Setting the right expectations:
-
-- **Not a web UI** — OpenClaw is a CLI and gateway. For a web interface, see [WebClaw](/guides/webclaw) (separate project, 637 stars)
-- **Not a coding IDE** — It can write and edit code, but it's not a replacement for VS Code or Cursor. It's a general-purpose agent, not a code editor
-- **Not free to run** — OpenClaw itself is MIT-licensed and free, but LLM API calls cost money. Local models are free but require capable hardware
-- **Not secure by default** — It runs with your user permissions, has had 10 CVEs in 6 months, and has been called a *"security dumpster fire."* Read the [Security Guide](/security/overview) before deploying
-- **Not a hosted service** — You run it on your own machine or server. There's no cloud version (by design — privacy is a core value)
+- **Not just a CLI.** It ships a full web Control UI and desktop and mobile apps. [WebClaw](/guides/webclaw) is a separate third-party web client.
+- **Not a coding IDE.** It can write and edit code, but it is a general-purpose agent, not a replacement for your editor.
+- **Not free to run.** OpenClaw is free; model API calls are not. Local models cost nothing per token but need capable hardware.
+- **Not safe by default.** It runs with your user's permissions, shell commands run without approval by default, and the sandbox is off. Read the [Security Overview](/security/overview) before connecting it to anything important.
+- **Not a hosted service.** You run it yourself. Third parties sell managed hosting; see [Hosting Providers](/guides/hosting-providers).
+- **Not multi-tenant.** Upstream's trust model is one trusted operator per Gateway. Give mutually untrusted people separate Gateways.
 
 ---
 
-## Security: Read This First
+## Security: read this first
 
-OpenClaw grants your AI agent significant system access. Before deploying, understand the risks:
+OpenClaw gives a language model real access to your machine. Know these facts before you install:
 
-| Risk | Detail |
-|------|--------|
-| **Full system access** | Runs as your user — can read/write any file, execute any command |
-| **10 CVEs in 6 months** | Including a critical one-click RCE (CVE-2026-25253) |
-| **Exposed instances** | 40,000+ gateways found open on the internet in February 2026 |
-| **Malicious skills** | 341 trojanized skills (12% of ClawHub at the time) discovered in the ClawHavoc campaign |
-| **No auth by default** | Gateway port 18789 is open without authentication unless configured |
+| Fact | What it means |
+|---|---|
+| **Host exec defaults to `full`** | The agent can run any shell command as your user without asking. Turn approvals on with `openclaw config set tools.exec.mode ask`. |
+| **Sandbox is off by default** | `agents.defaults.sandbox.mode` is `"off"`, so tools run on the host. |
+| **Gateway auth is on by default** | Onboarding generates a token, and the Gateway refuses to bind beyond loopback without auth. The risk is turning it off (`gateway.auth.mode: "none"`) or exposing the port carelessly. |
+| **Many advisories** | As of 2026-10-18 GitHub lists 722 security advisories for openclaw/openclaw (14 critical, 249 high). Stay on a current release. |
+| **Skills are code** | Malicious skills have been published to ClawHub. Review before installing. |
 
-### How to Stay Safe
+### How to stay safe
 
-1. **Always update** — Critical patches ship frequently
-2. **Bind to localhost** — Don't expose port 18789 to the internet
-3. **Enable gateway authentication** — Set a token or use reverse proxy auth
-4. **Start with `ask` permission mode** — Approve each shell command before it runs
-5. **Run `openclaw security audit --deep`** — Built-in security scanner
-6. **Use sandboxing** — Docker container, `--container` flag, or VM for high-risk tasks
+1. **Update often:** `openclaw update`.
+2. **Keep the Gateway on loopback** (`gateway.bind: "loopback"`, the default). For remote access use SSH tunnels or Tailscale, not a public port.
+3. **Keep token auth on** (`gateway.auth.mode: "token"`).
+4. **Turn on exec approvals:** `openclaw config set tools.exec.mode ask`.
+5. **Consider the sandbox** for anything that reads untrusted input: `agents.defaults.sandbox.mode: "non-main"` or `"all"` (needs Docker or another backend). Note that the global `--container` flag only runs the CLI inside an existing container; it is not a sandbox.
+6. **Audit your setup:** `openclaw security audit --deep`.
 
-See [Security Overview](/security/overview) and [Hardening Guide](/security/hardening) for complete guidance.
+See [Security Overview](/security/overview) and the [Hardening Guide](/security/hardening).
 
 :::warning
-Start with read-only permissions and expand gradually. Do not run OpenClaw as root. Do not expose the gateway to the internet without authentication.
+Do not run OpenClaw as root. Do not expose port 18789 to the internet. Do not install skills you have not read.
 :::
 
 ---
 
-## The Cost Question
+## The cost question
 
-OpenClaw itself is free (MIT license), but LLM API costs can add up quickly:
+OpenClaw itself is free. Your bill comes from model tokens, and it depends almost entirely on which model you use and how much the agent runs unattended. Check your provider's current price list rather than trusting a table on a community site.
 
-| Usage Level | Approximate Daily Cost | Monthly |
-|-------------|----------------------|---------|
-| Light (CLI chat only) | $1-5 | $30-150 |
-| Moderate (heartbeat + channels) | $5-20 | $150-600 |
-| Heavy (many channels, complex skills) | $20-50+ | $600-1,500+ |
-| Local models (Ollama/vLLM) | $0 | $0 |
+The main levers, all real config keys:
 
-### Reducing Costs
+| Lever | How |
+|---|---|
+| Cheaper model for the heartbeat | `agents.defaults.heartbeat.model`, e.g. `anthropic/claude-haiku-5-5` |
+| Less frequent heartbeat | `agents.defaults.heartbeat.every: "1h"` (or `"0m"` to turn the recurring heartbeat off) |
+| Only during waking hours | `agents.defaults.heartbeat.activeHours: { start: "08:00", end: "22:00" }` |
+| Smaller heartbeat context | `agents.defaults.heartbeat.isolatedSession: true` and `lightContext: true` |
+| Local models | Ollama, LM Studio or vLLM; see [Local Models](/guides/local-models) |
 
-The biggest cost driver is the **heartbeat** — it fires every 30 minutes, 24/7, each cycle consuming tokens. Five changes can cut costs by up to 97%:
-
-| Change | Effect |
-|--------|--------|
-| Use Haiku/cheap model for heartbeat | Save 80-90% of heartbeat cost |
-| Increase heartbeat interval to 60 min | Save 50% |
-| Enable quiet hours (no heartbeat while sleeping) | Save 33% |
-| Use a local model for heartbeat | Save 100% of heartbeat API cost |
-| Enable `isolatedSession` for heartbeat | Reduce context from 100K to 2-5K tokens per cycle |
-
-One documented case: **$1,200/month reduced to $36/month** with model routing alone.
-
-See [Cost Management](/guides/cost-management) and [Performance Tuning](/guides/performance-tuning) for detailed strategies. For the zero-cost path, see [Local Models](/guides/local-models).
+See [Cost Management](/guides/cost-management) and the official [heartbeat docs](https://docs.openclaw.ai/gateway/heartbeat).
 
 ---
 
-## How Does It Compare?
+## How does it compare?
 
-OpenClaw occupies a unique position — the only open-source agent with full system access, 50+ channel integrations, persistent memory, and autonomous heartbeat:
+| Tool | Type | Runs where | Reaches you via | Open source |
+|---|---|---|---|---|
+| **OpenClaw** | General-purpose personal agent | Your hardware | Control UI, apps, 20+ chat channels | Yes (MIT) |
+| **Claude Code, Codex CLI** | Coding agents | Your terminal | Terminal, IDE | Codex CLI yes, Claude Code no |
+| **Cursor, GitHub Copilot** | IDE assistants | Vendor cloud plus IDE | IDE | No |
+| **Open Interpreter** | CLI agent | Your machine | Terminal | Yes |
+| **CrewAI** | Multi-agent framework | Your code | Your app | Yes |
 
-| Agent | Type | Autonomy | Integrations | Cost | Open Source |
-|-------|------|----------|-------------|------|-------------|
-| **OpenClaw** | General-purpose agent | Full (heartbeat) | 50+ channels | $0 + API | Yes (MIT) |
-| **Devin** | Coding agent | Task-based | IDE only | $500/mo | No |
-| **Cursor Agent** | Coding agent | IDE-embedded | IDE only | $20-40/mo | No |
-| **GitHub Copilot Agent** | Coding agent | GitHub-integrated | GitHub | $10-39/mo | No |
-| **Open Interpreter** | CLI agent | Reactive only | Shell only | $0 + API | Yes |
-| **CrewAI** | Multi-agent framework | Framework-level | Programmatic | $0 + API | Yes |
-
-OpenClaw is the most autonomous and most integrated option — and also the highest risk. The commercial alternatives (Devin, Cursor, Copilot) are more constrained but safer.
-
-See [Comparison](/reference/comparison) for the full feature matrix.
+OpenClaw can also drive Claude Code and Codex as agent harnesses. See [Comparison](/reference/comparison) for more.
 
 ---
 
-## System Requirements
+## System requirements
 
 | Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| **OS** | macOS, Linux, Windows (native [Windows Hub](https://docs.openclaw.ai/platforms/windows) or WSL2) | macOS or Linux |
-| **Node.js** | 24.16+ or 26.1+ | 26 |
-| **RAM** | 2 GB (gateway only) | 4 GB+ |
-| **Disk** | 500 MB | 2 GB+ (for memory, skills, logs) |
-| **Network** | Outbound HTTPS (for cloud LLMs) | Stable connection |
+|---|---|---|
+| **OS** | macOS, Linux, Windows (native [Windows Hub](https://docs.openclaw.ai/platforms/windows), PowerShell CLI, or WSL2) | macOS or Linux |
+| **Node.js** | 24.16+ or 26.1+ (22, 23 and 25 are unsupported) | 26 |
+| **RAM** | 1 GB (Gateway only, cloud models) | 2 GB+ |
+| **Disk** | 500 MB | 2 GB+ for memory, sessions and logs |
+| **Network** | Outbound HTTPS to your model provider | Stable connection |
 
-For **local models**, add GPU requirements:
+The installer script provisions a supported Node.js if needed. **Raspberry Pi** 4 and 5 with a 64-bit OS are supported Gateway hosts ([Raspberry Pi guide](https://docs.openclaw.ai/install/raspberry-pi)); 32-bit ARM (ARMv7) is not.
 
-| VRAM | Recommended Model | Quality |
-|------|-------------------|---------|
-| 8 GB | Qwen3 8B | Basic tasks |
-| 16 GB | Qwen3 14B | Good for most tasks |
-| 24 GB (RTX 4090) | Qwen3 32B | Excellent daily driver |
-| 40-80 GB (A100) | Llama 3.3 70B | Near-cloud quality |
-
-:::caution
-**Windows** requires WSL2 — native Windows support is experimental. **Raspberry Pi** and ARM single-board computers are not supported.
-:::
+For **local models**, the GPU matters far more than the Gateway. See [Local Models](/guides/local-models) for sizing.
 
 ---
 
-## Next Steps
+## Next steps
 
-| Step | Time | Link |
-|------|------|------|
-| Install OpenClaw | 2 min | [Installation](/getting-started/installation) |
-| Get your first chat working | 5 min | [Quick Start](/getting-started/quick-start) |
-| Understand the architecture | 10 min | [Core Concepts](/getting-started/core-concepts) |
-| Structured learning path | 7 days | [First 7 Days](/guides/first-7-days) |
-| Lock down security | 15 min | [Security Hardening](/security/hardening) |
+| Step | Link |
+|---|---|
+| Install OpenClaw | [Installation](/getting-started/installation) |
+| Get your first chat working | [Quick Start](/getting-started/quick-start) |
+| Understand the moving parts | [Core Concepts](/getting-started/core-concepts) |
+| Structured learning path | [First 7 Days](/guides/first-7-days) |
+| Lock down security | [Security Hardening](/security/hardening) |

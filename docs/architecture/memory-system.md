@@ -1,276 +1,200 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Memory System
-description: How OpenClaw stores and retrieves persistent context — hybrid search, Dreaming mode, memory plugins, and file structure
-keywords: [openclaw, memory, persistent memory, local storage, markdown memory, hybrid search, dreaming mode]
+description: How OpenClaw stores and retrieves persistent context — workspace memory files, hybrid search, dreaming, memory plugins, and what leaves your machine
+keywords: [openclaw, memory, persistent memory, markdown memory, hybrid search, dreaming, memory-core]
 ---
 
 # Memory System
 
-OpenClaw's memory is one of its most distinctive features — persistent context stored as **local Markdown files** that survive restarts, updates, and migrations. Unlike session-based chatbot memory, OpenClaw builds a growing knowledge base that makes the agent more useful over time.
+OpenClaw remembers things by writing plain Markdown files in the agent's **workspace** (default `~/.openclaw/workspace`). There is no hidden state: if it is not in a file, the agent does not remember it. A search index over those files lives in the agent's SQLite database, and a background "dreaming" sweep consolidates daily notes into long-term memory.
+
+Official references: [Memory overview](https://docs.openclaw.ai/concepts/memory), [Memory search](https://docs.openclaw.ai/concepts/memory-search), [Dreaming](https://docs.openclaw.ai/concepts/dreaming), [Memory configuration reference](https://docs.openclaw.ai/reference/memory-config).
 
 ---
 
-## How It Works
-
-Every conversation contributes to a knowledge base at `~/.openclaw/memory/`:
+## Where memory lives
 
 ```
-~/.openclaw/
+~/.openclaw/workspace/
+├── MEMORY.md              # Curated long-term memory (durable facts, decisions)
+├── USER.md                # Optional user model: preferences, style, written as directives
 ├── memory/
-│   ├── preferences.md     # User preferences and habits
-│   ├── contacts.md        # People the agent has learned about
-│   ├── projects.md        # Active projects and their context
-│   ├── learnings.md       # Discoveries and solutions
-│   ├── tools.md           # Tools and workflows used
-│   └── custom/            # User-defined categories
-│       ├── work.md
-│       └── recipes.md
-├── SOUL.md                # Agent identity (not memory, but loaded with it)
-├── HEARTBEAT.md           # Autonomous task definitions
-├── AGENTS.md              # Task instructions
-├── TOOLS.md               # Available capabilities
-├── USER.md                # User context
-├── IDENTITY.md            # External presentation (name, emoji)
-└── DREAMS.md              # Dreaming output (if enabled)
+│   ├── 2026-10-17.md      # Daily notes (one file per day, or YYYY-MM-DD-<slug>.md)
+│   └── 2026-10-18.md
+├── DREAMS.md              # Optional Dream Diary and sweep summaries, for human review
+├── AGENTS.md              # Operating instructions (not memory, but loaded every session)
+├── SOUL.md                # Persona and tone
+└── IDENTITY.md            # Name, vibe, emoji
 ```
+
+| File | Role | Loaded how |
+|------|------|------------|
+| `MEMORY.md` | Compact, curated long-term memory | Injected at session start (main private session only), subject to the bootstrap size limit |
+| `USER.md` | Stable preferences and profile facts | Injected at session start, separate 4,000-character budget |
+| `memory/YYYY-MM-DD.md` | Detailed working notes | Not injected every turn. Indexed for `memory_search` / `memory_get`; today's and yesterday's notes load on `/new` or `/reset` |
+| `DREAMS.md` | Dreaming output | For you to read; not a memory source |
+
+There are no topical files such as `preferences.md` or `contacts.md`, and no `~/.openclaw/memory/` folder. `HEARTBEAT.md` and `TOOLS.md` are retired; `openclaw doctor --fix` migrates them.
+
+To have the agent remember something, ask it ("Remember that I prefer pnpm"). It writes the note to the right file.
 
 ---
 
-## Memory Lifecycle
+## Retrieval: hybrid search
 
-```mermaid
-flowchart TD
-    Conv["💬 Conversation"] --> Observe["1. Observe<br/>Brain identifies facts worth remembering"]
-    Observe --> Extract["2. Extract<br/>Key information structured into notes"]
-    Extract --> Store["3. Store<br/>Written to appropriate .md file"]
-    Store --> Index["4. Index<br/>Embedded for vector search (sqlite-vec)"]
-    Index --> Retrieve["5. Retrieve<br/>Hybrid search on next conversation"]
-    Retrieve --> Conv
-    Store --> Decay["6. Decay<br/>Old memories deprioritized (not deleted)"]
+The builtin engine (the default backend) runs two searches in parallel and merges them:
+
+| Path | Weight | Method |
+|------|--------|--------|
+| **Vector search** | 0.7 | Semantic similarity over embeddings |
+| **Keyword search** | 0.3 | SQLite FTS5 (BM25), plus separate filename search |
+
+The merged score is then multiplied by recency decay and an importance factor, and results are reordered for diversity (MMR). Dated daily notes decay with a 30-day half-life; `MEMORY.md` and `USER.md` do not decay. The index is per agent, in `~/.openclaw/agents/<agentId>/agent/openclaw-agent.sqlite` (PostgreSQL is optional).
+
+:::warning Embeddings are not local by default
+OpenClaw uses **OpenAI embeddings by default**, so memory chunks are sent to the embedding API when they are indexed and searched. For local embeddings, install the llama.cpp provider and select `provider: "local"`, or point it at Ollama or LM Studio.
+:::
+
+```bash
+openclaw plugins install @openclaw/llama-cpp-provider
 ```
-
-### What Gets Remembered
-
-The agent autonomously identifies and stores:
-- **Preferences** — "I prefer dark mode", "Always use pnpm not npm"
-- **Contacts** — People mentioned and their roles/relationships
-- **Projects** — Active work, goals, deadlines, context
-- **Learnings** — Solutions found, patterns discovered, tools configured
-- **Instructions** — Standing orders ("always use strict TypeScript")
-
-You can also explicitly instruct the agent:
-
-```
-"Remember that I prefer dark mode for all tools"
-"Forget everything about my previous project"
-"What do you remember about me?"
-```
-
----
-
-## Memory Retrieval
-
-When a new conversation starts, the agent retrieves relevant memories using **hybrid search**:
-
-### Hybrid Search (70/30 Split)
-
-| Component | Weight | Method | Implementation |
-|-----------|--------|--------|---------------|
-| **Vector search** | 70% | Semantic similarity via embeddings | sqlite-vec (local, no API calls) |
-| **BM25 keyword search** | 30% | Full-text search | SQLite FTS5 |
-
-This hybrid approach catches both semantically similar memories (vector) and exact keyword matches (BM25). All processing happens locally — no embedding API calls required.
-
-### Context Token Budget
-
-Retrieved memories are truncated to fit within `max_context_tokens`:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "memory": {
-    "max_context_tokens": 2000
-  }
+  memory: {
+    search: {
+      provider: "local", // or "openai", "gemini", "voyage", "mistral", "ollama", "lmstudio", ...
+    },
+  },
 }
 ```
 
-| Setting | Effect | Trade-off |
-|---------|--------|-----------|
-| 500 tokens | Minimal memory per message | Low cost, may miss relevant context |
-| 2,000 tokens (default) | Good balance | Standard cost |
-| 5,000 tokens | Rich context | Higher cost per message |
-| 10,000+ tokens | Very rich context | Significant cost increase |
-
-Each message's total context = SOUL.md + memory + skills + history + message. Reducing `max_context_tokens` is one of the most effective cost levers — see [Performance Tuning](/guides/performance-tuning).
+How much memory reaches the prompt is controlled by the bootstrap limits (`agents.defaults.bootstrapMaxChars`, default 20000 per file) and by what the agent retrieves. There is no `memory.max_context_tokens` key. If `MEMORY.md` outgrows the limit, the injected copy is truncated; move detail into `memory/*.md`. `/context list` and `openclaw doctor` show raw and injected sizes.
 
 ---
 
-## Dreaming Mode
+## Dreaming {#dreaming-mode}
 
-The **memory-core** plugin (v2026.5+) adds **Dreaming** — a background memory consolidation process inspired by sleep phases. It runs during off-hours to deduplicate, synthesize, and organize accumulated memories.
+Dreaming is the background consolidation sweep in the bundled `memory-core` plugin. It is **enabled by default** and runs as one managed automation job, by default at `0 3 * * *` (03:00 daily). It is not tied to heartbeats or quiet hours.
 
-### Three Phases
+Each sweep runs three phases in order:
 
-| Phase | What It Does | Input |
-|-------|-------------|-------|
-| **Light** | Ingests recent daily files, deduplicates obvious redundancies | Last 24 hours of memory writes |
-| **REM** | Identifies patterns and connections within a sliding window | 7-day memory window |
-| **Deep** | Scores candidates on 6 signals, promotes or archives | Full memory corpus |
+| Phase | Purpose | Writes `MEMORY.md`? |
+|-------|---------|---------------------|
+| **Light** | Sort and stage recent short-term material, dedupe signals | No |
+| **REM** | Build theme and reflection summaries from recent traces | No |
+| **Deep** | Score candidates and promote the strong ones | Yes |
 
-### Scoring Signals (Deep Phase)
+### Deep ranking signals
 
-1. **Relevance** — How often is this memory retrieved?
-2. **Frequency** — How many conversations reference it?
-3. **Recency** — When was it last accessed?
-4. **Diversity** — Does it add unique information?
-5. **Credibility** — Was it confirmed or corrected?
-6. **Utility** — Did it lead to successful actions?
+| Signal | Weight |
+|--------|--------|
+| Relevance | 0.30 |
+| Frequency | 0.24 |
+| Query diversity | 0.15 |
+| Recency | 0.15 |
+| Consolidation | 0.10 |
+| Conceptual richness | 0.06 |
+
+Candidates must also pass `minScore`, `minRecallCount` and `minUniqueQueries` gates. A summary goes to `DREAMS.md` in the workspace.
 
 ### Configuration
 
+Dreaming settings live under the plugin's `config` block:
+
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "plugins": {
-    "entries": {
+  plugins: {
+    entries: {
       "memory-core": {
-        "enabled": true,
-        "dreaming": {
-          "enabled": true,
-          "schedule": "0 3 * * *",
-          "model": "claude-haiku-4-5-20251001"
-        }
-      }
-    }
-  }
+        config: {
+          dreaming: {
+            enabled: true,
+            frequency: "0 3 * * *",
+            timezone: "Europe/Berlin",
+            model: "anthropic/claude-haiku-5-5",
+          },
+        },
+      },
+    },
+  },
 }
 ```
 
-### Output
-
-Dreaming results are written to `~/.openclaw/DREAMS.md` for human review. This file is informational — the actual memory changes happen in the `memory/` directory.
+Set `enabled: false` to turn it off. In chat, `/dreaming status` and `/dreaming on` do the same job.
 
 ### Inspection
 
 ```bash
-# Check memory status
-openclaw doctor memory status
+# Index and embedding-provider status
+openclaw memory status
+openclaw memory status --deep
 
-# View dream diary
-openclaw doctor memory dreamDiary
+# Search memory
+openclaw memory search "deployment"
 
-# Run REM harness manually
-openclaw doctor memory remHarness
+# Preview REM reflections and deep promotions without writing
+openclaw memory rem-harness
 ```
 
 ---
 
-## Memory Plugins
+## Memory backends and plugins
 
-The built-in Markdown memory works for most users, but plugins can extend or replace the memory backend:
+| Option | What it is |
+|--------|------------|
+| **Builtin engine** | Default. Per-agent SQLite (or PostgreSQL) index with keyword, vector and hybrid search ([docs](https://docs.openclaw.ai/concepts/memory-builtin)) |
+| **memory-core** | Bundled plugin that owns memory tools and dreaming |
+| **Active memory** | Optional deeper recall lane for questions about the past ([docs](https://docs.openclaw.ai/concepts/active-memory)) |
+| **Honcho** | External plugin that persists conversations to the Honcho service and builds user models ([docs](https://docs.openclaw.ai/concepts/memory-honcho)) |
+| **memory-lancedb**, **memory-wiki** | Other official memory plugins (LanceDB vector store; Memory Wiki) |
 
-### Available Plugins
-
-| Plugin | Backend | Best For |
-|--------|---------|----------|
-| **Built-in** | Local Markdown + sqlite-vec | Default — simple, private, no dependencies |
-| **memory-core** | Enhanced built-in + Dreaming | Active users who want consolidation |
-| **PostClaw** | PostgreSQL + pgvector | Teams with existing Postgres infrastructure |
-| **Redis memory** | Redis + RediSearch | High-performance, shared memory across instances |
-| **Qdrant memory** | Qdrant vector DB | Large memory corpuses needing scale |
-| **ChromaDB memory** | ChromaDB | Local vector DB alternative |
-
-### Why Use a Plugin?
-
-| Need | Solution |
-|------|----------|
-| Share memory across multiple Gateway instances | PostgreSQL or Redis |
-| Scale to millions of memory entries | Qdrant or PostgreSQL |
-| Background consolidation and dedup | memory-core (Dreaming) |
-| Existing database infrastructure | Match your stack |
-
-For most single-user setups, the built-in Markdown memory is sufficient and has the advantage of being human-readable and editable.
-
-See [Memory Systems Compared](/guides/memory-systems) for detailed comparison of all 12+ options.
+`plugins.slots.memory` picks which plugin fills the memory slot. QMD was retired in v2026.8.1, and doctor migrates its settings to the builtin engine. Third-party memory systems are covered, unverified, in [Memory Systems Compared](/guides/memory-systems).
 
 ---
 
-## Manual Memory Management
+## Managing memory by hand
 
-Since memory is just Markdown, you can edit it directly:
+Memory is plain Markdown, so you can read and edit it:
 
 ```bash
-# View what the agent remembers
-cat ~/.openclaw/memory/preferences.md
+cat ~/.openclaw/workspace/MEMORY.md
+ls ~/.openclaw/workspace/memory/
+"$EDITOR" ~/.openclaw/workspace/USER.md
 
-# Edit memories
-vim ~/.openclaw/memory/preferences.md
+# Rebuild the search index after large manual edits
+openclaw memory index --force
 
-# Add a new memory category
-echo "# Cooking Notes" > ~/.openclaw/memory/custom/cooking.md
-
-# Reset all memory (start fresh)
-rm -rf ~/.openclaw/memory/*
+# Preview deleting memories derived from one session, then do it
+openclaw memory forget --session <id-or-key> --dry-run
+openclaw memory forget --session <id-or-key>
 ```
 
-### Example Memory Entry
-
-```markdown title="~/.openclaw/memory/preferences.md"
-## Communication Style
-- Prefers concise responses, no filler
-- Uses dark mode everywhere
-- Timezone: America/Los_Angeles
-
-## Development
-- Primary language: TypeScript
-- Editor: VS Code with Vim bindings
-- Package manager: pnpm (never npm)
-- Always use strict TypeScript config
-
-## Updated: 2026-06-08
-```
-
----
-
-## Configuration
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "memory": {
-    "enabled": true,
-    "path": "~/.openclaw/memory",
-    "max_context_tokens": 2000,
-    "auto_save": true,
-    "categories": [
-      "preferences",
-      "contacts",
-      "projects",
-      "learnings"
-    ]
-  }
-}
-```
+`openclaw memory reset` clears the derived index and embedding cache without deleting your files or sessions. To start memory from scratch, archive `MEMORY.md`, `USER.md` and `memory/` rather than running `rm -rf` on the workspace, which also holds `SOUL.md`, `AGENTS.md` and your skills.
 
 ---
 
 ## Privacy
 
-- Memory files are **never sent to any external service** — they're loaded locally and included in the LLM prompt
-- If using a cloud LLM provider, memory content *is* sent as part of the prompt (this is unavoidable)
-- For maximum privacy, use [local models](/guides/local-models) so nothing leaves your machine
-- The built-in memory backend uses sqlite-vec for local embeddings — no external embedding API calls
+- Memory files stay on your disk, but anything injected or retrieved into a prompt is sent to your model provider.
+- With the default OpenAI embeddings, indexed chunks are also sent to the embedding API.
+- To keep everything on the machine, use a [local model](/guides/local-models) and a local embedding provider.
+- `MEMORY.md` is loaded only in the main private session, not in group or shared contexts.
 
 :::tip
-Periodically review `~/.openclaw/memory/` to see what the agent has learned. Remove anything you don't want included in future prompts.
+Review `MEMORY.md`, `USER.md` and `memory/` now and then, and delete anything you don't want in future prompts.
 :::
 
 ---
 
-## See Also
+## See also
 
-- [Architecture Overview](/architecture/overview) — Where memory fits in the data flow
-- [Memory Systems Compared](/guides/memory-systems) — 12+ memory backends compared
-- [Performance Tuning](/guides/performance-tuning) — Context token budget optimization
-- [Security Hardening](/security/hardening) — Protecting memory files
-- [Local Models](/guides/local-models) — Keep everything on-device
-- [Configuration Reference](/reference/configuration) — Memory settings
+- [Architecture Overview](/architecture/overview): where memory fits
+- [Memory Systems Compared](/guides/memory-systems): third-party options
+- [Performance Tuning](/guides/performance-tuning): context size
+- [Security Hardening](/security/hardening): protecting the workspace
+- [Local Models](/guides/local-models): keeping data on-device
+- [Configuration Reference](/reference/configuration): how the config file works

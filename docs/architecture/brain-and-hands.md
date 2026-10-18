@@ -1,348 +1,252 @@
 ---
 last_update:
-  date: 2026-06-09
-title: Brain & Hands
-description: How OpenClaw separates reasoning (LLM) from execution (shell, files, browser) — model routing, prompt assembly, tool permissions, and sandboxing
-keywords: [openclaw, brain, llm integration, execution, tool use, model routing, sandboxing, prompt assembly]
+  date: 2026-10-18
+verified_with: 2026.10.4
+title: Agent Runtime and Tools
+sidebar_label: Agent Runtime & Tools
+description: How an OpenClaw agent turn works — the agent loop and models (the "brain"), tools, exec approvals, sandboxing and nodes (the "hands") — mapped onto upstream's real config keys
+keywords: [openclaw, agent loop, agent runtime, llm integration, tools, exec approvals, model fallbacks, sandboxing, nodes]
 ---
 
-# Brain & Hands
+# Agent Runtime and Tools
 
-OpenClaw separates AI reasoning from system execution into two distinct layers. The **Brain** (LLM) decides what to do; the **Hands** (execution environment) carry it out. The Brain never directly touches the filesystem or network — it requests actions from the Hands via a structured tool-call protocol.
-
----
-
-## The Brain (Reasoning Engine)
-
-The Brain is the LLM that interprets requests, reasons about them, and decides on a plan of action.
-
-### Supported Providers
-
-| Provider | Models | Config Key | Cost Range |
-|----------|--------|------------|------------|
-| **Anthropic** | Claude Opus 4.6, Sonnet 4.5, Haiku 4.5 | `anthropic` | $0.25-$75/M tokens |
-| **OpenAI** | GPT-5.3-Codex, GPT-4o | `openai` | $2.50-$60/M tokens |
-| **Google** | Gemini 2.5 Flash, Gemini 2.5 Pro | `google` | $0.20-$15/M tokens |
-| **xAI** | Grok | `xai` | $5-$25/M tokens |
-| **OpenRouter** | 200+ models via single API | `openrouter` | Varies |
-| **DeepSeek** | DeepSeek V3, R1 | `deepseek` | $0.27-$2.19/M tokens |
-| **Local** | Any model via Ollama or vLLM | `local` | $0 |
-
-### Configuration
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-opus-4-6",
-    "api_key": "${ANTHROPIC_API_KEY}",
-    "temperature": 0.7,
-    "max_tokens": 4096,
-    "fallback": {
-      "provider": "openai",
-      "model": "gpt-4o"
-    }
-  }
-}
-```
-
-### How the Brain Works
-
-1. **Receives** a message (from user, channel, or heartbeat)
-2. **Loads** relevant memory via hybrid search
-3. **Assembles** the prompt (SOUL.md + memory + skills + history + message)
-4. **Generates** a plan (internal chain-of-thought)
-5. **Outputs** either a response, one or more tool calls, or both
-6. **Loops** — if tool calls were made, results feed back for another reasoning pass
-
-### Prompt Assembly Pipeline
-
-Each LLM call assembles context from multiple layers:
-
-```
-┌─────────────────────────────────────────────┐
-│  SOUL.md (identity, personality, rules)     │  ← Always loaded
-├─────────────────────────────────────────────┤
-│  AGENTS.md + TOOLS.md (instructions)        │  ← Per-agent
-├─────────────────────────────────────────────┤
-│  Memory (hybrid search results)             │  ← Up to max_context_tokens
-├─────────────────────────────────────────────┤
-│  Active skill instructions (triggered)      │  ← 0-N skills
-├─────────────────────────────────────────────┤
-│  Conversation history                       │  ← Session context
-├─────────────────────────────────────────────┤
-│  <<<EXTERNAL_UNTRUSTED_CONTENT>>>           │
-│  Channel message (with boundary markers)    │  ← The actual input
-│  <<</EXTERNAL_UNTRUSTED_CONTENT>>>          │
-└─────────────────────────────────────────────┘
-```
-
-External messages are wrapped in `EXTERNAL_UNTRUSTED_CONTENT` boundary markers with `Source: External` metadata to defend against prompt injection.
-
-### Model Routing
-
-Route different tasks to different models based on complexity and cost:
-
-| Task | Recommended Model | Why |
-|------|------------------|-----|
-| Heartbeat checks | Haiku 4.5 ($0.25/$1.25/M) | Simple decisions, runs frequently |
-| Chat responses | Sonnet 4.5 ($3/$15/M) | Good balance of quality and cost |
-| Complex reasoning | Opus 4.6 ($15/$75/M) | Maximum capability |
-| Sub-agent workers | Sonnet or Haiku | Cheaper for parallelized tasks |
-| Privacy-sensitive | Local (Ollama/vLLM) | Nothing leaves your machine |
-
-Configure per-task models:
-
-```json5
-{
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6"
-  },
-  "heartbeat": {
-    "model": "claude-haiku-4-5-20251001"
-  },
-  "agents": {
-    "list": [
-      { "id": "researcher", "model": "claude-opus-4-6" },
-      { "id": "worker", "model": "claude-haiku-4-5-20251001" }
-    ]
-  }
-}
-```
-
-### Provider Fallback
-
-If the primary provider is down or rate-limited, the Brain falls back:
-
-```json5
-{
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6",
-    "fallback": {
-      "provider": "openai",
-      "model": "gpt-4o"
-    }
-  }
-}
-```
-
-### Bootstrap Context (Per-Session Scoping)
-
-In multi-agent setups, sub-agents don't need the full context of the lead agent. Per-session scoping (v2026.5.22+) loads only **AGENTS.md + TOOLS.md** for sub-agents instead of the full SOUL.md + memory stack, significantly reducing token cost.
-
-```json5
-{
-  "agents": {
-    "defaults": {
-      "bootstrap": "scoped"
-    }
-  }
-}
-```
-
-See [Multi-Agent Workflows](/guides/multi-agent) and [Performance Tuning](/guides/performance-tuning) for details.
-
----
-
-## The Hands (Execution Environment)
-
-The Hands execute what the Brain decides to do.
-
-### Capabilities
-
-| Hand | Description | Examples |
-|------|-------------|---------|
-| **Shell** | Execute terminal commands | `ls`, `git`, `python`, `curl`, `docker` |
-| **Filesystem** | Read/write/modify files | Create configs, edit code, manage logs |
-| **Browser** | Chromium automation (Playwright) | Fill forms, scrape pages, take screenshots |
-| **HTTP** | Make API requests | REST calls, webhook delivery, API integration |
-
-### Tool-Call Protocol
-
-The Brain and Hands communicate through structured JSON:
-
-```json
-// Brain requests action
-{
-  "type": "tool_call",
-  "tool": "shell",
-  "args": {
-    "command": "git status",
-    "cwd": "/home/user/project"
-  }
-}
-
-// Hands return result
-{
-  "type": "tool_result",
-  "tool": "shell",
-  "output": "On branch main\nnothing to commit, working tree clean",
-  "exit_code": 0
-}
-```
-
-The Brain can chain multiple tool calls, analyzing each result before deciding the next step. This loop continues until the Brain produces a final text response.
-
-### Execution Approval
-
-When approvals are turned on (`tools.exec.mode` `ask` or `auto`), the Exec Approval Manager presents commands that are not allowlisted for approval. **The default is `full`: host commands run with no prompt.**
-
-1. Brain emits a `tool_call` with the command
-2. Gateway creates an `exec.approval.request` with canonical argv, cwd, and rawCommand
-3. User sees the exact command and approves or denies
-4. Only after approval does the command execute
-
-Configure approval behavior:
-
-| Policy | Behavior |
-|--------|----------|
-| `always` | Every command requires approval |
-| `on-miss` | Approve only commands not in the allowlist |
-| `off` | Auto-approve everything (dangerous) |
-
----
-
-## Tool Permissions
-
-### Named Profiles
-
-Pre-built permission sets for common use cases:
-
-| Profile | Shell | Filesystem | Browser | HTTP | Best For |
-|---------|-------|-----------|---------|------|----------|
-| **minimal** | ✗ | Read only | ✗ | ✗ | Information lookup |
-| **coding** | ✓ | Read/write | ✗ | ✓ | Software development |
-| **messaging** | ✗ | ✗ | ✗ | ✓ | Chat-only bots |
-| **full** | ✓ | Read/write | ✓ | ✓ | Full automation |
-
-### Tool Groups
-
-Configure deny lists by group:
-
-| Group | Tools | Purpose |
-|-------|-------|---------|
-| `group:automation` | heartbeat_respond, cron, gateway | Block autonomous actions |
-| `group:runtime` | exec, process, code_execution | Block command execution |
-| `group:fs` | read, write, edit, apply_patch | Block file operations |
-
-### Shell Configuration
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "hands": {
-    "shell": {
-      "enabled": true,
-      "timeout": 30000,
-      "blocked_commands": [
-        "rm -rf /",
-        "shutdown",
-        "reboot",
-        "mkfs",
-        "dd",
-        "chmod 777"
-      ]
-    }
-  }
-}
-```
-
-### Browser Configuration
-
-```json5
-{
-  "hands": {
-    "browser": {
-      "enabled": true,
-      "headless": true,
-      "timeout": 60000,
-      "allowed_domains": [],
-      "blocked_domains": ["internal.company.com"]
-    }
-  }
-}
-```
-
-:::tip
-Set `headless: false` during development to watch the browser in action.
+:::note About the name
+Earlier versions of this page called the model the "Brain" and the tools the "Hands". That is this site's analogy, not an OpenClaw concept, and there is no `brain` or `hands` config key. OpenClaw's own terms are the **agent loop** (runtime), **models**, **tools**, **exec approvals**, the **sandbox**, and **nodes**. This page uses those terms.
 :::
+
+In one sentence: the agent loop sends the assembled prompt to a model, the model answers with text and/or tool calls, OpenClaw runs the tools (subject to tool policy, approvals and the sandbox), and feeds the results back until the model gives a final reply.
+
+Official references: [Agent loop](https://docs.openclaw.ai/concepts/agent-loop), [Tools](https://docs.openclaw.ai/tools), [Exec](https://docs.openclaw.ai/tools/exec), [Sandboxing](https://docs.openclaw.ai/gateway/sandboxing), [Nodes](https://docs.openclaw.ai/nodes).
+
+---
+
+## The agent loop
+
+For each turn, the Gateway:
+
+1. Resolves the agent and session, and queues the run on that session's lane (one run per session at a time).
+2. Resolves the model and auth profile, loads the skills snapshot, and resolves the workspace (or a sandbox workspace).
+3. Builds the system prompt from the base prompt, skills, workspace bootstrap files (`AGENTS.md`, `SOUL.md`, `USER.md`, `IDENTITY.md`, `MEMORY.md`), and per-run overrides.
+4. Calls the model and streams assistant and tool events to clients.
+5. Validates each tool call against the tool's schema, applies policy, runs it, and returns the result to the model. Steps 4 and 5 repeat until the model stops.
+6. Persists the transcript to the agent's SQLite database.
+
+Tool calls use the provider's native tool-use format. OpenClaw does not have its own `{"type":"tool_call"}` envelope. Untrusted tool and channel content is wrapped in `EXTERNAL_UNTRUSTED_CONTENT` boundary markers before the model sees it.
+
+From the CLI, `openclaw agent --message "..."` runs one turn through the Gateway, and `openclaw chat` opens the local terminal UI.
+
+### Bootstrap context
+
+Large bootstrap files are truncated when injected: `agents.defaults.bootstrapMaxChars` (default 20000 per file) and `bootstrapTotalMaxChars` (default 60000). Related keys: `skipBootstrap` (do not create the files) and `skipOptionalBootstrapFiles`. For cheap scheduled turns, `agents.defaults.heartbeat.lightContext` and `isolatedSession` reduce what a heartbeat loads. See [Agent workspace](https://docs.openclaw.ai/concepts/agent-workspace).
+
+---
+
+## Models
+
+Model refs are always `provider/model`. The default depends on how you onboard: a fresh Anthropic setup picks `anthropic/claude-opus-5-5`, and with no model configured at all the built-in fallback is `openai/gpt-6-astra`.
+
+Current Anthropic refs include `anthropic/claude-opus-5-5`, `anthropic/claude-sonnet-5-5`, `anthropic/claude-haiku-5-5` and `anthropic/claude-fable-5-1` ([Anthropic provider](https://docs.openclaw.ai/providers/anthropic)). Other providers include `openai`, `google`, `xai`, `openrouter`, `deepseek`, and local servers such as `ollama`, `vllm` and `lmstudio`. There is no generic `local` provider for chat models.
+
+### Primary model and fallbacks
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    defaults: {
+      model: {
+        primary: "anthropic/claude-opus-5-5",
+        fallbacks: ["anthropic/claude-sonnet-5-5", "openai/gpt-6-astra"],
+      },
+    },
+  },
+}
+```
+
+If the primary model fails (outage, rate limit, auth error), OpenClaw tries the fallbacks in order ([Model failover](https://docs.openclaw.ai/concepts/model-failover)). Or set them from the CLI:
+
+```bash
+openclaw models set anthropic/claude-opus-5-5
+openclaw models fallbacks add anthropic/claude-sonnet-5-5
+openclaw models status
+```
+
+API keys do not go in this block. Put them in `~/.openclaw/.env` (for example `ANTHROPIC_API_KEY=...`), let onboarding store an auth profile, or use `models.providers.<id>.apiKey` with a SecretRef. See [Environment Variables](/reference/environment-variables).
+
+### Different models per job
+
+Use a cheaper model for scheduled heartbeats, and per-agent models in a multi-agent roster. A roster with more than one agent needs `agents.ownership: "explicit"`. Agents are keyed under `agents.entries.<id>`; the old `agents.list` array is migrated by `openclaw doctor --fix`.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    ownership: "explicit",
+    defaults: {
+      model: { primary: "anthropic/claude-sonnet-5-5" },
+      heartbeat: { every: "1h", model: "anthropic/claude-haiku-5-5" },
+    },
+    entries: {
+      main: {},
+      researcher: { model: "anthropic/claude-opus-5-5" },
+      worker: { model: "anthropic/claude-haiku-5-5" },
+    },
+  },
+}
+```
+
+Model prices change often, so this page does not list them. Check your provider's pricing page and track real spend with `openclaw status --usage` and `openclaw gateway usage-cost`. See [Model Selection](/guides/model-selection) and [Performance Tuning](/guides/performance-tuning).
+
+---
+
+## Tools
+
+Tools are what the agent can do. The main built-in ones:
+
+| Tool | What it does |
+|------|--------------|
+| `exec` (alias `bash`), `process` | Run shell commands on the Gateway host, a sandbox, or a node |
+| `read`, `write`, `edit`, `apply_patch` | File operations |
+| `browser` | Drive OpenClaw's managed Chrome/Chromium |
+| `web_search`, `web_fetch` | Search and fetch web pages |
+| `memory_search`, `memory_get` | Retrieve memory |
+| `message`, `sessions_*`, `subagents` | Messaging and multi-session work |
+| `cron` / `automations`, `gateway` | Scheduling and Gateway self-management |
+| `nodes`, `computer` | Commands on paired devices |
+
+Plugins and MCP servers (`mcp.servers`) add more tools. See the [tool list](https://docs.openclaw.ai/tools).
+
+### Profiles and groups
+
+`tools.profile` selects a base set:
+
+| Profile | Includes |
+|---------|----------|
+| `minimal` | `session_status`, and `gateway` (update only). No filesystem, no shell. |
+| `coding` | `group:fs`, `group:runtime`, `group:web`, `group:sessions`, `group:memory`, `cron`, media tools, and others |
+| `messaging` | `group:messaging` plus session and subagent tools |
+| `full` | No core filtering, and opts into optional plugin tools |
+
+An unset profile leaves core tools unfiltered. `tools.allow`, `tools.alsoAllow` and `tools.deny` adjust the set, and accept groups:
+
+| Group | Tools |
+|-------|-------|
+| `group:runtime` | `exec`, `process`, `code_execution` |
+| `group:fs` | `read`, `write`, `edit`, `apply_patch` |
+| `group:web` | `web_search`, `x_search`, `web_fetch` |
+| `group:ui` | `browser`, `screen`, `canvas`, and other UI tools |
+| `group:automation` | `heartbeat_respond`, `automations` (`cron`), `gateway`, `plugins`, `openclaw` |
+
+Full tables: [Tool policy](https://docs.openclaw.ai/gateway/config-tools/tool-policy).
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  tools: {
+    profile: "coding",
+    deny: ["group:automation", "browser"],
+  },
+}
+```
+
+### Exec approvals
+
+`tools.exec.mode` decides what happens when the agent runs a host command:
+
+| Mode | Behavior |
+|------|----------|
+| `deny` | Exec is denied |
+| `allowlist` | Only allowlisted and safe-bin commands run; nothing is asked |
+| `ask` | Allowlisted commands run; everything else asks a human |
+| `auto` | Allowlisted commands run; other commands go to a reviewer model, which allows, denies, or asks a human |
+| `full` | **Default.** Runs host commands with no approval prompts |
+
+When a command needs approval, the Gateway creates an approval record with the exact argv and cwd, and the CLI, Control UI or apps resolve it. The older `tools.exec.security` / `tools.exec.ask` fields (`always`, `on-miss`, `off`) are legacy and derived from the mode.
+
+```bash
+openclaw config set tools.exec.mode ask
+openclaw approvals get
+openclaw approvals allowlist add --help
+```
+
+A denylist of "dangerous commands" is not a real defense, and OpenClaw has no `blocked_commands` key. Use `ask` or `allowlist`, `tools.deny`, and the sandbox. See [Exec approvals](https://docs.openclaw.ai/tools/exec-approvals).
+
+### Browser
+
+The browser is configured at the top level under `browser`, not under tools. Navigation goes through an SSRF policy that blocks private networks by default. `blockedHostnames` denies extra hosts. `allowedHostnames` is a narrow exception for trusted private hosts, not an allowlist of the whole web.
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  browser: {
+    enabled: true,
+    headless: true,
+    ssrfPolicy: { blockedHostnames: ["internal.example.com", "*.corp.example.com"] },
+  },
+}
+```
+
+Set `headless: false` to watch the browser while you develop. See [Browser](https://docs.openclaw.ai/tools/browser).
 
 ---
 
 ## Sandboxing
 
-For production deployments, isolate the Hands in a container:
+Sandboxing runs tools in an isolated environment instead of on the Gateway host. **It is off by default.** Configure it under `agents.defaults.sandbox` (or per agent):
 
-### Docker Sandbox
+| Setting | Values | Default |
+|---------|--------|---------|
+| `mode` | `off`, `non-main`, `all` | `off` |
+| `scope` | `agent`, `session`, `shared` | `agent` |
+| `backend` | `docker`, `podman`, `ssh`, `openshell`, `crabbox` | `docker` |
+| `workspaceAccess` | `none`, `ro`, `rw` | `none` |
+
+- `non-main` sandboxes every session except the agent's main session (`agent:<id>:main`). Group and channel sessions have their own keys, so they are sandboxed.
+- `all` sandboxes every session.
+- The Docker backend defaults to a locally built `openclaw-sandbox:bookworm-slim` image with `network: "none"`, a read-only root, and all capabilities dropped.
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "hands": {
-    "sandbox": {
-      "enabled": true,
-      "type": "docker",
-      "image": "openclaw/sandbox:latest",
-      "network": false,
-      "writable_paths": [
-        "~/.openclaw/memory",
-        "/tmp/openclaw"
-      ]
-    }
-  }
+  agents: {
+    defaults: {
+      sandbox: {
+        mode: "non-main",
+        scope: "session",
+        backend: "docker",
+        workspaceAccess: "ro",
+        docker: { network: "none" },
+      },
+    },
+  },
 }
 ```
 
-### Sandbox Scope
+Check what applies to a session with `openclaw sandbox explain`. See [Sandboxing](https://docs.openclaw.ai/gateway/sandboxing) and [Sandbox vs tool policy vs elevated](https://docs.openclaw.ai/gateway/sandbox-vs-tool-policy-vs-elevated).
 
-| Scope | Behavior |
-|-------|----------|
-| **agent** | One container per agent (default) |
-| **session** | One container per session (more isolated) |
-| **shared** | One container for all agents (less isolated) |
+:::warning
+With the defaults (`tools.exec.mode: "full"`, sandbox `off`), anyone who can message the agent can get commands run on your host. Before you connect channels, set `tools.exec.mode` to `ask` or `allowlist`, restrict who can DM the bot, and consider `sandbox.mode: "non-main"`. See [Security Hardening](/security/hardening).
+:::
 
-### Sandbox Modes
+### Advisory note
 
-| Mode | Behavior |
-|------|----------|
-| **off** (default) | No sandboxing |
-| **non-main** | Sandbox every session except the agent's main session (group and channel sessions are sandboxed) |
-| **all** | Sandbox everything including the main agent |
-
-### Workspace Access
-
-| Level | Behavior |
-|-------|----------|
-| **none** | No workspace access |
-| **ro** | Read-only workspace |
-| **rw** | Read-write workspace |
-
-### Security Note
-
-A TOCTOU (time-of-check-to-time-of-use) vulnerability in file sandbox validation was discovered by Snyk Labs and patched in v2026.3.31 (GHSA-9p3r-hh9g-5cmg, CVSS 9.4). The fix moved file operations inside the Docker container rather than validating paths on the host. Always run the latest version.
+GHSA-9p3r-hh9g-5cmg (critical) was a TOCTOU race in the remote filesystem bridge `readFile`. It affected versions up to 2026.3.28 and was fixed in 2026.3.31; GitHub credits AntAISecurityLab. Stay on a current release; see [Known Vulnerabilities](/security/known-vulnerabilities).
 
 ---
 
-## Cost Considerations
+## Nodes
 
-Token costs are the primary ongoing expense:
+A node is a paired companion device (macOS, iOS, Android, or a headless `openclaw node run` host) that connects to the Gateway with `role: "node"` and exposes commands such as `camera.*`, `screen.record`, `location.get` and `system.*`. The agent reaches them through the `nodes` tool, and `exec` can target a node with `host=node`. Nodes do not run a Gateway or receive channel messages.
 
-| Component | Typical Daily Cost (Opus) | Cost (Haiku) | Cost (Local) |
-|-----------|--------------------------|-------------|-------------|
-| Heartbeat (48 cycles/day) | $10-20 | $1-3 | $0 |
-| Chat (moderate use) | $5-15 | $1-5 | $0 |
-| Skills (triggered) | $2-10 | $0.50-2 | $0 |
-| Multi-agent (if used) | $20-50+ | $5-15 | $0 |
+```bash
+openclaw nodes list
+openclaw nodes describe --help
+```
 
-See [Performance Tuning](/guides/performance-tuning) for techniques that have cut costs by 97%.
+See [Nodes](https://docs.openclaw.ai/nodes).
 
 ---
 
-## See Also
+## See also
 
-- [Architecture Overview](/architecture/overview) — High-level component diagram
-- [Model Selection](/guides/model-selection) — Choosing the right LLM provider
-- [Local Models](/guides/local-models) — Run without API costs
-- [Performance Tuning](/guides/performance-tuning) — Token optimization and cost reduction
-- [Security Hardening](/security/hardening) — Restricting execution capabilities
-- [Configuration Reference](/reference/configuration) — All brain/hands settings
+- [Architecture Overview](/architecture/overview): component map
+- [Model Selection](/guides/model-selection): choosing providers and models
+- [Local Models](/guides/local-models): running models on your own hardware
+- [Performance Tuning](/guides/performance-tuning): token and cost reduction
+- [Security Hardening](/security/hardening): restricting execution
+- [Configuration Reference](/reference/configuration): how the config file works

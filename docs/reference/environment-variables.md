@@ -1,205 +1,144 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Environment Variables
-description: All environment variables that configure OpenClaw behavior — API keys, gateway, channels, browser, voice, Lobster, and deployment
-keywords: [openclaw, openclaw env vars, environment variables, api keys, OPENCLAW_PORT, configuration, env config]
+description: The environment variables a self-hoster actually uses with OpenClaw (paths, Gateway auth, provider keys, channels, logging), where to put them, and which old names no longer work
+keywords: [openclaw, openclaw env vars, environment variables, api keys, OPENCLAW_GATEWAY_TOKEN, configuration, env config]
 ---
 
 # Environment Variables
 
-OpenClaw reads these environment variables at startup. They override corresponding `openclaw.json` settings. Variables are grouped by function.
+This page lists the environment variables most self-hosters need, as of v2026.10.4. The full supported list is upstream in [Environment variables](https://docs.openclaw.ai/help/environment). Undocumented `OPENCLAW_*` variables are internal and can disappear without notice, so do not build on them.
 
-:::tip
-Any config value in `openclaw.json` can also reference environment variables using `${VAR_NAME}` syntax. See [Configuration Reference](/reference/configuration#environment-variable-substitution).
-:::
+Most settings are **not** environment variables. Models, heartbeat, channels policy and tools live in `openclaw.json`; there is no `OPENCLAW_MODEL`, `OPENCLAW_PORT`, `OPENCLAW_HOST` or `OPENCLAW_AUTH_TOKEN`. Any config string can still read a variable with `${VAR_NAME}`; see [Configuration](/reference/configuration#environment-variable-substitution).
 
----
+## Where OpenClaw reads them from
 
-## LLM API Keys
+Highest priority first. A lower source never overrides a value that is already set.
 
-| Variable | Description |
-|----------|-------------|
-| `ANTHROPIC_API_KEY` | Anthropic API key for Claude models |
-| `OPENAI_API_KEY` | OpenAI API key for GPT models |
-| `CODEX_API_KEY` | OpenAI fallback key (used if `OPENAI_API_KEY` is not set) |
-| `XAI_API_KEY` | xAI API key for Grok models |
-| `GEMINI_API_KEY` | Google Gemini API key |
-| `GOOGLE_API_KEY` | Google API key (alternative to `GEMINI_API_KEY`) |
-| `DEEPSEEK_API_KEY` | DeepSeek API key |
-| `MISTRAL_API_KEY` | Mistral AI API key |
-| `GROQ_API_KEY` | Groq API key |
-| `PERPLEXITY_API_KEY` | Perplexity API key |
-| `OPENROUTER_API_KEY` | OpenRouter meta-provider API key |
+1. The Gateway process environment (your shell, the systemd/launchd unit, the container).
+2. `.env` in the current working directory. Provider keys and `OPENCLAW_*` controls in this file are ignored.
+3. `~/.openclaw/.env` (or `$OPENCLAW_STATE_DIR/.env`). **This is the recommended place for API keys.**
+4. The `env.vars` block in `openclaw.json`.
+5. Optionally, your login shell (`env.shellEnv.enabled: true` or `OPENCLAW_LOAD_SHELL_ENV=1`), only for keys still missing.
 
----
+```bash title="~/.openclaw/.env"
+ANTHROPIC_API_KEY=sk-ant-replace-me
+TELEGRAM_BOT_TOKEN=123456:replace-me
+OPENCLAW_GATEWAY_TOKEN=replace-with-a-long-random-string
+```
 
-## Gateway
+`.env` values are not expanded: `OPENCLAW_WORKSPACE_DIR=${HOME}/ws` stays literal. Use absolute paths. Node-level variables such as `NODE_EXTRA_CA_CERTS` must be in the real process environment, not only in `~/.openclaw/.env`.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENCLAW_PORT` | `18789` | Gateway WebSocket port |
-| `OPENCLAW_HOST` | `127.0.0.1` | Gateway bind address |
-| `OPENCLAW_AUTH_TOKEN` | — | Gateway authentication token |
-| `OPENCLAW_LOG_LEVEL` | `info` | Log verbosity: `debug`, `info`, `warn`, `error` |
+## Paths and instances
 
-:::warning
-Never set `OPENCLAW_HOST` to `0.0.0.0` unless the gateway is behind a reverse proxy with authentication. Binding to all interfaces exposes the gateway to the network. See [Security Hardening](/security/hardening).
-:::
+| Variable | Purpose |
+|----------|---------|
+| `OPENCLAW_STATE_DIR` | State directory (default `~/.openclaw`). Expands `~`. |
+| `OPENCLAW_CONFIG_PATH` | Config file (default `~/.openclaw/openclaw.json`). Expands `~`. |
+| `OPENCLAW_WORKSPACE_DIR` | Default agent workspace (default `~/.openclaw/workspace`). Does **not** expand `~`. |
+| `OPENCLAW_HOME` | Replaces the *home directory* used for path defaults, so state lands in `$OPENCLAW_HOME/.openclaw`. Useful for a dedicated service user. |
+| `OPENCLAW_PROFILE` | Named profile with isolated state, same as `--profile`. |
+| `OPENCLAW_INCLUDE_ROOTS` | Extra directories `$include` may read from (default: config directory only). |
 
----
+## Gateway and authentication
 
-## Paths
+| Variable | Purpose |
+|----------|---------|
+| `OPENCLAW_GATEWAY_TOKEN` | Token auth, read by both the Gateway and clients. |
+| `OPENCLAW_GATEWAY_PASSWORD` | Password auth, read by both the Gateway and clients. |
+| `OPENCLAW_GATEWAY_PORT` | Local Gateway port. Precedence: `--port` > `OPENCLAW_GATEWAY_PORT` > `gateway.port` > `18789`. |
+| `OPENCLAW_GATEWAY_URL` | Remote Gateway URL for clients on another machine. |
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENCLAW_HOME` | `~/.openclaw` | Base directory for all OpenClaw data |
-| `OPENCLAW_CONFIG_PATH` | `~/.openclaw/openclaw.json` | Config file path |
-| `OPENCLAW_MEMORY_PATH` | `~/.openclaw/memory` | Memory directory |
-| `OPENCLAW_SKILLS_PATH` | `~/.openclaw/skills` | Skills directory |
-| `OPENCLAW_WORKSPACE_DIR` | — | Default workspace directory for agents |
+There is no environment variable for the bind address. Set `gateway.bind` in config or pass `--bind`. Binding beyond loopback (`lan`) exposes the Gateway to your network; read [Security Hardening](/security/hardening) first.
 
----
+## Model provider keys
 
-## Brain
+Core and bundled provider plugins read about a hundred credential variables; the [upstream list](https://docs.openclaw.ai/help/environment#provider-credentials) is complete. The common ones:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENCLAW_PROVIDER` | — | **Not a real variable**; OpenClaw does not read it |
-| `OPENCLAW_MODEL` | — | **Not a real variable**; set the model with `agents.defaults.model` in `openclaw.json` (a fresh Anthropic setup picks `anthropic/claude-opus-5-5`) |
-| `OPENCLAW_TEMPERATURE` | — | **Not a real variable** |
-| `OPENCLAW_MAX_TOKENS` | — | **Not a real variable** |
+| Variable | Provider |
+|----------|----------|
+| `ANTHROPIC_API_KEY` | Anthropic (Claude). `ANTHROPIC_OAUTH_TOKEN` for token auth. |
+| `OPENAI_API_KEY` | OpenAI. `CODEX_API_KEY` is the Codex harness key and is checked before `OPENAI_API_KEY` there. |
+| `GEMINI_API_KEY`, `GOOGLE_API_KEY` | Google Gemini |
+| `OPENROUTER_API_KEY` | OpenRouter |
+| `XAI_API_KEY` | xAI (Grok) |
+| `DEEPSEEK_API_KEY`, `MISTRAL_API_KEY`, `GROQ_API_KEY`, `PERPLEXITY_API_KEY` | Those providers |
+| `OLLAMA_API_KEY`, `VLLM_API_KEY` | Local/self-hosted servers that need a key |
 
----
+`OLLAMA_HOST` is read by the Ollama server, not by OpenClaw. To point OpenClaw at Ollama, set `models.providers.ollama.baseUrl`. For per-provider scoping, prefer a SecretRef on the provider's `apiKey` field over one process-wide variable.
 
-## Heartbeat
+## Channel credentials
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENCLAW_HEARTBEAT_ENABLED` | `true` | Enable heartbeat loop |
-| `OPENCLAW_HEARTBEAT_INTERVAL` | `1800` | Seconds between heartbeats |
+These fill in the **default account** of each channel. Additional accounts need their credentials in `openclaw.json` (ideally as SecretRefs).
 
----
+| Variable | Channel |
+|----------|---------|
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token from BotFather |
+| `DISCORD_BOT_TOKEN` | Discord bot token |
+| `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN` | Slack bot token (`xoxb-`) and Socket Mode app token (`xapp-`) |
+| `GOOGLE_CHAT_SERVICE_ACCOUNT`, `GOOGLE_CHAT_SERVICE_ACCOUNT_FILE` | Google Chat service account, inline JSON or file path |
+| `IRC_NICKSERV_PASSWORD` | IRC NickServ password |
 
-## Local Models
+WhatsApp and Signal link by QR code or device pairing and have no token variable.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENCLAW_LOCAL_ENDPOINT` | — | Local model API endpoint |
-| `OPENCLAW_LOCAL_MODEL` | — | Local model name |
-| `OLLAMA_HOST` | `http://localhost:11434` | Ollama server URL |
-| `VLLM_API_KEY` | — | vLLM server API key (for auto-discovery) |
+## Web search and tools
 
----
+| Variable | Purpose |
+|----------|---------|
+| `BRAVE_API_KEY`, `TAVILY_API_KEY`, `EXA_API_KEY`, `PARALLEL_API_KEY` | Web search providers (Parallel is bundled) |
+| `FIRECRAWL_API_KEY` | Firecrawl fetch/scrape |
+| `ELEVENLABS_API_KEY` (or `XI_API_KEY`) | ElevenLabs text-to-speech |
 
-## Channel Credentials
+The macOS app's Talk mode also reads `ELEVENLABS_VOICE_ID`, `SAG_VOICE_ID` and `OPENCLAW_MLX_TTS_BIN`; the Gateway does not.
 
-These variables set credentials for the **default account** of each channel. In multi-account setups, credentials must be set per-account in `openclaw.json` — env vars do not propagate to non-default accounts.
+## Logging, troubleshooting and toggles
 
-| Variable | Channel | Description |
-|----------|---------|-------------|
-| `TELEGRAM_BOT_TOKEN` | Telegram | Bot token from BotFather |
-| `DISCORD_BOT_TOKEN` | Discord | Bot token from Discord Developer Portal |
-| `SLACK_BOT_TOKEN` | Slack | Bot OAuth token (`xoxb-...`) |
-| `SLACK_APP_TOKEN` | Slack | App-level token for Socket Mode (`xapp-...`) |
-| `GOOGLE_CHAT_SERVICE_ACCOUNT` | Google Chat | Service account JSON (inline) |
-| `GOOGLE_CHAT_SERVICE_ACCOUNT_FILE` | Google Chat | Path to service account JSON file |
-| `IRC_NICKSERV_PASSWORD` | IRC | NickServ password for authentication |
+| Variable | Purpose |
+|----------|---------|
+| `OPENCLAW_LOG_LEVEL` | File and console log level (`debug`, `trace`, ...). Overrides `logging.level`. |
+| `OPENCLAW_DEBUG=1` | Include diagnostics in CLI error output when you rerun a failing command. |
+| `OPENCLAW_SKIP_CHANNELS=1` | Start the Gateway without channel transports. |
+| `OPENCLAW_SKIP_CRON=1` | Start without running automations (same as `cron.enabled: false`). |
+| `OPENCLAW_LOAD_SHELL_ENV=1` | Import missing keys from your login shell. |
+| `OPENCLAW_NO_AUTO_UPDATE=1` | Do not apply updates automatically. |
+| `OPENCLAW_OFFLINE=1` | Do not download the pinned `fd`/`ripgrep` helpers. |
+| `OPENCLAW_BROWSER_HEADLESS` | Force the managed browser headed (`0`) or headless (`1`). |
+| `OPENCLAW_CONFIG_READONLY=1` | Treat config as externally managed and immutable. |
+| `CLAWHUB_DISABLE_TELEMETRY=1` | Turn off ClawHub install reports. |
 
-:::info
-WhatsApp and Signal use QR code / device linking authentication rather than API tokens, so they have no credential env vars.
-:::
+`OPENCLAW_BROWSER_CDP_PORT`, `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT` and the other `OPENCLAW_BROWSER_*` flags you may see in older guides configure the **sandbox browser container** only, not the host browser; see [Sandbox config](https://docs.openclaw.ai/gateway/config-agents/sandbox).
 
----
+## Variables OpenClaw sets for child processes
 
-## Search & Web Providers
+Commands run by the `exec` tool see `OPENCLAW_SHELL=exec`; local TUI `!` commands see `OPENCLAW_SHELL=tui-local`; children of the CLI see `OPENCLAW_CLI=1`. You can test these in shell profiles. You do not set them yourself.
 
-| Variable | Description |
-|----------|-------------|
-| `PARALLEL_API_KEY` | Parallel web search provider (bundled since v2026.6.5) |
-| `BRAVE_API_KEY` | Brave Search API key |
-| `TAVILY_API_KEY` | Tavily search API key |
-| `EXA_API_KEY` | Exa search API key |
-| `FIRECRAWL_API_KEY` | Firecrawl web scraping API key |
+## Lobster (separate project)
 
----
+These belong to the [Lobster](/guides/lobster-workflows) workflow engine (repo `openclaw/lobster`), not to OpenClaw core: `LOBSTER_LLM_PROVIDER`, `LOBSTER_LLM_ADAPTER_URL`, `LOBSTER_PI_LLM_ADAPTER_URL`, `LOBSTER_LLM_PRICING_JSON`, and `OPENCLAW_URL` / `OPENCLAW_TOKEN` for its `openclaw.invoke` shim.
 
-## Browser Automation
+## MCP servers
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENCLAW_BROWSER_CDP_PORT` | — | Chrome DevTools Protocol port override |
-| `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS` | — | Disable GPU rendering flags |
-| `OPENCLAW_BROWSER_DISABLE_EXTENSIONS` | — | Disable browser extensions |
-| `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT` | `2` | Max browser renderer processes |
-
----
-
-## Voice & TTS
-
-| Variable | Description |
-|----------|-------------|
-| `OPENCLAW_MLX_TTS_BIN` | Path to macOS MLX TTS helper binary |
-| `ELEVENLABS_API_KEY` | ElevenLabs voice API key |
-| `XI_API_KEY` | ElevenLabs API key (alternative name) |
-| `ELEVENLABS_VOICE_ID` | Default ElevenLabs voice ID |
-| `SAG_VOICE_ID` | SAG voice provider voice ID |
-
----
-
-## Lobster (Workflow Engine)
-
-| Variable | Description |
-|----------|-------------|
-| `LOBSTER_LLM_PROVIDER` | LLM provider override: `openclaw`, `pi`, `http` |
-| `LOBSTER_LLM_ADAPTER_URL` | Generic HTTP LLM endpoint |
-| `LOBSTER_PI_LLM_ADAPTER_URL` | Pi LLM adapter endpoint |
-| `LOBSTER_LLM_PRICING_JSON` | Path to custom token pricing file |
-| `OPENCLAW_URL` | Gateway URL for `openclaw.invoke` shim (default: `ws://localhost:18789`) |
-| `OPENCLAW_TOKEN` | Gateway auth token for `openclaw.invoke` shim |
-
-See [Lobster Workflows Guide](/guides/lobster-workflows) for full Lobster documentation.
-
----
-
-## MCP Servers
-
-MCP server environment variables are set per-server in `openclaw.json`, not as global env vars:
+Variables for an MCP server are passed per server in `openclaw.json`, not inherited globally. Which variables a server needs is up to that server.
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "mcp": {
-    "servers": {
-      "github": {
-        "command": "npx @anthropic/mcp-github",
-        "env": {
-          "GITHUB_TOKEN": "${GITHUB_TOKEN}"
-        }
-      }
-    }
-  }
+  mcp: {
+    servers: {
+      filesystem: {
+        command: "npx",
+        args: ["-y", "@modelcontextprotocol/server-filesystem", "/home/me/projects"],
+        env: { NODE_ENV: "production" },
+      },
+    },
+  },
 }
 ```
 
-Common MCP-related env vars:
+For GitHub, the maintained server is [github/github-mcp-server](https://github.com/github/github-mcp-server); the old `@modelcontextprotocol/server-github` npm package is deprecated.
 
-| Variable | Description |
-|----------|-------------|
-| `GITHUB_TOKEN` | GitHub personal access token (used by MCP GitHub server) |
-| `GITHUB_PERSONAL_ACCESS_TOKEN` | Alternative GitHub token name |
-
----
-
-## Testing & CI
-
-| Variable | Description |
-|----------|-------------|
-| `OPENCLAW_E2E_NPM_INSTALL_TIMEOUT` | Timeout for npm installs in E2E tests |
-| `OPENCLAW_TESTBOX` | Delegate execution to a remote Testbox instance |
-
----
-
-## Legacy Variables
+## Legacy variables
 
 The Clawdbot/Moltbot-era prefixes **no longer work**:
 
@@ -210,62 +149,48 @@ The Clawdbot/Moltbot-era prefixes **no longer work**:
 
 Since v2026.4.27 the Gateway prints a one-time `OPENCLAW_LEGACY_ENV_VARS` deprecation warning when either prefix is still set, and the old names have no effect. Rename each one by swapping the prefix, for example `CLAWDBOT_GATEWAY_TOKEN` → `OPENCLAW_GATEWAY_TOKEN`. Sources: upstream `CHANGELOG/2026.3.22.md`, `CHANGELOG/2026.4.27.md`, [Environment variables](https://docs.openclaw.ai/help/environment#legacy-environment-variables).
 
----
+## Workspace .env security {#workspace-env-security}
 
-## Workspace .env Security
+A `.env` file inside an agent workspace is untrusted input, so OpenClaw drops sensitive keys from it before applying precedence:
 
-Workspace `.env` files are **blocked** from overriding security-sensitive variables. This is a fail-closed design — new `OPENCLAW_*` variables in future releases are automatically blocked.
+- every known provider credential (for example `GEMINI_API_KEY`, `XAI_API_KEY`, `BRAVE_API_KEY`, `FIRECRAWL_API_KEY`);
+- any key ending in `_API_HOST`, `_BASE_URL`, `_ENDPOINT` or `_HOMESERVER` (endpoint redirects);
+- the whole `OPENCLAW_*`, `CLAWHUB_*`, `ANTHROPIC_API_KEY_*` and `OPENAI_API_KEY_*` namespaces.
 
-**Blocked categories:**
-- All `OPENCLAW_*` variables
-- Provider credential keys: `GEMINI_API_KEY`, `GOOGLE_API_KEY`, `XAI_API_KEY`, `MISTRAL_API_KEY`, `GROQ_API_KEY`, `DEEPSEEK_API_KEY`, `PERPLEXITY_API_KEY`, `BRAVE_API_KEY`, `TAVILY_API_KEY`, `EXA_API_KEY`, `FIRECRAWL_API_KEY`
-- Channel endpoint settings for Matrix, Mattermost, IRC, Synology Chat
+This stops a cloned repository from hijacking your credentials or redirecting API calls. Keep keys in `~/.openclaw/.env` or the service environment instead. Background: [Workspace .env files](https://docs.openclaw.ai/gateway/security/secrets-and-storage#workspace-env-files).
 
-This prevents malicious workspaces from hijacking credentials or redirecting API calls. See [Security Hardening](/security/hardening) for details.
+## Docker Compose
 
----
-
-## Docker Compose Example
+The official image runs as user `node`, so state lives at `/home/node/.openclaw`. The fragment below is trimmed from upstream's `docker-compose.yml`. Run onboarding into the volume first (the [Docker guide](https://docs.openclaw.ai/install/docker) has a setup script), because the Gateway refuses to start until `gateway.mode` is `local`.
 
 ```yaml title="docker-compose.yml"
 services:
-  openclaw:
+  openclaw-gateway:
     image: ghcr.io/openclaw/openclaw:latest
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - OPENCLAW_HOST=0.0.0.0          # Only safe within Docker network
-      - OPENCLAW_LOG_LEVEL=debug
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
-      - PARALLEL_API_KEY=${PARALLEL_API_KEY}
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      OPENCLAW_LOG_LEVEL: info
+    command: ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"]
     ports:
-      - "127.0.0.1:18789:18789"        # Bind to localhost on host
+      - "127.0.0.1:18789:18789"    # publish on the host's loopback only
     volumes:
-      - openclaw-data:/root/.openclaw
+      - openclaw-state:/home/node/.openclaw
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
+      test: ["CMD", "node", "dist/docker-healthcheck.js"]
       interval: 30s
       timeout: 5s
-      retries: 3
+      retries: 5
+volumes:
+  openclaw-state:
 ```
 
----
+Inside the container the Gateway binds `lan` so Docker's port mapping can reach it; the `127.0.0.1:` prefix keeps it off your host's network. The healthcheck uses `/healthz`.
 
-## Precedence Order
+## See also
 
-When the same setting is configured in multiple places, this order applies (highest wins):
-
-1. **CLI flags** (`--port 18790`)
-2. **Environment variables** (`OPENCLAW_PORT=18790`)
-3. **openclaw.json** (`"gateway": { "port": 18790 }`)
-4. **Built-in defaults** (`18789`)
-
----
-
-## See Also
-
-- [Configuration Reference](/reference/configuration) — Full `openclaw.json` schema
-- [CLI Reference](/reference/cli) — Command-line flags
-- [Security Hardening](/security/hardening) — Security-focused config
-- [Lobster Workflows](/guides/lobster-workflows) — Lobster environment variables
-- [Local Models](/guides/local-models) — Local model environment setup
+- [Configuration Reference](/reference/configuration)
+- [CLI Reference](/reference/cli)
+- [Security Hardening](/security/hardening)
+- [Environment variables](https://docs.openclaw.ai/help/environment) (official, complete list)
