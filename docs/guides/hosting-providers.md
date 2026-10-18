@@ -1,14 +1,19 @@
 ---
 last_update:
   date: 2026-10-18
+verified_with: 2026.10.4
 title: Hosting Providers
-description: Compare 35+ OpenClaw hosting providers — from $0.99/mo managed to enterprise GDPR-compliant deployments
+description: Compare about 30 OpenClaw hosting providers, from free VPS tiers to managed and enterprise hosting. Prices checked 2026-10-18.
 keywords: [openclaw, hosting, managed hosting, cloud providers, vps]
 ---
 
 # Hosting Providers
 
-The OpenClaw hosting market exploded in early 2026, with **35+ providers** now competing across managed hosting, VPS templates, and enterprise tiers. This guide compares them all.
+About 30 providers offer OpenClaw hosting: fully managed services, platforms that manage your own server, VPS templates, and enterprise tiers. This page lists them with prices checked on **2026-10-18** against each provider's own site. Prices change often; check the provider before you buy.
+
+:::note Listings are vendor-submitted
+Most entries were added by the providers themselves or copied from their marketing pages. Clawdocs has not tested these services and does not endorse any of them. See the [listing policy](#listing-policy).
+:::
 
 :::tip
 Not sure whether to self-host or use managed hosting? See [Deployment Options](/guides/deployment-options) for a comparison of all deployment methods including Docker, Kubernetes, and Cloudflare Workers.
@@ -18,41 +23,40 @@ Not sure whether to self-host or use managed hosting? See [Deployment Options](/
 
 ```mermaid
 flowchart LR
-    Free["$0/mo<br/>Oracle Cloud<br/>Free Tier"] --> Budget["$1-6/mo<br/>Agent37, LumaDock<br/>Hetzner, Contabo"]
-    Budget --> Mid["$9-25/mo<br/>MyClaw, RunClaw<br/>ClawHosters, xCloud"]
+    Free["$0/mo<br/>Oracle Cloud Free Tier<br/>Agent37 / Aplite free plans"] --> Budget["$4-10/mo<br/>Agent37, LumaDock<br/>Hetzner, Contabo, xCloud"]
+    Budget --> Mid["$19-29/mo<br/>MyClaw, Clawbase<br/>ClawHosters, ClawdHost"]
     Mid --> Premium["$29+/mo<br/>BYOS platforms<br/>Enterprise"]
 ```
 
 ## Quick Comparison
 
+Prices are entry prices as of 2026-10-18, from each provider's site. Promotional prices are marked.
+
 | Provider | Type | From | Local LLMs | GDPR | Best For |
 |----------|------|------|-----------|------|----------|
 | [Oracle Cloud](#oracle-cloud) | Free VPS | **$0/mo** | Yes | No | Free hosting with Ollama |
 | [Aplite](#aplite) | Managed | Free / $20/mo | No | Yes (EU) | Free plan, no API key, markdown workspace + approvals |
-| [Agent37](#agent37) | Managed (shared) | $0.99/mo | No | — | Cheapest managed |
-| [LumaDock](#lumadock) | VPS template | $1.99/mo | Possible | — | Budget VPS |
-| [Hetzner](#hetzner) | DIY VPS | ~$4/mo | Yes | Yes | Best value self-host |
+| [Agent37](#agent37) | Managed (shared) | Free / $3.99/mo | No | — | Free tier, cheap paid plans |
+| [LumaDock](#lumadock) | VPS template | $4.99/mo (annual) | Possible | — | Budget VPS |
+| [Hetzner](#hetzner) | DIY VPS | See Hetzner | Yes | Yes | Best value self-host |
 | [Alibaba Cloud](#alibaba-cloud) | VPS template | $4/mo | Yes (Qwen) | No | Asia-Pacific, Qwen models |
 | [Contabo](#contabo) | VPS template | €4.50/mo | Possible | Partial | Global budget VPS |
 | [Railway](#railway) | PaaS | $5/mo | No | No | Testing / development |
-| [Hostinger](#hostinger) | VPS template | $5.99/mo | Possible | — | Budget VPS with AI credits |
+| [Hostinger](#hostinger) | Managed apps | $5.99/mo (promo) | No | — | Managed AI automation apps |
 | [OpenClaw Launch](#openclawlaunch) | Managed | $6/mo | No | No | AI credits, fast setup |
-| [MyClaw.ai](#myclawai) | Managed | $9/mo | No | Partial | Cheapest dedicated managed |
-| [RunClaw.ai](#runclawai) | Managed | ~$13/mo | No | Yes | Transparent managed (Hetzner DE) |
+| [MyClaw.ai](#myclawai) | Managed | $19/mo | No | Partial | Dedicated managed, also Hermes/Claude Code |
 | [OneClickClaw.io](#oneclickclaw) | Managed VPS | €14.99/mo | Yes (Hobbyist, Pro) | Yes | OpenClaw or Hermes Agent, 7-day free trial |
 | [OpenClaw Cloud](#openclaw-cloud) | Managed | $19/mo | Free model | Yes | Free trial, own URL |
 | [ClawHosters](#clawhosters) | Managed VPS | €19/mo | — | Yes | GDPR, German servers |
-| [Molty Hosting](#molty-hosting) | Managed | $19.99/mo | No | — | WebChat dashboard |
+| [Clawbase](#molty-hosting) | Managed | $19.99/mo | No | — | Browser dashboard |
 | [ClawBook.io](#clawbookio) | Managed | $20/mo | — | Partial | Crypto payments, global |
-| [xCloud](#xcloud) | Managed | $24/mo | No | Partial | Beginners, white-label |
+| [xCloud](#xcloud) | Managed | $9.99/mo (promo, renews $19.99) | No | Partial | Beginners, white-label |
 | [DigitalOcean](#digitalocean) | VPS 1-Click | $24/mo | No | No | Developers |
-| [ClawdHost](#clawdhost) | Managed | $25/mo | No | — | Simple single plan |
+| [ClawdHost](#clawdhost) | Managed | $29/mo | No | — | Simple single plan |
 | [BoostedHost](#boostedhost) | VPS | Varies | Possible | — | Performance, Auto-Burst |
 | [Everpod](#everpod) | Managed | $29/mo | — | — | One customer per machine, model usage included |
 | [OpenClawHosting.io](#openclawhosting) | BYOS Managed | $29/mo | Yes (GPU) | — | Multi-instance teams |
 | [MoltBotHost](#moltbothost) | BYOS Managed | $29/mo | Yes (GPU) | Partial | Bring your own server |
-| [WZ-IT](#wz-it) | Enterprise (DE) | Custom | Yes (GPU) | Yes | Enterprise GDPR |
-| [NEAR AI Cloud](#near-ai) | TEE hosting | Beta | No | Yes (TEE) | Hardware-level privacy |
 | [SEAOTTER](#seaotter) | Managed Hermes (GCP) | $99/mo | No | — | Isolated Hermes control plane, no VPS/SSH |
 
 :::warning
@@ -67,65 +71,66 @@ These providers handle everything — no VPS, Docker, or terminal skills needed.
 
 ### xCloud {#xcloud}
 
-The most marketed managed provider, positioning itself as "the only truly managed option that eliminates all DevOps."
+Managed OpenClaw on a cloud VPS, set up for you.
 
 - **URL**: [xcloud.host/openclaw-hosting](https://xcloud.host/openclaw-hosting/)
-- **Price**: $24/month | 7-day money-back guarantee
+- **Price** (as of 2026-10-18): from $9.99/month for the first term, renewing at $19.99/month; six VPS sizes up to 120 GB RAM
 - **Setup**: ~5 minutes, no Docker/terminal
-- **Channels**: Telegram, WhatsApp (Discord, Slack, Signal on Q2 2026 roadmap)
+- **Channels**: Telegram, WhatsApp (the earlier "Discord, Slack, Signal in Q2 2026" roadmap item is unverified)
 - **Features**: Free SSL, daily encrypted backups, 24/7 live expert support
 - **Local LLMs**: No — API keys only (BYOK)
 - **Also offers**: White-label enterprise tier with SLA
 
 ### MyClaw.ai {#myclawai}
 
-The most affordable fully managed option with dedicated instances.
+Managed hosting with dedicated instances. It now also hosts Hermes, Claude Code and Codex.
 
 - **URL**: [myclaw.ai](https://myclaw.ai)
-- **Pricing**:
+- **Pricing** (as of 2026-10-18, from the site's pricing page):
 
-| Plan | Price | Features |
-|------|-------|----------|
-| Lite | $9/mo | Always-on, auto-updates, daily backups |
-| Pro | $19/mo | + Priority support |
-| Max | $39/mo | + Dedicated resources |
+| Plan | Price |
+|------|-------|
+| Lite | $19/mo |
+| Pro | $39/mo |
+| Max | $79/mo |
+
+- **Includes** (all plans, per the provider): always-on uptime, automatic updates; team plans are priced per seat
 
 - **Channels**: WhatsApp, Telegram, Discord, Slack
 - **Security**: Isolated container per plan with encrypted access
 
 ### OpenClaw Launch {#openclawlaunch}
 
-Visual configurator with one-click deploy — configure your OpenClaw instance in-browser and launch in under 30 seconds.
+Visual configurator with one-click deploy. It now also hosts Hermes and Claude Code.
 
 - **URL**: [openclawlaunch.com](https://openclawlaunch.com)
-- **Pricing**:
+- **Pricing** (as of 2026-10-18, not re-checked in detail):
 
 | Plan | Price | Features |
 |------|-------|----------|
 | Lite | $6/mo | 1 instance, AI credits included |
 | Pro | $20/mo | Up to 3 instances, more AI credits, dedicated resources |
 
-- **Setup**: Under 30 seconds — no terminal, no Docker knowledge needed
+- **Setup**: Under a minute, per the provider; no terminal or Docker needed
 - **Channels**: Telegram, Discord, Web gateway
 - **Features**: Browser-based visual configurator, isolated Docker containers, E2E encryption
 
 ### OpenClaw Cloud {#openclaw-cloud}
 
-Includes a free AI model and custom URL.
+Third-party managed service (setupopenclaw.com), not an official OpenClaw product. Includes a free AI model and custom URL.
 
 - **URL**: [setupopenclaw.com](https://setupopenclaw.com)
-- **Price**: $19/month | **3-day free trial** (no card required)
+- **Price** (as of 2026-10-18): $19/month | 3-day free trial (no card required)
 - **Setup**: 60 seconds
 - **Features**: Dedicated server (not shared), free AI model + skills pre-installed, daily encrypted backups, auto-updates, custom URL
 - **GDPR**: Data encrypted at rest and in transit, full data export
 
 ### OpenClawd.ai {#openclawdai}
 
-The original managed hosting provider, launched when users struggled with self-hosting.
+One of the first managed providers (launched February 2026). The site now reads mostly as a general OpenClaw information and deploy page, with Mac mini and Raspberry Pi guidance alongside cloud hosting.
 
 - **URL**: [openclawd.ai](https://openclawd.ai)
-- **Pricing**: Free tier + premium (pricing not public)
-- **Features**: One-click deploy, handles security patches, uptime monitoring, API management
+- **Pricing**: not published (unverified)
 - **Coverage**: Featured in [Yahoo Finance](https://finance.yahoo.com/news/openclawd-ai-launches-hosted-platform-143600648.html)
 
 ### ClawdHost {#clawdhost}
@@ -133,42 +138,30 @@ The original managed hosting provider, launched when users struggled with self-h
 Simple single-plan pricing.
 
 - **URL**: [clawdhost.net](https://clawdhost.net)
-- **Price**: $25/month — all features included
+- **Price** (as of 2026-10-18): $29/month, bring your own API key
 - **Setup**: 60 seconds
 - **Channels**: WhatsApp, Telegram, Discord, Slack
 - **Features**: Dedicated instance, unlimited tasks
 
-### Clawhost.dev {#clawhostdev}
-
-Open-source hosting platform with CLI deployment.
-
-- **URL**: [clawhost.dev](https://www.clawhost.dev)
-- **Price**: $25/month | 99.9% uptime
-- **Setup**: see the provider's own instructions. (Earlier versions of this page said `npx clawd deploy`; the `clawd` npm package belongs to an unrelated project, so do not run it.)
-- **Features**: Custom domains, isolated containers with E2E encryption, supports Claude/GPT/Gemini Pro
-
-### RunClaw.ai {#runclawai}
-
-The most transparent managed provider — provisions a dedicated Hetzner VM in Germany.
-
-- **URL**: [runclaw.ai](https://runclaw.ai)
-- **Price**: ~$13/month
-- **Features**: Dedicated VM (not shared), Docker sandbox, UFW firewall, fail2ban, SSH key-only auth, auto-updates
-- **GDPR**: Hetzner Germany infrastructure
-- **Notable**: Described as "most transparent about infrastructure" by [bestclawhosting.com](https://www.bestclawhosting.com/)
-
 ### Agent37 {#agent37}
 
-The cheapest managed hosting — shared containers with per-tenant isolation.
+Low-cost managed hosting on shared containers. It hosts both OpenClaw and Hermes.
 
 - **URL**: [agent37.com/openclaw](https://www.agent37.com/openclaw)
-- **Price**: **$0.99/month** | 1 vCPU, 2 GB RAM, SSL included
-- **Setup**: 30 seconds
-- **Features**: Containerized shared infrastructure, burst capacity
-- **Notable**: Featured on Hacker News (Show HN). Open-source [host kit](https://github.com/Agent-3-7/openclaw-host-kit) on GitHub
+- **Pricing** (as of 2026-10-18):
+
+| Plan | Price | Specs |
+|------|-------|-------|
+| Free | $0 | 1 agent, sleeps when idle |
+| Basic | $3.99/mo | BYOK, 1 vCPU, 4 GB RAM, 8 GB storage |
+| Plus | $9.99/mo | Free models included |
+| Pro | $29.99/mo | Built-in browser, 2 vCPU, 8 GB RAM |
+| Max | $99.99/mo | Teams, 4 vCPU, 16 GB RAM |
+
+- **Notable**: Open-source [host kit](https://github.com/agent37-platform/openclaw-host-kit) on GitHub (24 stars as of 2026-10-18)
 
 :::info
-At $0.99/mo, Agent37 uses shared containers (not dedicated VMs). Fine for experimenting, but consider dedicated hosting for production or sensitive data.
+Agent37 uses shared containers, not dedicated VMs. Fine for experimenting; consider dedicated hosting for production or sensitive data.
 :::
 
 ### SEAOTTER {#seaotter}
@@ -185,11 +178,11 @@ Managed Hermes Agent control plane on Google Cloud — not OpenClaw hosting, and
 SEAOTTER hosts Hermes Agent, not OpenClaw. Extra managed-agent option alongside Agent37-style hosts — not a replacement.
 :::
 
-### Molty Hosting {#molty-hosting}
+### Clawbase (formerly Molty Hosting) {#molty-hosting}
 
-- **URL**: [molthq.com](https://www.molthq.com)
-- **Price**: From $19.99/month
-- **Features**: Dedicated cloud server, pre-installed, WebChat dashboard in browser, no contracts
+- **URL**: [molthq.com](https://www.molthq.com) (the site is now branded Clawbase)
+- **Price** (as of 2026-10-18): Starter $19.99/month, Pro $39.99/month, Power $79.99/month
+- **Features**: Dedicated cloud server, OpenClaw pre-installed, browser access, no contracts
 - **Channels**: iMessage, WhatsApp, Telegram, Slack
 
 ### ClawHosters {#clawhosters}
@@ -197,7 +190,7 @@ SEAOTTER hosts Hermes Agent, not OpenClaw. Extra managed-agent option alongside 
 GDPR-compliant managed hosting on German VPS infrastructure.
 
 - **URL**: [clawhosters.com](https://clawhosters.com)
-- **Pricing**:
+- **Pricing** (as of 2026-10-18, entry price checked):
 
 | Plan | Price | Specs |
 |------|-------|-------|
@@ -210,7 +203,6 @@ GDPR-compliant managed hosting on German VPS infrastructure.
 - **Features**: Dedicated German VPS, 99.9% uptime, automatic updates and backups
 - **GDPR**: Full compliance (German data centers)
 - **LLM**: BYOK (bring your own API keys — Anthropic, OpenAI, Google)
-- **Promos**: 25% off with code `LAUNCH-SUB`
 
 ### OneClickClaw.io {#oneclickclaw}
 
@@ -241,7 +233,7 @@ Managed hosting on a dedicated EU server for each customer, with OpenClaw or Her
 Global presence with cryptocurrency payment support.
 
 - **URL**: [clawbook.io](https://clawbook.io)
-- **Price**: From $20/month | 99.9% uptime, 24/7 support
+- **Price**: From $20/month (not re-checked 2026-10-18)
 - **Locations**: US (NYC, LA, Miami), Europe (Amsterdam, Frankfurt, London), Asia-Pacific (Singapore, Tokyo)
 - **Features**: Docker isolation, UFW firewall, SSL/TLS, auto security patches
 - **Payment**: Credit cards, PayPal, Bitcoin, Ethereum
@@ -251,19 +243,10 @@ Global presence with cryptocurrency payment support.
 Unique pay-as-you-go pricing — no subscriptions.
 
 - **URL**: [clowd.bot](https://clowd.bot)
-- **Price**: **$0.50 per instance launch** + LLM token costs only
+- **Price** (as of 2026-10-18): $0.50 per instance launch + LLM token costs
 - **Features**: No idle infrastructure cost, no minimums, no hourly compute fees
 - **Channels**: WhatsApp, Telegram, Discord, Slack
 - **Best for**: Occasional users who don't need 24/7 uptime
-
-### Kilo Claw {#kiloclaw}
-
-Enterprise-grade, powered by existing infrastructure serving 1.4M+ developers.
-
-- **URL**: [kilo.ai/kiloclaw](https://kilo.ai/kiloclaw)
-- **Price**: Free trial, then Kilo Gateway credits | Zero markup on AI tokens
-- **Features**: Unified billing, SSO, audit logs, team management, 500+ AI models
-- **Status**: Currently waitlist / early access
 
 ### Everpod {#everpod}
 
@@ -315,7 +298,7 @@ These manage OpenClaw on servers you provision from cloud providers. You pay the
 Multi-instance management for teams.
 
 - **URL**: [openclawhosting.io](https://openclawhosting.io)
-- **Pricing**:
+- **Pricing** (as of 2026-10-18, entry price checked):
 
 | Plan | Price | Instances | Annual |
 |------|-------|-----------|--------|
@@ -330,7 +313,7 @@ Multi-instance management for teams.
 ### MoltBotHost {#moltbothost}
 
 - **URL**: [moltbothost.com](https://moltbothost.com)
-- **Price**: From $29/month + cloud provider costs
+- **Price** (as of 2026-10-18): from $29/month + cloud provider costs
 - **Supported providers**: DigitalOcean, Vultr, Hetzner, AWS, Akamai, or any Linux server
 - **Features**: Privacy-first with persistent memory, 50+ integrations
 - **Local LLMs**: Supported on GPU-capable servers
@@ -340,15 +323,9 @@ Multi-instance management for teams.
 Multi-cloud flexibility with hourly billing.
 
 - **URL**: [elest.io/open-source/openclaw](https://elest.io/open-source/openclaw)
-- **Price**: Hourly credit-based | **$20 free trial credits** (3-day validity)
+- **Price**: hourly credit-based, with trial credits (amount not re-checked 2026-10-18)
 - **Supported clouds**: Netcup, Hetzner, DigitalOcean, Vultr, Linode, Lightsail, Scaleway, AWS
 - **Features**: Choose your cloud + region, 3 support tiers (first level free)
-
-### ClawRun.dev {#clawrundev}
-
-- **URL**: [clawrun.dev](https://clawrun.dev)
-- **Price**: Transparent VPS pricing (Hetzner/DigitalOcean infrastructure)
-- **Features**: One-click deploy, full root access, 15+ global locations, full server ownership
 
 ---
 
@@ -358,35 +335,32 @@ These are general cloud providers with one-click OpenClaw deployment. You manage
 
 ### Oracle Cloud (Free Tier) {#oracle-cloud}
 
-The only truly **free** option with enough resources to run OpenClaw + Ollama.
+A free ARM VM large enough for OpenClaw and a small local model.
 
-- **URL**: [docs.openclaw.ai/platforms/oracle](https://docs.openclaw.ai/platforms/oracle)
-- **Price**: **$0/month** (Always Free tier)
-- **Specs**: 4 ARM CPUs, 24 GB RAM, 200 GB storage
+- **Guide**: [docs.openclaw.ai/install/oracle](https://docs.openclaw.ai/install/oracle)
+- **Price**: $0/month (Always Free tier)
+- **Specs**: up to 4 OCPU, 24 GB RAM, 200 GB storage (`VM.Standard.A1.Flex`), per the upstream guide
 - **Local LLMs**: Yes — enough for 7B parameter models or quantized 13B
-- **Catch**: ARM architecture (not x86), more complex setup
+- **Catch**: ARM (`aarch64`), not x86; free-tier capacity is limited, so instance creation can fail with "Out of capacity"
 
-:::tip
-Oracle's free tier is the only cloud offering with enough RAM (24 GB) to run Ollama meaningfully. AWS/GCP free tiers only provide 1 GB RAM.
-:::
 
 ### Hetzner {#hetzner}
 
 Best value-for-money for self-hosters. European data sovereignty.
 
-- **URL**: [docs.openclaw.ai/install/hetzner](https://docs.openclaw.ai/install/hetzner)
-- **Price**: From ~$4/mo (CX11: 2 GB RAM) | Recommended: CX32 (~$10/mo, 4 vCPU, 8 GB, 80 GB SSD)
+- **Guide**: [docs.openclaw.ai/install/hetzner](https://docs.openclaw.ai/install/hetzner)
+- **Sizing**: upstream asks for at least 6 GB RAM to build the image from source; a smaller server works with the official pre-built image
+- **Server types** (as of 2026-10-18): cost-optimized CX23/CX33/CX43 (x86) and CAX11/CAX21 (Arm). The old CX11 is retired. Prices are on [hetzner.com/cloud](https://www.hetzner.com/cloud/) (not re-checked here)
 - **Locations**: Germany, Finland
 - **GDPR**: Full compliance (German/Finnish data centers)
 - **Local LLMs**: Possible on larger instances
-- **Notable**: 2-3x compute per dollar vs. AWS/GCP/Azure
 
 ### Contabo {#contabo}
 
 Global budget VPS with dedicated OpenClaw page.
 
 - **URL**: [contabo.com/en/openclaw-hosting](https://contabo.com/en/openclaw-hosting/)
-- **Pricing**:
+- **Pricing** (entry price as of 2026-10-18; other tiers not re-checked):
 
 | Plan | Price | Best For |
 |------|-------|----------|
@@ -400,24 +374,18 @@ Global budget VPS with dedicated OpenClaw page.
 
 ### Hostinger {#hostinger}
 
-Budget VPS with bundled AI credits.
+Hostinger's former OpenClaw VPS page now redirects to its managed "AI automation apps" plan.
 
-- **URL**: [hostinger.com/vps/openclaw-hosting](https://www.hostinger.com/vps/openclaw-hosting)
-- **Pricing**:
-
-| Plan | Promo | Renewal | Specs |
-|------|-------|---------|-------|
-| KVM 1 | $5.99/mo | $8.99/mo | 1 vCPU, 4 GB RAM, 50 GB NVMe |
-| KVM 2 | $8.99/mo | — | 2 vCPU, 8 GB RAM, 100 GB NVMe |
-
-- **Features**: One-click Docker template, AI assistant, Nexos AI credits (eliminates need for separate API keys)
+- **URL**: [hostinger.com/ai-automation-apps](https://www.hostinger.com/ai-automation-apps)
+- **Price** (as of 2026-10-18): $5.99/month on a 24-month term, $7.99 on 12 months, $10.99 month-to-month; renews at $11.99/month. One plan runs OpenClaw, Hermes Agent, n8n or Paperclip, with AI credits included
+- **Note**: The earlier KVM 1 / KVM 2 OpenClaw template prices on this page are no longer listed
 
 ### DigitalOcean {#digitalocean}
 
 The developer-favorite with excellent documentation.
 
 - **URL**: [marketplace.digitalocean.com/apps/openclaw](https://marketplace.digitalocean.com/apps/openclaw)
-- **Price**: From $24/month (4 GB RAM Droplet)
+- **Price**: From $24/month (4 GB RAM Droplet; not re-checked 2026-10-18)
 - **Features**: 1-Click Deploy, security-hardened (Docker isolation, unique gateway token, firewall rules, non-root execution, fail2ban)
 - **Also**: App Platform for elastic scaling of multiple agents
 
@@ -426,15 +394,15 @@ The developer-favorite with excellent documentation.
 Largest geographic reach with tight Qwen AI model integration.
 
 - **URL**: [alibabacloud.com/en/campaign/ai-openclaw](https://www.alibabacloud.com/en/campaign/ai-openclaw)
-- **Price**: From $4/month (Simple Application Server)
+- **Price**: From $4/month (Simple Application Server; not re-checked 2026-10-18)
 - **Locations**: 19 global regions
 - **Features**: Pre-installed OpenClaw image, one-click setup, integrated with Alibaba Cloud Model Studio
 - **Local LLMs**: Qwen3-max pre-configured
 
 ### LumaDock {#lumadock}
 
-- **URL**: [lumadock.com/openclaw-vps-hosting](https://lumadock.com/openclaw-vps-hosting)
-- **Price**: From $1.99/month
+- **URL**: [lumadock.com/vps-hosting/openclaw](https://lumadock.com/vps-hosting/openclaw)
+- **Price** (as of 2026-10-18): VPS.S1 (2 vCPU, 2 GB RAM) $4.99/month billed yearly, $5.99 monthly; VPS.S2 (4 GB RAM) from $7.99
 - **Features**: Pre-installed on Ubuntu 24.04, AMD EPYC, NVMe SSD, unmetered bandwidth, DDoS protection, snapshots/backups
 - **Support**: 24/7 certified engineers, 30-day refund
 
@@ -460,7 +428,7 @@ Most global locations of any provider.
 Cheapest way to test OpenClaw in the cloud.
 
 - **URL**: [railway.com/deploy/openclaw](https://railway.com/deploy/openclaw)
-- **Price**: Free trial ($5 credit) | Hobby: $5/month
+- **Price**: Free trial credit, then Hobby $5/month (not re-checked 2026-10-18)
 - **Features**: One-click deploy, web-based setup wizard, state persisted to Railway Volume, auto reverse proxying with auth, one-click backup exports
 - **Best for**: Development and testing
 
@@ -476,40 +444,21 @@ Cheapest way to test OpenClaw in the cloud.
 
 ## Enterprise & GDPR-Compliant
 
-### WZ-IT (Germany) {#wz-it}
-
-Full GDPR compliance with optional dedicated GPU servers for local LLMs.
-
-- **URL**: [wz-it.com/en/expertises/openclaw](https://wz-it.com/en/expertises/openclaw/)
-- **Price**: Custom consultation
-- **Features**: Fully managed on German infrastructure, 24/7 monitoring, automated backups, security updates, SLA-based support
-- **Security**: Dedicated VMs, network isolation via VPN (Tailscale/WireGuard), no publicly reachable gateway ports, SSO integration (Authentik/Keycloak)
-- **Local LLMs**: Optional dedicated GPU server for Ollama — from €499/month
-- **GDPR**: Full compliance, German data centers only
-
-### NEAR AI Cloud {#near-ai}
-
-Hardware-level privacy via Trusted Execution Environments.
-
-- **URL**: [near.ai/openclaw](https://near.ai/openclaw)
-- **Price**: Beta pricing | Payable via NEAR tokens or card
-- **Features**: Runs inside **TEEs** — encrypted execution environment no external party can inspect (including NEAR AI themselves)
-- **Security**: Long-term memory and credentials persist in encrypted hardware memory
-- **Status**: Limited beta access
-- **Notable**: Only provider offering genuinely novel hardware-level isolation
-
 ### Clawery {#clawery}
 
 - **URL**: [clawery.com](https://clawery.com)
 - **Price**: Custom (enterprise)
-- **Features**: Security-first agentic service, compliance posture, no self-hosting required
+- **Status**: The site now describes an enterprise AI assistant service and no longer mentions OpenClaw (checked 2026-10-18). Ask the vendor what runs underneath before treating it as OpenClaw hosting.
+
+### NEAR AI {#near-ai}
+
+The former `near.ai/openclaw` page returns 404 (checked 2026-10-18), so NEAR's OpenClaw hosting beta is no longer listed. NEAR's related open-source project is [IronClaw](https://github.com/nearai/ironclaw) (12,661 stars as of 2026-10-18), a separate Rust agent focused on privacy and security, not an OpenClaw host. See [Lightweight Variants](/guides/lightweight-variants).
 
 ### Managed OpenClaw {#managed-openclaw}
 
 - **URL**: [managedopenclaw.com](https://managedopenclaw.com)
-- **Status**: Pre-launch waitlist
-- **Features**: Hardened defaults, predictable performance, network isolation, principle-of-least-privilege, patch cadence, compliance posture, change management
-- **Target**: Technical decision-makers wanting speed + governance without hiring DevOps
+- **Model**: Done-for-you setup and operations on a server, rather than a hosting plan
+- **Price** (as of 2026-10-18): managed deployment $199 one-off; support plans from $49/month; enterprise from $499/month
 
 ---
 
@@ -517,12 +466,11 @@ Hardware-level privacy via Trusted Execution Environments.
 
 ### Cloudflare (Moltworker) {#cloudflare}
 
-Cloudflare's official adaptation running OpenClaw on Workers.
+An experimental Cloudflare project that runs OpenClaw on Workers and Sandbox containers. Its README calls it "a proof of concept" that "is not officially supported and may break without notice".
 
-- **Price**: Workers Paid plan $5/month + API keys
-- **Repo**: [github.com/cloudflare/moltworker](https://github.com/cloudflare/moltworker) (8,400 stars)
+- **Price**: Workers Paid plan $5/month plus container compute; the README estimates about $34.50/month running 24/7, plus API keys
+- **Repo**: [github.com/cloudflare/moltworker](https://github.com/cloudflare/moltworker) (9,948 stars, last push 2026-05-09, as of 2026-10-18)
 - **Features**: Sandbox containers, browser automation via CDP, optional R2 storage
-- **Status**: Proof of concept — may break
 
 See [Deployment Options](/guides/deployment-options#moltworker) for setup details.
 
@@ -530,12 +478,12 @@ See [Deployment Options](/guides/deployment-options#moltworker) for setup detail
 
 ## Comparison Resources
 
-Independent comparison sites and reviews:
+Comparison sites and reviews. Several are run by hosting companies or earn affiliate fees:
 
 | Site | Focus |
 |------|-------|
 | [bestclawhosting.com](https://www.bestclawhosting.com/) | Pricing, security ratings, honest verdicts |
-| [HostAdvice](https://hostadvice.com/ai-hosting/openclaw-vps-hosting/) | 7 Best OpenClaw VPS Hosting |
+| [HostAdvice](https://hostadvice.com/ai-hosting/openclaw-vps-hosting/) | 10 Best VPS for OpenClaw Hosting |
 | [Seahawk Media](https://seahawkmedia.com/hosting/top-openclaw-vps-hosting/) | Top 11 Providers Compared |
 | [xCloud Guide](https://xcloud.host/best-openclaw-hosting-providers/) | 7 Best Providers (xCloud-biased) |
 | [BoostedHost Guide](https://boostedhost.com/blog/en/top-5-best-openclaw-hosting-vps-providers/) | Top 5 Providers (BoostedHost-biased) |
@@ -549,11 +497,20 @@ Independent comparison sites and reviews:
 Before choosing a provider, be aware of these risks:
 
 - **API cost runaway**: Set spending limits on your LLM API accounts. Community reports of $3,600/month bills from uncontrolled agent loops
-- **CVE-2026-25253**: Critical RCE vulnerability — ensure your provider runs the latest patched version
-- **42,665 exposed instances**: Many self-hosted and poorly-configured hosted instances were found with unauthenticated API access
-- **Managed hosting privacy**: Your conversations pass through the provider's infrastructure. Review their privacy policy and data handling practices
+- **Outdated versions**: Ask which OpenClaw version the provider runs and how fast it applies updates. CVE-2026-25253 (fixed in 2026.1.29) is one of hundreds of published advisories; see [Known Vulnerabilities](/security/known-vulnerabilities)
+- **Exposed gateways**: Internet scans in February 2026 found [42,665 exposed instances (Shodan, Feb 9) and 135,000+ in follow-up scans](/security/known-vulnerabilities#exposed-instances-january-february-2026). On a VPS, keep `gateway.bind` on loopback and reach it through an SSH tunnel or Tailscale ([hardening](/security/hardening))
+- **Third-party installers**: Some providers advertise `curl -fsSL https://<provider>/install | bash`. That runs the provider's script with your privileges. Read it first, or use the [official installer](https://docs.openclaw.ai/install)
+- **Managed hosting privacy**: Your conversations, memory and API keys sit on the provider's infrastructure. Review their privacy policy and data handling practices
 
 See [Security Overview](/security/overview) and [Security Hardening](/security/hardening) for detailed guidance.
+
+## Listing policy
+
+- **Who can be listed**: any service that hosts or manages OpenClaw for customers, or a VPS provider with an OpenClaw-specific template or guide. Services for other agents (for example Hermes) are listed only when clearly labelled.
+- **Disclosure**: a pull request that adds or edits an entry must state the author's affiliation with the operator (owner, employee, contractor, affiliate, or none). Undisclosed vendor edits are reverted.
+- **Prices are dated**: every price carries the date it was checked ("as of YYYY-MM-DD") and a link to the provider's own page.
+- **Unverified claims are marked**: uptime, compliance, security and "first/only/best" claims are the vendor's own unless a source is cited. Clawdocs does not test these services.
+- **Pruning**: entries whose site is unreachable, returns 404, or no longer offers OpenClaw are removed at the next review. Removed on 2026-10-18: Clawhost.dev (404; its `npx clawd deploy` line pointed at an unrelated npm package), RunClaw.ai (connection timeout), ClawRun.dev (HTTP 503), Kilo Claw (page redirects to the generic kilo.ai homepage) and WZ-IT (OpenClaw page redirects to a generic managed-hosting page).
 
 ## See Also
 
