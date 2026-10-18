@@ -1,14 +1,15 @@
 ---
 last_update:
   date: 2026-10-18
+verified_with: 2026.10.4
 title: Migration Guide
-description: Upgrading from Clawdbot or Moltbot to OpenClaw, version upgrade paths, and configuration migration
-keywords: [openclaw, migration, upgrade, migrate version, breaking changes]
+description: Upgrading from Clawdbot or Moltbot to OpenClaw, the bridge upgrade for pre-July 2026 installs, Doctor's refused keys, rollback, and imports from other agent systems
+keywords: [openclaw, migration, upgrade, migrate version, breaking changes, doctor, clawdbot, moltbot]
 ---
 
 # Migration Guide
 
-OpenClaw has undergone a rapid triple rebrand and several critical security patches. This guide covers upgrading from any previous version to the latest release.
+This guide covers four jobs: moving off the old Clawdbot and Moltbot names, upgrading an install from before July 2026 (which needs a bridge release), recovering when an upgrade goes wrong, and importing state from another agent system. Commands were checked against OpenClaw 2026.10.4. The reference is the upstream [Updating](https://docs.openclaw.ai/install/updating) guide.
 
 ---
 
@@ -20,196 +21,216 @@ OpenClaw has undergone a rapid triple rebrand and several critical security patc
 | **Moltbot** | Jan 27 – Jan 30, 2026 | Anthropic trademark complaint ("Clawd" too close to "Claude") |
 | **OpenClaw** | Jan 30, 2026 – present | "Moltbot never quite rolled off the tongue" |
 
-This was the fastest triple rebrand in open-source history — all three names within a single week.
+All three names were used within a single week. The story is told in the upstream [lore page](https://docs.openclaw.ai/start/lore).
 
-### What Changed in Each Rename
+### What changed
 
-**Clawdbot → Moltbot (Jan 27):**
-
-| Component | Old | New |
-|-----------|-----|-----|
-| CLI command | `clawdbot` | `moltbot` |
-| Config directory | `~/.clawdbot/` | `~/.moltbot/` |
-| npm package | `clawdbot` | `moltbot` |
-| GitHub repo | Redirected automatically |
-
-**Moltbot → OpenClaw (Jan 30):**
-
-| Component | Old | New |
-|-----------|-----|-----|
-| CLI command | `moltbot` | `openclaw` (old names kept as aliases) |
-| Config directory | `~/.moltbot/` | `~/.openclaw/` |
-| Config file | `moltbot.json` | `openclaw.json` |
+| Component | Clawdbot era | OpenClaw today |
+|-----------|--------------|----------------|
+| CLI command | `clawdbot` | `openclaw` |
+| State directory | `~/.clawdbot/` | `~/.openclaw/` |
+| Config file | `clawdbot.json` | `openclaw.json` |
 | Workspace | `~/clawd` | `~/.openclaw/workspace` |
-| npm package | `moltbot` | `openclaw` |
-| npm scope | — | Extensions moved to `@openclaw/*` |
-| Docker image | `clawdbot/clawdbot` | `openclaw/openclaw` |
+| npm package | `clawdbot` (frozen at 2026.1.24-3) | `openclaw` |
+| Extensions | — | `@openclaw/*` scope |
+| systemd unit | `clawdbot-gateway.service` | `openclaw-gateway.service` (user unit) |
+| Docker image | — | `ghcr.io/openclaw/openclaw` (primary), `openclaw/openclaw` (Docker Hub mirror) |
+
+The Moltbot name lasted three days. The `moltbot` npm name was never OpenClaw's (see the warning below), and current Doctor does not migrate `~/.moltbot` or `moltbot.json`. If you have those, move the contents into `~/.openclaw/` by hand (see [Data and state](#data-and-state)).
 
 :::danger Supply Chain Attack Risk
-The rapid renames created a dangerous supply-chain attack surface. Attackers hijacked abandoned repository names, published malicious packages with near-identical old names (typosquatting), and distributed a fake VS Code extension. **Only install from the official `openclaw` npm package.**
+The rapid renames created a dangerous supply-chain attack surface. Attackers hijacked abandoned repository names, published malicious packages with near-identical old names (typosquatting), and distributed a fake VS Code extension. **Only install the official `openclaw` npm package** (maintainers `steipete` and `vincentkoc`, repository `github.com/openclaw/openclaw`).
+
+- The npm package **`moltbot` is not, and never was, an OpenClaw package**. It is published by an unrelated account. Do not install it.
+- `clawdbot` is the original, frozen package. It will never be updated.
+- Use only the official container images listed above; upstream says to "avoid unofficial mirrors".
 :::
 
 ---
 
 ## Upgrade Steps
 
-### From Clawdbot or Moltbot to OpenClaw
+### From Clawdbot to OpenClaw
+
+A Clawdbot install is older than July 2026, so it also needs the [bridge upgrade](#bridge-upgrade). Do both in one pass:
+
+1. **Back up.** Stop the old Gateway and copy `~/.clawdbot/` somewhere safe (a plain `cp -a` or a filesystem snapshot; the old CLI has no verified backup command).
+2. **Remove the old service.** Stop it first, or it will hold port 18789 (see [Old service still running](#systemd-migration)).
+3. **Remove the old CLI:** `npm uninstall -g clawdbot`.
+4. **Follow the [bridge upgrade](#bridge-upgrade)** below. The bridge release's `openclaw doctor --fix` renames `~/.clawdbot` to `~/.openclaw` and `clawdbot.json` to `openclaw.json` in place. It moves the directory; it does not copy it or leave a symlink behind. If both `~/.clawdbot` and `~/.openclaw` exist, Doctor names both and leaves them for you to reconcile; it never merges them.
+5. **Reinstall the service** with `openclaw gateway install`, then check it with `openclaw gateway status --deep`.
+
+Do not use `openclaw onboard` as a migration step. It sets up a new install; Doctor is what migrates an old one.
+
+After upgrading:
+
+1. **Rotate gateway tokens.** Old tokens may have been exposed.
+2. **Rename environment variables.** `CLAWDBOT_*` and `MOLTBOT_*` variables are silently ignored (see [Environment variables](#environment-variables)).
+3. **Check auth.** Token or password auth is the default. `gateway.auth.mode: "none"` exists again, but only as an explicit mode for trusted loopback-only setups.
+4. **Run `openclaw security audit --deep`**, then work through [Security Hardening](/security/hardening). An upgraded agent keeps whatever shell, channel and device access it had, so review approvals and sandboxing now.
+
+### Old service still running {#systemd-migration}
+
+Gateway services are **user** units, not system units. `openclaw gateway uninstall` (or `openclaw uninstall`) detects a leftover `clawdbot-gateway.service` and removes it. To do it by hand:
 
 ```bash
-# 1. Uninstall old package
-npm uninstall -g clawdbot    # or: npm uninstall -g moltbot
+systemctl --user disable --now clawdbot-gateway.service
+rm -f ~/.config/systemd/user/clawdbot-gateway.service
+systemctl --user daemon-reload
 
-# 2. Install OpenClaw
-npm install -g openclaw
-
-# 3. Re-run onboarding for new config format
-openclaw onboard
+# Verify only the OpenClaw gateway is running
+openclaw gateway status --deep
 ```
 
-**After upgrading:**
+`openclaw gateway status --deep` also reports other gateway-like services it finds. Hosts installed with [openclaw-ansible](https://github.com/openclaw/openclaw-ansible) use a system unit; manage those with `sudo systemctl`.
 
-1. **Rotate ALL gateway tokens immediately** — old tokens may have been exposed
-2. **Configure authentication** — `auth: none` has been permanently removed as of v2026.1.29
-3. **Stop old services** if running as a daemon (see [Systemd Migration](#systemd-migration))
-4. **Verify your installation**: `openclaw gateway status`
-
-### Systemd Migration {#systemd-migration}
-
-If you were running Clawdbot as a systemd service, the old service must be manually stopped:
-
-```bash
-# Stop and disable old service
-sudo systemctl stop clawdbot-gateway
-sudo systemctl disable clawdbot-gateway
-sudo rm /etc/systemd/system/clawdbot-gateway.service
-sudo systemctl daemon-reload
-
-# Verify only openclaw is running
-openclaw gateway status
-```
-
-:::warning Known Issue: Dual Services (#5103)
-A common migration problem ([Issue #5103](https://github.com/openclaw/openclaw/issues/5103)): both `clawdbot-gateway.service` and `openclaw-gateway.service` run simultaneously. The old gateway holds port 18789 while the new service enters a restart loop (53+ restarts observed). **Always stop the old service first.**
+:::warning Known issue: dual services (#5103)
+In [issue #5103](https://github.com/openclaw/openclaw/issues/5103) (closed as not planned), `clawdbot-gateway.service` and `openclaw-gateway.service` ran at the same time. The old gateway held port 18789 while the new one restarted in a loop. **Always stop the old service first.**
 :::
 
-### npm Stuck on Old Version
+### npm stuck on an old version
 
-If `npm update` doesn't upgrade you past the old version, you're still on the frozen `clawdbot` or `moltbot` package:
+If `npm update -g` never moves past 2026.1.x, you are still on the frozen `clawdbot` package. Uninstall it and follow the bridge upgrade below.
+
+---
+
+## Bridge upgrade for installs before July 2026 {#bridge-upgrade}
+
+OpenClaw 2.0 (v2026.8.1) moved sessions and state into SQLite and retired a long list of config keys. Current Doctor supports migrations only from formats written by releases published on or after **July 1, 2026**. For anything older, it stops and points you to an intermediate release.
+
+**The rule:** if your install is older than July 2026, upgrade to **2026.9.5** first, run its Doctor, then upgrade to `latest` and run Doctor again. Use **2026.9.7** instead when Doctor names it (the retired same-file memory index, Discord `voice.tts` blocks and guild-channel `allow`/`agentId`, Voice Call JSONL logs, old `openclaw.extension.json` stubs).
+
+Before you start: back up the state, use a [supported Node version](https://docs.openclaw.ai/install/node) (24.16+ on 24.x, or 26.1+), and keep the same user account, install prefix, profile and state paths throughout.
+
+Stage 1, the bridge release:
 
 ```bash
-# These packages are frozen — they will NEVER receive updates
-npm uninstall -g clawdbot   # or moltbot
-
-# Install the active package
-npm install -g openclaw
+openclaw gateway stop &&
+  npm install -g openclaw@2026.9.5 --allow-scripts=openclaw &&
+  openclaw --version &&
+  openclaw doctor --fix
 ```
 
----
+Confirm the version is `2026.9.5` and that Doctor imported the task, flow, plugin and channel state you need. Doctor imports channel state only for enabled channels, so temporarily enable any you need while the Gateway is stopped, rerun Doctor, then restore their settings. Resolve failed imports before you continue.
 
-## Critical Version Upgrades
+Stage 2, the current release:
 
-### v2026.1.29 — CVE-2026-25253 Patch (January 30)
+```bash
+npm install -g openclaw@latest --allow-scripts=openclaw &&
+  openclaw doctor --fix &&
+  openclaw gateway start &&
+  openclaw gateway status --deep
+```
 
-**You MUST upgrade to at least this version.** It patches a CVSS 8.8 one-click RCE vulnerability.
+`--allow-scripts=openclaw` is for npm 12 or 11.16+; omit it on npm 11.15 and earlier. For pnpm use `pnpm add -g --allow-build=openclaw openclaw@2026.9.5`, then `openclaw@latest`. For Bun use `bun add -g --trust openclaw@2026.9.5`, then `openclaw@latest`. Add your usual `--profile` to every `openclaw` command.
 
-**Breaking changes:**
-- `auth: none` permanently removed — all gateways now require `token`, `password`, or Tailscale Serve authentication
-- Channel auth prefers config over environment variables for Discord/Telegram/Matrix (env vars become fallback only)
+If a newer release has already upgraded your SQLite databases, the bridge release cannot open them. Use a pre-update backup for the bridge instead; see upstream [downgrade recovery](https://docs.openclaw.ai/reference/database-schemas/integrity-and-recovery#downgrade-recovery).
 
-**What was fixed:**
-- CVE-2026-25253: Cross-site WebSocket hijacking that allowed remote code execution via a crafted URL, even on localhost-bound instances
-- The Control UI no longer accepts a `gatewayUrl` query parameter
+Docker users: the official image runs `openclaw doctor --fix --non-interactive` on start, so for the bridge, run the `2026.9.5` image tag once against your mounted state, then switch to `latest`.
 
-### v2026.1.30 — CLI Improvements (January 31)
+### Config keys Doctor refuses {#refused-keys}
 
-- Shell completion: `openclaw completion` (Zsh/Bash/PowerShell/Fish)
-- Per-agent model status: `openclaw models status --agent <id>`
-- New LLM providers: Kimi K2.5, MiniMax OAuth
+For most renamed keys, Doctor rewrites the config. For a set of retired keys it does the opposite: it **preserves your config and stops** with recovery guidance, and current validation fails until the keys are gone. The list includes:
 
-### v2026.2.2–2.5 — Feature Updates (February 2-5)
+- Top-level `heartbeat` (now `agents.defaults.heartbeat`), `routing.allowFrom` and `routing.groupChat`.
+- `agents.defaults.llm`, agent `embeddedPi`, `embeddedHarness`, whole-agent `agentRuntime`, `systemPromptOverride`, `sandbox.perSession`, and agent `model.timeoutMs`.
+- `memorySearch.store.path`, `gateway.webchat`, `channels.webchat`, `browser.relayBindHost`, `browser.ssrfPolicy.allowPrivateNetwork`, and non-empty `plugins.installs`.
+- The `openai-codex-responses` API id, and queue modes `queue`, `steer-backlog` and `steer+backlog`.
+- Top-level Talk selectors `talk.mode`, `talk.transport`, `talk.brain`, `talk.model` and `talk.voice`.
+- `channels.telegram.requireMention` and `groupMentionsOnly` (use `channels.telegram.groups["*"].requireMention`), Telegram flat streaming keys (`streamMode`, `chunkMode`, `blockStreaming`, `draftChunk`), `channels.whatsapp.exposeErrorText`, `threadBindings.ttlHours`, Slack `channels.<id>.allow`, and Matrix `dm.policy: "trusted"`.
 
-- Major memory architecture overhaul
-- Canvas feature for visual presentations
-- Skill marketplace
-- Workflow recording and replay
-- Voice message transcription
-- `unbrowse` browser automation with visual element detection
-- WhatsApp stability fixes
-
-### v2026.2.6 — VirusTotal Integration (February 6)
-
-- All ClawHub skill uploads now scanned by VirusTotal Code Insight
-- New model support: Claude Opus 4.6, GPT-5.3-Codex, xAI Grok
-- Agent management RPC methods for web UI
-
-This was a direct response to the [ClawHavoc campaign](/security/known-vulnerabilities#the-clawhavoc-campaign) and [ToxicSkills study](/security/known-vulnerabilities).
+The full, current list is in upstream [Doctor config migrations](https://docs.openclaw.ai/gateway/doctor/config-migrations#retired-state-and-config-formats). If one of these keys appears in your config, the fix is the bridge upgrade above, not deleting lines by hand (except `exposeErrorText`, which has done nothing since April 2026 and can simply be removed).
 
 ---
 
-## Configuration Migration
+## Rollback and downgrade {#rollback}
 
-### Automatic Migration
+Do not roll back with `npm install -g openclaw@<older-version>`. Downgrading the package does not reverse config or database migrations, and older releases cannot open newer SQLite schemas, so the old version may refuse to start or damage state.
 
-When you install the `openclaw` package, it automatically:
-- Detects existing `~/.clawdbot/` or `~/.moltbot/` directories
-- Copies config and data to `~/.openclaw/`
-- Creates symlinks from old paths to new paths
-- Preserves legacy config resolution
+The supported route:
 
-### Config Path Reference
+1. **Before a significant update, make a verified backup:**
 
-| Era | Config Directory | Config File | Workspace |
-|-----|-----------------|-------------|-----------|
-| Clawdbot | `~/.clawdbot/` | `clawdbot.json` | `~/clawd` |
-| Moltbot | `~/.moltbot/` | `moltbot.json` | `~/clawd` |
-| OpenClaw | `~/.openclaw/` | `openclaw.json` | `~/.openclaw/workspace` |
+   ```bash
+   mkdir -p ~/Backups/openclaw
+   openclaw backup create --output ~/Backups/openclaw --verify
+   ```
 
-### Environment Variables
+   The archive contains credentials. Store it with owner-only permissions.
+2. **Update with `openclaw update`** rather than a raw `npm i -g`. It stages the new version, runs Doctor, verifies the Gateway, keeps the previous package during activation, and rolls back automatically when post-update checks fail. Preview with `openclaw update --dry-run`.
+3. **To go back to an older release**, restore a verified pre-update backup together with the OpenClaw release that made it. Do not run an older release against migrated state.
+4. **Clean up only after verifying.** `openclaw update cleanup` retires recovery originals; run it only once your sessions and channels work.
 
-| Old (Clawdbot) | New (OpenClaw) | Notes |
-|----------------|----------------|-------|
-| `CLAWDBOT_GATEWAY_TOKEN` | `OPENCLAW_GATEWAY_TOKEN` | Must rotate after upgrade |
-| `CLAWDBOT_PORT` | `OPENCLAW_GATEWAY_PORT` | Default: 18789 |
-| `CLAWDBOT_HOME` | `OPENCLAW_HOME` | Config directory override |
-| `TELEGRAM_BOT_TOKEN` | `TELEGRAM_BOT_TOKEN` | Unchanged |
-| `DISCORD_BOT_TOKEN` | `DISCORD_BOT_TOKEN` | Unchanged |
-| `SLACK_BOT_TOKEN` | `SLACK_BOT_TOKEN` | Unchanged |
-
-Channel tokens (Telegram, Discord, Slack, etc.) are unchanged — only `CLAWDBOT_*` prefixed variables changed to `OPENCLAW_*`. The old prefixes were removed in v2026.3.22 and are now ignored (with a one-time warning since v2026.4.27), so rename them before upgrading.
-
-### Docker Images
-
-| Era | Image | Status |
-|-----|-------|--------|
-| Clawdbot | `clawdbot/clawdbot` | **Frozen** — never updated |
-| OpenClaw | `openclaw/openclaw` | Official, actively maintained |
-| Community | `alpine/openclaw` | Alpine-based minimal image |
-| Coolify | `coollabsio/openclaw` | Daily CalVer builds, arm64 |
-
-### npm Packages
-
-| Package | Status |
-|---------|--------|
-| `clawdbot` | **Frozen** — will never receive updates |
-| `moltbot` | **Frozen** — will never receive updates |
-| `openclaw` | **Active** — all new releases |
-| `@openclaw/*` | Extension scope (channels, plugins) |
+Upstream reference: [Rollback and recovery](https://docs.openclaw.ai/install/updating/rollback-and-recovery). Never stay on a release older than v2026.1.29 (see [Security history](#security-history)).
 
 ---
 
-## Data Preservation
+## Data and state {#data-and-state}
 
-OpenClaw stores all persistent data as plain Markdown files. The upgrade process only touches application code, not data:
+Since 2.0, OpenClaw keeps sessions, transcripts, auth stores, automations and the audit ledger in **SQLite** under the state directory. The workspace files are still Markdown:
 
-**Automatically preserved:**
 - `SOUL.md`, `IDENTITY.md`, `USER.md`, `TOOLS.md`, `AGENTS.md`
-- `MEMORY.md` and `memory/*.md` files
-- Installed skills in `~/.openclaw/skills/`
-- Channel credentials and API keys
+- `MEMORY.md` and `memory/*.md`
+- Managed skills in `~/.openclaw/skills/`
 
-**Potential issues:**
-- If the agent "forgets" after restart, confirm the gateway is using the same workspace on every launch
-- Remote mode uses the gateway host's workspace, not your local laptop's
+`HEARTBEAT.md` is retired. `openclaw doctor --fix` imports it into the heartbeat monitor scratch and turns `tasks:` into automation jobs.
+
+If the agent "forgets" after a restart, check that the Gateway uses the same state directory and workspace on every launch (`openclaw status` shows the paths). Remote mode uses the gateway host's workspace, not your laptop's.
+
+### Environment variables {#environment-variables}
+
+`CLAWDBOT_*` and `MOLTBOT_*` variables are **silently ignored**. If any are still set, the Gateway prints one `OPENCLAW_LEGACY_ENV_VARS` warning at startup. Rename each by replacing the prefix with `OPENCLAW_`.
+
+| Old | Current | Notes |
+|-----|---------|-------|
+| `CLAWDBOT_GATEWAY_TOKEN` | `OPENCLAW_GATEWAY_TOKEN` | Rotate it after upgrading |
+| `CLAWDBOT_GATEWAY_PORT` | `OPENCLAW_GATEWAY_PORT` | Default 18789. There is no `OPENCLAW_PORT`. |
+| — | `OPENCLAW_STATE_DIR` | Overrides the state directory (default `~/.openclaw`) |
+| — | `OPENCLAW_CONFIG_PATH` | Overrides the config file path |
+| — | `OPENCLAW_HOME` | Replaces the home directory OpenClaw resolves paths from; it is not a config-directory override |
+| `TELEGRAM_BOT_TOKEN`, `DISCORD_BOT_TOKEN`, `SLACK_BOT_TOKEN` | Unchanged | Provider and channel variables keep their names |
+
+Full list: upstream [environment variables](https://docs.openclaw.ai/help/environment).
+
+### Moving to a new machine
+
+Stop the Gateway, run `openclaw backup create --output ~/Backups/openclaw --verify` on the old machine, install OpenClaw on the new one, then `openclaw backup restore <archive.tar.gz> --target ~/openclaw-restored` and move the restored assets into place with the Gateway stopped. Restoring older channel state can desynchronize ratcheting credentials such as WhatsApp. See upstream [Migration guide](https://docs.openclaw.ai/install/migrating).
+
+---
+
+## Importing from other agent systems {#imports}
+
+`openclaw migrate` imports instructions, MCP servers, skills, model config and, if you opt in, API keys from other agent systems. It previews a plan first, redacts secrets in reports, and writes a verified backup before applying.
+
+```bash
+openclaw migrate list                  # available providers
+openclaw migrate claude --dry-run      # Claude Code / Claude Desktop: CLAUDE.md, MCP servers, skills, commands
+openclaw migrate apply claude --yes
+openclaw migrate hermes --dry-run      # Hermes config, providers, memory, skills, supported .env keys
+```
+
+Credentials are imported only when you accept the prompt or pass `--include-secrets`. On a fresh install, `openclaw onboard --flow import` offers the same imports. Guides: [Migrating from Claude](https://docs.openclaw.ai/install/migrating-claude), [Migrating from Hermes](https://docs.openclaw.ai/install/migrating-hermes).
+
+---
+
+## Security history {#security-history}
+
+### v2026.1.29: CVE-2026-25253 patch (January 30)
+
+**Do not run anything older.** [CVE-2026-25253](https://nvd.nist.gov/vuln/detail/CVE-2026-25253) (CVSS 8.8, High): before 2026.1.29, the Control UI took a `gatewayUrl` from the query string and connected to it without prompting, sending the gateway token. A crafted link could hand an attacker your token and, through it, command execution on the host. The same release removed the old implicit no-auth mode (an explicit loopback-only `none` mode was later reintroduced, see above).
+
+### v2026.1.30: CLI improvements (January 31)
+
+- Shell completion: `openclaw completion` (Zsh, Bash, PowerShell, Fish)
+- Per-agent model status: `openclaw models status --agent <id>`
+- New providers: Kimi K2.5, MiniMax OAuth
+
+### v2026.2.6: code safety scanner (February 6)
+
+- New model support: Claude Opus 4.6, GPT-5.3-Codex, xAI Grok
+- Built-in code safety scanner for skills and plugins; credentials redacted from `config.get` gateway responses
+
+ClawHub added VirusTotal scanning on publish in the same month, in response to the [ClawHavoc campaign](/security/known-vulnerabilities#the-clawhavoc-campaign). See [Skill Verification](/security/skill-verification) for how scanning works today.
 
 ---
 
@@ -217,51 +238,30 @@ OpenClaw stores all persistent data as plain Markdown files. The upgrade process
 
 ### clawd_migrate
 
-[clawd_migrate](https://github.com/calabiyauman/clawd_migrate) is a community-built migration tool. It is **not published on npm**, so do not run `npx clawd_migrate`: that would fetch whatever package someone registers under the name. If you use it, clone the repository, read the code, and run it from your clone, as its README describes.
-
-- Migrates from Clawdbot or Moltbot to OpenClaw
-- Preserves all memory/identity files
-- Creates timestamped backups under `backups/`
-- `--setup-openclaw` flag runs `npm i -g openclaw && openclaw onboard`
-- Works on Windows, macOS, Linux
+[clawd_migrate](https://github.com/calabiyauman/clawd_migrate) is a community migration script (unmaintained since February 2026). It is **not published on npm**, so never run `npx clawd_migrate`: that would fetch whatever package someone later registers under the name. It predates the 2.0 SQLite migration; the bridge upgrade above replaces it.
 
 ### OpenClaw Ansible
 
-[openclaw-ansible](https://github.com/openclaw/openclaw-ansible) provides automated, hardened installation with Docker isolation, Tailscale VPN integration, and firewall configuration. Supports both fresh installs and migrations.
+[openclaw-ansible](https://github.com/openclaw/openclaw-ansible) is the official Ansible installer: hardened install, Docker isolation, Tailscale and firewall configuration. Upstream guide: [Ansible](https://docs.openclaw.ai/install/ansible).
 
 ---
 
 ## CI/CD Pipeline Updates
 
-When migrating CI/CD pipelines:
-
-| Component | Old | New |
+| Component | Old | Current |
 |-----------|-----|-----|
-| npm install | `npm i -g clawdbot` | `npm i -g openclaw` |
-| Docker FROM | `clawdbot/clawdbot` | `openclaw/openclaw` |
+| npm install | `npm i -g clawdbot` | `npm i -g openclaw` (pin a version in CI) |
+| Container image | — | `ghcr.io/openclaw/openclaw:<version>` |
 | Environment | `CLAWDBOT_GATEWAY_TOKEN` | `OPENCLAW_GATEWAY_TOKEN` |
-| Systemd | `clawdbot-gateway.service` | `openclaw-gateway.service` |
-| Update channel | — | `openclaw update --channel stable` |
-
----
-
-## Rollback
-
-To downgrade to a specific version:
-
-```bash
-npm install -g openclaw@2026.1.30
-```
-
-:::warning
-Downgrading exposes you to security vulnerabilities fixed in newer versions. Never downgrade below v2026.1.29 (critical RCE patch).
-:::
+| Service unit | `clawdbot-gateway.service` | `openclaw-gateway.service` (user unit) |
+| Update channel | — | `openclaw update --channel stable` (also `extended-stable`, `beta`, `dev`) |
 
 ---
 
 ## See Also
 
 - [Installation](/getting-started/installation) — Fresh install guide
+- [Deployment Options](/guides/deployment-options) — Docker, Kubernetes and hosting
 - [Known Vulnerabilities](/security/known-vulnerabilities) — CVEs and incident timeline
 - [Security Hardening](/security/hardening) — Post-upgrade hardening steps
-- [Configuration Reference](/reference/configuration) — Full config file documentation
+- [Configuration Reference](/reference/configuration) — Config file documentation
