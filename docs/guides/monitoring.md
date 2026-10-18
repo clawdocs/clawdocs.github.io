@@ -29,7 +29,7 @@ openclaw health --json     # same, machine-readable
 openclaw gateway status    # service and RPC probe
 ```
 
-`openclaw doctor` is a diagnose-and-repair tool, not a health check. Use it after upgrades or when something is broken, not as a liveness probe; `doctor --fix` writes changes.
+`openclaw doctor` is a diagnose-and-repair tool, not a health check. Even without `--fix` it can migrate config and state, so do not use it as a probe. For a read-only report (for example in CI), use `openclaw doctor --lint`.
 
 ### Component checks
 
@@ -247,7 +247,7 @@ Notes:
 - `protocol` accepts only `http/protobuf`; gRPC was retired. Doctor rewrites an old `grpc` value.
 - When `endpoint` is unset, the standard `OTEL_EXPORTER_OTLP_*` variables are used as a fallback.
 - `captureContent` (default off) puts raw message and tool content in span attributes. Leave it off unless your collector's retention policy allows that data.
-- `openclaw status --all` and `openclaw doctor` show exporter health per signal.
+- `openclaw status --all` (read-only) shows exporter health per signal.
 - `openclaw agent exec` runs do not export telemetry; dispatch through the Gateway or use `openclaw agent --local`.
 
 Field reference, metric names and span names: [Setup](https://docs.openclaw.ai/gateway/opentelemetry/setup), [Configuration](https://docs.openclaw.ai/gateway/opentelemetry/configuration), [Privacy and trace context](https://docs.openclaw.ai/gateway/opentelemetry/privacy-and-trace-context).
@@ -257,7 +257,7 @@ Field reference, metric names and span names: [Setup](https://docs.openclaw.ai/g
 ```yaml title="docker-compose.otel.yml (add to your existing compose)"
 services:
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/jaeger:latest   # Jaeger v2; the v1 all-in-one image is end-of-life
     ports:
       - "127.0.0.1:16686:16686"   # Jaeger UI
 ```

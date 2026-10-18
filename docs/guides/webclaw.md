@@ -13,7 +13,7 @@ keywords: [openclaw, webclaw, pinchchat, web client, browser frontend, control u
 [WebClaw](https://github.com/ibelick/webclaw) hard-codes Gateway protocol **3** (`minProtocol: 3, maxProtocol: 3`). Gateways have required protocol **4** for operator and UI clients since 2026.5.19; only node-role devices may still use v3. Against v2026.10.4 the handshake fails with a protocol mismatch. Updating the Gateway does not help: the Gateway update is what broke it. The project has had no commits since 2026-03-17.
 :::
 
-This page used to be a WebClaw setup guide. It is now a short note on browser front-ends, checked on 2026-10-18 against OpenClaw **v2026.10.4**.
+Checked on 2026-10-18 against OpenClaw **v2026.10.4**.
 
 ---
 
@@ -99,13 +99,14 @@ PinchChat asks for `operator.admin` and keeps your Gateway token in `localStorag
 
 ## Building Your Own Client
 
-Use `@openclaw/gateway-client` and follow the protocol v4 handshake (`connect.challenge` → `connect` → `hello-ok`) rather than copying an old client. See [API & Webhooks: WebSocket API](/guides/api-webhooks#websocket-api) and upstream's [Building a Gateway client](https://docs.openclaw.ai/gateway/clients).
+Use `@openclaw/gateway-client` and follow the protocol v4 handshake (`connect.challenge` → `connect` → `hello-ok`) rather than copying an old client. See [Gateway API: WebSocket protocol](/reference/gateway-api#websocket-protocol-v4) and upstream's [Building a Gateway client](https://docs.openclaw.ai/gateway/clients).
 
 ---
 
 ## See Also
 
-- [API & Webhooks](/guides/api-webhooks): Gateway protocol, auth, remote access
+- [Gateway API](/reference/gateway-api): WebSocket protocol, scopes, auth
+- [API & Webhooks](/guides/api-webhooks): webhooks and remote access
 - [Channels & Integrations](/guides/channels): chat apps as front-ends
 - [Security Hardening](/security/hardening): exposing the Gateway safely
 - [Ecosystem](/reference/ecosystem): other community projects

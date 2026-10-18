@@ -3,28 +3,25 @@ last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
 title: Video Generation with Remotion
-description: Comprehensive guide to programmatic video creation with OpenClaw and Remotion — skills, MCP servers, templates, rendering pipelines, and production recipes
+description: Make video with OpenClaw, either with the built-in video_generate tool or by having the agent write and render Remotion projects, with skills, MCP servers, a reviewed publishing workflow and scheduled renders
 keywords: [openclaw, remotion, video generation, programmatic video, tiktok, youtube shorts, ai video, mcp video, remotion agent skills]
 ---
 
 # Video Generation with Remotion
 
-OpenClaw has two ways to make video: the built-in `video_generate` tool, which asks a video model for a clip, and **Remotion**, which renders React components into video that you fully control. This guide covers both, with the skills, MCP servers, rendering APIs and recipes that connect Remotion to OpenClaw. Checked against OpenClaw **v2026.10.4** on 2026-10-18; third-party star and download counts are as of that date.
+OpenClaw has two ways to make video: the built-in `video_generate` tool, which asks a video model for a clip, and **Remotion**, which renders React components into video that you fully control. This guide covers both, and the skills, MCP servers and workflows that connect Remotion to OpenClaw. Remotion's own API is documented at [remotion.dev/docs](https://www.remotion.dev/docs/); this page does not repeat it. Checked against OpenClaw **v2026.10.4** on 2026-10-18; third-party star and download counts are as of that date.
 
 ---
 
 ## Quick vs Full: Choosing Your Approach
 
-OpenClaw has **two paths** for video generation — pick the one that fits your need:
-
 | | **`video_generate` tool** | **Remotion** |
 |---|---|---|
-| **Setup** | A provider API key — built-in tool, one call | Node.js project, React, FFmpeg |
+| **Setup** | A provider API key | A Node.js Remotion project |
 | **Best for** | Quick clips, one-off demos, simple prompts | Branded content, templates, recurring series |
-| **Control** | Prompt-only — you describe, AI generates | Full creative control — React components, animations, layouts |
-| **Customization** | Limited to what the AI model produces | Unlimited — any React code, custom fonts, charts, 3D |
+| **Control** | Prompt only | Anything you can write in React: layouts, fonts, charts, animation |
 | **Reproducibility** | Each generation is unique | Deterministic — same props = same video |
-| **Cost** | Per-generation API cost | Free local rendering + optional API costs for assets |
+| **Cost** | Billed per clip by the provider | Local rendering is free; generated assets are billed by their providers |
 | **Example** | `"Make a 5-second hello world clip"` | Templated TikTok series, data dashboards, branded intros |
 
 **Start with `video_generate`** if you just want a quick clip from a prompt. **Use Remotion** when you need templates, branding, recurring content, or pixel-perfect control.
@@ -57,26 +54,9 @@ Reference: [Video generation](https://docs.openclaw.ai/tools/video-generation). 
 
 ---
 
-## Why Remotion?
+## Remotion in one example
 
-[Remotion](https://remotion.dev) is a React-based framework for creating videos programmatically. Instead of dragging timelines in a video editor, you write React components that render frame-by-frame into MP4, WebM, or GIF files.
-
-**Why it fits OpenClaw perfectly:**
-
-- **Code-driven** — OpenClaw can generate and modify React components
-- **JSON-configurable** — compositions accept data props, so OpenClaw can drive content via JSON
-- **CLI-renderable** — `npx remotion render` works headlessly on any server
-- **AI-first** — Remotion ships official Agent Skills, MCP server, and AI-optimized docs
-
-### Core concepts
-
-| Concept | What it is |
-|---------|-----------|
-| **Composition** | A React component + video metadata (id, fps, width, height, durationInFrames) |
-| **Sequence** | Time-offsets within a composition — like scenes in a movie |
-| **useCurrentFrame()** | Hook that gives you the current frame number for animations |
-| **registerRoot()** | Entry point that registers all compositions in `src/Root.tsx` |
-| **renderMedia()** | Server-side API that renders compositions to video files |
+[Remotion](https://remotion.dev) renders React components frame by frame into MP4, WebM or GIF. A composition is a component plus its size, frame rate and duration, and it takes JSON props, so the agent can drive the content with data and render headlessly with `npx remotion render`.
 
 ```tsx title="src/HelloWorld.tsx"
 import { useCurrentFrame, interpolate } from "remotion";
@@ -133,7 +113,14 @@ Agent Skills teach OpenClaw how to write correct Remotion code. The [remotion-de
 npx skills add remotion-dev/skills
 ```
 
-This adds Remotion-specific instructions to your project so OpenClaw understands compositions, animations, and the rendering pipeline.
+`npx skills` installs into the project's agent-skills folders. For OpenClaw to see them, the project must be the agent's workspace (as with `openclaw agent exec --cwd .` below), or copy the skill folders into `<workspace>/skills/`; check with `openclaw skills list`. Read the skills before installing, like any third-party skill.
+
+Remotion also publishes a [system prompt for LLMs](https://www.remotion.dev/docs/ai/system-prompt). For an agent whose workspace is the project, point to it from `AGENTS.md` (operating rules belong there, not in `SOUL.md`). `openclaw agent exec` skips workspace bootstrap files, so for those runs put the pointer in the message itself.
+
+```markdown title="AGENTS.md"
+When writing Remotion code, follow https://www.remotion.dev/docs/ai/system-prompt
+and the installed Remotion skills.
+```
 
 ### 3. Render your first video
 
@@ -193,14 +180,11 @@ Indexes Remotion documentation into a vector database. OpenClaw can query it for
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "mcp": {
-    "servers": {
-      "remotion": {
-        "command": "npx",
-        "args": ["@remotion/mcp"]
-      }
-    }
-  }
+  mcp: {
+    servers: {
+      remotion: { command: "npx", args: ["@remotion/mcp"] },
+    },
+  },
 }
 ```
 
@@ -214,31 +198,15 @@ Community MCP server with 10 tools for AI-powered media generation. Saves files 
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "mcp": {
-    "servers": {
-      "remotion-media": {
-        "command": "npx",
-        "args": ["remotion-media-mcp"]
-      }
-    }
-  }
+  mcp: {
+    servers: {
+      "remotion-media": { command: "npx", args: ["remotion-media-mcp"] },
+    },
+  },
 }
 ```
 
-**Tools available:**
-
-| Tool | Description |
-|------|-------------|
-| `generate_image` | AI image generation (for backgrounds, scenes) |
-| `generate_video_from_text` | Text-to-video clips |
-| `generate_video_from_image` | Image-to-video animation |
-| `generate_music` | Background music generation |
-| `generate_sound_effect` | Sound effects |
-| `generate_speech` | Text-to-speech voiceover |
-| `generate_subtitles` | Auto-generate subtitle tracks |
-| `list_assets` | List generated media in public/ |
-| `backup_asset` | Back up generated files |
-| `get_asset` | Retrieve asset metadata |
+It exposes tools for images, text-to-video and image-to-video clips, music, sound effects, speech and subtitles, plus asset listing. Each calls a paid hosted model; read its README for which keys it needs.
 
 ### remotion-mcp-app
 
@@ -254,14 +222,14 @@ FFmpeg operations via natural language. Useful for post-processing — trimming,
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "mcp": {
-    "servers": {
-      "ffmpeg": {
-        "command": "uv",
-        "args": ["--directory", "/home/you/src/ffmpeg-mcp", "run", "ffmpeg-mcp"]
-      }
-    }
-  }
+  mcp: {
+    servers: {
+      ffmpeg: {
+        command: "uv",
+        args: ["--directory", "/home/you/src/ffmpeg-mcp", "run", "ffmpeg-mcp"],
+      },
+    },
+  },
 }
 ```
 
@@ -274,48 +242,6 @@ Guardrailed video-editing MCP with planning and quality checks, aimed at safer a
 **GitHub:** [KyaniteLabs/kinocut](https://github.com/KyaniteLabs/kinocut)
 
 For AI-generated footage, prefer the built-in `video_generate` tool over single-provider MCP servers.
-
----
-
-## Remotion AI Integration
-
-Remotion has invested heavily in AI-agent compatibility.
-
-### Agent Skills
-
-The most important integration. Install in your Remotion project:
-
-```bash
-npx skills add remotion-dev/skills
-```
-
-This adds 12 skills that teach your AI agent, among other things:
-- How to structure compositions and sequences
-- Animation best practices with `interpolate()` and `spring()`
-- Captions, maps, multimedia and interactive compositions
-- How to use `staticFile()` for assets
-- Rendering configuration and version upgrades
-
-**GitHub:** [remotion-dev/skills](https://github.com/remotion-dev/skills) (about 5,300 stars)
-
-### AI-Optimized Docs
-
-Remotion's documentation supports AI-friendly access:
-
-- Append `.md` to any docs URL for markdown: `remotion.dev/docs/the-fundamentals.md`
-- Set `Accept: text/markdown` header for content negotiation
-- Full system prompt available at [remotion.dev/docs/ai/system-prompt](https://www.remotion.dev/docs/ai/system-prompt)
-
-### LLM System Prompt
-
-Remotion maintains an official system prompt for LLMs generating Remotion code. Point OpenClaw to it in your SOUL.md:
-
-```markdown title="SOUL.md"
-When generating Remotion code, follow the patterns at:
-https://www.remotion.dev/docs/ai/system-prompt
-
-Use Agent Skills conventions for compositions, animations, and rendering.
-```
 
 ---
 
@@ -370,7 +296,7 @@ Use Sequence for each scene, AbsoluteFill for layouts, and spring() for transiti
 ```
 
 :::warning Headless runs can run commands
-Unless your config says otherwise, `agent exec` runs with the sandbox off and the full exec policy, scoped to `--cwd`. Run it in a project directory you are happy for the agent to change, run it under a dedicated agent or config with narrower tools, and see [Security Hardening](/security/hardening).
+Unless your config says otherwise, `agent exec` runs with the sandbox off and the full exec policy. Its file tools are limited to `--cwd`, but shell commands are not. Run it in a project directory you are happy for the agent to change, use a pinned config (`--config`) with narrower tools or a sandbox, and see [Security Hardening](/security/hardening).
 :::
 
 ```bash title="Step 4: Render"
@@ -379,130 +305,15 @@ npx remotion render MyVideo out/video.mp4 --codec h264
 
 ---
 
-## Programmatic Rendering
-
-### renderMedia() (Recommended)
-
-The server-side API for rendering — combines frame rendering and video stitching:
-
-```typescript title="render.ts"
-import { renderMedia, selectComposition } from "@remotion/renderer";
-import { bundle } from "@remotion/bundler";
-
-const bundled = await bundle({ entryPoint: "./src/index.ts" });
-
-const composition = await selectComposition({
-  serveUrl: bundled,
-  id: "MyVideo",
-  inputProps: {
-    title: "Generated by OpenClaw",
-    scenes: [ /* ... from AI-generated JSON */ ],
-  },
-});
-
-await renderMedia({
-  serveUrl: bundled,
-  composition,
-  codec: "h264",
-  outputLocation: "out/video.mp4",
-  concurrency: "50%",  // Use half of CPU threads
-});
-```
-
-### CLI rendering
-
-Simpler for one-off renders:
+## Rendering
 
 ```bash
-# Basic render
-npx remotion render MyVideo out/video.mp4
-
-# With custom props from a JSON file
-npx remotion render MyVideo out/video.mp4 --props=./scene-data.json
-
-# Specific codec and quality
-npx remotion render MyVideo out/video.mp4 --codec=h264 --crf=18
+npx remotion render MyVideo out/video.mp4 --props=./scene-data.json   # props from JSON
+npx remotion render MyVideo out/video.mp4 --codec=h264 --crf=18       # codec and quality
+npx remotion still MyVideo out/thumb.png --frame=0                    # thumbnail
 ```
 
-### Remotion Lambda (Serverless)
-
-For high-volume rendering without managing infrastructure:
-
-```typescript
-import { renderMediaOnLambda } from "@remotion/lambda/client";
-
-const result = await renderMediaOnLambda({
-  region: "us-east-1",
-  functionName: "remotion-render-...",
-  serveUrl: "https://your-bundle.s3.amazonaws.com",
-  composition: "MyVideo",
-  codec: "h264",
-  inputProps: { /* AI-generated content */ },
-});
-```
-
-### Rendering still images
-
-For thumbnails, social cards, or frame exports:
-
-```typescript
-import { renderStill } from "@remotion/renderer";
-
-await renderStill({
-  serveUrl: bundled,
-  composition,
-  output: "thumbnail.png",
-  frame: 0,  // First frame as thumbnail
-});
-```
-
----
-
-## Complementary Tools
-
-### Whisper (Captions)
-
-Remotion includes `@remotion/openai-whisper` for generating word-level captions from audio:
-
-```bash
-npm install @remotion/openai-whisper
-```
-
-```typescript
-import { openAiWhisperApiToCaptions } from "@remotion/openai-whisper";
-
-// Generate captions from audio file
-const captions = await openAiWhisperApiToCaptions({
-  transcription: whisperResponse,
-});
-```
-
-### ElevenLabs (Text-to-Speech)
-
-`@remotion/elevenlabs` for high-quality voiceover generation:
-
-```bash
-npm install @remotion/elevenlabs
-```
-
-Generate speech with word-level timestamps, then sync with Remotion sequences for perfect lip-sync or caption timing.
-
-### Image Generation
-
-Use OpenClaw's LLM to call image generation APIs:
-- **`image_generate`** — OpenClaw's built-in tool (OpenAI `gpt-image-2`, Google, fal, ComfyUI and others)
-- **ComfyUI** — local Stable Diffusion or Flux workflows, via the ComfyUI provider
-- **remotion-media-mcp** — its `generate_image` tool writes straight into `public/`
-
-### FFmpeg (Post-processing)
-
-Remotion uses FFmpeg internally, but for post-processing:
-- Concatenate multiple rendered clips
-- Add watermarks or overlays
-- Convert formats (MP4 → GIF, WebM)
-- Extract audio tracks
-
-The FFmpeg MCP server above lets OpenClaw run these operations by name, or the agent can call `ffmpeg` directly through exec.
+For rendering from code (`renderMedia()`, `renderStill()`) or serverless rendering with Remotion Lambda, see Remotion's [server-side rendering](https://www.remotion.dev/docs/ssr) and [Lambda](https://www.remotion.dev/docs/lambda) docs. Remotion also ships `@remotion/openai-whisper` for word-level captions and `@remotion/elevenlabs` for voiceover with timestamps. For thumbnails, OpenClaw's own `image_generate` tool works too.
 
 ---
 
@@ -510,7 +321,7 @@ The FFmpeg MCP server above lets OpenClaw run these operations by name, or the a
 
 ### Faceless TikTok / YouTube Shorts
 
-The most popular use case. Let the agent write the script and generate assets (with `video_generate`, `image_generate`, TTS or remotion-media-mcp) into `public/props.json` and `public/`, then render deterministically with Remotion. The rendering half is a good fit for a [Lobster](#lobster-workflow-for-video-pipelines) workflow, shown below.
+Let the agent write the script and generate assets (with `video_generate`, `image_generate`, TTS or remotion-media-mcp) into `public/props.json` and `public/`, then render deterministically with Remotion. The rendering half is a good fit for a [Lobster](#lobster-workflow-for-video-pipelines) workflow, shown below.
 
 ### Audiogram (Podcast Clips)
 
@@ -525,33 +336,6 @@ The audiogram template renders:
 - Waveform visualization synced to audio
 - Episode title, guest name, timestamps
 - Auto-generated captions via Whisper
-
-### Data Visualization Videos
-
-Animate charts and graphs for social media:
-
-```tsx
-import { useCurrentFrame, interpolate } from "remotion";
-import { Bar } from "@visx/shape";
-
-export const DataViz: React.FC<{ data: number[] }> = ({ data }) => {
-  const frame = useCurrentFrame();
-
-  return (
-    <svg width={1080} height={1920}>
-      {data.map((value, i) => {
-        const height = interpolate(
-          frame,
-          [i * 10, i * 10 + 20],
-          [0, value],
-          { extrapolateRight: "clamp" }
-        );
-        return <Bar key={i} x={i * 120} y={1920 - height} width={100} height={height} />;
-      })}
-    </svg>
-  );
-};
-```
 
 ### Code Walkthrough Videos
 
@@ -608,19 +392,6 @@ OpenClaw has no built-in TikTok or YouTube publishing tool. `scripts/publish.sh`
 
 ---
 
-## Alternatives and Comparisons
-
-| Tool | Type | Best For | AI Integration |
-|------|------|----------|----------------|
-| **Remotion** | React framework | Custom compositions, full control | Agent Skills, MCP, system prompts |
-| **`video_generate`** | Built-in OpenClaw tool | AI-generated footage from a prompt or image | Native tool, 18 provider backends |
-| **FFmpeg** | CLI tool | Post-processing, conversion | Agent exec, FFmpeg MCP |
-| **Hosted template APIs** | Template services | Simple template videos without code | REST APIs, n8n/Make |
-
-Remotion is the best choice when you need **full programmatic control** and **React ecosystem compatibility**. Use `video_generate` for footage you cannot draw in code, and composite it in Remotion.
-
----
-
 ## Cost and Performance
 
 Prices change too often to print here. What drives the cost:
@@ -632,12 +403,10 @@ Prices change too often to print here. What drives the cost:
 
 ### Optimization tips
 
-1. **Cache AI-generated assets** — don't regenerate images/audio for unchanged scenes
-2. **Use `concurrency`** — `renderMedia({ concurrency: "75%" })` uses more CPU threads
-3. **Render at target resolution** — don't render 4K if publishing to TikTok (1080x1920)
-4. **Use a smaller model** (for example `anthropic/claude-haiku-5-5` or a local model) for script drafts when quality isn't critical
-5. **Batch renders** — schedule renders overnight with an automation job
-6. **Lambda for parallelism** — render multiple videos simultaneously in the cloud
+1. Keep generated assets and reuse them for unchanged scenes.
+2. Render at the target resolution (1080x1920 for vertical shorts), not 4K.
+3. Use a cheaper model for script drafts, for example `anthropic/claude-haiku-5-5`.
+4. Schedule batch renders overnight with an automation job.
 
 ---
 
@@ -649,8 +418,7 @@ Prices change too often to print here. What drives the cost:
 | `Error: FFmpeg not found` | Install FFmpeg: `brew install ffmpeg` or `apt install ffmpeg` |
 | Blank frames | Ensure `useCurrentFrame()` is used and animations cover the frame range |
 | Audio out of sync | Use word-level timestamps from Whisper/ElevenLabs, not fixed offsets |
-| Lambda timeout | Increase `timeoutInMilliseconds` or reduce video complexity |
-| Memory issues on render | Reduce `concurrency` or render shorter segments |
+| Memory issues on render | Lower `--concurrency` or render shorter segments |
 | Agent writes invalid Remotion code | Install Agent Skills: `npx skills add remotion-dev/skills` |
 
 ---
@@ -660,7 +428,7 @@ Prices change too often to print here. What drives the cost:
 - [Remotion Docs](https://remotion.dev/docs/) — Official documentation
 - [Remotion AI Docs](https://remotion.dev/docs/ai/) — AI integration guide
 - [Remotion Templates](https://remotion.dev/templates/) — about 20 starter templates
-- [Remotion Agent Skills](https://github.com/remotion-dev/skills) — 12 skills, about 5,300 stars
+- [Remotion Agent Skills](https://github.com/remotion-dev/skills) — 12 skills
 - [ClawVid](https://github.com/neur0map/clawvid) — Short-form pipeline (example code, inactive)
 - [OpenClaw video generation](https://docs.openclaw.ai/tools/video-generation) — the built-in `video_generate` tool
 - [remotion-media-mcp](https://github.com/stephengpope/remotion-media-mcp) — Media generation MCP

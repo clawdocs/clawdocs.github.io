@@ -14,7 +14,7 @@ The Workboard is a Kanban-style task board bundled with OpenClaw as a plugin (di
 The first Workboard entries appear in v2026.5.28; the orchestration primitives (dependencies, dispatch, claims) landed in v2026.5.31 and v2026.6.1. Official reference: [Workboard plugin](https://docs.openclaw.ai/plugins/workboard) and [Workboard CLI](https://docs.openclaw.ai/cli/workboard).
 
 :::info
-The Workboard manages **local operating work** within your OpenClaw Gateway. It is not a replacement for GitHub Issues, Linear, or Jira — it's purpose-built for coordinating agent tasks.
+The Workboard tracks work inside one Gateway. It is not an issue tracker: keep GitHub Issues, Linear or Jira for the project itself.
 :::
 
 ---
@@ -32,21 +32,13 @@ You can also enable it in config:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "plugins": {
-    "entries": {
-      "workboard": {
-        "enabled": true
-      }
-    }
-  }
+  plugins: { entries: { workboard: { enabled: true } } },
 }
 ```
 
 ---
 
 ## Cards
-
-Each Workboard card represents a unit of work for an agent.
 
 ### What a Card Contains
 
@@ -86,7 +78,7 @@ If a card is linked to a session, the Workboard updates the card state automatic
 
 - Active session → card moves to `running`
 - Completed session → card moves to `review`
-- Failed or timed-out session → card moves to `blocked`
+- Failed, killed, timed-out or aborted session → card moves to `blocked`
 
 Once you manually move a card to `review`, `blocked`, or `done`, automatic sync stops until you move it back to `todo` or `running`.
 
@@ -170,13 +162,12 @@ When you run `dispatch`, the Workboard:
 5. **Claims each card** for the dispatcher or assigned agent
 6. **Starts workers**: each worker is a subagent run with bounded card context and the claim token
 
-Dispatch can be triggered from:
+Dispatch can be triggered from (a card's **Start** action in the dashboard starts that one card directly):
 - The dashboard dispatch button
 - `openclaw workboard dispatch` in the CLI
 - `/workboard dispatch` on chat channels
-- Manually starting a card from the Workboard UI
 
-Dispatch does not run on its own. To dispatch on a schedule, create an automation (see [Recipes](#self-organizing-heartbeat)).
+Dispatch does not run on its own. To dispatch on a schedule, run `openclaw workboard dispatch` from a cron job or systemd timer on the Gateway host. An agent cannot do it for you: the `workboard_dispatch` tool promotes dependencies and cleans stale claims but does not start workers. For a scheduled agent review of the board, see [Self-Organizing Heartbeat](#self-organizing-heartbeat).
 
 ---
 
@@ -216,18 +207,6 @@ Workers that the Workboard starts from a card (**Start** or dispatch) do not nee
 
 The full list, including attachments, notifications and recovery tools, is in the [plugin reference](https://docs.openclaw.ai/plugins/workboard#agent-tools).
 
-### What This Enables
-
-An agent can:
-- Check the board for available work
-- Claim a card and begin working
-- Create sub-task cards for complex work
-- Link cards into dependency chains
-- Keep its claim alive during long-running tasks
-- Review its own run history
-
-This makes autonomous workflows possible — an orchestrator agent creates cards, specialist agents claim and execute them, and the Workboard tracks everything.
-
 ---
 
 ## Dashboard Workflow
@@ -249,35 +228,6 @@ You can also capture an existing session as a card: open **Sessions** → choose
 ### Templates
 
 Workboard supports templates for common card types. Templates pre-fill title, notes, labels, and priority. The built-in template ids are `bugfix`, `docs`, `release`, `pr_review` and `plugin`.
-
----
-
-## Dreaming Tab & Agent Selector
-
-v2026.6.1 added an agent selector to the Control UI **Dreaming** tab. In a multi-agent setup it lets you pick which agent's dreaming status, phase progress and Dream Diary you are looking at.
-
-The selector changes the view, not the schedule. Dreaming (the `memory-core` plugin's memory consolidation) has one sweep per Gateway with a single `frequency`, owned by `agents.defaults.systemAgent`. It has been **on by default since v2026.8.1** and runs its phases in the order light → REM → deep. `/dreaming on` and `/dreaming off` switch it globally; there is no per-agent schedule or pause.
-
-To change the schedule or turn it off:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  plugins: {
-    entries: {
-      "memory-core": {
-        config: {
-          dreaming: {
-            enabled: true,
-            frequency: "0 3 * * *", // 3 AM daily (the default)
-          },
-        },
-      },
-    },
-  },
-}
-```
-
-See [Dreaming](https://docs.openclaw.ai/concepts/dreaming) and the [Memory Systems guide](/guides/memory-systems).
 
 ---
 
@@ -309,9 +259,9 @@ A researcher agent gathers information, a writer agent turns it into content:
 
 1. Create Workboard cards for each research topic with `--agent researcher --status ready`
 2. Run `openclaw workboard dispatch`
-3. Researcher completes work → cards move to `review`
-4. Review the research, then create new cards assigned to `writer` linking the research sessions
-5. Dispatch again — writer turns research into polished output
+3. When a researcher run completes, its card moves to `review`
+4. Review the research, then create cards assigned to `writer` that reference the research sessions (`--notes`), or link them as children so they wait for the research cards
+5. Dispatch again for the writing pass
 
 ### Bug Triage
 

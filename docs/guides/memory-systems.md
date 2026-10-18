@@ -59,7 +59,7 @@ v2026.8.1 ("OpenClaw 2.0") retired the QMD memory backend. Built-in memory now o
 
 To make the agent remember something, ask it: "Remember that I prefer TypeScript." It writes the note to the right file. Before [compaction](https://docs.openclaw.ai/concepts/compaction) summarises a long conversation, OpenClaw also runs a silent "memory flush" turn so the agent can save important context first (on by default; `agents.defaults.compaction.memoryFlush.enabled: false` turns it off).
 
-Use `/context list` or `openclaw doctor` to see how much of `MEMORY.md` is actually reaching the model.
+Use `/context list` or `/context detail` in chat to see how much of `MEMORY.md` is actually reaching the model (raw versus injected size, and whether it was truncated).
 
 ### Configuration
 
@@ -201,18 +201,7 @@ None of these is maintained by the OpenClaw project. Star counts and last-push d
 
 - **Repo:** [mem0ai/mem0](https://github.com/mem0ai/mem0)
 - **Integration:** Python/TypeScript SDK and API; hosted platform or self-hosted
-- **Fit:** teams that want a managed service with analytics and support
-
-```python
-from mem0 import Memory
-m = Memory()
-m.add("User prefers TypeScript over JavaScript", user_id="alex")
-results = m.search("What languages does the user prefer?", user_id="alex")
-```
-
-:::info
-Mem0 is not OpenClaw-specific. You connect it yourself, through a custom plugin, skill or MCP server.
-:::
+- **Fit:** teams that want a managed service with analytics and support. Mem0 is not OpenClaw-specific: you connect it yourself, through a custom plugin, skill or MCP server.
 
 ---
 
@@ -371,43 +360,13 @@ A plugin runs inside the Gateway process with the Gateway's permissions, so trea
 
 Remember that whatever memory is loaded into a prompt is sent to your model provider.
 
-### By Use Case
-
-| Use Case | Pick | Why |
-|----------|------|-----|
-| **General assistant** | Built-in | No setup, plain files |
-| **Curated knowledge base** | Memory Wiki | Claims, evidence, freshness tracking |
-| **Coding agent** | claude-mem | Built for dev context |
-| **Research agent** | Cognee or Hindsight | Structured knowledge |
-| **Shared context across agents** | PowerContext | Context outside any one session |
-| **Long conversations** | Lossless Claw | Replaces lossy compaction |
-| **Total recall** | MemPalace | Stores everything verbatim |
-
 ---
 
 ## Getting Started
 
-### Keep It Simple
+Use the built-in memory and change nothing; Dreaming is already on. The one setting worth deciding early is the embedding provider: the default sends note text to OpenAI, so pick a local provider if memory must stay on the machine (see [Configuration](#configuration)). Check it with `openclaw memory status`.
 
-New to OpenClaw? Use the built-in memory and change nothing. Dreaming is already on. The one setting worth deciding early is the embedding provider: leave the default (OpenAI) if you are already using OpenAI, or pick a local provider if you want memory to stay on the machine (see [Configuration](#configuration)).
-
-Then check that it works:
-
-```bash
-openclaw memory status
-```
-
-### When to Upgrade
-
-Consider adding something when:
-- Built-in recall misses things you know are in your notes (first try `openclaw memory search` and a better embedding provider)
-- Compaction is losing detail you need later
-- You need memory shared across several agents or people
-- You need structured knowledge (entities, relationships)
-
-### Try Before Committing
-
-Most community systems run alongside the built-in memory. Add one as an MCP server, use it for a week, and compare. You rarely need to replace `memory-core`; you can add to it.
+Add something else only when built-in recall misses notes you know exist (try `openclaw memory search` and a better embedding provider first), compaction loses detail you need, or several agents or people need shared or structured memory. Most community systems run beside `memory-core` rather than replacing it, so trial one as an MCP server for a week before committing.
 
 ---
 

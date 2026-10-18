@@ -227,92 +227,19 @@ The equivalent hand-written roster: the lead may delegate to the three specialis
 
 Sub-agent sessions receive only `AGENTS.md`, not `SOUL.md`, `IDENTITY.md`, `USER.md` or `MEMORY.md`. Put anything a worker must follow in `AGENTS.md`.
 
-### Workboard Messaging {#workboard-messaging}
-
-From the terminal, an operator can create and move cards (the Workboard plugin must be enabled):
-
-```bash
-openclaw workboard create "Research competitor pricing" --agent researcher --priority high
-openclaw workboard list --status ready
-openclaw workboard move 7f4a2c10 --status done
-```
-
-Claiming, linking parent and child cards, and completing are agent tools (`workboard_claim`, `workboard_link`, `workboard_complete`), not CLI subcommands.
-
 ### MCP-Based Communication {#mcp-based-communication}
 
 `openclaw mcp serve` exposes OpenClaw **channel conversations** over MCP to an MCP client. It does not export one agent's skills as tools and has no `--agent` flag. For agent-to-agent delegation on one Gateway, use sub-agents or `sessions_send`. See [`openclaw mcp`](https://docs.openclaw.ai/cli/mcp).
 
-### ClawTeam Communication {#clawteam-communication}
-
-[ClawTeam-OpenClaw](https://github.com/win4r/ClawTeam-OpenClaw) (community, 1,464 stars, last push 2026-07-03, as of 2026-10-18) spawns workers in git worktrees and gives them file-based inboxes:
-
-```bash
-clawteam inbox send my-team leader "Auth done. All tests passing."
-clawteam inbox broadcast my-team "Stand-up: report your status"
-clawteam inbox peek
-```
-
-See [ClawTeam-OpenClaw](#clawteam-openclaw) below for installation.
-
 ---
 
-## Workboard Orchestration
+## Workboard Orchestration {#workboard-orchestration}
 
-[Workboard](/guides/workboard) is a bundled plugin, disabled by default, that tracks work as cards. Enable it with `openclaw plugins enable workboard`. Upstream references: [plugin](https://docs.openclaw.ai/plugins/workboard), [CLI](https://docs.openclaw.ai/cli/workboard).
+[Workboard](/guides/workboard) is a bundled plugin, disabled by default, that tracks work as cards with statuses, dependencies, claims and run history. Enable it with `openclaw plugins enable workboard`. For multi-agent work, three things matter:
 
-### Card Lifecycle {#card-lifecycle}
-
-Statuses: `triage`, `backlog`, `todo`, `scheduled`, `ready`, `running`, `review`, `blocked`, `done`.
-
-```
-triage/backlog → todo → ready → running → review → done
-                                   ↓
-                                blocked
-```
-
-- A child card linked to parents stays in `todo` until every parent is `done`. Dispatch then promotes it to `ready`.
-- While a card is running, it follows its linked session: active → `running`, completed → `review`, failed, killed, timed out or aborted → `blocked`.
-- Moving a card to `review`, `blocked` or `done` by hand stops that auto-sync.
-
-### Agent Coordination Tools {#agent-coordination-tools}
-
-Card tools are **optional plugin tools**. With the plugin enabled, an agent sees only the `workboard_sessions_board_*` tools until you allow the rest:
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  agents: {
-    ownership: "explicit",
-    defaults: { systemAgent: { agentId: "main" } },
-    entries: {
-      main: {
-        workspace: "~/.openclaw/workspace",
-        tools: { alsoAllow: ["workboard"] },
-      },
-      coder: { workspace: "~/.openclaw/workspace-coder" },
-    },
-  },
-  plugins: { entries: { workboard: { enabled: true } } },
-}
-```
-
-Workers that Workboard starts from a card get `workboard_heartbeat`, `workboard_complete` and `workboard_block` for that card automatically.
-
-| Tool | Purpose |
-|------|---------|
-| `workboard_list` / `workboard_read` | List cards; read one card with worker context |
-| `workboard_create` / `workboard_decompose` | Create a card; fan a parent card out into linked children |
-| `workboard_link` | Link a parent to a child (child waits until the parent is done) |
-| `workboard_claim` / `workboard_release` | Claim a card (moves it to `running`); release it |
-| `workboard_complete` / `workboard_block` | Finish with a summary and proof, or block with a reason |
-| `workboard_promote` / `workboard_reassign` / `workboard_reclaim` | Recover or hand off stuck work |
-| `workboard_dispatch` | Nudge dependency promotion and stale-claim cleanup; does **not** launch workers |
-
-### Dispatch Workflow {#dispatch-workflow}
-
-Dispatch is triggered, not continuous: run `openclaw workboard dispatch`, use the dashboard, or the `/workboard` slash command. One pass promotes dependency-ready children to `ready`, blocks expired claims, and starts worker runs: at most 3 per pass by default (`--max-starts`), and only one card per owner or agent.
-
-### Autonomous Sub-Tasks {#autonomous-sub-tasks}
+- **Agents need the card tools allowed.** With the plugin enabled, agents get only the `workboard_sessions_board_*` tools. Add `tools: { alsoAllow: ["workboard"] }` to an orchestrator's `agents.entries.<id>` so it can create, link, claim and complete cards. Workers that Workboard starts from a card get `workboard_heartbeat`, `workboard_complete` and `workboard_block` for that card automatically.
+- **Dependencies.** A child card linked to parents waits in `todo` until every parent is `done`; the next dispatch promotes it to `ready`.
+- **Dispatch is triggered, not continuous.** Run `openclaw workboard dispatch`, use the dashboard, or send `/workboard dispatch`. One pass starts at most 3 workers by default (`--max-starts`), one card per owner or agent. The agent-side `workboard_dispatch` tool does not start workers.
 
 ```
 Lead agent                   Workboard                  Specialist agents
@@ -327,15 +254,7 @@ Lead agent                   Workboard                  Specialist agents
     │◄── notify ─────────────────│◄── complete ───────────────┤ writer
 ```
 
-### Self-Organizing Heartbeat {#self-organizing-heartbeat}
-
-Do not put a Workboard checklist in `HEARTBEAT.md`; that file is no longer read. Make it an automation job owned by the agent:
-
-```bash
-openclaw automations add "every 2h" \
-  "Check the Workboard for blocked cards you own and unclaimed cards that match your role. Unblock or claim, then report status." \
-  --name workboard-sweep --agent coder --session isolated
-```
+The [Workboard guide](/guides/workboard) has the card lifecycle, CLI, tool list and recipes, including a scheduled board review as an automation job (not a `HEARTBEAT.md` checklist, which is no longer read).
 
 ---
 
@@ -343,13 +262,9 @@ openclaw automations add "every 2h" \
 
 These are community projects, not part of OpenClaw. Read their code and install scripts before you run them, and run them against a test Gateway first.
 
-### Mission Control {#mission-control}
-
-`abhi1693/openclaw-mission-control` is **archived** (last push 2026-08-06; its README says the project moved to Wardn AI). Do not deploy it for new setups.
-
 ### ClawTeam-OpenClaw {#clawteam-openclaw}
 
-[ClawTeam-OpenClaw](https://github.com/win4r/ClawTeam-OpenClaw) (1,464 stars as of 2026-10-18; last push 2026-07-03) is a Python CLI where a leader agent spawns workers into git worktrees, with inboxes, a task board and a cost view.
+[ClawTeam-OpenClaw](https://github.com/win4r/ClawTeam-OpenClaw) (1,464 stars as of 2026-10-18; last push 2026-07-03) is a Python CLI where a leader agent spawns workers into git worktrees, with file-based inboxes (`clawteam inbox send`), a task board and a cost view.
 
 :::warning Install from the repo
 The project README warns that `pip install clawteam` installs a different upstream version and `npm install -g clawteam` is an unrelated package. Install from a clone:
@@ -371,15 +286,9 @@ clawteam board cost        # token and cost view
 
 ### Antfarm {#antfarm}
 
-[Antfarm](https://github.com/snarktank/antfarm) (2,496 stars as of 2026-10-18; no push since 2026-02-26) installs YAML-defined agent teams (`feature-dev`, `security-audit`, `bug-fix`) into OpenClaw, with cron polling. It installs from GitHub, not npm: the `antfarm` package on npm is an unrelated project, so do not `npx antfarm`. Follow the install steps in the [Antfarm README](https://github.com/snarktank/antfarm#install) and read its install script before running it. It predates OpenClaw 2.0's keyed `agents.entries` roster, so check what it writes to your config and run `openclaw doctor` afterwards.
+[Antfarm](https://github.com/snarktank/antfarm) (2,496 stars as of 2026-10-18; no push since 2026-02-26) installs YAML-defined agent teams (`feature-dev`, `security-audit`, `bug-fix`) into OpenClaw, with cron polling. It installs from GitHub, not npm: the `antfarm` package on npm is an unrelated project, so do not `npx antfarm`. Follow the install steps in the [Antfarm README](https://github.com/snarktank/antfarm#install) and read its install script before running it. It predates OpenClaw 2.0's keyed `agents.entries` roster, so check what it writes to your config: `openclaw doctor --lint` reports problems without changing anything, and `openclaw doctor --fix` migrates an old `agents.list`.
 
-### ClawDeck & ClawController
-
-[ClawDeck](https://clawdeck.io/) and [ClawController](https://www.clawcontroller.com/) are commercial dashboards. Not reviewed here.
-
-### DigitalOcean App Platform
-
-[DigitalOcean App Platform](https://www.digitalocean.com/blog/openclaw-digitalocean-app-platform) hosts OpenClaw with managed scaling. Not reviewed here.
+Other dashboards and hosted options are listed, unreviewed, on [Ecosystem](/reference/ecosystem). `abhi1693/openclaw-mission-control` is archived (its README says it moved to Wardn AI); do not deploy it for new setups.
 
 ---
 
@@ -432,8 +341,6 @@ By default each agent has isolated memory: its own `MEMORY.md`, daily notes and 
 | Shared reference material | Put it in a shared directory and add it to each agent's `memory.search.extraPaths` |
 | Separate Memory Wiki per agent | `plugins.entries.memory-wiki.config.vault.scope: "agent"` ([Memory Wiki](https://docs.openclaw.ai/plugins/memory-wiki)) |
 | External shared memory | Third-party systems; see [Memory Systems](/guides/memory-systems) |
-
-PowerMem has been renamed [PowerContext](https://github.com/oceanbase/powercontext) (`oceanbase/powercontext`, 1,337 stars as of 2026-10-18). It advertises multi-agent memory isolation and sharing; not tested here.
 
 Dreaming (memory consolidation) runs as one sweep with one `frequency`. The Control UI agent selector changes which agent you view, not its schedule.
 

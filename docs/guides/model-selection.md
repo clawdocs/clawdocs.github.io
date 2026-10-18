@@ -113,17 +113,10 @@ Current Claude models (Fable 5.1, Opus 5.5, Sonnet 5.5, Haiku 5.5) and Opus/Sonn
 
 ### Tool use (agent workloads)
 
-OpenClaw relies on reliable function calling with streamed tool-call deltas and well-formed JSON arguments.
-
-| Model class | Tool-use reliability |
-|---|---|
-| Current Claude, GPT-6 and Gemini models | Reliable |
-| DeepSeek V4 | Good |
-| Local 30B+ models (Qwen3 32B, Llama 3.3 70B) | Good, with enough context (`num_ctx`) configured |
-| Local models under ~14B | Often fail multi-step tool chains |
+OpenClaw needs reliable function calling: streamed tool-call deltas and well-formed JSON arguments. Current Claude, GPT-6 and Gemini models handle multi-step tool chains well; DeepSeek V4 and 30B+ local models (Qwen3 32B, Llama 3.3 70B) usually do, given enough context (`num_ctx`). This is clawdocs' judgement from use, not a benchmark.
 
 :::caution
-Local models smaller than about 14B parameters often struggle with multi-step tool calling. For reliable agent behaviour, use 30B+ local models or a cloud model. Small local models are also easier to manipulate with prompt injection, so keep approvals on for tools that act on your system ([Hardening](/security/hardening)).
+Local models smaller than about 14B parameters often fail multi-step tool calls. They are also easier to manipulate with prompt injection, so keep approvals on for tools that act on your system ([Hardening](/security/hardening)).
 :::
 
 ---

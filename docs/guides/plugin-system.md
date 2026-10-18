@@ -77,7 +77,7 @@ ClawHub packages and OpenClaw's bundled and official catalogue are trusted sourc
 
 ### Bundled
 
-Bundled plugins ship with OpenClaw. A little over half are on by default, mostly model and speech providers. Others need enabling or relevant config:
+Bundled plugins ship with OpenClaw. Many, mostly model and speech providers, are on by default; others need enabling or relevant config. `openclaw plugins list --verbose` shows which. Two you are likely to touch:
 
 | Plugin | Purpose | Default |
 |---|---|---|
@@ -335,7 +335,7 @@ clawhub package publish ./my-plugin --family code-plugin
 ```bash
 openclaw plugins inspect <id> --runtime --json
 openclaw plugins doctor
-openclaw doctor
+openclaw doctor --lint    # read-only; plain `openclaw doctor` may migrate config and state
 ```
 
 **Plugin is listed but its tools are missing:** check `plugins.allow` (an exclusive list), `plugins.deny`, and that each tool is in `contracts.tools`.

@@ -187,16 +187,17 @@ See [Multi-agent routing](https://docs.openclaw.ai/concepts/multi-agent).
 
 ## Memory
 
-Built-in memory search runs locally. Two settings matter for performance:
+The memory index is a local SQLite database, but embeddings are not local by default. Two settings matter for performance:
 
-- **Embeddings.** Remote embedding providers add latency and cost per indexing run. A local embedding model avoids both ([Memory search](https://docs.openclaw.ai/concepts/memory-search)).
-- **Dreaming** (background consolidation in the `memory-core` plugin) is on by default and runs on a cron-style `frequency` (default `0 3 * * *`). Move it to a quiet hour or give it a cheaper `model`:
+- **Embeddings.** The default provider is OpenAI, so every indexing run and search makes a remote call. A local embedding provider (`memory.search.provider: "local"` or `"ollama"`) avoids that latency and cost ([Memory search](https://docs.openclaw.ai/concepts/memory-search)).
+- **Dreaming** (background consolidation in the `memory-core` plugin) is on by default and runs on a cron-style `frequency` (default `0 3 * * *`). Move it to a quiet hour. `dreaming.model` sets the model for its Dream Diary entries; it takes effect only with `subagent.allowModelOverride: true` on the plugin entry:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
   plugins: {
     entries: {
       "memory-core": {
+        subagent: { allowModelOverride: true },
         config: {
           dreaming: {
             enabled: true,
@@ -289,11 +290,12 @@ To reduce baseline memory, disable channels and plugins you don't use (`openclaw
 | Path | What grows |
 |---|---|
 | `/tmp/openclaw/openclaw-YYYY-MM-DD.log` | Gateway logs. Rotated at `logging.maxFileBytes` (default 100 MB) with 5 archives; dated files are pruned after 24 hours ([Logging](https://docs.openclaw.ai/logging)). |
-| `~/.openclaw/state/` | SQLite state: sessions, transcripts, audit ledger |
+| `~/.openclaw/agents/<agentId>/agent/` | Per-agent SQLite database: sessions, transcripts, memory index |
+| `~/.openclaw/state/` | Shared SQLite state: audit ledger, MCP OAuth tokens |
 | `~/.openclaw/workspace/` | Workspace files and memory |
 
 ```bash
-du -sh ~/.openclaw/ ~/.openclaw/state ~/.openclaw/workspace /tmp/openclaw
+du -sh ~/.openclaw/ ~/.openclaw/agents ~/.openclaw/state ~/.openclaw/workspace /tmp/openclaw
 ```
 
 ```json5 title="~/.openclaw/openclaw.json"

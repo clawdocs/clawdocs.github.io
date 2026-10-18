@@ -111,7 +111,7 @@ npm install -g openclaw@latest --allow-scripts=openclaw &&
 - After stage 1, confirm the version is `2026.9.5` and that Doctor imported the task, flow, plugin and channel state you need. Doctor imports channel state only for **enabled** channels, so temporarily enable any you need (with the Gateway still stopped), rerun Doctor, then put the settings back.
 - `--allow-scripts=openclaw` needs npm 12 or 11.16+. On npm 11.15 and earlier, leave it out.
 - On pnpm, use `pnpm add -g --allow-build=openclaw openclaw@2026.9.5` (then `@latest`). On Bun, use `bun add -g --trust openclaw@<version>`. For Docker, run the bridge image tag once against your mounted state, as described in the [Migration Guide](/guides/migration#bridge-upgrade).
-- From 2026.9.5 onwards, the built-in updater stages the target and can roll back. If you prefer it to raw npm for the later hops, use `openclaw update --tag 2026.9.7` and then `openclaw update`.
+- From 2026.9.5 onwards, the built-in updater stages the target and verifies it. It rolls back automatically only when no database schema changed; a hop that migrates state keeps the new state, so your backups remain the way back. If you prefer it to raw npm for the later hops, use `openclaw update --tag 2026.9.7` and then `openclaw update`.
 - On 2026.7.1 with **pnpm 11**, upstream says to run `pnpm add -g openclaw@latest` once, because that updater cannot do this hop.
 - Updaters older than 2026.7.2-beta.5 stop with `plugins.load.paths: plugin path not found` if a configured plugin path is missing. Restore the directory or remove the path, then retry.
 
@@ -145,7 +145,7 @@ npm install -g openclaw@latest --allow-scripts=openclaw &&
 | JSON/JSONL session files | SQLite (2026.8.1) | Migrates. Older releases cannot read sessions created afterwards (see [Rollback](#rollback)). |
 | OpenProse plugin, `/prose` | Removed (2026.8.1) | Cleans up the config; your `.prose` files stay. |
 | TypeScript Code Mode cells | JavaScript only (2026.9.6) | Removes `tools.codeMode.languages`. **Rewrite TS cells yourself.** |
-| `plugins.entries.webhooks` (TaskFlow Webhooks) | Removed; use Gateway HTTP hooks | Ignored with a warning; Doctor removes the entry. |
+| `plugins.entries.webhooks` (TaskFlow Webhooks) | Removed; use Gateway HTTP hooks ([API & Webhooks](/guides/api-webhooks#webhook-ingress-external-to-agent)) | Ignored with a warning; Doctor removes the entry. |
 
 The rest of the refusal list includes `agents.defaults.llm`, `embeddedPi`, agent `model.timeoutMs`, `gateway.webchat`, `channels.webchat`, `routing.allowFrom`, the top-level `talk.*` selectors, Telegram flat streaming keys, `threadBindings.ttlHours`, Slack `channels.<id>.allow` and Matrix `dm.policy: "trusted"`. All of them get the same answer: pass through the bridge. The list is summarised on [Migration Guide → Config keys Doctor refuses](/guides/migration#refused-keys), and the canonical list is upstream [Retired state and config formats](https://docs.openclaw.ai/gateway/doctor/config-migrations#retired-state-and-config-formats).
 
@@ -445,7 +445,7 @@ openclaw gateway status --deep
 - To restore from the verified archive instead, run `openclaw backup restore <archive> --target ~/openclaw-restored` before downgrading the package (the target must be new or empty). Move the restored state into place with the Gateway stopped.
 - Restoring is time travel. WhatsApp and other channels with ratcheting credentials may need relinking, and approvals and delivery state roll back too. Plugin `node_modules` are not archived. Reinstall plugins with `openclaw plugins install <spec> --force`.
 - If you enabled the auto-updater, set `OPENCLAW_NO_AUTO_UPDATE=1` in the Gateway's environment so it does not immediately re-apply the new release.
-- Once you are on 2.0, rolling back **within** 2.0 is simpler: `openclaw update --tag <known-good-version> --dry-run`, then without `--dry-run`. The updater checks compatibility and refuses a downgrade the older release cannot read.
+- Once you are on 2.0, rolling back **within** 2.0 is simpler: `openclaw update --tag <known-good-version> --dry-run`, then without `--dry-run`. Upstream offers this only for a target release that can read the current state; once state has migrated past what the older release supports, restore a backup with its matching release as above.
 
 Upstream: [Rollback and recovery](https://docs.openclaw.ai/install/updating/rollback-and-recovery), [Backups → Restore](https://docs.openclaw.ai/install/backups#restore).
 
@@ -455,7 +455,7 @@ Upstream: [Rollback and recovery](https://docs.openclaw.ai/install/updating/roll
 
 ```bash
 openclaw --version
-openclaw doctor
+openclaw doctor --lint
 openclaw config validate
 openclaw security audit --deep
 openclaw skills list
@@ -463,7 +463,7 @@ openclaw automations list --all
 openclaw gateway status --deep
 ```
 
-1. **Run `openclaw doctor` with no flags.** It should report no pending repairs. Read its warnings: our test runs flagged plaintext secrets in `openclaw.json` (move them to SecretRefs with `openclaw secrets configure`), a missing command owner, and memory search with no embedding key.
+1. **Run `openclaw doctor --lint`.** It is read-only and should report no pending repairs. Read its findings: our test runs flagged plaintext secrets in `openclaw.json` (move them to SecretRefs with `openclaw secrets configure`), a missing command owner, and memory search with no embedding key.
 2. **Run the security audit and review approvals and sandboxing.** An upgraded agent keeps whatever shell, channel and device access it had, and 2.0 added per-session permission modes. Work through [Security Hardening](/security/hardening).
 3. **Check your heartbeat and automations.** Confirm the monitor job and its scratch, and that each old `tasks:` entry became its own job: [Heartbeat](/guides/heartbeat), [Automation](/guides/automation).
 4. **With two or more agents, check ownership and bindings** against [Multi-Agent](/guides/multi-agent).
