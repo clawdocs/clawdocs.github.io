@@ -519,8 +519,8 @@ These run with real authority, so review them like code.
 
 How `openclaw plugins install` resolves names ([install plugins](https://docs.openclaw.ai/cli/plugins/install)):
 
-- Package names, including `@openclaw/*`, scoped names and `name@version`, install from **ClawHub by default**, with no fallback to npm.
-- Bare official plugin ids such as `discord` follow the official catalog.
+- In v2026.10.4, **bare package names install from npm by default**, so a bare name gets whoever owns that npm name. Use an explicit `clawhub:<package>` or `npm:<package>` prefix so you know which registry you are trusting. (Upstream `main` switches the default to ClawHub in a later release.)
+- Bundled plugin ids such as `workboard` select the bundled copy; official plugin ids such as `discord` follow the official catalog.
 - `npm:<package>` installs from npm, explicitly. Add `--pin` to record the exact resolved version.
 - Arbitrary npm, git, local or marketplace sources warn and ask first. Non-interactive installs need `--force`. `--force` does not bypass `security.installPolicy`.
 - Check what you have with `openclaw plugins list`, `openclaw plugins inspect <id>` and `openclaw plugins doctor`. Remove with `openclaw plugins uninstall <id>`.
