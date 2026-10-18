@@ -135,7 +135,7 @@ For most renamed keys, Doctor rewrites the config. For a set of retired keys it 
 - Top-level `heartbeat` (now `agents.defaults.heartbeat`), `routing.allowFrom` and `routing.groupChat`.
 - `agents.defaults.llm`, agent `embeddedPi`, `embeddedHarness`, whole-agent `agentRuntime`, `systemPromptOverride`, `sandbox.perSession`, and agent `model.timeoutMs`.
 - `memorySearch.store.path`, `gateway.webchat`, `channels.webchat`, `browser.relayBindHost`, `browser.ssrfPolicy.allowPrivateNetwork`, and non-empty `plugins.installs`.
-- The `openai-codex-responses` API id, and queue modes `queue`, `steer-backlog` and `steer+backlog`.
+- Queue modes `queue`, `steer-backlog` and `steer+backlog`. (The legacy `openai-codex-responses` API id is not on this list in 2026.10.4: Doctor still rewrites it to `openai-chatgpt-responses`. Later releases refuse it, so fix it before upgrading past 2026.10.4.)
 - Top-level Talk selectors `talk.mode`, `talk.transport`, `talk.brain`, `talk.model` and `talk.voice`.
 - `channels.telegram.requireMention` and `groupMentionsOnly` (use `channels.telegram.groups["*"].requireMention`), Telegram flat streaming keys (`streamMode`, `chunkMode`, `blockStreaming`, `draftChunk`), `channels.whatsapp.exposeErrorText`, `threadBindings.ttlHours`, Slack `channels.<id>.allow`, and Matrix `dm.policy: "trusted"`.
 
