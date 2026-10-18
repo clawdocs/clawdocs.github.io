@@ -1,672 +1,328 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Performance Tuning
-description: Optimize your OpenClaw agent for speed, cost, and efficiency — model routing, token reduction, caching, and resource management
-keywords: [openclaw, performance, optimization, reduce tokens, speed up, cost reduction]
+description: Make OpenClaw faster and lighter. Latency, context size, MCP tools, group-chat gating, local model throughput and host resources, with config that validates
+keywords: [openclaw, performance, optimization, latency, speed up, local model tuning, resources]
 ---
 
 # Performance Tuning
 
-A 24/7 agent on a VPS can easily cost $300+/month if left untuned. This guide covers every optimization lever — from a single config change that cuts costs 50% to advanced model routing that achieves a 97% reduction.
+This page covers speed and resource use: how fast the agent answers, how much context it carries, and how much CPU, RAM and disk the Gateway and local models use. Many of these changes also save money. For estimating and cutting spend (model routing for cost, heartbeat cost, caching, budgets), see [Cost Management](/guides/cost-management), which this page does not repeat.
 
-:::tip Quick wins
-If you only do three things: **switch heartbeat to a cheap model**, **set quiet hours**, and **increase heartbeat interval**. These alone can cut costs 70%+ with zero impact on agent quality.
+The config schema is strict: an unknown key stops the Gateway from starting. Every `openclaw.json` block below passes `openclaw config validate` on 2026.10.4.
+
+---
+
+## Where latency comes from
+
+| Source | Lever |
+|---|---|
+| Model speed | A faster model or tier for interactive work; `/fast` where supported |
+| Thinking | Lower effort for routine turns |
+| Prompt size | Smaller sessions, fewer bootstrap files, fewer tools and skills |
+| Tool round-trips | Fewer, local MCP servers; narrower tool lists |
+| Cold starts | Keep local models loaded |
+| Output length | A `maxTokens` cap on the model |
+
+---
+
+## Model speed
+
+Smaller models answer faster. Use them where quality allows:
+
+| Need | Example ref |
+|---|---|
+| Interactive chat, quick replies | `anthropic/claude-haiku-5-5`, `anthropic/claude-sonnet-5-5`, `google/gemini-3.8-flash` |
+| Hard reasoning, long agent runs | `anthropic/claude-opus-5-5`, `anthropic/claude-fable-5-1` (slower, longer turns) |
+| Specialised fast inference | Providers such as [Groq](https://docs.openclaw.ai/providers/groq) and [Cerebras](https://docs.openclaw.ai/providers/cerebras) |
+
+### Fast mode
+
+`/fast on` toggles a provider's faster tier for the session. For Claude Opus 5.5, Opus 5 and Opus 4.8 on direct `api.anthropic.com` API-key traffic, it uses Anthropic's native fast mode: up to 2.5x output throughput, billed at a premium ($8 / $40 per million tokens for Opus 5.5, as of 2026-10-18). Accounts need fast-mode access. It does not apply to Claude CLI, OAuth, Bedrock or Vertex routes, and Sonnet 5.5 has no fast mode ([Anthropic provider](https://docs.openclaw.ai/providers/anthropic)).
+
+### Thinking effort
+
+Thinking adds time before the first visible token. Set a lower default and raise it for hard turns with `/think high`:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    defaults: {
+      thinkingDefault: "low",
+    },
+  },
+}
+```
+
+Opus 5.5 cannot turn thinking off; `off` maps to `low`. See [Thinking levels](https://docs.openclaw.ai/tools/thinking).
+
+### Output cap
+
+For a custom provider, cap output with `maxTokens` on the provider or on its `models[]` entries. A lower cap shortens worst-case replies, but a cap that is too low truncates tool calls and long answers:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  models: {
+    providers: {
+      ollama: {
+        baseUrl: "http://127.0.0.1:11434",
+        api: "ollama",
+        apiKey: "ollama-local",
+        models: [
+          { id: "qwen3:14b", name: "qwen3:14b", maxTokens: 4096, params: { num_ctx: 32768 } },
+        ],
+      },
+    },
+  },
+}
+```
+
+---
+
+## Prompt size
+
+Every request carries the system prompt, workspace bootstrap files, tool and skill descriptions, and the session history. Less of that means faster and cheaper turns.
+
+| Habit or setting | Effect |
+|---|---|
+| `/new` when you change topic, `/compact` on long sessions | Shorter history per request |
+| `session.reset.mode: "daily"` or `"idle"` | Automatic fresh sessions. The default is no automatic reset ([Sessions](https://docs.openclaw.ai/concepts/session)). |
+| `agents.defaults.bootstrapMaxChars` | Caps how much of each workspace bootstrap file is injected |
+| `contextPruning.mode: "cache-ttl"` | Prunes old tool results after the cache window expires |
+| Restrict skills per agent with `agents.entries.<id>.skills` | The skill list is injected into every prompt |
+| Heartbeats with `isolatedSession` and `lightContext` | Heartbeat turns skip history and bootstrap files |
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  agents: {
+    defaults: {
+      contextPruning: { mode: "cache-ttl", ttl: "1h" },
+      heartbeat: { isolatedSession: true, lightContext: true },
+    },
+  },
+}
+```
+
+`/status` shows the current context use, and `/context` shows what the prompt is made of. Upstream explains the full breakdown in [Token use](https://docs.openclaw.ai/reference/token-use).
+
+---
+
+## Tools and MCP servers
+
+- Local stdio MCP servers avoid network round-trips; prefer them for local tools.
+- Expose only the tools an agent needs. `toolFilter.include` (or `exclude`) on an MCP server narrows what the model sees:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  mcp: {
+    servers: {
+      filesystem: {
+        command: "npx",
+        args: ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"],
+        toolFilter: { include: ["read_file", "list_directory"] },
+      },
+    },
+  },
+}
+```
+
+`openclaw mcp status` and `openclaw mcp probe` show which servers are up and how they respond ([MCP CLI](https://docs.openclaw.ai/cli/mcp)).
+
+:::warning
+MCP servers, shell and browser tools act on your machine. Narrowing the tool list helps speed, but it is not a security boundary on its own. Keep approvals and, for untrusted input, sandboxing on ([Hardening](/security/hardening)).
 :::
 
 ---
 
-## Optimization Impact Summary
+## Group chats
 
-| Technique | Cost Impact | Effort | Section |
-|-----------|-----------|--------|---------|
-| Cheap heartbeat model | **-50% to -100%** | Low | [Heartbeat](#heartbeat-optimization) |
-| Quiet hours | **-42%** | Low | [Heartbeat](#heartbeat-optimization) |
-| Increase heartbeat interval | **-50% to -75%** | Low | [Heartbeat](#heartbeat-optimization) |
-| Prompt caching (Anthropic) | **-30% to -50%** | Zero | [Caching](#caching) |
-| Context reduction | **Up to -80%** | Medium | [Memory](#memory-optimization) |
-| Model routing by task | **-40% to -60%** | Medium | [Model Routing](#model-routing) |
-| Disable thinking mode | **-50%** | Low | [Thinking Mode](#thinking-mode) |
-| Session resets | **-20% to -50%** | Low | [Token Optimization](#token-optimization) |
-| Local models | **-100%** | High | [Local Models](#local-model-tuning) |
-
----
-
-## Token Optimization
-
-### Context Management
-
-Every message you send includes context — memory, system prompts, conversation history. Context is the biggest hidden cost driver.
-
-```bash
-# Check current context token setting
-openclaw config get memory.max_context_tokens
-
-# Reduce context loaded per request
-openclaw config set memory.max_context_tokens 2000
-```
-
-**Real-world impact:** One user reduced per-session cost from $0.40 to $0.05 by lowering context from 50K to 8K tokens.
-
-### Session Resets
-
-Conversations accumulate tokens over time. Long sessions send increasingly large payloads with every message.
-
-```bash
-# Start a fresh session (clears conversation history, keeps memory)
-/new
-
-# Reset everything including temporary context
-/reset
-
-# Compact old messages into a summary
-/compact
-```
-
-OpenClaw automatically creates a fresh session daily at 4:00 AM local time. For chatty agents, consider more frequent resets.
-
-### Response Size
-
-Cap response length to prevent verbose outputs:
+In busy groups, process only messages that address the agent. Mention gating is set per guild or channel, for example on Discord:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "max_tokens": 4096
-  }
+  channels: {
+    discord: {
+      guilds: {
+        "111111111111111111": {
+          requireMention: true,
+        },
+      },
+    },
+  },
 }
 ```
 
-Smaller `max_tokens` means faster responses and lower cost per message.
+On Telegram the equivalent is `channels.telegram.groups["*"].requireMention`. There is no built-in messages-per-hour cap. See each channel's page under [Channels](https://docs.openclaw.ai/channels).
 
----
+### A cheaper agent for a busy channel
 
-## Model Routing
-
-The most impactful optimization: use the right model for each task. There's a 60x cost difference between the cheapest and most expensive models.
-
-### Model Cost Tiers
-
-| Tier | Model | Cost (per M tokens) | Best For |
-|------|-------|-------------------|----------|
-| Free | Qwen3 14B (local) | $0 | Heartbeat, simple checks |
-| Ultra-cheap | Gemini 2.5 Flash-Lite | ~$0.05 | Monitoring, status checks |
-| Cheap | Gemini 2.5 Flash | ~$0.20 | Heartbeat, simple tasks |
-| Budget | DeepSeek V3.2 | ~$0.40 | General conversation |
-| Mid | Claude Haiku 4.5 | ~$3 | Quick tasks, chat |
-| Standard | Claude Sonnet 4.6 | ~$9 | General use, coding |
-| Premium | Claude Opus 4.8 | ~$15 | Complex reasoning |
-
-### Heartbeat Override
-
-Route the heartbeat to a cheap model while keeping the main brain on a capable one:
+Route a channel to its own agent with a smaller model, using `agents.entries` and `bindings`:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6",
-
-    "heartbeat_override": {
-      "provider": "local",
-      "local": {
-        "endpoint": "http://localhost:11434",
-        "model": "qwen3:14b"
-      }
-    }
-  }
+  agents: {
+    ownership: "explicit",
+    entries: {
+      main: {},
+      status: {
+        model: "anthropic/claude-haiku-5-5",
+        workspace: "~/.openclaw/workspace-status",
+      },
+    },
+  },
+  bindings: [
+    {
+      agentId: "status",
+      match: { channel: "discord", peer: { kind: "channel", id: "222222222222222222" } },
+    },
+  ],
 }
 ```
 
-The heartbeat runs every 30 minutes and is the single largest cost driver (~35% of total spend). Routing it to a free local model eliminates that cost entirely.
-
-### Fallback Chains
-
-Configure automatic fallback when the primary provider is rate-limited or down:
-
-```json5
-{
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6",
-    "fallback": {
-      "provider": "openrouter",
-      "model": "deepseek/deepseek-chat-v3-0324"
-    }
-  }
-}
-```
-
-### OpenRouter Auto-Routing
-
-Let OpenRouter pick the most cost-effective model per prompt:
-
-```json5
-{
-  "brain": {
-    "provider": "openrouter",
-    "model": "openrouter/auto"
-  }
-}
-```
-
-This routes each request to the cheapest provider that can handle it — useful for mixed workloads.
+See [Multi-agent routing](https://docs.openclaw.ai/concepts/multi-agent).
 
 ---
 
-## Heartbeat Optimization
+## Memory
 
-The heartbeat is the #1 cost driver for always-on agents. Default settings (30-minute interval, main model) can easily spend $500+/month.
+Built-in memory search runs locally. Two settings matter for performance:
 
-### Interval Tuning
+- **Embeddings.** Remote embedding providers add latency and cost per indexing run. A local embedding model avoids both ([Memory search](https://docs.openclaw.ai/concepts/memory-search)).
+- **Dreaming** (background consolidation in the `memory-core` plugin) is on by default and runs on a cron-style `frequency` (default `0 3 * * *`). Move it to a quiet hour or give it a cheaper `model`:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "heartbeat": {
-    "interval": 3600
-  }
-}
-```
-
-| Interval | Cycles/Day | Cost Impact |
-|----------|-----------|------------|
-| 30 min (default) | 48 | Baseline |
-| 1 hour | 24 | **-50%** |
-| 2 hours | 12 | **-75%** |
-| 4 hours | 6 | **-87%** |
-
-### Quiet Hours
-
-Stop the heartbeat while you're asleep:
-
-```json5
-{
-  "heartbeat": {
-    "interval": 3600,
-    "quiet_hours": {
-      "start": "23:00",
-      "end": "07:00"
-    }
-  }
-}
-```
-
-8 hours of quiet = **-33%** heartbeat cost on top of interval savings.
-
-### Heartbeat Model Cost
-
-| Model | Cost per Cycle (~120K tokens) | Monthly (24/day) |
-|-------|------------------------------|-----------------|
-| Opus 4.8 | ~$0.75 | ~$540 |
-| Sonnet 4.6 | ~$0.45 | ~$324 |
-| Haiku 4.5 | ~$0.15 | ~$108 |
-| Gemini 2.5 Flash | ~$0.05 | ~$36 |
-| Flash-Lite | ~$0.01 | ~$7 |
-| Local (Ollama) | $0 | **$0** |
-
-### Simplify HEARTBEAT.md
-
-Every instruction in HEARTBEAT.md costs tokens. A shorter heartbeat task list = fewer tokens per cycle:
-
-```markdown title="Before (expensive)"
-## System Health
-- Check CPU, memory, disk, network, SSL certs, DNS, NTP
-- Scan all 50 channels for disconnects
-- Review last 1000 log lines for patterns
-- Analyze token spending trends
-- Generate a 500-word health report
-```
-
-```markdown title="After (efficient)"
-## System Health
-- Check channel connectivity and MCP health
-- Alert on Telegram only if something is wrong
-```
-
-### Monitor Heartbeat Cost
-
-```bash
-# See heartbeat execution history and cost
-openclaw stats heartbeat
-
-# Watch heartbeat in real-time
-openclaw logs --filter heartbeat --follow
-```
-
----
-
-## Caching
-
-### Prompt Caching (Anthropic)
-
-Anthropic automatically caches system prompts and repeated context. Cache hits cost **10% of normal input token price**.
-
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "brain": {
-    "provider": "anthropic",
-    "model": "claude-sonnet-4-6",
-    "cache_retention": "short"
-  }
-}
-```
-
-| Setting | Duration | Savings |
-|---------|----------|---------|
-| `"short"` (default) | 5 minutes | 30-50% for frequent messages |
-| `"long"` | Extended | Higher savings for sustained conversations |
-
-**How it works:** Your system prompt (SOUL.md + skills + memory context) is 5K-10K tokens. With caching, that's charged once every 5 minutes instead of every message. For a chatty channel, this saves 30-50%.
-
-### Memory Retrieval Cache
-
-Built-in memory uses hybrid search (70% vector + 30% BM25 keyword) with local SQLite — no external API calls for retrieval. This is already optimized; no configuration needed.
-
----
-
-## Memory Optimization
-
-### Context Token Budget
-
-The `max_context_tokens` setting controls how much memory is loaded into each prompt:
-
-```json5
-{
-  "memory": {
-    "max_context_tokens": 2000
-  }
-}
-```
-
-| Setting | Recall Quality | Cost Impact |
-|---------|---------------|------------|
-| 1000 | Minimal — only most relevant | Lowest cost |
-| 2000 (default) | Good balance | Standard |
-| 4000 | Better recall | +50% context cost |
-| 8000+ | Near-complete recall | Expensive |
-
-Start at 2000. Only increase if the agent frequently "forgets" important context.
-
-### Dreaming (Memory Consolidation)
-
-Enable Dreaming to automatically consolidate short-term memory into durable long-term memory, reducing redundancy:
-
-```json5
-{
-  "plugins": {
-    "entries": {
+  plugins: {
+    entries: {
       "memory-core": {
-        "enabled": true,
-        "config": {
-          "dreaming": {
-            "enabled": true,
-            "cadence": "0 3 * * *"
-          }
-        }
-      }
-    }
-  }
+        config: {
+          dreaming: {
+            enabled: true,
+            frequency: "0 4 * * *",
+            model: "anthropic/claude-haiku-5-5",
+          },
+        },
+      },
+    },
+  },
 }
 ```
 
-Dreaming runs three phases (Light → REM → Deep) that deduplicate, identify patterns, and promote the strongest memories. This keeps memory lean and relevant.
-
-### Alternative Memory Systems
-
-For heavy agents, community memory systems can dramatically reduce token usage:
-
-| System | Token Savings | Best For |
-|--------|-------------|----------|
-| **memU** | ~90% | 24/7 autonomous agents |
-| **OpenViking** | ~95% | Production at scale (3-tier hierarchical loading) |
-| **Mem0** | ~91% | Managed/team environments |
-
-See [Memory Systems Compared](/guides/memory-systems) for a full comparison.
+See [Dreaming](https://docs.openclaw.ai/concepts/dreaming).
 
 ---
 
-## Thinking Mode
+## Local model tuning
 
-Extended thinking (reasoning mode) can increase token usage by **10-50x** per message. It's powerful for complex problems but devastating for costs if left on globally.
+Local models have no per-token cost, so throughput and memory are what you tune. Setup is in [Local Models](/guides/local-models).
 
-```json5 title="Disable globally"
-{
-  "brain": {
-    "thinking": {
-      "enabled": false
-    }
-  }
-}
-```
-
-```json5 title="Enable with budget cap"
-{
-  "brain": {
-    "thinking": {
-      "enabled": true,
-      "budget_tokens": 10000
-    }
-  }
-}
-```
-
-**Rule of thumb:** Disable thinking mode for heartbeat, simple chat, and routine tasks. Enable it only for complex reasoning, multi-step planning, or code generation.
-
----
-
-## Latency Reduction
-
-### Faster Models
-
-| Priority | Model | Latency |
-|----------|-------|---------|
-| Fastest | Groq (LPU hardware) | ~18x faster than GPU |
-| Very fast | Cerebras (2,957 tok/s) | Near-instant for short responses |
-| Fast | Gemini 2.5 Flash | Low latency, high throughput |
-| Standard | Claude Sonnet 4.6 | Balanced |
-| Slow | Claude Opus 4.8 | Highest quality, highest latency |
-
-### Reduce Response Size
-
-Smaller `max_tokens` = faster time-to-first-token for many providers:
-
-```json5
-{
-  "brain": {
-    "max_tokens": 2048
-  }
-}
-```
-
-### MCP Server Latency
-
-- **stdio servers** have zero network overhead — prefer these for local tools
-- **Remote MCP servers** add network round-trips — run on the same machine when possible
-- Use `allowed_tools` to reduce the number of tools the agent considers (fewer options = faster decision)
-
-```json5
-{
-  "mcp": {
-    "servers": {
-      "filesystem": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user"],
-        "allowed_tools": ["read_file", "list_directory"]
-      }
-    }
-  }
-}
-```
-
----
-
-## Channel Optimization
-
-### Rate Limiting
-
-Prevent runaway costs from chatty channels:
-
-```json5
-{
-  "channels": {
-    "discord": {
-      "max_messages_per_hour": 30,
-      "cooldown_seconds": 5,
-      "require_mention": true
-    }
-  }
-}
-```
-
-### Mention-Gating
-
-In group channels, `require_mention: true` prevents the agent from processing every message — only responding when directly addressed. This alone can reduce token usage 80%+ in active groups.
-
-### Channel-Specific Models
-
-For channels that don't need the best model (e.g., a status-check bot):
-
-```json5
-{
-  "agents": {
-    "status-bot": {
-      "channels": ["slack-status"],
-      "brain": {
-        "model": "claude-haiku-4-5-20251001"
-      }
-    }
-  }
-}
-```
-
----
-
-## Local Model Tuning
-
-Running models locally eliminates API costs entirely. Here's how to maximize performance.
-
-### Ollama Optimization
+### Ollama
 
 ```bash
-# Keep model loaded in memory (prevents cold-start latency)
+# Keep models loaded between requests (avoids cold-start latency)
 export OLLAMA_KEEP_ALIVE=-1
 
-# Set concurrent requests
+# Serve several requests at once (uses more VRAM)
 export OLLAMA_NUM_PARALLEL=4
 ```
 
-### Quantization
+These are Ollama server settings, set where `ollama serve` runs. Per model, OpenClaw can forward `keep_alive` and `num_ctx` through `params` on the model entry. A `num_ctx` larger than you need wastes VRAM and slows prompt processing; one too small truncates the prompt.
 
-Smaller quantizations use less RAM with minimal quality loss:
+### Quantization and VRAM
 
-| Quantization | RAM Savings | Quality Impact |
-|-------------|------------|---------------|
-| Q8_0 | Baseline | None |
-| Q6_K | ~25% less | Negligible |
-| Q5_K_M | ~40% less | Minimal |
-| Q4_K_M | ~50% less | Slight |
+Relative to FP16 weights:
+
+| Quantization | VRAM vs FP16 | Quality impact |
+|---|---|---|
+| Q8_0 | About 50% | Negligible |
+| Q6_K | About 40% | Minimal |
+| Q5_K_M | About 35% | Small |
+| Q4_K_M | About 25-30% | Noticeable on hard tasks; fine for most chat |
+
+Approximate VRAM for Q4 weights, plus room for the context cache:
+
+| Model size | VRAM (Q4) | Example GPU |
+|---|---|---|
+| 7-8B | 5-6 GB | 8 GB card |
+| 14B | 9-10 GB | 12 GB card |
+| 32B | 19-20 GB | 24 GB card |
+| 70B | 40-43 GB | 48 GB card or 2x 24 GB |
 
 ```bash
-# Pull a quantized model
 ollama pull qwen3:14b-q4_K_M
 ```
 
-### GPU Offloading
+If the model does not fit in VRAM, layers spill to system RAM and generation slows sharply. Check with `ollama ps`.
 
-GPU inference is 5-20x faster than CPU. Ensure your model fits in GPU VRAM:
+### vLLM
 
-| Model Size | VRAM Needed (Q4) | Recommended GPU |
-|-----------|-----------------|-----------------|
-| 7-8B | ~4-5 GB | Any 6GB+ GPU |
-| 14B | ~8-10 GB | RTX 3060 12GB |
-| 32B | ~18-20 GB | RTX 3090 24GB |
-| 70B | ~35-40 GB | A100 40GB |
-
-### vLLM for Production
-
-For highest throughput with local models:
+For multi-user or multi-GPU throughput:
 
 ```bash
-vllm serve qwen3-32b \
+vllm serve Qwen/Qwen3-32B \
   --max-model-len 32768 \
   --gpu-memory-utilization 0.9 \
-  --tensor-parallel-size 2  # Split across 2 GPUs
+  --tensor-parallel-size 2
 ```
 
-See [Local Models](/guides/local-models) and [Cloud GPU Models](/guides/cloud-gpu-models) for detailed hardware guides.
+Point OpenClaw at it as a provider with `api: "openai-completions"` ([vLLM provider](https://docs.openclaw.ai/providers/vllm)). For rented GPUs, see [Cloud GPU Models](/guides/cloud-gpu-models).
 
 ---
 
-## Resource Management
+## Host resources
 
-### Memory (RAM)
+### RAM and CPU
 
 ```bash
-# Check current usage
-ps aux | grep openclaw
+openclaw status --all     # read-only diagnosis, including the Gateway process
+openclaw health --json    # health snapshot for scripts
 ```
 
-| RSS | Status | Action |
-|-----|--------|--------|
-| 150-250 MB | Healthy idle | Normal |
-| 250-500 MB | Busy/active | Normal under load |
-| 500+ MB | Warning | Restart soon |
-| 1+ GB | Critical | Restart now |
+On Linux with the user service from `openclaw gateway install`, `systemctl --user status openclaw-gateway` shows memory and CPU. Sustained high CPU usually means a loop in a tool or skill, a stuck MCP server or heavy browser automation; `openclaw logs --follow` shows which. To limit a container, set `deploy.resources.limits.memory` in Docker Compose.
 
-**Reduce RAM usage:**
-- Disconnect unused channels
-- Disable unused plugins
-- Lower `max_context_tokens`
-- Set Docker memory limit: `deploy.resources.limits.memory: 2G`
+To reduce baseline memory, disable channels and plugins you don't use (`openclaw plugins list`, `openclaw plugins disable <id>`).
 
 ### Disk
 
-```bash
-# Check disk usage
-du -sh ~/.openclaw/
-du -sh ~/.openclaw/logs/
-du -sh ~/.openclaw/memory/
-```
-
-**Manage disk:**
-- Log rotation: `max_size: "10m"`, `max_files: 5` (~50 MB cap)
-- Prune old memory files periodically
-- Monitor with heartbeat alerts
-
-### CPU
-
-CPU usage is normally low except during active token processing. Sustained high CPU indicates:
-- Infinite loop in a skill or tool
-- Stuck MCP server
-- Excessive browser automation
+| Path | What grows |
+|---|---|
+| `/tmp/openclaw/openclaw-YYYY-MM-DD.log` | Gateway logs. Rotated at `logging.maxFileBytes` (default 100 MB) with 5 archives; dated files are pruned after 24 hours ([Logging](https://docs.openclaw.ai/logging)). |
+| `~/.openclaw/state/` | SQLite state: sessions, transcripts, audit ledger |
+| `~/.openclaw/workspace/` | Workspace files and memory |
 
 ```bash
-# Check CPU
-top -p $(cat ~/.openclaw/gateway.pid)
-
-# Check what's running
-openclaw logs --follow
+du -sh ~/.openclaw/ ~/.openclaw/state ~/.openclaw/workspace /tmp/openclaw
 ```
 
----
-
-## Skill Optimization
-
-### Efficient Skill Design
-
-- **Declare only needed tools** — `tools: [shell]` instead of `tools: [shell, browser, filesystem, http]`
-- **Clear instructions** — vague skills cause retries and extra tool calls
-- **Short prompts** — every token in the skill is loaded per invocation
-
-### Avoid Always-On Skills
-
-Skills with trigger `"*"` (always active) are loaded into every message. Use specific triggers:
-
-```yaml title="Efficient — only fires on keyword"
-trigger: "deploy"
+```json5 title="~/.openclaw/openclaw.json"
+{
+  logging: {
+    level: "info",
+    maxFileBytes: 52428800,
+  },
+}
 ```
 
-```yaml title="Expensive — loaded every message"
-trigger: "*"
-```
+See [Monitoring](/guides/monitoring) for logs, health checks and metrics.
 
 ---
 
-## Provider-Specific Tips
+## Tuning checklist
 
-### Anthropic
+1. Measure first: `/usage full` for a day, `/status` for context size, `openclaw logs --follow` for slow tools.
+2. Pick the fastest model that meets the quality bar for interactive work; reserve Opus/Fable for hard tasks.
+3. Lower `thinkingDefault`; raise per message.
+4. Keep sessions small: `/new`, `/compact`, `contextPruning`, lean heartbeats.
+5. Narrow MCP tools with `toolFilter`, and require mentions in groups.
+6. For local models: keep them loaded, size `num_ctx` to need, and make sure the weights fit in VRAM.
+7. Re-measure.
 
-- **Prompt caching** is automatic — high-frequency conversations save 30-50%
-- **Batch API** for non-urgent tasks (50% cheaper, results within 24 hours)
-- Use Haiku for simple tasks, Sonnet for general work, Opus only for complex reasoning
+## See also
 
-### OpenRouter
-
-- **Auto-routing** (`openrouter/auto`) picks cheapest capable model per prompt
-- Built-in cost tracking across all providers
-- Single API key for 100+ models
-
-### Google Gemini
-
-- **2.5 Flash**: fastest and cheapest cloud model for most tasks
-- **1M token context window**: useful for large codebases without chunking
-- Free tier available for low-volume usage
-
-### DeepSeek
-
-- **V3.2**: excellent quality at ~$0.40/M tokens — great default for cost-conscious setups
-- Works well as primary model or fallback
-
----
-
-## Real-World Optimization Example
-
-**Before:** $1,200/month
-
-- Opus 4.5 for everything (heartbeat, chat, skills)
-- 30-minute heartbeat, 24/7
-- 50K context tokens
-- No session resets
-- Extended thinking enabled
-
-**After:** $36/month (97% reduction)
-
-1. Local Qwen3 14B for heartbeat ($0)
-2. DeepSeek V3.2 for chat ($0.40/M tokens)
-3. Sonnet 4.6 for complex tasks only
-4. Context reduced to 8K tokens
-5. 1-hour heartbeat with quiet hours
-6. Thinking mode disabled by default
-7. Session auto-resets enabled
-
----
-
-## Tuning Checklist
-
-### Quick Wins (do first)
-
-- [ ] Switch heartbeat to cheap/local model
-- [ ] Set quiet hours for heartbeat
-- [ ] Increase heartbeat interval to 1+ hours
-- [ ] Set `max_context_tokens` to 2000-4000
-- [ ] Enable mention-gating in group channels
-- [ ] Set `max_messages_per_hour` rate limits
-
-### Medium Effort
-
-- [ ] Enable Dreaming for memory consolidation
-- [ ] Configure fallback provider chain
-- [ ] Simplify HEARTBEAT.md instructions
-- [ ] Audit skills for unnecessary `"*"` triggers
-- [ ] Filter MCP server tools with `allowed_tools`
-- [ ] Disable extended thinking for routine tasks
-
-### Advanced
-
-- [ ] Set up local models for heartbeat/simple tasks
-- [ ] Configure per-channel model routing
-- [ ] Deploy on GPU hardware for local inference
-- [ ] Use vLLM for high-throughput local serving
-- [ ] Implement budget alerts via heartbeat monitoring
-
-### Monitor Results
-
-```bash
-# Before and after comparison
-openclaw stats tokens --period 7
-openclaw gateway usage-cost
-openclaw stats heartbeat
-```
-
----
-
-## See Also
-
-- [Cost Management](/guides/cost-management) — Detailed cost breakdown and budgeting
-- [Model Selection](/guides/model-selection) — Choosing the right model for your use case
-- [Local Models](/guides/local-models) — Running models on your own hardware
-- [Cloud GPU Models](/guides/cloud-gpu-models) — Renting GPUs for local inference
-- [Heartbeat](/guides/heartbeat) — Heartbeat configuration and scheduling
-- [Memory Systems Compared](/guides/memory-systems) — Alternative memory systems for efficiency
-- [Monitoring & Observability](/guides/monitoring) — Tracking costs and performance
-- [MCP Servers](/guides/mcp-servers) — Optimizing MCP connections
+- [Cost Management](/guides/cost-management): spend, heartbeat cost and budgets
+- [Model Selection](/guides/model-selection): which model for which task
+- [Local Models](/guides/local-models)
+- [Cloud GPU Models](/guides/cloud-gpu-models)
+- [Monitoring](/guides/monitoring)
