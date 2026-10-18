@@ -26,6 +26,18 @@
 
 set -uo pipefail
 
+# Clean environment: re-run the test under `env -i` so nothing from the caller's
+# shell (API keys such as ANTHROPIC_API_KEY, tokens, OPENCLAW_* settings) can
+# reach OpenClaw. OpenClaw picks up provider keys from the environment, and
+# Doctor acts on them. Only the variables listed here pass through.
+if [[ -z "${TT_CLEAN_ENV:-}" ]]; then
+  exec env -i TT_CLEAN_ENV=1 PATH="$PATH" LANG=C.UTF-8 TMPDIR="${TMPDIR:-/tmp}" \
+    ${TT_OUT:+TT_OUT="$TT_OUT"} ${TT_DRY:+TT_DRY="$TT_DRY"} ${TT_STEP_TIMEOUT:+TT_STEP_TIMEOUT="$TT_STEP_TIMEOUT"} \
+    ${TT_ALLOW_GATEWAY:+TT_ALLOW_GATEWAY="$TT_ALLOW_GATEWAY"} ${OPENCLAW_BIN:+OPENCLAW_BIN="$OPENCLAW_BIN"} \
+    ${GITHUB_ACTIONS:+GITHUB_ACTIONS="$GITHUB_ACTIONS"} CI=1 \
+    bash "$0" "$@"
+fi
+
 TT_LIB_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 TT_ROOT=$(cd "$TT_LIB_DIR/../.." && pwd)
 TT_OUT=${TT_OUT:-$TT_ROOT/tutorial-report}
@@ -70,7 +82,7 @@ page() {
   export OPENCLAW_STATE_DIR=$HOME/.openclaw
   export OPENCLAW_CONFIG_PATH=$HOME/.openclaw/openclaw.json
   export OPENCLAW_DISABLE_UPDATE_CHECK=1 NO_COLOR=1 FORCE_COLOR=0 COLUMNS=200
-  unset OPENCLAW_GATEWAY_TOKEN OPENCLAW_GATEWAY_PASSWORD ANTHROPIC_API_KEY OPENAI_API_KEY
+  # (environment already wiped by the env -i re-exec above)
   mkdir -p "$HOME" "$TT_WORK/bin"
   [[ -n "$TT_BIN" ]] && ln -sf "$TT_BIN" "$TT_WORK/bin/openclaw"
   export PATH=$TT_WORK/bin:$PATH

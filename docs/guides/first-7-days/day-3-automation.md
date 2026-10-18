@@ -28,7 +28,7 @@ OpenClaw has two kinds of scheduled work, and both are run by the Gateway's auto
 Rule of thumb: if the task has a time or interval in its name, it's an automation.
 
 :::info Coming from an older guide?
-Older OpenClaw versions read heartbeat tasks from a `HEARTBEAT.md` file in the workspace. That file was retired in 2026.8.1: OpenClaw no longer creates or reads it. If you still have one, run `openclaw doctor --fix`. Doctor imports its instructions into the heartbeat's monitor scratch, turns valid `tasks:` entries into automations, and archives the original ([retired HEARTBEAT.md](https://docs.openclaw.ai/reference/templates/HEARTBEAT)).
+Older OpenClaw versions read heartbeat tasks from a `HEARTBEAT.md` file in the workspace. That file was retired in 2026.8.1: OpenClaw no longer creates or reads it. If you still have one, stop the Gateway (`openclaw gateway stop`) and run `openclaw doctor --fix`. Doctor imports its instructions into the heartbeat's monitor scratch, turns valid `tasks:` entries into automations, and archives the original ([retired HEARTBEAT.md](https://docs.openclaw.ai/reference/templates/HEARTBEAT)).
 :::
 
 ## Before You Start: Where Messages Go

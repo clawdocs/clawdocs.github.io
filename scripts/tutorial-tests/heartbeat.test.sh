@@ -29,7 +29,11 @@ run "openclaw cron scratch <jobId> --unset"
 
 # Migrating from HEARTBEAT.md: a legacy file is imported into scratch
 setup "write a legacy HEARTBEAT.md" "printf '# Heartbeat\n\n- Check whether the nightly backup finished.\n' > ~/.openclaw/workspace/HEARTBEAT.md"
+skip "openclaw gateway stop" "stops the installed service; CI stops its foreground Gateway instead"
+gateway_stop
 run "openclaw doctor --fix"
+skip "openclaw gateway start" "starts the installed service; CI starts its foreground Gateway instead"
+gateway_start
 setup -e '^ok$' "HEARTBEAT.md was removed from the workspace" "test ! -e ~/.openclaw/workspace/HEARTBEAT.md && echo ok"
 setup -e 'nightly backup' "its text is now the monitor scratch" "openclaw cron scratch <jobId>"
 setup -e '^ok$' "the original was archived under backups/heartbeat-migration/" "ls ~/.openclaw/backups/heartbeat-migration/ | grep -q . && echo ok"

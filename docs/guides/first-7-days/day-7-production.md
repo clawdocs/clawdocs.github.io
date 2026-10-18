@@ -207,9 +207,11 @@ Use `openclaw update`, not `npm update -g openclaw`. The updater validates the t
 **4. Check:**
 
 ```bash
-openclaw doctor --fix
+openclaw doctor
 openclaw status --deep
 ```
+
+The updater already ran the required Doctor migrations; `openclaw doctor` reports anything left. If it suggests repairs, stop the Gateway first (`openclaw gateway stop`), run `openclaw doctor --fix`, then `openclaw gateway start`: with the Gateway running, `doctor --fix` cannot lock the state database and exits with `GatewayStateOwnerContentionError`.
 
 Confirm every channel reconnects and your automations are listed in `openclaw cron list`.
 
