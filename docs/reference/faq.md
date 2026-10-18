@@ -52,8 +52,8 @@ Note: some users report a regression in v2026.6.11 where [tools return empty out
 ### Is OpenClaw safe to use?
 
 OpenClaw is powerful but carries significant risks. It has had:
-- **138+ CVEs** disclosed as of April 2026
-- **~45 GitHub security advisories** [batch-published June 30, 2026](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026) — mostly already patched in v2026.6.6–v2026.6.8
+- **722 published GitHub security advisories** as of 2026-10-18, 14 of them critical ([Known Vulnerabilities](/security/known-vulnerabilities#advisories-at-a-glance))
+- Batches of 45 advisories on [June 30, 2026](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026) and 75 on September 11, 2026, all fixed in released versions. Run the latest stable release.
 - A [critical RCE vulnerability](/security/known-vulnerabilities) (CVE-2026-25253)
 - [4 chainable TOCTOU vulnerabilities](https://www.cyera.com/blog/claw-chain-cyera-research-unveil-four-chainable-vulnerabilities-in-openclaw) (Cyera Research, CVSS up to 9.6)
 - [341 malicious marketplace skills](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026)

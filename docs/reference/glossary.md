@@ -62,7 +62,7 @@ A separate enterprise-focused product offering managed OpenClaw with additional 
 
 ### Code Insight
 
-Gemini-powered deep package analysis used by [ClawHub](#clawhub) since v2026.2.6 to scan skill uploads for malicious content. Part of the VirusTotal integration. See [Skill Verification](/security/skill-verification#virustotal-integration-v202626).
+VirusTotal's AI-based package analysis, which early-2026 reports said [ClawHub](#clawhub) used on skill uploads. Current upstream docs name VirusTotal, ClawScan and static analysis as ClawHub's scan sources. See [Skill Verification](/security/skill-verification#virustotal-integration-v202626).
 
 ### openclaw.json
 
@@ -78,7 +78,7 @@ The WebSocket server (default: `ws://localhost:18789`) exposed by the [Gateway](
 
 ### CVE-2026-25253
 
-Critical one-click RCE vulnerability (CVSS 8.8) discovered January 30, 2026 by Mav Levin. A cross-site WebSocket hijacking (CSWSH) attack that allowed remote code execution on any OpenClaw instance, even those bound to localhost. Patched in v2026.1.29. See [Known Vulnerabilities](/security/known-vulnerabilities#cve-2026-25253-one-click-remote-code-execution).
+High-severity (CVSS 8.8) one-click RCE fixed in v2026.1.29 on January 30, 2026, credited to Mav Levin and others. The Control UI trusted a `gatewayUrl` query parameter and sent the Gateway token to it, so a crafted link could steal the token, even from instances bound to localhost. See [Known Vulnerabilities](/security/known-vulnerabilities#cve-2026-25253-one-click-remote-code-execution).
 
 ### Daemon Mode
 
@@ -158,7 +158,7 @@ The internal [Gateway](#gateway) component that dispatches incoming messages to 
 
 ### Sandbox Mode
 
-A restricted execution mode where skills run with limited permissions, preventing them from accessing the host system. Enabled with `--sandbox` flag during skill installation. See [Skill Verification](/security/skill-verification#safe-installation-practices).
+Running an agent's tool execution inside a container instead of on the host, set with `agents.defaults.sandbox.mode` (`off` by default, `non-main` or `all`) or per agent. It applies per agent or session, not per skill; there is no `--sandbox` install flag. See [Security Hardening: sandboxing](/security/hardening#sandboxing) and [Skill Verification](/security/skill-verification#safe-installation-practices).
 
 ### Skill {#skill}
 
