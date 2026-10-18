@@ -233,7 +233,7 @@ Managed OpenClaw hosting. Your own open-source AI agent gets a pod: a private, a
 - **Channels**: Telegram, Discord, Slack, WhatsApp, Signal and 20+ more
 - **Models**: OpenAI, Anthropic, Google, DeepSeek and more; usage capped by your plan; bring your own model key and nothing is added on top
 - **Security**: One machine per customer; no incoming connections from the open internet unless you switch on a public address for your agent; sign-in by a code sent to your email
-- **Features**: Daily backups with restores tested, updates applied for you after testing, OpenClaw's native dashboard
+- **Features**: Daily backups with restores tested, updates applied for you after testing, a control panel for your agent
 - **Data**: A full copy of your pod's data on request, in a common archive format; on cancellation, everything, backups included, is permanently deleted 7 days after the paid period ends
 - **Hosting**: Pods are hosted in Europe
 - **Company**: Operated by DEH Technologies LLC, a Wyoming (United States) company ([about](https://everpod.ai/about))
