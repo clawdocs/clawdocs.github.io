@@ -28,7 +28,7 @@ openclaw --version
 openclaw update status
 ```
 
-Write the version down: you need it to roll back. `update status` shows your update channel. If it says `extended-stable`, `openclaw update` takes you to the 2026.9.3x line, not to 2026.10.4. Pass `--channel stable` when you reach the last step.
+Write the version down: you need it to roll back. `update status` shows your update channel. If it says `extended-stable`, `openclaw update` takes you to the 2026.9.3x line, not to 2026.10.4. Pass `--channel stable` when you reach the last step. If it says `beta`, `openclaw update` installs 2026.10.10-beta.1 (npm `beta` since 2026-10-15), which is newer than this guide; version numbers are not chronological, and that beta was published before 2026.10.4. This guide covers the move to 2026.10.4.
 
 ### 2. Upgrade Node first
 
@@ -409,7 +409,7 @@ Results on 2026-10-18, run directly on 2026.10.4: `a-july-two-agents` and `e-gui
 
 Doctor does not flag these, because nothing is broken. They do change behaviour after the upgrade.
 
-- **Self-learning is on.** `skills.workshop.autonomous.mode` defaults to `auto`: the agent maintains its own Workshop skills. Set `propose` to review changes first, or `off` ([Self-learning](https://docs.openclaw.ai/tools/self-learning)).
+- **Self-learning is on.** `skills.workshop.autonomous.mode` defaults to `auto`: the agent maintains its own Workshop skills. On 2026.10.4 you can set `propose` to review changes first, or `off` ([Self-learning](https://docs.openclaw.ai/tools/self-learning)). `propose` is removed in 2026.10.10, where `doctor --fix` turns it into `off`; see [Skill Workshop](/guides/skill-workshop).
 - **Dreaming is on.** Background memory consolidation runs by default and writes `DREAMS.md` ([Dreaming](https://docs.openclaw.ai/concepts/dreaming)).
 - **Heartbeat alerts go to the owner's DM.** The default `target` is `owner`. Without a command owner, Doctor reports "No command owner is configured" and ambient alerts have nowhere to go. Set `commands.ownerAllowFrom`.
 - **Sessions no longer reset at idle or day boundaries** unless you configured a reset policy. An explicit `session.reset` is kept, as in Example 1.
@@ -477,7 +477,8 @@ openclaw gateway status --deep
 :::tip Changes on upstream `main` that will matter for your next upgrade
 These are in upstream's development docs as of 2026-10-18 and are **not** in 2026.10.4. They may change before release.
 
-- **Plugin installs default to ClawHub.** A bare `openclaw plugins install <package>`, including `@openclaw/*` names, will resolve through ClawHub with no automatic npm fallback. To install from npm, write `npm:@openclaw/<plugin>@<version>`. Scripts that rely on npm resolution will need the prefix.
+- **Already in 2026.10.10-beta.1** (npm `beta`, 2026-10-15): the Skill Workshop proposal flow is retired, and `doctor --fix` turns `propose` mode **off** ([Skill Workshop](/guides/skill-workshop)); tool payloads and `.env` reads are no longer masked in model context and transcripts ([hardening](/security/hardening)); the macOS and iOS apps and the Control UI in Safari need 26.2 or newer ([installation](/getting-started/installation)).
+- **Plugin installs default to ClawHub** (main only; merged after both 10.10 beta tags, so it may not be in 2026.10.10). A bare `openclaw plugins install <package>`, including `@openclaw/*` names, will resolve through ClawHub with no automatic npm fallback. To install from npm, write `npm:@openclaw/<plugin>@<version>`. Scripts that rely on npm resolution will need the prefix.
 - **`openai-codex-responses` joins the refused list.** In 2026.10.4, Doctor still rewrites this provider API id to `openai-chatgpt-responses`. On `main`, current Doctor refuses it and sends you to an intermediate release. Run `openclaw doctor --fix` on 2026.10.4 before you move past it.
 - **Crabbox cloud-worker `settings.setupEnv` is retired** in favour of `settings.setupSecrets` store references. This only matters if you use cloud workers.
 :::
