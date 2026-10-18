@@ -77,6 +77,7 @@ const sidebars: SidebarsConfig = {
         'guides/privacy-compliance',
         'guides/use-cases',
         'guides/migration',
+        'guides/upgrading-to-2',
         {
           type: 'category',
           label: 'Recipes',

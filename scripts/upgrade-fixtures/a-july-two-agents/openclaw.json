@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.7.1",
+    "lastTouchedAt": "2026-07-20T09:00:00.000Z"
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-5",
+        "fallbacks": ["openai-codex/gpt-5.5"]
+      },
+      "heartbeat": {
+        "every": "30m",
+        "activeHours": { "start": "08:00", "end": "22:00" }
+      },
+      "memorySearch": {
+        "provider": "openai"
+      }
+    },
+    "list": [
+      { "id": "main", "name": "Main", "default": true },
+      { "id": "family", "name": "Family", "model": "codex/gpt-5.5" }
+    ]
+  },
+  "memory": {
+    "backend": "qmd"
+  },
+  "messages": {
+    "tts": {
+      "provider": "edge"
+    }
+  },
+  "tools": {
+    "exec": {
+      "security": "allowlist",
+      "ask": "on-miss"
+    }
+  },
+  "session": {
+    "idleMinutes": 120
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "botToken": "123456:fixture-not-a-real-token",
+      "dmPolicy": "allowlist",
+      "allowFrom": ["123456789"]
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "auth": { "mode": "token", "token": "fixture-gateway-token-0123456789abcdef" },
+    "nodes": { "denyCommands": ["system.run"] }
+  }
+}

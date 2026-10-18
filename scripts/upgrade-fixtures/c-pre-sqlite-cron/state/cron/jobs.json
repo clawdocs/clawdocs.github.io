@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "morning-brief",
+      "name": "Morning brief",
+      "enabled": true,
+      "schedule": { "kind": "cron", "expr": "0 7 * * *", "tz": "Europe/London" },
+      "sessionTarget": "isolated",
+      "payload": { "kind": "agentTurn", "message": "Summarise my calendar and inbox for today." },
+      "delivery": { "mode": "announce" }
+    }
+  ]
+}

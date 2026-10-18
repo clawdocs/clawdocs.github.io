@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.5.28"
+  },
+  "agents": {
+    "defaults": {
+      "model": "anthropic/claude-sonnet-4-5"
+    }
+  },
+  "cron": {
+    "enabled": true
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "auth": { "mode": "token", "token": "fixture-gateway-token-0123456789abcdef" }
+  }
+}

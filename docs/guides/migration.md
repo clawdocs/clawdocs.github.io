@@ -11,6 +11,8 @@ keywords: [openclaw, migration, upgrade, migrate version, breaking changes, doct
 
 This guide covers four jobs: moving off the old Clawdbot and Moltbot names, upgrading an install from before July 2026 (which needs a bridge release), recovering when an upgrade goes wrong, and importing state from another agent system. Commands were checked against OpenClaw 2026.10.4. The reference is the upstream [Updating](https://docs.openclaw.ai/install/updating) guide.
 
+Coming from 2026.5–2026.7? Start with [Upgrading across OpenClaw 2.0](/guides/upgrading-to-2), a step-by-step field guide with tested Doctor migrations.
+
 ---
 
 ## The Triple Rebrand
