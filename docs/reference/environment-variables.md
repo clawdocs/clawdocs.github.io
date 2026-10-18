@@ -65,10 +65,10 @@ Never set `OPENCLAW_HOST` to `0.0.0.0` unless the gateway is behind a reverse pr
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OPENCLAW_PROVIDER` | `anthropic` | LLM provider name |
-| `OPENCLAW_MODEL` | `claude-opus-4-6` | Model identifier |
-| `OPENCLAW_TEMPERATURE` | `0.7` | Response temperature (0.0-1.0) |
-| `OPENCLAW_MAX_TOKENS` | `4096` | Max response tokens |
+| `OPENCLAW_PROVIDER` | — | **Not a real variable**; OpenClaw does not read it |
+| `OPENCLAW_MODEL` | — | **Not a real variable**; set the model with `agents.defaults.model` in `openclaw.json` (a fresh Anthropic setup picks `anthropic/claude-opus-5-5`) |
+| `OPENCLAW_TEMPERATURE` | — | **Not a real variable** |
+| `OPENCLAW_MAX_TOKENS` | — | **Not a real variable** |
 
 ---
 
@@ -201,11 +201,14 @@ Common MCP-related env vars:
 
 ## Legacy Variables
 
-These variables are from the Clawdbot/Moltbot era and may still work but are deprecated:
+The Clawdbot/Moltbot-era prefixes **no longer work**:
 
-| Variable | Replacement | Notes |
-|----------|------------|-------|
-| `CLAWDBOT_*` | `OPENCLAW_*` | All `CLAWDBOT_` prefixed vars map to `OPENCLAW_` equivalents |
+| Variable | Replacement | Status |
+|----------|------------|--------|
+| `CLAWDBOT_*` | `OPENCLAW_*` | Native before the rename (v2026.1.29), then aliases; **removed in v2026.3.22** |
+| `MOLTBOT_*` | `OPENCLAW_*` | **Removed in v2026.3.22** |
+
+Since v2026.4.27 the Gateway prints a one-time `OPENCLAW_LEGACY_ENV_VARS` deprecation warning when either prefix is still set, and the old names have no effect. Rename each one by swapping the prefix, for example `CLAWDBOT_GATEWAY_TOKEN` → `OPENCLAW_GATEWAY_TOKEN`. Sources: upstream `CHANGELOG/2026.3.22.md`, `CHANGELOG/2026.4.27.md`, [Environment variables](https://docs.openclaw.ai/help/environment#legacy-environment-variables).
 
 ---
 

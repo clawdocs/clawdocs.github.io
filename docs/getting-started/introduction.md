@@ -206,8 +206,8 @@ See [Comparison](/reference/comparison) for the full feature matrix.
 
 | Component | Minimum | Recommended |
 |-----------|---------|-------------|
-| **OS** | macOS, Linux, Windows (WSL2 required) | macOS or Linux |
-| **Node.js** | 22.19+ LTS | 24 |
+| **OS** | macOS, Linux, Windows (native [Windows Hub](https://docs.openclaw.ai/platforms/windows) or WSL2) | macOS or Linux |
+| **Node.js** | 24.16+ or 26.1+ | 26 |
 | **RAM** | 2 GB (gateway only) | 4 GB+ |
 | **Disk** | 500 MB | 2 GB+ (for memory, skills, logs) |
 | **Network** | Outbound HTTPS (for cloud LLMs) | Stable connection |

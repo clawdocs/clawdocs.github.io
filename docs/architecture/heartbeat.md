@@ -42,6 +42,8 @@ The heartbeat system uses a **per-agent scheduling model** tracked internally wi
 
 Each agent in a multi-agent setup can have its own heartbeat interval.
 
+The default cadence is `agents.defaults.heartbeat.every: "30m"`. When the Anthropic provider uses OAuth/token auth (including Claude CLI reuse) and `every` is unset, the default becomes `1h`. Set `every` yourself to override either default, or `"0m"` to turn recurring heartbeats off. See [Heartbeat](https://docs.openclaw.ai/gateway/heartbeat).
+
 ---
 
 ## Defining Heartbeat Tasks
