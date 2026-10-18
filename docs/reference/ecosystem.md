@@ -9,7 +9,7 @@ keywords: [openclaw, openclaw ecosystem, community projects, tools, integrations
 
 # Ecosystem & Community Tools
 
-OpenClaw passed 392,000 GitHub stars about eleven months after its first release, and a large ecosystem grew around it. This page lists the official companion projects first, then community tools by category.
+Official companion projects first, then community tools by category.
 
 :::info How to read this page
 Star counts, last-push dates and archive status come from `gh api` **as of 2026-10-18**. Re-run `node scripts/refresh-stars.mjs` to refresh them. Community projects are not reviewed or endorsed by OpenClaw or by clawdocs; check activity and the code before you give any of them credentials. Archived or abandoned projects are kept below only so that old links still explain themselves.
@@ -71,17 +71,17 @@ In February 2026, Koi Security reported 341 malicious skills on ClawHub (the fir
 
 Started by Scott Hanselman as `shanselman/openclaw-windows-hub`, it now lives at [openclaw/openclaw-windows-node](https://github.com/openclaw/openclaw-windows-node) and is upstream's **recommended Windows desktop app**: a native WinUI app for Windows 10 20H2+ and 11 with setup, tray status, chat, diagnostics and Windows node capabilities, signed x64 and ARM64 installers, and no admin rights needed. See [docs.openclaw.ai/platforms/windows](https://docs.openclaw.ai/platforms/windows).
 
-- 2,158 stars, last push 2026-10-17.
+- 2,159 stars, last push 2026-10-17. The installers are named `OpenClawCompanion-Setup-x64.exe` and `-arm64.exe`.
 
 ### Native apps
 
 - **macOS:** OpenClaw.app in v2026.10.4 needs macOS 15.0 (Sequoia) or later; Voice Wake and push-to-talk need macOS 26 ([docs](https://docs.openclaw.ai/platforms/macos)).
 - **iOS/iPadOS:** on the App Store; v2026.10.4 targets iOS 18.0 or later ([docs](https://docs.openclaw.ai/platforms/ios)).
-
-:::note
-The next release raises the minimum for both apps to macOS 26.2 (Tahoe) and iOS/iPadOS 26.2. The live upstream pages already show the new minimum.
-:::
 - **Android:** on Google Play, plus a signed APK on some GitHub releases; minSdk 31. It is a companion node and needs a running Gateway ([docs](https://docs.openclaw.ai/platforms/android)).
+
+:::warning Changing in 2026.10.10 (beta)
+2026.10.10-beta.1 (npm `beta`, 2026-10-15; not in 2026.10.4) raises the minimum for both Apple apps to macOS 26.2 (Tahoe) and iOS/iPadOS 26.2. The live upstream pages, built from `main`, already show the new minimum.
+:::
 
 ---
 
