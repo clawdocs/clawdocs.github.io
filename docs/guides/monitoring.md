@@ -203,6 +203,10 @@ openclaw gateway usage-cost
 
 The [OpenClaw Observability Plugin](https://github.com/henrikrexed/openclaw-observability-plugin) exports traces and metrics to OpenTelemetry-compatible backends.
 
+:::warning
+The npm package for this plugin is `@henrikrexed/openclaw-otel-observability`. The unscoped name `openclaw-observability` belongs to an unrelated publisher; do not install it. Plugins run with your agent's access, so pin the version and check the [plugin README](https://github.com/henrikrexed/openclaw-observability-plugin) for the current config options.
+:::
+
 **Supported backends:**
 - Grafana Cloud
 - Dynatrace
@@ -225,8 +229,8 @@ The [OpenClaw Observability Plugin](https://github.com/henrikrexed/openclaw-obse
 ### Setup
 
 ```bash
-# Install the plugin
-openclaw plugins install openclaw-observability
+# Install the plugin from its author's npm package (explicit npm: source, pinned)
+openclaw plugins install npm:@henrikrexed/openclaw-otel-observability --pin
 
 # Configure OTLP endpoint
 ```
@@ -235,7 +239,7 @@ openclaw plugins install openclaw-observability
 {
   "plugins": {
     "entries": {
-      "openclaw-observability": {
+      "otel-observability": {
         "enabled": true,
         "config": {
           "otlp_endpoint": "https://otlp.grafana.net/otlp",

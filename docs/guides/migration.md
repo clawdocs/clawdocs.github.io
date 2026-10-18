@@ -215,11 +215,7 @@ OpenClaw stores all persistent data as plain Markdown files. The upgrade process
 
 ### clawd_migrate
 
-[clawd_migrate](https://github.com/calabiyauman/clawd_migrate) is a community-built migration tool:
-
-```bash
-npx clawd_migrate --root /path/to/workspace --setup-openclaw
-```
+[clawd_migrate](https://github.com/calabiyauman/clawd_migrate) is a community-built migration tool. It is **not published on npm**, so do not run `npx clawd_migrate`: that would fetch whatever package someone registers under the name. If you use it, clone the repository, read the code, and run it from your clone, as its README describes.
 
 - Migrates from Clawdbot or Moltbot to OpenClaw
 - Preserves all memory/identity files
