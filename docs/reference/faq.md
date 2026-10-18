@@ -94,7 +94,7 @@ Workspace `.env` files cannot override `OPENCLAW_*` variables or provider creden
 
 ### How much does it cost to run?
 
-It depends almost entirely on the model, how often the agent wakes up, and how long sessions grow. Anecdotes from early 2026 ranged from a few dollars a month to $3,600 in one month of always-on automation, on older models and prices; we have not measured them, so treat them as a warning, not an estimate. [Cost Management](/guides/cost-management) has worked estimates.
+It depends almost entirely on the model, how often the agent wakes up, and how long sessions grow. Always-on automation with a frontier model is where bills grow fastest. [Cost Management](/guides/cost-management) has worked estimates.
 
 The main cost drivers are **context accumulation** (long sessions), the **heartbeat** (it runs even when idle), and **autonomous multi-step tool use**. `openclaw gateway usage-cost` shows what you have actually spent.
 

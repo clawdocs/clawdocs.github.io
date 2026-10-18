@@ -152,7 +152,7 @@ If something fails, `openclaw triage` collects sanitized diagnostics and suggest
 openclaw update
 ```
 
-`openclaw update` works for npm, pnpm and git installs. It runs `openclaw doctor` afterwards, migrates config and can roll back on failure. Prefer it over `npm update -g`, which skips those steps. Useful options:
+`openclaw update` works for npm, pnpm and git installs. It runs `openclaw doctor` afterwards, migrates config, and rolls back automatically on failure only when no schema migration ran. Prefer it over `npm update -g`, which skips those steps. Useful options:
 
 ```bash
 openclaw update --dry-run                    # preview
