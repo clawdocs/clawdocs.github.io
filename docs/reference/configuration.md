@@ -11,6 +11,10 @@ keywords: [openclaw, openclaw config, openclaw.json, settings, configuration ref
 
 OpenClaw reads an optional JSON5 config from `~/.openclaw/openclaw.json`. JSON5 supports comments and trailing commas. Override the path with the `OPENCLAW_CONFIG_PATH` environment variable.
 
+:::danger Do not paste the examples on this page
+Most keys on this page (`brain`, `hands`, top-level `sandbox` and `heartbeat`, `dm`, `permissions`, and many `memory`, `skills`, `gateway` and `logging` keys) are not part of OpenClaw's config schema. OpenClaw validates `openclaw.json` strictly and **refuses to start** when it finds an unknown key. This page is being rewritten. Until then, use the official [configuration reference](https://docs.openclaw.ai/gateway/configuration), print the real schema with `openclaw config schema`, and check your file with `openclaw config validate`.
+:::
+
 :::tip
 After editing the config, restart the gateway to apply changes: `openclaw gateway restart`
 :::
@@ -328,12 +332,12 @@ Agent sandboxing configuration. Controls how agents are isolated.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `mode` | string | `"non-main"` | `"off"`, `"non-main"` (sandbox sub-agents only), or `"all"` |
+| `mode` | string | `"off"` | `"off"`, `"non-main"` (sandbox every session except the agent's main session), or `"all"` |
 | `backend` | string | `"docker"` | `"docker"`, `"ssh"`, or `"openshell"` |
 | `scope` | string | `"agent"` | `"session"` (per-session), `"agent"` (per-agent), or `"shared"` |
 
 :::info
-The default `"non-main"` mode sandboxes sub-agents while leaving your primary agent unsandboxed. Use `"all"` for maximum isolation, at the cost of some functionality (e.g., direct file access).
+Sandboxing is **off** by default. In OpenClaw the setting is `agents.defaults.sandbox.mode` (per agent: `agents.entries.<id>.sandbox`), not a top-level `sandbox` key. `"non-main"` sandboxes every session except the agent's main session, including group and channel sessions; `"all"` sandboxes everything. See [Sandboxing](https://docs.openclaw.ai/gateway/sandboxing).
 :::
 
 ---
@@ -369,7 +373,7 @@ Multi-agent configuration. See [Multi-Agent Guide](/guides/multi-agent) for patt
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `model` | string | — | Default model for all agents |
-| `sandbox.mode` | string | `"non-main"` | Default sandbox mode for sub-agents |
+| `sandbox.mode` | string | `"off"` | Default sandbox mode (`off`, `non-main`, `all`) |
 
 #### `agents.list[]`
 
@@ -493,11 +497,11 @@ Skill installation and management.
 
 ### `permissions`
 
-Execution approval configuration. See [Basic Usage](/guides/basic-usage#execution-approval).
+**Not a real config key.** OpenClaw has no `permissions` section; approvals are `tools.exec.mode` (`deny`, `allowlist`, `ask`, `auto`, `full`), and the default on the gateway host is `full`, which runs commands without asking. See [Basic Usage](/guides/basic-usage#execution-approval) and the official [permission modes](https://docs.openclaw.ai/tools/permission-modes). The table below documents the old, invented shape and will be removed in the rewrite.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `mode` | string | `"ask"` | `"ask"`, `"auto"`, or `"deny"` |
+| `mode` | string | — | (not a real key) |
 | `auto_approve` | array | `[]` | Commands that skip the approval prompt |
 | `always_deny` | array | `[]` | Commands that are always blocked |
 

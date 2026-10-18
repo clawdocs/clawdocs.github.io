@@ -107,7 +107,7 @@ Create a project structure for a Python CLI tool called "timetrack" with src, te
 ```
 
 :::warning
-For destructive operations (deleting, moving, overwriting), the bot will show you the plan and ask for confirmation before executing. If you want it to just do it, say "go ahead without asking."
+By default the bot does **not** ask before running commands, including destructive ones (deleting, moving, overwriting): `tools.exec.mode` defaults to `full`. Asking it to "show me the plan first" is a request the model may or may not honour, not a safety control. For a real confirmation step, turn on approvals with `openclaw config set tools.exec.mode ask` and restart the gateway. See [permission modes](https://docs.openclaw.ai/tools/permission-modes).
 :::
 
 ---

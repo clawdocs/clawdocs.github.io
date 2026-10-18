@@ -130,33 +130,29 @@ Agent wants to execute:
   [approve] [deny] [approve all similar]
 ```
 
+:::danger Commands run without asking by default
+By default OpenClaw runs host shell commands **without asking** (`tools.exec.mode` is `full` on the gateway host) and the sandbox is **off** (`agents.defaults.sandbox.mode: "off"`). To review commands before they run, set `openclaw config set tools.exec.mode ask` (or `auto`, which adds an automatic reviewer) and restart the gateway. See the official [permission modes](https://docs.openclaw.ai/tools/permission-modes) and [sandboxing](https://docs.openclaw.ai/gateway/sandboxing) docs.
+:::
+
 ### Approval Modes
 
-Configure how the agent asks for permission in `~/.openclaw/openclaw.json`:
+Approvals are set with `tools.exec.mode` (there is no `permissions` key; OpenClaw refuses to start with unknown config keys):
 
-```json5
-{
-  "permissions": {
-    "mode": "ask",           // "ask" | "auto" | "deny"
-    "auto_approve": [
-      "git status",
-      "git diff",
-      "ls",
-      "cat"
-    ],
-    "always_deny": [
-      "rm -rf /",
-      "sudo rm"
-    ]
-  }
-}
+```bash
+openclaw config set tools.exec.mode ask
+openclaw approvals get        # shows the effective policy and where it comes from
+openclaw gateway restart
 ```
 
 | Mode | Behavior |
 |------|----------|
-| `ask` (default) | Prompt before each action |
-| `auto` | Auto-approve everything (use with caution) |
-| `deny` | Block all shell commands (read-only mode) |
+| `full` (default on the gateway host) | Runs host commands without prompts |
+| `auto` | Runs allowlisted commands; an automatic reviewer allows, denies or asks you about the rest |
+| `ask` | Runs allowlisted commands; asks you about everything else |
+| `allowlist` | Runs allowlisted commands; silently denies the rest |
+| `deny` | Blocks host commands entirely |
+
+The allowlist lives in the host approvals file, not in `openclaw.json`; see [Exec approvals](https://docs.openclaw.ai/tools/exec-approvals).
 
 The `auto_approve` list lets you whitelist safe commands that skip the prompt. Commands in `always_deny` are blocked even in `auto` mode.
 
@@ -545,9 +541,6 @@ vim ~/.openclaw/openclaw.json
     "model": "claude-haiku-4-5-20251001",
     "quiet_hours": { "start": "22:00", "end": "07:00" }
   },
-  "permissions": {
-    "mode": "ask"
-  },
   "memory": {
     "max_context_tokens": 2000
   }
@@ -608,7 +601,7 @@ See [CLI Reference](/reference/cli) for the complete list.
 | "Gateway not running" | Run `openclaw gateway start` |
 | "Model not found" | Check `openclaw configure` for valid model IDs |
 | Slow responses | Check `/usage` — context may be too large, use `/compact` |
-| Agent won't run commands | Check `permissions.mode` in config |
+| Agent won't run commands | Check the effective policy with `openclaw approvals get` |
 | Memory not loading | Verify `~/.openclaw/memory/` exists and has files |
 | Channel disconnected | Run `openclaw channels list` then `openclaw channels add <name>` |
 
