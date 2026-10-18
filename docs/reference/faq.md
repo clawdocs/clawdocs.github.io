@@ -20,7 +20,7 @@ OpenClaw is a free, open-source AI agent that you run yourself. A long-running G
 
 ### Is OpenClaw free?
 
-**OpenClaw itself is free** (MIT license). You pay for LLM API usage if you use cloud providers. Users have reported costs from a few dollars a day to $3,600/month depending on usage. Running [local models](/guides/local-models) removes API costs.
+**OpenClaw itself is free** (MIT license). You pay for LLM API usage if you use cloud providers. Reported bills range from a few dollars a month to thousands; see [How much does it cost to run?](#how-much-does-it-cost-to-run). Running [local models](/guides/local-models) removes API costs.
 
 ### Why was it renamed twice?
 
@@ -56,7 +56,7 @@ The v2026.6.11 regression where tools returned empty output after the first call
 
 ### Is OpenClaw safe to use?
 
-It is powerful, and it carries real risk. It has had:
+Only if you configure it carefully. It has real access to your machine, and it has had:
 - **722 published GitHub security advisories** as of 2026-10-18, 14 of them critical ([Known Vulnerabilities](/security/known-vulnerabilities#advisories-at-a-glance))
 - Batches of 45 advisories on [June 30, 2026](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026) and 75 on [September 11, 2026](/security/known-vulnerabilities#september-2026-advisory-batch), all fixed in released versions. Run the latest stable release.
 - A [one-click RCE](/security/known-vulnerabilities#cve-2026-25253-one-click-remote-code-execution) (CVE-2026-25253, fixed in v2026.1.29)
@@ -94,15 +94,7 @@ Workspace `.env` files cannot override `OPENCLAW_*` variables or provider creden
 
 ### How much does it cost to run?
 
-Costs people reported in early 2026 (press and forum posts, not our measurements):
-
-| User | Usage | Monthly cost |
-|------|-------|-------------|
-| Light user | CLI chat, occasional tasks | $30-150 |
-| Moderate user | Heartbeat + 1-2 channels | $150-450 |
-| Heavy user (Federico Viticci) | Full automation, 1.8M tokens | $3,600 |
-| German magazine c't test | Full-day testing | $100+ in one day |
-| Heartbeat overnight | Just asking "Is it daytime yet?" | $18.75 overnight |
+It depends almost entirely on the model, how often the agent wakes up, and how long sessions grow. Anecdotes from early 2026 ranged from a few dollars a month to $3,600 in one month of always-on automation, on older models and prices; we have not measured them, so treat them as a warning, not an estimate. [Cost Management](/guides/cost-management) has worked estimates.
 
 The main cost drivers are **context accumulation** (long sessions), the **heartbeat** (it runs even when idle), and **autonomous multi-step tool use**. `openclaw gateway usage-cost` shows what you have actually spent.
 
@@ -128,7 +120,7 @@ Yes, with [local models](/guides/local-models) via Ollama, LM Studio or vLLM. No
 |--------------|---------------|
 | Best quality | `anthropic/claude-opus-5-5` |
 | Best balance | `anthropic/claude-sonnet-5-5` |
-| Cheap and fast | `anthropic/claude-haiku-5-5` or `deepseek/deepseek-v4-flash` |
+| Cheap and fast | `anthropic/claude-haiku-5-5` or `deepseek/deepseek-flash` |
 | Free (local) | an Ollama model such as `ollama/qwen3:14b` |
 
 A fresh Anthropic setup picks `anthropic/claude-opus-5-5`. Prices change often; check the provider's pricing page. See the [Model Selection Guide](/guides/model-selection) and the upstream [provider pages](https://docs.openclaw.ai/providers/anthropic).
@@ -226,7 +218,7 @@ openclaw update
 openclaw doctor
 ```
 
-`openclaw update` checks the result and rolls back if the post-update Doctor fails ([Updating](https://docs.openclaw.ai/install/updating)). If you skipped many releases, run `openclaw doctor --fix` to migrate retired config keys and files.
+If the new version fails validation, the old Gateway keeps serving. Automatic rollback after activation works only when no database schema migration ran, so the backup is your real safety net ([Rollback and recovery](https://docs.openclaw.ai/install/updating/rollback-and-recovery)). If you skipped many releases, run `openclaw doctor --fix` to migrate retired config keys and files.
 
 Notable breaking updates from 2026:
 
@@ -300,7 +292,7 @@ Yes, but email is an automation trigger, not a chat channel. Use the [Gmail Pub/
 
 ### What is ClawHub?
 
-[ClawHub](https://clawhub.ai) is OpenClaw's skill and plugin registry. It was the target of a [malicious skill campaign](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026) in February 2026. Every release now gets an audit status from VirusTotal, ClawScan and static analysis, and `openclaw skills verify @owner/<slug>` fetches that verdict. A pending scan can still allow an install with a warning, so review skills yourself ([Skill Verification](/security/skill-verification)).
+[ClawHub](https://clawhub.ai) is OpenClaw's skill and plugin registry. It was the target of a [malicious skill campaign](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026) in February 2026. Since 2026-10-13 new releases stay unpublished until TruffleHog and ClawScan pass, and `openclaw skills verify @owner/<slug>` fetches a release's audit verdict. A pass is a signal, not a guarantee, so review skills yourself ([Skill Verification](/security/skill-verification)).
 
 ### What is Lobster?
 
