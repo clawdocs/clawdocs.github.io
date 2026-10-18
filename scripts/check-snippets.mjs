@@ -330,13 +330,15 @@ function pluginSandbox(id) {
   }
   return pluginDirs.get(id);
 }
-function getHelp(pathArr, plugin = null) {
-  const key = (plugin ? `[${plugin}] ` : '') + pathArr.join(' ');
+// `extra` adds arguments before --help: `channels add --channel telegram --help`
+// lists that channel's own flags, which plain `channels add --help` does not.
+function getHelp(pathArr, plugin = null, extra = []) {
+  const key = (plugin ? `[${plugin}] ` : '') + [...pathArr, ...extra].join(' ');
   if (!helpCache.has(key)) {
     helpCache.set(key, (async () => {
       const dir = plugin ? await pluginSandbox(plugin) : SANDBOX;
       return limit(async () => {
-        const r = await run([...pathArr, '--help'], dir);
+        const r = await run([...pathArr, ...extra, '--help'], dir);
         const all = r.stdout + '\n' + r.stderr;
         const unknown = /does not know the command|has no command|unknown command/i.test(all);
         const providedBy = plugin ? null : (/provided by the "([^"]+)" plugin/.exec(all) || [])[1] || null;
@@ -391,6 +393,11 @@ async function checkOpenclawInvocation(args) {
     pathArr.push(cand); help = h; k++;
   }
   const flags = new Set([...help.flags, ...root.flags]);
+  const ci = args.findIndex((a, i) => i >= k && (a === '--channel' || a.startsWith('--channel=')));
+  if (ci >= 0) {
+    const v = args[ci].includes('=') ? args[ci].split('=')[1] : args[ci + 1];
+    if (v && WORD.test(v)) for (const f of (await getHelp(pathArr, plugin, ['--channel', v])).flags) flags.add(f);
+  }
   const unknownFlags = [];
   for (; k < args.length; k++) {
     const a = args[k];
@@ -404,10 +411,16 @@ async function checkOpenclawInvocation(args) {
 }
 
 // ---------------------------------------------------------------- install gate
-const PLACEHOLDER = /^[<[{$]|^\.\.\.$|your|^my-|example/i;
+const PLACEHOLDER = /^[<[{$]|^\.\.\.$|your|^my-|example|^(clawhub:)?@owner\//i;
 function isLocal(t) { return /^(\.{1,2}\/|\/|~\/|\.$|file:|https?:|git\+|git@|github:)/.test(t) || /\.(tgz|zip|tar\.gz|whl|ts|js)$/.test(t); }
 function npmName(spec) {
   let s = spec.replace(/^npm:/, '');
+  if (s.startsWith('@')) { const i = s.indexOf('@', 1); return i > 0 ? s.slice(0, i) : s; }
+  return s.split('@')[0];
+}
+// ClawHub refs may be scoped (@owner/slug) and carry @version: keep the scope.
+function clawhubName(spec) {
+  const s = spec.replace(/^clawhub:/, '');
   if (s.startsWith('@')) { const i = s.indexOf('@', 1); return i > 0 ? s.slice(0, i) : s; }
   return s.split('@')[0];
 }
@@ -420,7 +433,7 @@ function installTargets(w) {
   const add = (eco, raw, via) => {
     if (!raw || PLACEHOLDER.test(raw)) return;
     if (isLocal(raw)) return;
-    const name = eco === 'pypi' ? pyName(raw) : eco === 'npm' ? npmName(raw) : raw.replace(/^clawhub:/, '').split('@')[0];
+    const name = eco === 'pypi' ? pyName(raw) : eco === 'npm' ? npmName(raw) : clawhubName(raw);
     if (!name) return;
     out.push({ eco, name, raw, via });
   };
