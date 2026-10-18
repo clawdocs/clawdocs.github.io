@@ -32,6 +32,9 @@ const config: Config = {
     // explicit heading IDs ({#anchor}) in many pages.
     mdx1Compat: {
       headingIds: true,
+      // Docs use the `:::danger Title` admonition syntax; v4 defaults would
+      // render the title as literal text.
+      admonitions: true,
     },
   },
 
