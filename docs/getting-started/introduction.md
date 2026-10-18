@@ -26,7 +26,7 @@ This site is a community companion to the official docs at [docs.openclaw.ai](ht
 | What it can touch | Text in, text out | Shell, files, browser, APIs, paired devices |
 | Memory | Per-session, or vendor-held | Markdown files in your workspace (`~/.openclaw/workspace`) |
 | How you reach it | One web app | Control UI, terminal UI, desktop and mobile apps, 20+ chat channels |
-| Proactivity | Waits for you | Optional [heartbeat](/architecture/heartbeat) and scheduled automations |
+| Proactivity | Waits for you | A [heartbeat](/architecture/heartbeat) (on by default) and scheduled automations |
 | Models | One vendor | Any supported provider, or local models |
 
 "Runs locally" does not mean "nothing leaves your machine". Your prompts, memory snippets and tool output go to the model provider you configure, and memory search uses OpenAI embeddings by default. See [Privacy and compliance](/guides/privacy-compliance).
@@ -96,9 +96,7 @@ As of 2026-10-18, [openclaw/openclaw](https://github.com/openclaw/openclaw) has 
 - **Not just a CLI.** It ships a full web Control UI (open it with `openclaw dashboard`) and desktop and mobile apps. Use the Control UI rather than a third-party web client: [WebClaw](/guides/webclaw) only speaks Gateway protocol v3, and current Gateways require v4 from operator and UI clients ([protocol versioning](https://docs.openclaw.ai/gateway/protocol/versioning)), so it cannot connect.
 - **Not a coding IDE.** It can write and edit code, but it is a general-purpose agent, not a replacement for your editor.
 - **Not free to run.** OpenClaw is free; model API calls are not. Local models cost nothing per token but need capable hardware.
-- **Not safe by default.** It runs with your user's permissions, shell commands run without approval by default, and the sandbox is off. Read the [Security Overview](/security/overview) before connecting it to anything important.
 - **Not a hosted service.** You run it yourself. Third parties sell managed hosting; see [Hosting Providers](/guides/hosting-providers).
-- **Not multi-tenant.** Upstream's trust model is one trusted operator per Gateway. Give mutually untrusted people separate Gateways.
 
 ---
 
@@ -114,16 +112,7 @@ OpenClaw gives a language model real access to your machine. Know these facts be
 | **Many advisories** | As of 2026-10-18 GitHub lists 722 security advisories for openclaw/openclaw (14 critical, 249 high). Stay on a current release. |
 | **Skills are code** | Malicious skills have been published to ClawHub. Review before installing. |
 
-### How to stay safe
-
-1. **Update often:** `openclaw update`.
-2. **Keep the Gateway on loopback** (`gateway.bind: "loopback"`, the default). For remote access use SSH tunnels or Tailscale, not a public port.
-3. **Keep token auth on** (`gateway.auth.mode: "token"`).
-4. **Turn on exec approvals:** `openclaw config set tools.exec.mode ask`.
-5. **Consider the sandbox** for anything that reads untrusted input: `agents.defaults.sandbox.mode: "non-main"` or `"all"` (needs Docker or another backend). Note that the global `--container` flag only runs the CLI inside an existing container; it is not a sandbox.
-6. **Audit your setup:** `openclaw security audit --deep`.
-
-See [Security Overview](/security/overview) and the [Hardening Guide](/security/hardening).
+Keep the Gateway on loopback, turn on approvals and run `openclaw security audit --deep`. The twelve-item list is the [secure-by-default checklist](/getting-started/choosing-your-setup#checklist); the reasoning is in [Security Hardening](/security/hardening).
 
 :::warning
 Do not run OpenClaw as root. Do not expose port 18789 to the internet. Do not install skills you have not read.
@@ -133,19 +122,7 @@ Do not run OpenClaw as root. Do not expose port 18789 to the internet. Do not in
 
 ## The cost question
 
-OpenClaw itself is free. Your bill comes from model tokens, and it depends almost entirely on which model you use and how much the agent runs unattended. Check your provider's current price list rather than trusting a table on a community site.
-
-The main levers, all real config keys:
-
-| Lever | How |
-|---|---|
-| Cheaper model for the heartbeat | `agents.defaults.heartbeat.model`, e.g. `anthropic/claude-haiku-5-5` |
-| Less frequent heartbeat | `agents.defaults.heartbeat.every: "1h"` (or `"0m"` to turn the recurring heartbeat off) |
-| Only during waking hours | `agents.defaults.heartbeat.activeHours: { start: "08:00", end: "22:00" }` |
-| Smaller heartbeat context | `agents.defaults.heartbeat.isolatedSession: true` and `lightContext: true` |
-| Local models | Ollama, LM Studio or vLLM; see [Local Models](/guides/local-models) |
-
-See [Cost Management](/guides/cost-management) and the official [heartbeat docs](https://docs.openclaw.ai/gateway/heartbeat).
+OpenClaw itself is free. Your bill comes from model tokens, and it depends almost entirely on which model you use and how much the agent runs unattended, including the heartbeat. As a rough scale (as of 2026-10-18, 600 requests a month), Haiku 5.5 costs about $2 a month and Opus 5.5 about $72; local models cost nothing per token. The worked numbers and configs are in [Choosing Your Setup](/getting-started/choosing-your-setup#models), the levers in [Cost Management](/guides/cost-management).
 
 ---
 
@@ -181,10 +158,6 @@ For **local models**, the GPU matters far more than the Gateway. See [Local Mode
 
 ## Next steps
 
-| Step | Link |
-|---|---|
-| Install OpenClaw | [Installation](/getting-started/installation) |
-| Get your first chat working | [Quick Start](/getting-started/quick-start) |
-| Understand the moving parts | [Core Concepts](/getting-started/core-concepts) |
-| Structured learning path | [First 7 Days](/guides/first-7-days) |
-| Lock down security | [Security Hardening](/security/hardening) |
+1. [Choosing Your Setup](/getting-started/choosing-your-setup): pick a model, a channel and a host.
+2. [Installation](/getting-started/installation), then the [Quick Start](/getting-started/quick-start).
+3. [Core Concepts](/getting-started/core-concepts), or the [First 7 Days](/guides/first-7-days) path.

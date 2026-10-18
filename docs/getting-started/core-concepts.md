@@ -9,7 +9,7 @@ keywords: [openclaw, openclaw architecture, how openclaw works, openclaw gateway
 
 # Core Concepts
 
-Before going deeper, learn the handful of parts that make OpenClaw work. Upstream's own overview is [Architecture](https://docs.openclaw.ai/concepts/architecture).
+The handful of parts that make OpenClaw work, each with a link to its deep dive. Upstream's own overview is [Architecture](https://docs.openclaw.ai/concepts/architecture).
 
 ## The Gateway
 
@@ -97,7 +97,7 @@ The **heartbeat** makes OpenClaw proactive. It is a scheduled turn in the agent'
 
 - Configure it under `agents.defaults.heartbeat` (`every`, `activeHours`, `model`, `isolatedSession`, `lightContext`, `target`).
 - A short standing checklist lives in the heartbeat's monitor scratch (`openclaw cron scratch <jobId> --set "..."`).
-- Jobs on a fixed schedule ("daily at 9am", "every Monday") are **automations**: `openclaw automations create` (alias `openclaw cron`). They can run in an isolated session and deliver results to a channel.
+- Jobs on a fixed schedule ("daily at 9am", "every Monday") are **automations**: `openclaw cron add` (`openclaw automations create` is the same command). They can run in an isolated session and deliver results to a channel.
 
 `HEARTBEAT.md` is retired: the runtime no longer reads it, and `openclaw doctor --fix` migrates an old one. See [Heartbeat](/architecture/heartbeat) and the official [heartbeat docs](https://docs.openclaw.ai/gateway/heartbeat).
 
@@ -121,20 +121,7 @@ graph TD
 
 ## SOUL.md (persona)
 
-`SOUL.md` in the workspace defines *who* the agent is: name, personality, tone, rules and boundaries.
-
-```markdown title="~/.openclaw/workspace/SOUL.md"
-# Agent Identity
-
-You are Jarvis, a helpful personal assistant.
-
-## Rules
-- Always respond politely
-- Never make purchases without explicit approval
-- Summarize long emails instead of forwarding them in full
-```
-
-It is loaded into every session. Operating rules ("how to work") belong in `AGENTS.md`; persona ("who to be") in `SOUL.md`. Because the agent can write to its own workspace, these files are also an [attack surface](/security/hardening#soulmd-protection) for prompt injection. See the [SOUL.md Guide](/guides/soul-md).
+`SOUL.md` in the workspace defines *who* the agent is: personality, tone and boundaries. It is loaded into every session; the [Quick Start](/getting-started/quick-start#step-6-personalize-your-agent-optional) has a starter file. A rule written there ("never make purchases without approval") is an instruction the model usually follows, not an enforced control; approvals and tool policy enforce. Operating rules ("how to work") belong in `AGENTS.md`; persona ("who to be") in `SOUL.md`. Because the agent can write to its own workspace, these files are also an [attack surface](/security/hardening#soulmd-protection) for prompt injection. See the [SOUL.md Guide](/guides/soul-md).
 
 ## Skills
 
