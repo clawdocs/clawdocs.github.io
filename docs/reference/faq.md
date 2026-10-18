@@ -1,6 +1,7 @@
 ---
 last_update:
-  date: 2026-07-08
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Frequently Asked Questions
 sidebar_label: FAQ
 description: Frequently asked questions about OpenClaw — setup, cost, security, troubleshooting, and ecosystem
@@ -9,41 +10,43 @@ keywords: [openclaw, openclaw faq, frequently asked questions, openclaw cost, is
 
 # Frequently Asked Questions
 
+Short answers with links. The official FAQ is at [docs.openclaw.ai/help/faq](https://docs.openclaw.ai/help/faq); this page adds our judgement and points to the deeper pages on this site.
+
 ## General
 
 ### What is OpenClaw?
 
-OpenClaw is a free, open-source, autonomous AI agent that runs locally on your machine. It connects LLMs to your files, shell, browser, and messaging apps to automate tasks. It has 377,000+ GitHub stars as of June 2026 and is governed by the OpenClaw Foundation (established February 14, 2026).
+OpenClaw is a free, open-source AI agent that you run yourself. A long-running Gateway connects LLMs to your files, shell, browser and messaging apps. It has about 392k GitHub stars as of 2026-10-18 and is stewarded by the [OpenClaw Foundation](https://openclaw.org).
 
 ### Is OpenClaw free?
 
-**OpenClaw itself is free** (MIT license). However, you pay for LLM API usage if using cloud providers. Users have reported costs ranging from $5/day to $3,600/month depending on usage intensity. Running [local models](/guides/local-models) eliminates API costs entirely.
+**OpenClaw itself is free** (MIT license). You pay for LLM API usage if you use cloud providers. Users have reported costs from a few dollars a day to $3,600/month depending on usage. Running [local models](/guides/local-models) removes API costs.
 
 ### Why was it renamed twice?
 
-1. **Clawdbot** (Nov 2025) — Original name
-2. **Moltbot** (Jan 27, 2026) — Renamed after Anthropic filed trademark complaints ("Clawd" was too close to "Claude")
-3. **OpenClaw** (Jan 30, 2026) — Renamed because "Moltbot never quite rolled off the tongue"
+1. **Clawdbot** (Nov 2025): original name
+2. **Moltbot** (Jan 27, 2026): renamed after Anthropic asked for a name change ("Clawd" was too close to "Claude")
+3. **OpenClaw** (Jan 30, 2026): renamed again because "Moltbot never quite rolled off the tongue"
 
-This was the fastest triple rebrand in open-source history — all three names within a single week.
+Upstream tells the story in [Lore](https://docs.openclaw.ai/start/lore).
 
 ### Who created OpenClaw?
 
-**Peter Steinberger**, an Austrian developer and founder of PSPDFKit. He's described his development philosophy as "shipping code he doesn't read" — having made 6,600 commits in January 2026 alone using AI coding tools.
+**Peter Steinberger**, an Austrian developer and founder of PSPDFKit. Per the upstream FAQ, he now works at OpenAI; OpenAI is a donor to the Foundation, not an owner of the project ([What is OpenClaw?](https://docs.openclaw.ai/help/faq/what-is-openclaw)).
 
 ### What is the OpenClaw Foundation?
 
-Established February 14, 2026, the OpenClaw Foundation ensures no single company controls the project. The core framework remains MIT-licensed. Steinberger announced it to address community concerns about corporate influence.
+The [OpenClaw Foundation](https://openclaw.org) is an independent 501(c)(3) that develops OpenClaw in the open, employs the core team and signs releases. Donors listed in the upstream README include Amazon, OpenAI, Red Hat and the University of Michigan; "none of them own or direct the project". The code stays MIT-licensed.
 
 ### What is Moltbook?
 
-Moltbook is a separate social network (created by Matt Schlicht) where AI agents autonomously post, comment, and vote. It grew to 1.6 million registered agents (though most were bots, with only ~17,000 human users). Andrej Karpathy called it *"the most incredible sci-fi takeoff-adjacent thing."* It suffered a major database breach in January 2026.
+Moltbook is a separate social network (created by Matt Schlicht) where AI agents post, comment and vote. It grew to 1.6 million registered agents, most of them bots. It suffered a [major database breach](/security/known-vulnerabilities#moltbook-database-breach-january-31-2026) in January 2026. It is not part of OpenClaw.
 
 ### What version is current?
 
-As of early July 2026, the latest stable release is **v2026.6.11** (published June 30, 2026), with **v2026.7.1** available as beta pre-releases. OpenClaw uses calendar versioning: `vYYYY.M.PATCH`, where the patch number is a sequential release counter within the month — not a calendar day.
+As of 2026-10-18 the latest stable release is **v2026.10.4** (published 2026-10-16). OpenClaw uses calendar versions `YYYY.M.N`, where `N` is a release counter within the month, not a day. There are four update channels: `stable`, `extended-stable`, `beta` and `dev` ([development channels](https://docs.openclaw.ai/install/development-channels)). Check yours with `openclaw --version`.
 
-Note: some users report a regression in v2026.6.11 where [tools return empty output after the first call in a turn](/reference/troubleshooting#empty-tool-output-after-first-call-v2026611) (upstream issue #98528).
+The v2026.6.11 regression where tools returned empty output after the first call in a turn (issue [#98528](https://github.com/openclaw/openclaw/issues/98528)) is closed; update to the current release.
 
 ---
 
@@ -51,36 +54,37 @@ Note: some users report a regression in v2026.6.11 where [tools return empty out
 
 ### Is OpenClaw safe to use?
 
-OpenClaw is powerful but carries significant risks. It has had:
+It is powerful, and it carries real risk. It has had:
 - **722 published GitHub security advisories** as of 2026-10-18, 14 of them critical ([Known Vulnerabilities](/security/known-vulnerabilities#advisories-at-a-glance))
-- Batches of 45 advisories on [June 30, 2026](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026) and 75 on September 11, 2026, all fixed in released versions. Run the latest stable release.
-- A [critical RCE vulnerability](/security/known-vulnerabilities) (CVE-2026-25253)
+- Batches of 45 advisories on [June 30, 2026](/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026) and 75 on [September 11, 2026](/security/known-vulnerabilities#september-2026-advisory-batch), all fixed in released versions. Run the latest stable release.
+- A [one-click RCE](/security/known-vulnerabilities#cve-2026-25253-one-click-remote-code-execution) (CVE-2026-25253, fixed in v2026.1.29)
 - [4 chainable TOCTOU vulnerabilities](https://www.cyera.com/blog/claw-chain-cyera-research-unveil-four-chainable-vulnerabilities-in-openclaw) (Cyera Research, CVSS up to 9.6)
-- [341 malicious marketplace skills](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026)
-- [135,000+ exposed instances](/security/known-vulnerabilities#exposed-instances-january-february-2026) found on the public internet
-- A [$16M crypto scam](/security/known-vulnerabilities#16m-crypto-scam-january-27-2026) exploiting the project's name transitions
+- [341 malicious ClawHub skills](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026) found by Koi Security in February 2026
+- [Tens of thousands of exposed instances](/security/known-vulnerabilities#exposed-instances-january-february-2026) in early-2026 internet scans (42,665 on Shodan on Feb 9; follow-up scans reported 135,000+)
+- A [$16M crypto scam](/security/known-vulnerabilities#16m-crypto-scam-january-27-2026) exploiting the name changes
 
-**Follow the [Security Hardening](/security/hardening) guide before deploying.** Gartner has recommended enterprises block it entirely.
+**Follow [Security Hardening](/security/hardening) before deploying.**
 
 ### Can someone hack me through OpenClaw?
 
 Yes, if you:
-- Expose the gateway to the internet (bind to `0.0.0.0`)
-- Install unverified skills from ClawHub
-- Run an outdated version with known CVEs
-- Don't restrict channel access
+- Expose the gateway to a network (`gateway.bind: "lan"` listens on `0.0.0.0`) without a strong token and a firewall
+- Install unreviewed skills or plugins
+- Run an outdated version with published advisories
+- Let anyone message the agent (open DM or group policies)
 
-Even localhost instances were vulnerable to CVE-2026-25253 via browser pivot attacks.
+Even loopback-only instances were reachable through the browser before CVE-2026-25253 was fixed. Run `openclaw security audit` to check your setup.
 
 ### Does OpenClaw send my data to the cloud?
 
-- **Memory, files, and config**: Stay local on your machine
-- **LLM prompts**: Sent to your chosen cloud provider for processing
-- **Local models**: Nothing leaves your machine at all
+- **Config, credentials, sessions and workspace files** are stored locally under `~/.openclaw/`.
+- **LLM prompts** go to your chosen model provider, and they include whatever the agent loads into context: messages, tool output, and memory such as `MEMORY.md`.
+- **Local models**: prompts stay on your machine.
+- **The Foundation** receives a daily update check (version, OS, Node version, CPU architecture) by default. Set `update.checkOnStart: false` to turn it off ([telemetry](https://docs.openclaw.ai/gateway/telemetry)).
 
 ### What are workspace .env security restrictions?
 
-Workspace `.env` files cannot override `OPENCLAW_*` variables or provider credential keys. This fail-closed design prevents malicious workspaces from hijacking credentials. See [Environment Variables](/reference/environment-variables#workspace-env-security).
+Workspace `.env` files cannot override `OPENCLAW_*` variables or provider credential keys. This fail-closed design stops a malicious workspace from hijacking credentials. See [Environment Variables](/reference/environment-variables#workspace-env-security).
 
 ---
 
@@ -88,9 +92,9 @@ Workspace `.env` files cannot override `OPENCLAW_*` variables or provider creden
 
 ### How much does it cost to run?
 
-Real-world reported costs:
+Costs people reported in early 2026 (press and forum posts, not our measurements):
 
-| User | Usage | Monthly Cost |
+| User | Usage | Monthly cost |
 |------|-------|-------------|
 | Light user | CLI chat, occasional tasks | $30-150 |
 | Moderate user | Heartbeat + 1-2 channels | $150-450 |
@@ -98,55 +102,57 @@ Real-world reported costs:
 | German magazine c't test | Full-day testing | $100+ in one day |
 | Heartbeat overnight | Just asking "Is it daytime yet?" | $18.75 overnight |
 
-Key cost drivers: **context accumulation** (session history grows indefinitely), **heartbeat** (runs even when idle), and **autonomous multi-step tool use**.
+The main cost drivers are **context accumulation** (long sessions), the **heartbeat** (it runs even when idle), and **autonomous multi-step tool use**. `openclaw gateway usage-cost` shows what you have actually spent.
 
 ### How do I reduce costs?
 
-1. Use Haiku or a local model for heartbeat (saves 80-100% of heartbeat cost)
-2. Increase heartbeat interval to 60 min (saves 50%)
-3. Set quiet hours to stop heartbeat during sleep (saves 33%)
-4. Enable `isolatedSession` for heartbeat (reduces context from 100K to 2-5K tokens)
-5. Use [local models](/guides/local-models) for $0 API costs
-6. Keep sessions short to limit context accumulation
+1. Use a cheaper or local model for the heartbeat (`agents.defaults.heartbeat.model`)
+2. Run the heartbeat less often, for example `agents.defaults.heartbeat.every: "60m"` (`"0m"` turns the recurring heartbeat off)
+3. Limit it to waking hours with `agents.defaults.heartbeat.activeHours`
+4. Set `agents.defaults.heartbeat.isolatedSession: true` so each run starts without the conversation history, and `lightContext: true` to skip workspace bootstrap files
+5. Use [local models](/guides/local-models) for $0 API cost
+6. Keep sessions short, or `/compact` them
 7. Route sub-agents to cheaper models
 
-One documented case: **$1,200/month reduced to $36/month** using model routing. See [Cost Management](/guides/cost-management) and [Performance Tuning](/guides/performance-tuning).
+See [Heartbeat](https://docs.openclaw.ai/gateway/heartbeat), [Cost Management](/guides/cost-management) and [Performance Tuning](/guides/performance-tuning).
 
 ### Can I use it without an API key?
 
-Yes, using [local models](/guides/local-models) via Ollama, LM Studio, or vLLM. No API key or internet connection required for core operation.
+Yes, with [local models](/guides/local-models) via Ollama, LM Studio or vLLM. No API key or internet connection is needed for core operation.
 
 ### Which LLM should I use?
 
-| Your priority | Recommendation |
+| Your priority | Recommendation (model ref) |
 |--------------|---------------|
-| Best quality | Claude Opus 4.8 |
-| Best balance | Claude Sonnet 4.6 |
-| Cheapest cloud | DeepSeek V3.2 (~$0.27/M tokens input) |
-| Near-free cloud | Gemini 2.5 Flash (~$0.15/M tokens input) |
-| Free (local) | Qwen3 32B via Ollama (requires 24 GB VRAM) |
-| Free (hosted) | OpenRouter free tier (rate-limited) |
+| Best quality | `anthropic/claude-opus-5-5` |
+| Best balance | `anthropic/claude-sonnet-5-5` |
+| Cheap and fast | `anthropic/claude-haiku-5-5` or `deepseek/deepseek-v4-flash` |
+| Free (local) | an Ollama model such as `ollama/qwen3:14b` |
 
-See the [Model Selection Guide](/guides/model-selection) for detailed recommendations by use case, budget, and hardware.
+A fresh Anthropic setup picks `anthropic/claude-opus-5-5`. Prices change often; check the provider's pricing page. See the [Model Selection Guide](/guides/model-selection) and the upstream [provider pages](https://docs.openclaw.ai/providers/anthropic).
 
 ### Can I use multiple models at once?
 
-Yes. OpenClaw supports per-task model routing:
+Yes. Set a default model, a cheaper heartbeat model, and per-agent overrides under `agents.entries.<id>`:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "brain": { "model": "claude-sonnet-4-6" },
-  "heartbeat": { "model": "claude-haiku-4-5-20251001" },
-  "agents": {
-    "list": [
-      { "id": "researcher", "model": "claude-opus-4-8" },
-      { "id": "monitor", "model": "ollama/qwen3:14b" }
-    ]
-  }
+  agents: {
+    ownership: "explicit",
+    defaults: {
+      model: { primary: "anthropic/claude-sonnet-5-5" },
+      heartbeat: { every: "60m", model: "anthropic/claude-haiku-5-5" },
+    },
+    entries: {
+      main: {},
+      researcher: { model: "anthropic/claude-opus-5-5" },
+      monitor: { model: "ollama/qwen3:14b" },
+    },
+  },
 }
 ```
 
-See [Model Selection](/guides/model-selection#model-routing) for routing strategies.
+With more than one entry, `ownership: "explicit"` is required; route channels to agents with bindings ([per-agent entries and multi-agent routing](https://docs.openclaw.ai/gateway/config-agents/entries-and-multi-agent)). The older `agents.list` array is retired; `openclaw doctor --fix` migrates it. For a single agent, `openclaw models set anthropic/claude-sonnet-5-5` is enough. See [Model Selection](/guides/model-selection#model-routing).
 
 ---
 
@@ -154,19 +160,19 @@ See [Model Selection](/guides/model-selection#model-routing) for routing strateg
 
 ### Does it work on Windows?
 
-Yes, via **WSL2** (recommended) or native Node.js. Native Windows support is experimental — WSL2 provides the best experience.
+Yes. Upstream recommends the native **Windows Hub** app ([openclaw/openclaw-windows-node](https://github.com/openclaw/openclaw-windows-node)) for Windows 10 20H2+ and Windows 11. The native CLI and Gateway (PowerShell installer) and WSL2 are the alternatives ([Windows](https://docs.openclaw.ai/platforms/windows)).
 
 ### Does it work offline?
 
-Yes, with [local models](/guides/local-models) via Ollama, LM Studio, or vLLM. The gateway, memory, skills, and file operations all work without internet. Only cloud LLM calls and web-based channels (WhatsApp, Telegram, etc.) require connectivity.
+Yes, with [local models](/guides/local-models). The gateway, memory, skills and file operations work without internet. Cloud LLM calls and chat channels (WhatsApp, Telegram, etc.) need connectivity.
 
 ### Does it work on Raspberry Pi or ARM?
 
-**Yes.** Upstream has an official [Raspberry Pi guide](https://docs.openclaw.ai/install/raspberry-pi) for always-on self-hosting. Use a recent 64-bit Pi with enough RAM, and run models in the cloud or on another machine. For even lighter alternatives, see [NanoClaw or Nanobot](/reference/ecosystem).
+**Yes.** Upstream has an official [Raspberry Pi guide](https://docs.openclaw.ai/install/raspberry-pi): a Pi 5 with 4-8 GB is recommended, a Pi 4 with 2 GB works with swap. Run models in the cloud or on another machine. For even lighter alternatives, see [Lightweight Variants](/guides/lightweight-variants).
 
 ### Can I run it on a cloud server?
 
-Yes. DigitalOcean, Cloudflare (via Moltworker), and others offer managed hosting. **But never expose the gateway to the public internet** — bind to localhost and use SSH tunneling or a VPN for remote access. See [Deployment Options](/guides/deployment-options).
+Yes, on any VPS or one of the [hosting providers](/guides/hosting-providers). **Keep the gateway on loopback** (`gateway.bind: "loopback"`, the default) and reach it through an SSH tunnel, Tailscale or a VPN. See [Keep the Gateway on loopback](/security/hardening#bind) and [Deployment Options](/guides/deployment-options).
 
 ### Can I run multiple instances?
 
@@ -192,18 +198,16 @@ See [Multiple gateways](https://docs.openclaw.ai/gateway/multiple-gateways).
 | RAM | 2 GB (gateway only) | 4 GB+ |
 | Disk | 500 MB | 2 GB+ |
 
-For local models, add 8-80 GB VRAM depending on model size. See [Introduction](/getting-started/introduction#system-requirements).
+Node 22, 23 and 25 are not supported ([Node.js](https://docs.openclaw.ai/install/node)). For local models, add 8-80 GB VRAM depending on model size. See [Introduction](/getting-started/introduction#system-requirements).
 
 ### Why is my gateway using so much memory?
 
-A memory regression in v2026.4.9 increased RSS from ~600 MB to ~946 MB on constrained systems. Mitigations:
+A memory regression in v2026.4.9 raised RSS from about 600 MB to about 946 MB on constrained systems (issue [#63526](https://github.com/openclaw/openclaw/issues/63526), closed). If memory is still high:
 
-1. Update to the latest version (regression partially fixed in later releases)
-2. Restart the gateway periodically (`openclaw gateway restart`)
-3. Use shorter sessions or enable `/compact` regularly
-4. Reduce `max_context_tokens` in memory config
-
-See GitHub issue [#63526](https://github.com/openclaw/openclaw/issues/63526).
+1. Update to the current release (`openclaw update`)
+2. `/compact` long sessions, or start new ones
+3. Restart the gateway (`openclaw gateway restart`)
+4. Check `openclaw gateway stability` for a recorded diagnostic
 
 ---
 
@@ -211,60 +215,59 @@ See GitHub issue [#63526](https://github.com/openclaw/openclaw/issues/63526).
 
 ### How do I update safely?
 
-**Always back up before updating:**
+Back up, preview, then update:
 
 ```bash
-cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.backup
-cp -r ~/.openclaw/credentials ~/.openclaw/credentials.backup
-npm update -g openclaw
+openclaw backup create --verify
+openclaw update --dry-run
+openclaw update
+openclaw doctor
 ```
 
-Notable breaking updates to watch for:
+`openclaw update` checks the result and rolls back if the post-update Doctor fails ([Updating](https://docs.openclaw.ai/install/updating)). If you skipped many releases, run `openclaw doctor --fix` to migrate retired config keys and files.
 
-| Version | Issue | What Happened |
+Notable breaking updates from 2026:
+
+| Version | Issue | What happened |
 |---------|-------|---------------|
-| v2026.4.1 | Silently enabled sandboxing | Broke exec in single-operator setups; no migration guide provided |
-| v2026.5.7 | Config wipe bug | Auto-update stripped config keys and deleted credentials |
-| v2026.4.26-4.29 | Tool allowlist bug | Lobster workflows calling `llm-task` failed |
+| v2026.5.7 | Config wipe bug ([#80077](https://github.com/openclaw/openclaw/issues/80077)) | The update wiped `openclaw.json` and deleted credentials; fixed in v2026.5.12 |
+| v2026.8.1 | "OpenClaw 2.0" | Sessions moved to SQLite, `HEARTBEAT.md` retired, cron renamed Automations, many retired config keys refused |
+| v2026.9.3 | Node runtime | Node 22 dropped; Node 24.16+ or 26.1+ required |
 
 ### How do I recover from the v2026.5.7 config wipe?
 
-The v2026.5.7 auto-update bug wiped `openclaw.json` and the `credentials/` directory. The built-in `.bak` files captured the already-corrupted state, so they can't help.
+The v2026.5.7 update bug wiped `openclaw.json` and the `credentials/` directory. The built-in `.bak` files captured the already-corrupted state, so they can't help.
 
-**If you have an external backup:**
+**If you have a backup archive:** restore it to a staging directory, check it, then copy the files back:
+
 ```bash
-cp ~/.openclaw/openclaw.json.backup ~/.openclaw/openclaw.json
-cp -r ~/.openclaw/credentials.backup ~/.openclaw/credentials
-openclaw gateway restart
+openclaw backup verify ./my-openclaw-backup.tar.gz
+openclaw backup restore ./my-openclaw-backup.tar.gz --target ./restored-openclaw
 ```
 
 **If you don't have a backup:**
+
 ```bash
 # Re-run onboarding to recreate config
 openclaw onboard
 
-# Re-add channels manually
-openclaw channels add whatsapp
-openclaw channels add telegram
+# Re-link channels
+openclaw channels login --channel whatsapp
+openclaw channels add --channel telegram
 ```
 
-Fixed in v2026.5.8 (PR #80257). Always update to latest after restoring.
+Fixed in v2026.5.12 (PR [#80257](https://github.com/openclaw/openclaw/pull/80257)). Update to the current release after restoring.
 
 ### How do I back up my config?
 
-```bash
-# Full backup
-tar czf openclaw-backup-$(date +%Y%m%d).tar.gz ~/.openclaw/
+Use the built-in backup command. It covers config, credentials, sessions and workspaces (including `SOUL.md` and `MEMORY.md`):
 
-# Config and credentials only
-cp ~/.openclaw/openclaw.json ~/backups/
-cp -r ~/.openclaw/credentials ~/backups/
-cp -r ~/.openclaw/memory ~/backups/
-cp ~/.openclaw/SOUL.md ~/backups/
-cp ~/.openclaw/HEARTBEAT.md ~/backups/
+```bash
+openclaw backup create --verify
+openclaw backup create --only-config
 ```
 
-Consider adding this to a cron job or [Lobster workflow](/guides/lobster-workflows).
+`openclaw backup enable` schedules recurring offsite or Git backups. See [`openclaw backup`](https://docs.openclaw.ai/cli/backup).
 
 ---
 
@@ -272,22 +275,22 @@ Consider adding this to a cron job or [Lobster workflow](/guides/lobster-workflo
 
 ### Will WhatsApp ban me for using OpenClaw?
 
-**Possibly.** WhatsApp uses the unofficial Baileys library (reverse-engineered protocol), not the official Business API. WhatsApp actively detects and bans automated accounts. Risk factors:
+**Possibly.** The WhatsApp channel uses the unofficial Baileys library (a reverse-engineered protocol), not the official Business API, and WhatsApp detects and bans automated accounts. Risk factors:
 
-- Sending too many messages too quickly
-- Automated responses to unknown contacts
-- Running from a VPS IP (flagged as suspicious)
-- Using a new phone number without history
+- Sending many messages quickly
+- Automated replies to unknown contacts
+- Running from a VPS IP
+- Using a new number without history
 
-**Mitigation:** Use your existing WhatsApp number, set rate limits, and restrict to known contacts via `allowedContacts`. Some users have run for months without issues; others get banned within days.
+**Mitigation:** use a number with history, and restrict who can reach the agent with `channels.whatsapp.dmPolicy` (`"pairing"` or `"allowlist"`) and `allowFrom` ([WhatsApp](https://docs.openclaw.ai/channels/whatsapp)). Some users run for months without issues; others are banned within days.
 
 ### Can I use OpenClaw with email?
 
-Yes. Gmail integration supports OAuth authentication, label management, auto-reply, and digest generation. Configure via `openclaw channels add gmail` and follow the OAuth flow. See [Channels Guide](/guides/channels).
+Yes, but email is an automation trigger, not a chat channel. Use the [Gmail Pub/Sub trigger](https://docs.openclaw.ai/automation/cron-jobs/gmail) or the [IMAP trigger plugin](https://docs.openclaw.ai/automation/imap). Upstream recommends a restricted, sandboxed reader agent for untrusted mail. Sending email gives the agent a lot of reach; read [Exec approvals and tool policy](/security/hardening#exec-approvals) first.
 
 ### What is Cloudflare Moltworker?
 
-An open-source project by Cloudflare to run OpenClaw on Cloudflare Workers with sandboxed execution, browser rendering, and R2 storage — approximately $5/month without needing dedicated hardware. See [Ecosystem](/reference/ecosystem#moltworker).
+[Moltworker](https://github.com/cloudflare/moltworker) runs OpenClaw in a Cloudflare Sandbox on Workers. Its README calls it an "experimental… proof of concept… not officially supported" that "may break without notice". The README estimates about $34.50/month running 24/7 (the $5 Workers Paid plan plus container compute). Last pushed 2026-05-09.
 
 ---
 
@@ -295,46 +298,59 @@ An open-source project by Cloudflare to run OpenClaw on Cloudflare Workers with 
 
 ### What is ClawHub?
 
-ClawHub is OpenClaw's community skill marketplace with 10,700+ skills. It was the target of a [major malicious skill campaign](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026) but now uses VirusTotal scanning and the new operator install policy for all published skills.
+[ClawHub](https://clawhub.ai) is OpenClaw's skill and plugin registry. It was the target of a [malicious skill campaign](/security/known-vulnerabilities#malicious-clawhub-skills-february-2026) in February 2026. Every release now gets an audit status from VirusTotal, ClawScan and static analysis, and `openclaw skills verify @owner/<slug>` fetches that verdict. A pending scan can still allow an install with a warning, so review skills yourself ([Skill Verification](/security/skill-verification)).
 
 ### What is Lobster?
 
-Lobster is OpenClaw's official workflow shell — a typed, local-first macro engine for building composable automation pipelines. 1,222 GitHub stars, MIT licensed. See [Lobster Workflows Guide](/guides/lobster-workflows).
+[Lobster](https://github.com/openclaw/lobster) is OpenClaw's official workflow shell: a typed, local-first macro engine for composable automation pipelines. About 1.3k stars as of 2026-10-18, MIT licensed. See the [Lobster Workflows Guide](/guides/lobster-workflows).
 
 ### What is Clawery?
 
-Clawery is a separate enterprise-focused product offering managed OpenClaw with additional security, compliance, audit logging, and container-isolated skills. Not part of the open-source project.
+[clawery.com](https://clawery.com) markets an enterprise AI assistant service ("Your Personal Assistant for Work"). Its site no longer mentions OpenClaw. It is not part of the open-source project.
 
 ### What are the lightweight alternatives?
 
+Independent projects, not forks (stars as of 2026-10-18):
+
 | Project | Stars | Description |
 |---------|-------|-------------|
-| **Nanobot** | 15,900 | ~4,000 lines of Python, 99% smaller than OpenClaw |
-| **NanoClaw** | 6,900 | Security-focused fork with container isolation |
-| **MimiClaw** | — | Runs on a $5 ESP32-S3 microcontroller |
+| [**Nanobot**](https://github.com/HKUDS/nanobot) | 49k | Small Python agent from HKU |
+| [**ZeroClaw**](https://github.com/zeroclaw-labs/zeroclaw) | 33k | Rust agent runtime |
+| [**NanoClaw**](https://github.com/nanocoai/nanoclaw) | 31k | Small TypeScript agent that runs in containers |
+| [**PicoClaw**](https://github.com/sipeed/picoclaw) | 30k | Go agent for small devices |
+| [**MimiClaw**](https://github.com/memovai/mimiclaw) | 5.8k | Runs on an ESP32-S3 microcontroller |
 
 See [Lightweight Variants](/guides/lightweight-variants) and [Ecosystem](/reference/ecosystem).
 
 ### Can I contribute?
 
-Yes! See [Contributing to OpenClaw](/contributing/openclaw) and [Contributing to these docs](/contributing/docs).
+Yes. See [Contributing to OpenClaw](/contributing/openclaw) and [Contributing to these docs](/contributing/docs).
 
 ---
 
 ## Troubleshooting Quick Reference
 
-| Problem | Quick Fix |
+Start with `openclaw status --all`, `openclaw doctor` and `openclaw logs --follow`, or `openclaw triage` for a sanitized diagnosis ([General troubleshooting](https://docs.openclaw.ai/help/troubleshooting)).
+
+| Problem | Quick fix |
 |---------|-----------|
-| Gateway won't start | Check port conflict: `lsof -i :18789` |
-| "Invalid API key" | Verify key format matches provider (Anthropic: `sk-ant-...`) |
-| Heartbeat costing too much | Set `heartbeat.model` to Haiku/local, increase `interval` |
-| Agent won't run commands | Check the effective policy with `openclaw approvals get` |
+| `another gateway instance is already listening` / `EADDRINUSE` | Another process holds the port. `openclaw gateway status`, then `openclaw gateway stop` or pick another `--port` |
+| `refusing to bind gateway ... without auth` | A non-loopback bind needs a token. Set `gateway.bind` back to `loopback`, or configure `gateway.auth` ([hardening](/security/hardening#auth)) |
+| `Gateway start blocked: set gateway.mode=local` | Run `openclaw config set gateway.mode local`, or `openclaw doctor --fix` if the config was clobbered |
+| Gateway reachable from the network | `openclaw config set gateway.bind loopback`, `openclaw gateway restart`, then `openclaw security audit` ([Keep the Gateway on loopback](/security/hardening#bind)) |
+| Provider auth errors (401) | Check the saved profile with `openclaw models auth list`; sign in again with `openclaw models auth login` |
+| Heartbeat costing too much | Set `agents.defaults.heartbeat.model` to a cheap or local model and lengthen `every` |
+| Agent won't run commands | `openclaw approvals get` shows the effective exec policy. Approve the pending request (`openclaw approvals pending`, then `openclaw approvals resolve <id> allow-once`), or allowlist the command ([exec approvals](https://docs.openclaw.ai/tools/exec-approvals)) |
+| Sandbox blocking exec | `openclaw sandbox explain` shows what is sandboxed. Adjust the sandbox's [workspace access](https://docs.openclaw.ai/gateway/sandboxing/workspace-access); don't switch the sandbox off |
 | Config wiped after update | Restore from backup; see [recovery steps above](#how-do-i-recover-from-the-v202657-config-wipe) |
-| High memory usage | Update to latest; restart gateway periodically |
-| WhatsApp disconnected | Re-scan QR: `openclaw channels add whatsapp` |
-| Channel messages not arriving | Check `dm.accessPolicy` and `allowedContacts` |
-| Sandbox blocking exec | Check what is sandboxed with `openclaw sandbox explain`. Don't switch the sandbox off or grant `full` exec to work around it; adjust the sandbox's [workspace access](https://docs.openclaw.ai/gateway/sandboxing/workspace-access) instead |
-| macOS gateway stops overnight | Maintenance Sleep issue — disable Power Nap in System Settings |
+| High memory usage | Update; `/compact` long sessions; `openclaw gateway restart` |
+| WhatsApp disconnected | Re-link with `openclaw channels login --channel whatsapp` |
+| Channel messages not arriving | `openclaw channels status --probe`; check the channel's `dmPolicy` and `allowFrom` |
+| macOS gateway stops overnight | Power Nap / Maintenance Sleep; see upstream [gateway service troubleshooting](https://docs.openclaw.ai/gateway/troubleshooting/gateway-service-and-process) |
+
+:::warning
+Do not "fix" approval prompts by setting `tools.exec.mode: "full"` or by turning the sandbox off. Both give the agent unreviewed shell access on your host. See [Exec approvals and tool policy](/security/hardening#exec-approvals) and [Sandboxing](/security/hardening#sandboxing).
+:::
 
 For detailed troubleshooting, see [Troubleshooting](/reference/troubleshooting).
 
@@ -342,8 +358,8 @@ For detailed troubleshooting, see [Troubleshooting](/reference/troubleshooting).
 
 ## See Also
 
-- [Troubleshooting](/reference/troubleshooting) — Detailed fix guides
-- [Getting Started](/getting-started/introduction) — New to OpenClaw?
-- [Configuration Reference](/reference/configuration) — All config options
-- [Environment Variables](/reference/environment-variables) — All env vars
-- [Security Hardening](/security/hardening) — Lock down your setup
+- [Troubleshooting](/reference/troubleshooting): detailed fix guides
+- [Getting Started](/getting-started/introduction): new to OpenClaw?
+- [Configuration Reference](/reference/configuration): all config options
+- [Environment Variables](/reference/environment-variables): all env vars
+- [Security Hardening](/security/hardening): lock down your setup
