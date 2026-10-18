@@ -26,11 +26,12 @@ Star counts, last-push dates and archive status come from `gh api` **as of 2026-
 | 5 | [NanoClaw](#nanoclaw) | 30,964 | Alternative (containers) |
 | 6 | [qmd](https://github.com/tobi/qmd) | 30,467 | Markdown search/memory |
 | 7 | [PicoClaw](#picoclaw) | 30,087 | Alternative (Go) |
-| 8 | [memU](#memu) | 14,553 | Memory framework |
-| 9 | [IronClaw](#ironclaw) | 12,661 | Alternative (Rust) |
-| 10 | [Moltworker](#moltworker) | 9,948 | Deployment (experimental) |
-| 11 | [ClawHub](#clawhub) | 9,516 | Official skill registry |
-| 12 | [NullClaw](#nullclaw) | 8,131 | Alternative (Zig) |
+| 8 | [NVIDIA NemoClaw](#nemoclaw) | 22,764 | Sandboxed runtime (vendor) |
+| 9 | [memU](#memu) | 14,553 | Memory framework |
+| 10 | [IronClaw](#ironclaw) | 12,661 | Alternative (Rust) |
+| 11 | [Moltworker](#moltworker) | 9,948 | Deployment (experimental) |
+| 12 | [ClawHub](#clawhub) | 9,516 | Official skill registry |
+| 13 | [NullClaw](#nullclaw) | 8,131 | Alternative (Zig) |
 
 ---
 
@@ -40,7 +41,7 @@ Star counts, last-push dates and archive status come from `gh api` **as of 2026-
 |---------|------:|------------|------|
 | **OpenClaw** | 392,325 | The Gateway, CLI and agent runtime | [openclaw/openclaw](https://github.com/openclaw/openclaw) |
 | **ClawHub** | 9,516 | Public skill and plugin registry | [clawhub.ai](https://clawhub.ai), [openclaw/clawhub](https://github.com/openclaw/clawhub) |
-| **Windows Hub** | 2,158 | Native Windows desktop app (recommended on Windows) | [openclaw/openclaw-windows-node](https://github.com/openclaw/openclaw-windows-node) |
+| **Windows Hub** | 2,159 | Native Windows desktop app (recommended on Windows) | [openclaw/openclaw-windows-node](https://github.com/openclaw/openclaw-windows-node) |
 | **Lobster** | 1,275 | Workflow shell for typed, composable pipelines | [openclaw/lobster](https://github.com/openclaw/lobster) |
 | **openclaw-ansible** | 602 | Hardened install with Tailscale, UFW and Docker | [openclaw/openclaw-ansible](https://github.com/openclaw/openclaw-ansible), [docs](https://docs.openclaw.ai/install/ansible) |
 | **macOS app** | — | Menu bar app, voice wake, node mode; macOS 15.0 or later | [docs](https://docs.openclaw.ai/platforms/macos) |
@@ -101,11 +102,23 @@ A multi-session web chat for the Gateway with PWA support.
 
 - 187 stars, last push 2026-06-18. Repo: [MarlBurroW/pinchchat](https://github.com/MarlBurroW/pinchchat).
 
+### AionUi {#aionui}
+
+A desktop "cowork" app that runs a built-in agent and detects installed CLI agents, OpenClaw among 20+ others (Claude Code, Codex, Hermes and more), so you can work with several from one window. Its README lists an OpenClaw setup assistant. It drives OpenClaw as one agent among many; it is not a Gateway client like the Control UI.
+
+- 33,610 stars, Apache-2.0, last push 2026-10-14, latest release v2.2.2 (2026-09-09). Repo: [iOfficeAI/AionUi](https://github.com/iOfficeAI/AionUi). Not tested by clawdocs.
+
 ---
 
 ## Deployment tools
 
 See [Deployment Options](/guides/deployment-options) for setup steps. For Cloudflare, upstream now documents its own [Workers and Durable Object setup](https://docs.openclaw.ai/install/cloudflare) using the official image.
+
+### NVIDIA NemoClaw {#nemoclaw}
+
+NVIDIA's open-source reference stack for running agents inside [NVIDIA OpenShell](https://github.com/NVIDIA/OpenShell) sandboxes, with guided onboarding, managed inference, network policy and sandbox lifecycle commands. OpenClaw is the default agent; Hermes and LangChain Deep Agents Code are also supported. The README calls it an alpha project. OpenClaw also has its own [OpenShell sandbox backend](https://docs.openclaw.ai/gateway/sandboxing/openshell-backend) if you only want the sandbox.
+
+- 22,764 stars, Apache-2.0, created 2026-03-15, last push 2026-10-18, no GitHub releases. Repo: [NVIDIA/NemoClaw](https://github.com/NVIDIA/NemoClaw). Docs: [docs.nvidia.com/nemoclaw](https://docs.nvidia.com/nemoclaw/latest/). The OpenClaw Foundation lists NVIDIA and NemoClaw as a partner ([openclaw.org/donors](https://www.openclaw.org/donors)).
 
 ### Moltworker {#moltworker}
 
@@ -200,6 +213,10 @@ These are **not drop-in replacements** for OpenClaw. They are useful if you need
 A memory framework for long-running agents ("personal memory across agents"), self-hosted or on [memu.so](https://memu.so).
 
 - 14,553 stars, last push 2026-10-17. Repo: [NevaMind-AI/memU](https://github.com/NevaMind-AI/memU). GitHub no longer detects a standard license (NOASSERTION); read its LICENSE file before relying on it.
+
+### GBrain and agentmemory
+
+Two large memory projects with documented OpenClaw integrations, both untested by clawdocs: [GBrain](https://github.com/garrytan/gbrain) (30,970 stars, MIT), an agent knowledge base installed as a ClawHub bundle plugin or MCP server, and [agentmemory](https://github.com/rohitg00/agentmemory) (29,640 stars, Apache-2.0), a local memory server whose connector installs a native OpenClaw memory plugin. Details in [Memory Systems](/guides/memory-systems#gbrain).
 
 More memory plugins are listed in [Resources](/reference/resources#memory--context-plugins) and compared in [Memory Systems](/guides/memory-systems).
 

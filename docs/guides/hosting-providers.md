@@ -147,8 +147,8 @@ Simple single-plan pricing.
 
 Low-cost managed hosting on shared containers. It hosts both OpenClaw and Hermes.
 
-- **URL**: [agent37.com/openclaw](https://www.agent37.com/openclaw)
-- **Pricing** (as of 2026-10-18):
+- **URL**: [agent37.com/personal](https://www.agent37.com/personal) (the old `/openclaw` address redirects here). The [agent37.com](https://www.agent37.com) homepage now sells metered cloud sandboxes for agents; the OpenClaw and Hermes plans below are on `/personal`.
+- **Pricing** (as of 2026-10-18, [source](https://www.agent37.com/personal)):
 
 | Plan | Price | Specs |
 |------|-------|-------|
@@ -209,7 +209,7 @@ GDPR-compliant managed hosting on German VPS infrastructure.
 Managed hosting on a dedicated EU server for each customer, with OpenClaw or Hermes Agent installed on the same plans and prices.
 
 - **URL**: [oneclickclaw.io/openclaw](https://oneclickclaw.io/openclaw)
-- **Pricing**:
+- **Pricing** (regular prices, as of 2026-10-18, [source](https://oneclickclaw.io/openclaw)):
 
 | Plan | Monthly | Annual | Specs |
 |------|---------|--------|-------|
@@ -227,6 +227,7 @@ Managed hosting on a dedicated EU server for each customer, with OpenClaw or Her
 - **Payment**: Stripe in EUR (Visa, Mastercard, American Express, SEPA Direct Debit), monthly or annual, cancel any time
 - **GDPR**: Servers in Denmark, operated from Greece (EU)
 - **Hermes Agent**: Same plans and prices at [oneclickclaw.io/hermes](https://oneclickclaw.io/hermes)
+- **Temporary promotion**: on 2026-10-18 the site's page title advertised a "Halloween Sale from €9.99". The page text does not state the sale's terms or end date, and the regular prices above are unchanged, so the table keeps them.
 
 ### ClawBook.io {#clawbookio}
 
@@ -254,6 +255,7 @@ Managed OpenClaw hosting. Your own open-source AI agent gets a pod: a private, a
 
 - **URL**: [everpod.ai](https://everpod.ai)
 - **Price**: $29/month with up to $10 of model usage included each month, cancel anytime | Bigger plans from $59/month
+- **Developer pods** (as of 2026-10-18, [source](https://everpod.ai)): a separate product where you run the agent yourself over SSH through your own Tailscale network, with your own model plan or key and no model usage included. From $24/month (S: 4 vCPU, 8 GB RAM, 80 GB); M $42/month (8 vCPU, 16 GB, 160 GB); L $79/month (16 vCPU, 32 GB, 320 GB). Everpod says OpenClaw can be installed on one if you prefer to run it yourself
 - **Setup**: About 15 minutes; nothing to install, no technical knowledge needed
 - **Channels**: Telegram, Discord, Slack, WhatsApp, Signal and 20+ more
 - **Models**: OpenAI, Anthropic, Google, DeepSeek and more; usage capped by your plan; bring your own model key and nothing is added on top

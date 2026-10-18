@@ -14,7 +14,7 @@ OpenClaw is model-agnostic. It ships provider plugins for the major cloud APIs, 
 Model refs are always `provider/model`, for example `anthropic/claude-sonnet-5-5`. To see what your credentials can use, run `openclaw models list` (configured models) or `openclaw models list --all` (full catalog).
 
 :::tip Prices change
-Prices below are per million input/output tokens, **as of 2026-10-18**. Anthropic prices are from [Anthropic's pricing page](https://platform.claude.com/docs/en/about-claude/pricing). Where no source is given, check the provider's pricing page before you rely on a number.
+Prices below are per million input/output tokens, **as of 2026-10-18**, from the providers' own pages: [Anthropic](https://platform.claude.com/docs/en/about-claude/pricing), [OpenAI](https://developers.openai.com/api/docs/pricing) (Standard tier, short-context rates), [Google Gemini](https://ai.google.dev/gemini-api/docs/pricing) (paid tier) and [DeepSeek](https://api-docs.deepseek.com/quick_start/pricing). Where no source is given, check the provider's pricing page before you rely on a number.
 :::
 
 ---
@@ -27,11 +27,19 @@ Prices below are per million input/output tokens, **as of 2026-10-18**. Anthropi
 | Best default for agent work | `anthropic/claude-opus-5-5` (fresh Anthropic setups pick this) | $4 / $20 |
 | Balance of cost and quality | `anthropic/claude-sonnet-5-5` | $2 / $10 |
 | Cheap and fast | `anthropic/claude-haiku-5-5` | $0.10 / $0.50 up to 100K-token prompts; $0.50 / $2.50 above |
-| OpenAI default | `openai/gpt-6-astra` (also the built-in fallback when no model is configured) | See [OpenAI pricing](https://openai.com/api/pricing/) |
-| Google default | `google/gemini-3.1-pro-preview` (onboarding default in 2026.10.4; the next release moves to Gemini 4 Argon) | See [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing) |
-| Budget cloud | `deepseek/deepseek-flash` (V4.1 Flash) | About $0.30 / $1.20 at peak hours (OpenClaw's bundled estimate) |
+| OpenAI default | `openai/gpt-6-astra` (also the built-in fallback when no model is configured) | $10 / $50 |
+| Google default | `google/gemini-3.1-pro-preview` (onboarding default in 2026.10.4; the next release moves to Gemini 4 Argon, see [Price changes ahead](#price-changes-ahead)) | $2 / $12 up to 200K-token prompts; $4 / $18 above |
+| Budget cloud | `deepseek/deepseek-flash` (V4.1 Flash) | $0.30 / $1.20 at peak hours, half that off-peak (cache-miss input) |
 | Free, local | `ollama/qwen3:32b` or similar | $0 per token, your hardware |
 | One key for many providers | `openrouter/auto` | Pass-through pricing |
+
+### Price changes ahead {#price-changes-ahead}
+
+As of 2026-10-18, three dated price changes affect OpenClaw users:
+
+- **Gemini 4 Argon** (`gemini-4-argon`) costs $2 / $10 through 2026-11-30 and $4 / $20 from 2026-12-01, and is not on Google's free tier ([Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing)). The 2026.10.10 beta makes Argon OpenClaw's default Gemini model ([v2026.10.10-beta.1](https://github.com/openclaw/openclaw/releases/tag/v2026.10.10-beta.1)). This site is pinned to 2026.10.4, whose catalog does not include Argon, so the refs on this page stay on `gemini-3.1-pro-preview`.
+- **Gemini 3.8 Flash and 3.6 Flash** cost $0.75 / $3.75 through 2026-12-31 and $1.50 / $7.50 from 2027-01-01.
+- **DeepSeek Search and Fetch** cost $0.75 per 1,000 successful requests. OpenClaw's DeepSeek plugin can serve `web_search`, which calls DeepSeek's Search API directly ([DeepSeek provider](https://docs.openclaw.ai/providers/deepseek#web-search)). DeepSeek's page says the server-side tool calls made through its Harness, Claude Code or Codex integrations are free until 00:00 Beijing time on 2026-11-01 and billed per request after that ([DeepSeek pricing](https://api-docs.deepseek.com/quick_start/pricing)).
 
 ---
 
@@ -85,9 +93,9 @@ The heartbeat is a scheduled agent turn, every 30 minutes by default. Run it on 
 |---|---|---|
 | `anthropic/claude-fable-5-1` | Most capable Claude. Long turns on hard tasks. | $10 / $50 |
 | `anthropic/claude-opus-5-5` | Strong default for agent and coding work. Thinking is always on; use `/think low` to reduce it. | $4 / $20 |
-| `openai/gpt-6.1-sol` | OpenAI's top tier. Reasoning cannot be disabled. | See OpenAI pricing |
+| `openai/gpt-6.1-sol` | OpenAI's mid tier, below `gpt-6-astra` ($10 / $50). Same list price as Sonnet 5.5. Reasoning cannot be disabled. | $2 / $10 |
 | `anthropic/claude-sonnet-5-5` | Most coding at half the Opus price | $2 / $10 |
-| `deepseek/deepseek-v4-pro` | DeepSeek's onboarding default | See [DeepSeek pricing](https://api-docs.deepseek.com/quick_start/pricing) |
+| `deepseek/deepseek-v4-pro` | DeepSeek's onboarding default. No image input. | $1.32 / $3.96 at peak hours, half that off-peak |
 
 ### General chat and daily tasks
 
@@ -95,8 +103,8 @@ The heartbeat is a scheduled agent turn, every 30 minutes by default. Run it on 
 |---|---|
 | `anthropic/claude-sonnet-5-5` | Good quality per dollar |
 | `anthropic/claude-haiku-5-5` | Cheapest Claude. Text and image input, 1M context. |
-| `openai/gpt-6-luna` | Lower-cost GPT-6 tier; check your account's catalog |
-| `google/gemini-3.7-flash` | Newest bundled Gemini Flash model in 2026.10.4. The `gemini-flash` alias still selects `google/gemini-3-flash-preview` |
+| `openai/gpt-6-luna` | Lowest-cost GPT-6 tier, $0.10 / $0.50 (the same as Haiku 5.5 on short prompts); check your account's catalog |
+| `google/gemini-3.7-flash` | Newest Gemini Flash model in the 2026.10.4 catalog. The `gemini-flash` alias still selects `google/gemini-3-flash-preview`. Google's pricing page now lists Gemini 3.8 Flash and 3.6 Flash ($0.75 / $3.75 until 2026-12-31, then $1.50 / $7.50) and no 3.7 Flash; the 2026.10.10 beta adds 3.8 Flash to the catalog |
 | `deepseek/deepseek-flash` | Budget option |
 
 ### Long context
@@ -286,9 +294,9 @@ Custom providers under `models.providers` are merged with the built-in catalog b
 | Provider | Current refs | Context | Pricing |
 |---|---|---|---|
 | Anthropic | `claude-fable-5-1`, `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5` | 1M | $0.10 / $0.50 (Haiku 5.5) to $10 / $50 (Fable 5.1), [source](https://platform.claude.com/docs/en/about-claude/pricing) |
-| OpenAI | `gpt-6-astra`, `gpt-6-sol`, `gpt-6.1-sol`, `gpt-6-luna`, `gpt-5.6-*` | Varies by model | [openai.com/api/pricing](https://openai.com/api/pricing/) |
-| Google | `gemini-3.1-pro-preview`, `gemini-3.7-flash`, `gemini-3.5-flash-lite` | 1,048,576 | [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing) |
-| DeepSeek | `deepseek-v4-pro`, `deepseek-v4-flash`, `deepseek-flash` | 1M | [DeepSeek pricing](https://api-docs.deepseek.com/quick_start/pricing) |
+| OpenAI | `gpt-6-astra`, `gpt-6-sol`, `gpt-6.1-sol`, `gpt-6-luna`, `gpt-5.6-*` | Varies by model | $0.10 / $0.50 (GPT-6 Luna) to $10 / $50 (GPT-6 Astra), short-context rates; long prompts cost more, [source](https://developers.openai.com/api/docs/pricing) |
+| Google | `gemini-3.1-pro-preview`, `gemini-3.7-flash`, `gemini-3.5-flash-lite` | 1,048,576 | $0.30 / $2.50 (3.5 Flash-Lite) to $2 / $12 (3.1 Pro Preview, up to 200K-token prompts), [source](https://ai.google.dev/gemini-api/docs/pricing) |
+| DeepSeek | `deepseek-v4-pro`, `deepseek-v4-flash`, `deepseek-flash` | 1M | $0.30 / $1.20 (Flash) to $1.32 / $3.96 (V4 Pro) at peak, half off-peak, [source](https://api-docs.deepseek.com/quick_start/pricing) |
 | xAI | `grok-4.7` and earlier 4.x | Varies | [xAI pricing](https://docs.x.ai/docs/models) |
 | OpenRouter | `openrouter/auto` or `openrouter/<author>/<slug>` | Varies | Pass-through, [openrouter.ai/models](https://openrouter.ai/models) |
 

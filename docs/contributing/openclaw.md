@@ -53,6 +53,8 @@ Do not open a public issue. Report privately through GitHub security advisories 
 ## Community
 
 - **Discord:** [discord.gg/clawd](https://discord.gg/clawd) (the official invite, from CONTRIBUTING.md)
+- **Forum:** [community.openclaw.ai](https://community.openclaw.ai), the official Discourse forum linked from openclaw.ai
+- **Foundation:** [openclaw.org](https://www.openclaw.org), launched 2026-07-08; Dave Morin is Chairperson and Vincent Koc Chief Architect ([people](https://www.openclaw.org/people), 2026-10-18). Press contact: press@openclaw.org
 - **Issues:** [github.com/openclaw/openclaw/issues](https://github.com/openclaw/openclaw/issues). The repository has GitHub Discussions turned off.
 
 ## See also

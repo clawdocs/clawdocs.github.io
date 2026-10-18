@@ -61,7 +61,19 @@ Per million tokens (input / output), as of 2026-10-18, from [Anthropic pricing](
 | Claude Haiku 5.5 (prompt over 100K tokens) | `anthropic/claude-haiku-5-5` | $0.50 / $2.50 | $0.05 |
 | Legacy: Opus 4.6 to 4.8, Sonnet 4.6, Haiku 4.5 | | $5 / $25, $3 / $15, $1 / $5 | 0.1x input |
 
-For other providers, use the provider's own price page. OpenClaw's bundled estimate for `deepseek/deepseek-flash` is $0.30 / $1.20 at peak rates ([DeepSeek provider](https://docs.openclaw.ai/providers/deepseek)). Local models cost nothing per token.
+Other providers, per million tokens (input / output), as of 2026-10-18, from each provider's pricing page:
+
+| Model | Ref | Input / output | Source |
+|---|---|---|---|
+| GPT-6 Astra | `openai/gpt-6-astra` | $10 / $50 | [OpenAI](https://developers.openai.com/api/docs/pricing), Standard tier, short-context rates |
+| GPT-6.1 Sol | `openai/gpt-6.1-sol` | $2 / $10 | same |
+| GPT-6 Luna | `openai/gpt-6-luna` | $0.10 / $0.50 | same |
+| Gemini 3.1 Pro Preview (prompt up to 200K tokens) | `google/gemini-3.1-pro-preview` | $2 / $12 | [Google](https://ai.google.dev/gemini-api/docs/pricing), paid tier |
+| Gemini 4 Argon (not in the 2026.10.4 catalog) | | $2 / $10 until 2026-11-30, then $4 / $20 | same |
+| DeepSeek V4.1 Flash | `deepseek/deepseek-flash` | $0.30 / $1.20 at peak, $0.15 / $0.60 off-peak | [DeepSeek](https://api-docs.deepseek.com/quick_start/pricing), cache-miss input |
+| DeepSeek V4 Pro | `deepseek/deepseek-v4-pro` | $1.32 / $3.96 at peak, $0.66 / $1.98 off-peak | same |
+
+OpenAI charges more for long prompts (for example GPT-6.1 Sol $4 / $15). DeepSeek's peak hours are 01:00-04:00 and 06:00-10:00 UTC on weekdays. Two dated changes are worth knowing: Gemini 4 Argon, which the 2026.10.10 beta makes OpenClaw's default Gemini model, doubles in price on 2026-12-01; and DeepSeek bills its Search and Fetch APIs at $0.75 per 1,000 requests, which matters if DeepSeek serves your `web_search` (details in [Model Selection](/guides/model-selection#price-changes-ahead)). Local models cost nothing per token.
 
 ### Heartbeat costs {#heartbeat-costs}
 
