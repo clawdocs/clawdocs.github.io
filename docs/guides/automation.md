@@ -119,7 +119,7 @@ Commands take the job **id** (from `list`), not its name. There is no `pause`/`r
     enabled: true,          // false (or OPENCLAW_SKIP_CRON=1) stops all automations, including heartbeats
     skipMissedJobs: true,   // don't catch up recurring slots missed while the Gateway was down
     sessionRetention: "24h",
-    webhookToken: "replace-with-a-dedicated-token", // Bearer token on outbound job webhooks
+    webhookToken: "${OPENCLAW_CRON_WEBHOOK_TOKEN}", // Bearer token on outbound job webhooks; keep the value in ~/.openclaw/.env
   },
 }
 ```
@@ -140,40 +140,26 @@ Beyond time schedules, automations can fire from events. Each is documented upst
 
 ### Inbound webhooks {#incoming-webhooks}
 
-Gateway HTTP hooks let an external service wake an agent or submit a turn. They are off by default and live under the `hooks` key:
+Gateway HTTP hooks let an external service wake an agent or submit a turn. They are off by default and live under the `hooks` key, with their own token:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
   hooks: {
     enabled: true,
-    token: "replace-with-a-long-random-hook-token", // not your Gateway token
-    path: "/hooks",
+    token: "${OPENCLAW_HOOKS_TOKEN}", // a long random value, not your Gateway token
     allowedAgentIds: ["main"],
-    allowRequestSessionKey: false,
   },
 }
 ```
 
-After `openclaw config validate` and `openclaw gateway restart`, test it from the Gateway host:
+- `POST /hooks/agent` runs an agent turn with `message`; add `channel` and `to` to deliver the result.
+- `POST /hooks/wake` queues a short, trusted system event for the main session.
+- `POST /hooks/<name>` maps custom paths through `hooks.mappings`.
 
-```bash
-curl --include http://127.0.0.1:18789/hooks/agent \
-  -H 'Authorization: Bearer replace-with-a-long-random-hook-token' \
-  -H 'Content-Type: application/json' \
-  -H 'Idempotency-Key: deploy-2026-10-18-001' \
-  --data '{"message":"A deployment just completed. Summarize the release notes.","agentId":"main","deliver":false}'
-```
-
-Endpoints:
-
-- `POST /hooks/agent`: run an agent turn with `message`. Add `channel` and `to` to deliver the result, or `"waitForCompletion": true` to get the outcome in the response.
-- `POST /hooks/wake`: queue a short system event (`text`) for the main session.
-- `POST /hooks/<name>`: custom paths, defined in `hooks.mappings` with templates or transforms. See [Hooks config](https://docs.openclaw.ai/gateway/config-hooks).
-
-HTTP `200` means the run was admitted, not that it finished or delivered. Check `openclaw logs --follow` for `hook agent run completed`.
+HTTP `200` means the run was admitted, not that it finished. Payload fields, `curl` examples, status codes, mappings and integration recipes (GitHub Actions, Home Assistant, n8n) are in [API & Webhooks](/guides/api-webhooks#webhook-ingress-external-to-agent).
 
 :::warning Webhook payloads are untrusted
-Anything a webhook carries (an email body, an issue title, a deploy message) can contain instructions aimed at your agent. Route untrusted content through `/hooks/agent` to an agent with restricted tools, never through `/hooks/wake`, and keep the hook token separate from Gateway auth. See [Security hardening](/security/hardening).
+Anything a webhook carries (an email body, an issue title, a deploy message) can contain instructions aimed at your agent. Route untrusted content through `/hooks/agent` to an agent with restricted tools, never through `/hooks/wake`. See [Security hardening](/security/hardening).
 :::
 
 ### Outbound webhooks {#outgoing-webhooks}
@@ -275,15 +261,7 @@ Run it with `lobster run deploy.lobster`. Syntax, approvals and the OpenClaw plu
 
 ### Messaging platforms {#messaging-platforms}
 
-Full guides are in [Channels & Integrations](/guides/channels).
-
-| Platform | Setup | Automation use case |
-|----------|-------|---------------------|
-| **Slack** | App token | Team notifications, standup bots, incident response |
-| **Discord** | Bot token | Community management, moderation, FAQ bot |
-| **Telegram** | Bot token | Personal assistant, alerts, remote control |
-| **WhatsApp** | QR pairing | Personal messaging, family coordination |
-| **iMessage** | macOS only | Personal assistant (calendar, reminders) |
+Any connected channel can receive automation output through `--announce --channel <id> --to <target>`. Target formats differ per channel (a Telegram chat id, `channel:C123...` on Slack, an E.164 number on WhatsApp); `openclaw directory` looks them up. Setup is in [Channels & Integrations](/guides/channels).
 
 ### Developer tools and smart home {#developer-tools}
 
