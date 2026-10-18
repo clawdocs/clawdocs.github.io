@@ -9,7 +9,7 @@ keywords: [openclaw, openclaw troubleshooting, fix, debug, openclaw not working,
 
 # Troubleshooting & Debugging
 
-A short, tested companion to the official runbooks. Every command here exists in OpenClaw v2026.10.4, and every error string is quoted from upstream docs or source. For the full symptom index, see the upstream [General troubleshooting](https://docs.openclaw.ai/help/troubleshooting) hub and the deep [Gateway troubleshooting](https://docs.openclaw.ai/gateway/troubleshooting) runbook.
+Every command here exists in OpenClaw v2026.10.4, and every error string is quoted from upstream docs or source. For the full symptom index, see the upstream [General troubleshooting](https://docs.openclaw.ai/help/troubleshooting) hub and the deep [Gateway troubleshooting](https://docs.openclaw.ai/gateway/troubleshooting) runbook.
 
 ---
 
@@ -20,12 +20,14 @@ Run this ladder in order. Each step is read-only.
 ```bash
 openclaw status            # channels, auth, versions at a glance
 openclaw gateway status    # service state, probe, capability
-openclaw doctor            # config and service checks (add --fix to repair)
+openclaw doctor --lint     # read-only config and service checks
 openclaw channels status --probe
 openclaw logs --follow     # live gateway log
 ```
 
-Healthy output: `openclaw gateway status` shows `Runtime: running`, `Connectivity probe: ok` and a `Capability: ...` line; `openclaw doctor` reports no blocking issues; `channels status --probe` shows each account connected (and `works` or `audit ok` where supported).
+Healthy output: `openclaw gateway status` shows `Runtime: running`, `Connectivity probe: ok` and a `Capability: ...` line; `openclaw doctor --lint` reports no blocking findings; `channels status --probe` shows each account connected (and `works` or `audit ok` where supported).
+
+Plain `openclaw doctor` (without `--lint` or `--json`) is not read-only: it can copy legacy config and migrate state even without `--fix`. Take a backup before you run it on a broken install.
 
 If you want one bundle to hand to a person or a coding agent, `openclaw triage` writes a sanitized diagnosis and, when the Gateway is reachable, a support archive.
 
@@ -506,7 +508,7 @@ openclaw backup create --verify
 
 ### Rollback Procedure
 
-`openclaw update` rehearses in an isolated candidate state and rolls back when post-update Doctor fails. To go back by hand:
+If a new version fails validation, the old Gateway keeps serving. Automatic rollback after activation only happens when no database schema migration ran ([Rollback and recovery](https://docs.openclaw.ai/install/updating/rollback-and-recovery)). To go back by hand:
 
 ```bash
 openclaw update --tag 2026.10.3 --yes        # one-off install of a specific version
@@ -529,7 +531,9 @@ openclaw backup restore ~/Backups/latest.tar.gz --target ./restored-openclaw
 
 Back up with `openclaw backup create`, which covers config, credentials, sessions and workspaces; copying files by hand misses the state database.
 
-### Enable Audit Logging
+### Audit Logging {#enable-audit-logging}
+
+The audit ledger is on by default. These are its main keys, shown with explicit values:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
@@ -577,14 +581,14 @@ openclaw gateway diagnostics export   # payload-free .zip to attach
 openclaw status --all                 # pasteable text report
 ```
 
-- **Discord:** [discord.gg/openclaw](https://discord.gg/openclaw)
+- **Discord:** [discord.gg/clawd](https://discord.gg/clawd) (`#help`, `#users-helping-users`)
 - **GitHub Issues:** [github.com/openclaw/openclaw/issues](https://github.com/openclaw/openclaw/issues)
 - **FAQ:** [/reference/faq](/reference/faq)
 
 When reporting an issue, include:
 1. `openclaw --version`, `node --version`, OS and architecture
 2. `openclaw status --all`
-3. `openclaw doctor` output
+3. `openclaw doctor --lint` output
 4. Relevant log lines (`openclaw logs --limit 50`)
 
 Check that pasted output contains no tokens or keys.
