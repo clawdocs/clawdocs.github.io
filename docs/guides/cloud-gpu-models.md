@@ -350,7 +350,7 @@ For a full model selection guide covering cloud, local and hybrid setups, see th
 These are community experience, not benchmarks. Upstream's [llama.cpp page](https://docs.openclaw.ai/plugins/llama-cpp) has maintained model recipes.
 
 :::warning
-**Avoid models under about 8B parameters** for agent work. They hallucinate tool calls and lose track of multi-step tasks. Test real tasks before you make an open model your default; the best results with OpenClaw still come from frontier hosted models.
+**Models under about 14B parameters often struggle with multi-step tool calling**, and those under 8B hallucinate tool calls. For reliable agent work use 30B+ or keep a hosted fallback. Test real tasks before you make an open model your default; the best results with OpenClaw still come from frontier hosted models.
 :::
 
 ---
