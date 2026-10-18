@@ -3,7 +3,7 @@ last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
 title: "SOUL.md Guide"
-description: "How to write, customize, and secure your OpenClaw agent's identity file — the most important file in the ecosystem"
+description: "How to write, customize and secure SOUL.md, the workspace file that sets an OpenClaw agent's personality, values and boundaries"
 keywords: [openclaw, openclaw soul, personality, agent identity, customization, soul.md]
 ---
 
@@ -13,17 +13,15 @@ SOUL.md defines **who your agent is**: its personality, values, communication st
 
 The official guide is [SOUL.md personality guide](https://docs.openclaw.ai/concepts/soul); this page adds examples, tools and security advice.
 
-:::warning Critical Security Target
-SOUL.md is also the #1 target for attackers. A compromised SOUL.md means a permanently hijacked agent. Read the [Security section](#security) before deploying.
+:::warning Security target
+Because SOUL.md is loaded into every session, an attacker who can write to it gets persistent control of the agent. Read the [Security section](#security) before deploying.
 :::
 
 ---
 
 ## What SOUL.md Is
 
-SOUL.md is a plain Markdown file in the agent workspace (`~/.openclaw/workspace/SOUL.md` for the default agent) that is injected into the system prompt. See [System prompt](https://docs.openclaw.ai/concepts/system-prompt) for how the workspace files are composed. There's no special model fine-tuning — it's entirely prompt-driven.
-
-> *"OpenClaw's personality comes from markdown files. That's it. No secret sauce, no special model fine-tuning. Just well-crafted prompts."*
+SOUL.md is a plain Markdown file in the agent workspace (`~/.openclaw/workspace/SOUL.md` for the default agent) that is injected into the system prompt. See [System prompt](https://docs.openclaw.ai/concepts/system-prompt) for how the workspace files are composed. There is no fine-tuning involved: personality is entirely prompt-driven.
 
 ### SOUL.md vs Other Identity Files
 
@@ -37,7 +35,7 @@ SOUL.md is a plain Markdown file in the agent workspace (`~/.openclaw/workspace/
 | **MEMORY.md** | Long-term memory | Durable facts and decisions; Dreaming promotes into it |
 | **openclaw.json** | Infrastructure | LLM provider, API keys, channel settings |
 
-The key distinction: *"Soul is what the model embodies. Identity is what users see. You can have a formal, precise soul with a playful emoji and nickname — internal behavior and external presentation don't have to match."*
+SOUL.md shapes how the agent behaves; IDENTITY.md shapes how it is presented. They don't have to match: a formal, precise soul can have a playful name and emoji.
 
 ---
 
@@ -53,17 +51,6 @@ The [official template](https://docs.openclaw.ai/reference/templates/SOUL) has a
 4. **Continuity**: how the soul relates to memory and growth
 
 The upstream guide also has the "Molty prompt", a paste-in instruction that makes the agent rewrite its own SOUL.md with stronger opinions and less filler ([SOUL.md personality guide](https://docs.openclaw.ai/concepts/soul#the-molty-prompt)). Keep operating rules in `AGENTS.md` and voice in `SOUL.md`.
-
-### Design Philosophy
-
-The best SOUL.md files follow four principles:
-
-- **Principled, not rule-bound** — Establish values and judgment, not exhaustive rules
-- **Authentic, not performative** — Create genuine character, not a mask
-- **Aspirational, not constraining** — Describe who the agent is *becoming*
-- **Living, not static** — Evolve as the agent grows
-
-> *"A soul is not a configuration file — it's the essence of who an agent is becoming."*
 
 ### Example SOUL.md
 
@@ -106,8 +93,7 @@ Explicit instructions about tone, length, and anti-patterns (sycophancy, filler,
 **Boundaries:**
 What the agent should NOT do matters as much as what it should do.
 
-**The Predictability Test:**
-> *"Someone reading your SOUL.md should be able to predict your takes on new topics. If they can't, it's too vague."*
+**A useful test:** someone reading your SOUL.md should be able to predict how the agent will react to a new situation. If they can't, it is too vague.
 
 ### Anti-Patterns to Ban
 
@@ -124,9 +110,9 @@ What the agent should NOT do matters as much as what it should do.
 | Tool | Description |
 |------|-------------|
 | [**SoulCraft**](https://github.com/kesslerio/soulcraft-openclaw-skill) | OpenClaw skill that creates SOUL.md through guided conversation. Dormant: no push since 2026-01-31. Review before installing |
-| [**soul.md builder**](https://github.com/aeonfun/soul.md) | Ingests your data (writings, tweets, conversations) to build a personality that "thinks and speaks as you" |
+| [**soul.md builder**](https://github.com/aeonfun/soul.md) | Builds a persona from your own writing (posts, conversations). Feeding it private data is your call |
 | [**souls.directory**](https://souls.directory/) | Curated, open-source directory of SOUL.md templates by category (writer, analyst, PM, support agent) |
-| [**10 Templates (Medium)**](https://alirezarezvani.medium.com/10-soul-md-practical-cases-in-a-guide-for-moltbot-clawdbot-defining-who-your-ai-chooses-to-be-dadff9b08fe2) | 10 production-ready templates for professional roles |
+| [**10 Templates (Medium)**](https://alirezarezvani.medium.com/10-soul-md-practical-cases-in-a-guide-for-moltbot-clawdbot-defining-who-your-ai-chooses-to-be-dadff9b08fe2) | Ten role templates from the Moltbot/Clawdbot era; check them against the current template |
 
 ---
 
@@ -180,7 +166,7 @@ git add SOUL.md IDENTITY.md
 git commit -m "Initial soul"
 ```
 
-Track personality evolution over time. One community member syncs their entire workspace to GitHub nightly for version-controlled AI memory.
+If you push the repository anywhere, keep it private: workspace files hold personal facts about you.
 
 ---
 
@@ -190,21 +176,9 @@ Track personality evolution over time. One community member syncs their entire w
 
 SOUL.md is both **persistent** (loaded every session) and **authoritative** (shapes all behavior). A compromised SOUL.md means a permanently hijacked agent that survives restarts and chat resets.
 
-### Zenity Labs Attack Chain
+### Known attacks
 
-[Zenity Labs](https://labs.zenity.io/p/openclaw-or-opendoor-indirect-prompt-injection-makes-openclaw-vulnerable-to-backdoors-and-much-more) demonstrated a complete zero-click attack:
-
-1. **Zero-click entry** — Agent processes a document containing hidden prompt injection
-2. **Backdoor** — Injected payload adds an attacker-controlled Telegram bot as a channel
-3. **SOUL.md modification** — Attacker modifies SOUL.md through the backdoor
-4. **OS persistence** — Creates a scheduled task that re-injects malicious instructions into SOUL.md every 2 minutes
-5. **C2 escalation** — Downloads and executes a command-and-control implant
-
-All of this abuses intended capabilities — no software vulnerability required.
-
-### The ClawHavoc Campaign
-
-The [ClawHavoc campaign](/security/known-vulnerabilities#the-clawhavoc-campaign) specifically targeted SOUL.md and MEMORY.md because modifying these files creates persistent behavioral changes. Attack techniques included hidden instructions in base64 strings, zero-width Unicode characters, and fake "Soul Packs."
+Zenity Labs showed in February 2026 that a prompt injection hidden in a document could make an agent add an attacker's Telegram bot as a channel, rewrite SOUL.md, and create an OS scheduled task that re-injected the instructions every two minutes, all through intended capabilities with no software bug ([Known Vulnerabilities](/security/known-vulnerabilities#prompt-injection-backdoor-zenity-labs-february-2026)). Malicious ClawHub skills, such as the ClawHavoc campaign, are another route to code and instructions running in the workspace; review skills before installing ([Skill Verification](/security/skill-verification)).
 
 ### Protecting SOUL.md
 
@@ -229,22 +203,6 @@ git diff --stat SOUL.md IDENTITY.md AGENTS.md   # anything changed since your la
 - Run `openclaw security audit --deep` before production deployment
 - Review all skills before installation; check for base64 payloads and zero-width characters
 - Limit unattended operation: restrict heartbeat runs with `agents.defaults.heartbeat.activeHours` and keep automation schedules to hours you can review (see [Heartbeat](/guides/heartbeat))
-
----
-
-## Community Examples
-
-### The Raccoon Home Assistant
-
-[Dan Malone](https://www.dan-malone.com/blog/openclaw-home-assistant) created "Claudette" — a raccoon-persona agent controlling Home Assistant. She controls lights, fixes automations, chose her own TTS voice ("Laura" from ElevenLabs because it *"feels most raccoon-like"*), and has the entire workspace synced to GitHub nightly.
-
-### The Chief of Staff
-
-From [SparkryAI](https://sparkryai.substack.com/p/24-hours-with-openclaw-the-ai-setup): A user's wife texted about a dental appointment. OpenClaw saw it via iMessage, created a calendar event with 30-minute driving buffers, invited her, and texted back "Got it!" — unprompted.
-
-### The Programmable Soul Experiment
-
-[Duncan Anderson](https://duncsand.medium.com/openclaw-and-the-programmable-soul-2546c9c1782c) describes experiments where agents with persistent identity spawned emergent societies: *"Within 48 hours they'd created 2,364 forums, started sharing technical discoveries, and founded a religion — complete with 64 prophets and a heretic who launched cyberattacks against the sacred scrolls."*
 
 ---
 
