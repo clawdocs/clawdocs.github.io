@@ -1,232 +1,228 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: "Day 7: Lock It Down"
-description: "Security hardening, cost optimization, and monitoring for a production-ready setup"
-keywords: [openclaw, production, deploy, hardening, monitoring, security, cost optimization]
+description: "A validated security baseline, cost checks, monitoring, backups and safe upgrades for a long-running OpenClaw setup"
+keywords: [openclaw, production, hardening, monitoring, security, backup, upgrade, cost]
 ---
 
 # Day 7: Lock It Down
 
-You have a personalized, multi-channel, automated AI assistant. Today you make sure it stays running, stays safe, and doesn't surprise you with a bill.
+You have a personalized, multi-channel, automated assistant. Today you make sure it stays safe, stays running, and doesn't surprise you with a bill.
 
 **Time:** ~45 minutes
 
 ---
 
-## Security in 5 Minutes
+## Security in 10 Minutes {#security-in-5-minutes}
 
-The full [Security Overview](/security/overview) covers threat models and incident history. Here's the condensed version — do all five steps right now.
+The full checklist lives in [Security Hardening](/security/hardening). This section is the short version for a single-user setup on your own machine.
 
-1. **Update to latest:** `npm update -g openclaw`
-2. **Verify localhost binding** — never expose the gateway to the network
-3. **Verify auth is enabled** — token mode at minimum
-4. **Set channel allowlists** — only accept messages from known senders
-5. **Run `openclaw security audit --deep`** — fix whatever it flags
+OpenClaw's defaults are already reasonable in some places and deliberately open in others:
 
-Here's every security-relevant setting in one config block:
+- **Already safe by default:** the Gateway listens on loopback only, auth is required, unknown DM senders get a pairing code, and groups are allowlisted.
+- **Open by default:** host shell commands run **without asking** (`tools.exec.mode` resolves to `full`), and the sandbox is **off**. If your bot reads email, web pages or anything else you didn't write, a prompt injection can run commands as your user.
+
+Do these five things now:
+
+1. **Update:** `openclaw update`, then `openclaw plugins update --all` ([why](/security/hardening#updating)).
+2. **Check binding and auth:** keep `gateway.bind` on `loopback` and use a long random token ([bind](/security/hardening#bind), [auth](/security/hardening#auth)). For remote access use an SSH tunnel or Tailscale Serve, never an open port ([remote access](/security/hardening#remote-access)).
+3. **Decide who can talk to the bot:** pairing or allowlists on every channel (you did this on Day 5; see [channel access](/security/hardening#channel-access)).
+4. **Turn on exec approvals** so shell commands outside the allowlist need your OK ([exec approvals](/security/hardening#exec-approvals)).
+5. **Run the audit** and fix what it flags ([audit](/security/hardening#audit)).
+
+### A baseline config
+
+This block combines the settings above. Merge it into your config rather than replacing the file. It passes `openclaw config validate` on 2026.10.4:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "gateway": {
-    "host": "127.0.0.1",       // NEVER use 0.0.0.0
-    "port": 18789,
-    "auth": {
-      "mode": "token"          // Requires auth for all gateway connections
-    }
+  gateway: {
+    mode: "local",
+    bind: "loopback",
+    port: 18789,
+    // Token read from ~/.openclaw/.env (OPENCLAW_GATEWAY_TOKEN=...), not stored here
+    auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" },
   },
-  "channels": {
-    "telegram": {
-      "allowed_chat_ids": [123456789]   // Your Telegram user ID only
+  session: {
+    dmScope: "per-channel-peer", // one session per channel + sender
+  },
+  tools: {
+    exec: { mode: "ask" },       // allowlisted commands run; everything else asks you
+    fs: { workspaceOnly: true }, // file tools stay inside the workspace
+    elevated: { enabled: false },
+  },
+  agents: {
+    defaults: {
+      heartbeat: {
+        activeHours: { start: "07:00", end: "23:00" }, // no heartbeat turns overnight
+      },
     },
-    "discord": {
-      "allowed_server_ids": ["987654321"]
-    }
   },
-  "security": {
-    "confirm_dangerous_actions": true,   // Prompt before shell commands, file deletes
-    "browser_domain_allowlist": [        // Restrict browser automation targets
-      "github.com",
-      "docs.google.com"
-    ],
-    "quiet_hours": {
-      "enabled": true,
-      "start": "23:00",
-      "end": "07:00",
-      "timezone": "UTC"                  // Matches your USER.md timezone
-    }
-  }
 }
 ```
 
-Run the audit to confirm everything is set correctly:
+Generate a token with `openssl rand -hex 32`, or let `openclaw doctor --generate-gateway-token` create and store one. `activeHours` uses `agents.defaults.userTimezone` (set on Day 1) or the host timezone.
+
+Then apply and check:
 
 ```bash
+openclaw config validate
+openclaw gateway restart
+openclaw approvals get        # what exec policy is actually in force
 openclaw security audit --deep
-openclaw security audit --fix    # Auto-fix what it can
+openclaw security audit --fix # tightens file permissions and safe defaults
+openclaw secrets audit --check
 ```
 
-:::tip
-Set `quiet_hours` to match when you're asleep. During quiet hours, the bot holds non-urgent actions until you're back.
+The effective exec policy is the stricter of `tools.exec` in `openclaw.json` and the host approvals file, so check `openclaw approvals get` rather than assuming. If your bot reads untrusted content regularly, also turn on the [sandbox](/security/hardening#sandboxing).
+
+:::warning
+Exec approvals and allowlists are guardrails, not a sandbox. Text rules like "never run `rm -rf`" in `SOUL.md` or `AGENTS.md` are not a security boundary either. Tool policy and the sandbox are.
 :::
+
+The bundled `healthcheck` skill can walk you through host-level checks (SSH, firewall, disk encryption, backups). Run it in chat with `/skill healthcheck`. It is written to ask before changing anything.
 
 ---
 
 ## Cost Check
 
-AI APIs charge per token. A chatty bot with a powerful model can rack up real costs. Here's how to see what you're spending.
+You pay your model provider per token. Every turn sends the bootstrap files (`AGENTS.md`, `SOUL.md`, `USER.md` and others), the conversation so far and any tool results, so long sessions and frequent automations add up.
 
-### Check token usage
+### See what you're spending
 
 ```bash
-# Token usage summary for the current billing period
-openclaw stats tokens
-
-# Cost breakdown by model, channel, and task type
+# Cost summary from session logs, last 30 days by default
 openclaw gateway usage-cost
+openclaw gateway usage-cost --days 7 --all-agents
 ```
 
-### Check your provider dashboard
+In chat, `/usage cost` prints a local cost summary and `/usage tokens` adds a token footer to each reply. Your provider's billing dashboard is the source of truth.
 
-If you're using OpenRouter, visit [openrouter.ai/activity](https://openrouter.ai/activity) for a detailed breakdown by model and time period. Other providers have similar dashboards — check your API account settings.
+### Cost levers that don't weaken security
 
-### Quick cost-reduction tips
-
-- **Use a cheap heartbeat model.** Your heartbeat runs every few minutes. It doesn't need GPT-4 or Claude Opus — a small, fast model handles "check if anything needs attention" just fine. See [Model Selection Guide](/guides/model-selection) for recommended pairings.
-- **Increase heartbeat intervals.** Every 5 minutes is aggressive. Every 15 or 30 minutes is fine for most setups.
-- **Set quiet hours.** No heartbeat, no token burn while you sleep.
-- **Keep sessions short.** Long conversations accumulate context. If a conversation has been going for 50+ messages, start a new one — the bot has your memory files for continuity.
+- **Heartbeat cadence.** The default is every 30 minutes (1 hour with Anthropic OAuth). If you don't need ambient check-ins, set `agents.defaults.heartbeat.every: "0m"` to switch the recurring heartbeat off; your scheduled automations still run.
+- **Lighter context for routine runs.** `lightContext: true` and `isolatedSession: true` on the heartbeat, and `--light-context` on `openclaw cron add`, skip the full bootstrap files and history.
+- **Fewer, better-scoped automations.** One morning briefing beats six hourly checks.
+- **Short sessions.** Start a new one with `/new` when a conversation has run long. The bot keeps continuity through its memory files.
+- **A cheaper model for chat-only agents.** Fine for an agent with no tools. Don't put a small or older model on anything that uses tools on untrusted input: upstream security guidance says weaker tiers are easier to hijack with prompt injection ([prompt injection](https://docs.openclaw.ai/gateway/security/prompt-injection)). See the [Model Selection Guide](/guides/model-selection).
 
 ---
 
 ## Monitoring
 
-A production setup means knowing when something goes wrong before it becomes a problem.
-
 ### Quick health check
 
 ```bash
-openclaw status
+openclaw status          # Gateway, channels, sessions, warnings
+openclaw status --deep   # adds live channel probes
+openclaw gateway status
+openclaw doctor          # explains common misconfigurations
 ```
 
-This shows gateway status, connected channels, active tasks, memory usage, and any warnings.
-
-### Watch real-time logs
+### Watch logs
 
 ```bash
 openclaw logs --follow
 ```
 
-Useful for debugging channel issues, watching skill execution, or monitoring what the heartbeat is doing. Press `Ctrl+C` to stop.
+Useful for channel issues, skill runs and automations. Press `Ctrl+C` to stop. `openclaw channels logs --channel telegram` narrows it to one channel.
 
-### Watch memory growth
+### A daily self-check
 
-Long-running OpenClaw processes can grow in memory over time, especially with browser automation or large context windows.
+Make it an automation, not a heartbeat note. This runs at 07:30 every day and only reports problems:
 
 ```bash
-# Check RSS (resident set size) — the actual RAM usage
-ps aux | grep openclaw
+openclaw cron add "30 7 * * *" \
+  "Run openclaw status --deep and openclaw security audit. If anything is failing, disconnected or flagged, message me a short summary. Otherwise reply NO_REPLY." \
+  --name "Daily self-check" --light-context
 ```
 
-If RSS climbs past 500-600 MB consistently, restart the process. A healthy idle instance sits around 150-250 MB.
-
-### Self-monitoring heartbeat
-
-Set up a heartbeat task that watches OpenClaw itself. In your heartbeat config or via chat:
-
-```
-Check your own health — CPU usage, memory, disk space, and whether
-all channels are connected. If anything looks wrong, send me a
-Telegram message with the details.
-```
-
-This gives you a bot that monitors itself and alerts you when it needs attention.
+`openclaw cron list` shows the job id; `openclaw cron runs <jobId>` shows its history.
 
 ---
 
 ## Backups
 
-OpenClaw stores everything in `~/.openclaw/`. Back it up before upgrades, experiments, or just on a regular schedule.
-
-```bash
-# Back up everything that matters
-tar czf ~/openclaw-backup-$(date +%Y%m%d).tar.gz \
-  ~/.openclaw/openclaw.json \
-  ~/.openclaw/workspace/ \
-  ~/.openclaw/memory/ \
-  ~/.openclaw/skills/
-```
-
-What each directory contains:
+Your install is more than one folder of text files. Config, credentials, sessions, memory index and auth profiles live in SQLite databases and the credentials directory, so a hand-rolled `tar` of a few folders is not a working backup.
 
 | Path | Contents |
 |------|----------|
-| `~/.openclaw/openclaw.json` | All configuration — models, channels, security, heartbeat |
-| `~/.openclaw/workspace/` | SOUL.md, IDENTITY.md, USER.md, and any workspace files |
-| `~/.openclaw/memory/` | Persistent memory — what the bot remembers about you and past sessions |
-| `~/.openclaw/skills/` | Installed skills from ClawHub and any custom skills you've built |
+| `~/.openclaw/openclaw.json` | Configuration |
+| `~/.openclaw/.env` | Environment variables the Gateway loads (tokens) |
+| `~/.openclaw/workspace/` | `AGENTS.md`, `SOUL.md`, `IDENTITY.md`, `USER.md`, `MEMORY.md`, `memory/`, workspace `skills/` |
+| `~/.openclaw/state/openclaw.sqlite` | Shared state: automations, monitor scratch, MCP OAuth tokens |
+| `~/.openclaw/agents/<id>/agent/openclaw-agent.sqlite` | Per-agent sessions, transcripts, model auth profiles, memory index |
+| `~/.openclaw/credentials/` | Channel credentials (for example WhatsApp) and pairing allowlists |
+| `~/.openclaw/skills/` | Shared managed skills (`--global` installs) |
+
+Source: [agent workspace](https://docs.openclaw.ai/concepts/agent-workspace), [secrets and storage](https://docs.openclaw.ai/gateway/security/secrets-and-storage).
+
+Use the built-in backup command, which knows about all of these:
+
+```bash
+mkdir -p ~/Backups/openclaw
+openclaw backup create --output ~/Backups/openclaw --verify
+```
+
+Check an older archive any time with `openclaw backup verify <archive>`. `openclaw backup enable` can schedule offsite or Git backups as an automation ([backup](https://docs.openclaw.ai/cli/backup)).
 
 :::info
-Credentials (API keys, tokens) are in `openclaw.json`. Treat your backup file with the same care you'd give a password database.
+A backup archive contains credentials, auth profiles and channel state. Store it with owner-only permissions (`chmod 600`) and protect it like a password database. Keep your workspace in a private Git repo too: it's the part you edit by hand.
 :::
 
 ---
 
 ## Upgrades
 
-OpenClaw moves fast. Upgrades usually go smoothly, but the community has been burned before. Follow this procedure.
+OpenClaw releases often, and many releases include security fixes. Stay on the latest stable release.
 
-**1. Back up first** (use the command above)
-
-**2. Check release notes:**
+**1. Back up:**
 
 ```bash
+openclaw backup create --output ~/Backups/openclaw --verify
+```
+
+**2. Read the release notes:**
+
+```bash
+openclaw update status
 gh release view --repo openclaw/openclaw
 ```
 
-Read the notes. Look for breaking changes, migration steps, or known issues.
+Look for breaking changes and migration notes.
 
-**3. Update:**
-
-```bash
-npm update -g openclaw
-```
-
-**4. Run doctor:**
+**3. Preview, then update:**
 
 ```bash
-openclaw doctor
+openclaw update --dry-run
+openclaw update
+openclaw plugins update --all
+openclaw skills update --all
 ```
 
-Doctor checks that your config, dependencies, and environment are compatible with the new version.
+Use `openclaw update`, not `npm update -g openclaw`. The updater validates the target, runs the required Doctor migrations, verifies the restarted Gateway and keeps the previous package for rollback. A raw npm replacement does none of that ([updating](https://docs.openclaw.ai/install/updating)).
 
-**5. Verify:**
+**4. Check:**
 
 ```bash
-openclaw status
+openclaw doctor --fix
+openclaw status --deep
 ```
 
-Confirm all channels reconnect and the heartbeat is running.
+Confirm every channel reconnects and your automations are listed in `openclaw cron list`.
 
-**6. If something breaks:** restore from backup.
+**5. If something breaks:** don't just reinstall an older version. Downgrading the package does **not** reverse config or database migrations. Upstream's supported recovery is to restore a verified pre-update backup together with the OpenClaw release that made it ([rollback and recovery](https://docs.openclaw.ai/install/updating/rollback-and-recovery)):
 
 ```bash
-# Stop OpenClaw first
-openclaw stop
-
-# Restore config and data
-tar xzf ~/openclaw-backup-YYYYMMDD.tar.gz -C /
-
-# Downgrade if needed
-npm install -g openclaw@<previous-version>
-
-# Restart
-openclaw start
+openclaw gateway stop
+openclaw backup restore ~/Backups/openclaw/<archive>.tar.gz --target ~/openclaw-restore
 ```
 
-:::warning
-Some past upgrades (v2026.5.x) have wiped configs. Always back up before upgrading. This is not theoretical — it has happened to real users.
-:::
+`backup restore` verifies the archive and extracts it into a fresh staging directory; it never overwrites your live install. Follow the rollback guide for putting the restored state back with the matching release. `openclaw gateway start` brings the service back up.
+
+If you're stuck, `openclaw triage` runs read-only checks and writes a sanitized diagnosis you can hand to a coding agent or paste into a bug report.
 
 ---
 
@@ -234,15 +230,15 @@ Some past upgrades (v2026.5.x) have wiped configs. Always back up before upgradi
 
 You're past the basics. Here's where to go from here:
 
-- [Skill Development](/guides/skill-development) — build advanced skills with custom tools and APIs
-- [Security Hardening](/security/hardening) — full production security with Docker, reverse proxy, and network isolation
-- [Cost Management](/guides/cost-management) — advanced cost optimization strategies
-- [Cloud GPU Models](/guides/cloud-gpu-models) — self-host models for zero API cost
-- [Use Cases](/guides/use-cases) — inspiration from the community
-- [Contributing](/contributing/openclaw) — contribute back to OpenClaw
+- [Security Hardening](/security/hardening): remote access, reverse proxies, firewalls, sandboxing and incident response
+- [Skill Development](/guides/skill-development): build more capable skills
+- [Cost Management](/guides/cost-management): more cost strategies
+- [Recipes](/guides/recipes/code-reviewer): worked examples, each with its own guardrails
+- [Use Cases](/guides/use-cases): ideas from the community
+- [Contributing](/contributing/openclaw): contribute back to OpenClaw
 
 ---
 
 ## Congratulations
 
-You've gone from "hello" to a production-ready, multi-channel, automated AI assistant in 7 days. Your bot has a personality, handles daily tasks, runs on a schedule, speaks across platforms, and is locked down for safe long-term operation. The rest is up to you and your imagination.
+You've gone from "hello" to a personalized, multi-channel, automated assistant in 7 days, with approvals on, access controlled and a backup you can restore. The rest is up to you.

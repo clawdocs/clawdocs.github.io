@@ -1,219 +1,270 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: "Day 3: Set It Free"
-description: "Automate daily tasks with the heartbeat system — morning briefings, monitoring, and proactive alerts"
-keywords: [openclaw, automation, heartbeat setup, cron, scheduled tasks, morning briefing, proactive alerts]
+description: "Schedule automations for morning briefings and checks, and tune the heartbeat monitor so your bot reaches out on its own"
+keywords: [openclaw, automation, automations, cron, heartbeat setup, scheduled tasks, morning briefing, proactive alerts]
 ---
 
 # Day 3: Set It Free
 
-Until now, your bot only talks when you talk first. Today you give it a pulse — a **heartbeat** that wakes it up on a schedule so it can check on things, brief you, and alert you without being asked.
+Until now, your bot only talks when you talk first. Today you give it a schedule: **automations** that run at fixed times (a morning briefing, an hourly check), and the **heartbeat**, a periodic check-in that stays quiet unless something needs your attention.
 
-## What Is the Heartbeat?
+**Time:** ~45 minutes
 
-The heartbeat is OpenClaw's autonomous loop. On a configurable interval (every 30 minutes by default), the agent wakes up, reads a file called `HEARTBEAT.md`, and executes whatever instructions it finds there. Think of it as a cron job that speaks natural language.
+## Automations and the Heartbeat {#what-is-the-heartbeat}
 
-The cycle is simple:
+OpenClaw has two kinds of scheduled work, and both are run by the Gateway's automations scheduler ([automation overview](https://docs.openclaw.ai/automation)):
 
-1. Timer fires
-2. Agent reads `~/.openclaw/workspace/HEARTBEAT.md`
-3. Agent executes each instruction
-4. Agent sends results to your configured channel (Telegram, Discord, etc.)
-5. Agent goes back to sleep
+| | Automations | Heartbeat |
+|---|---|---|
+| What it is | A job you create: a schedule plus a prompt (or a command) | One system-owned monitor job per agent |
+| When it runs | Exactly when you say: `0 8 * * *`, `every 2h`, a one-shot `--at 20m` | Every `30m` by default (`1h` with Anthropic OAuth/token auth) |
+| Where it runs | Its own isolated session by default | The agent's main session by default |
+| What it does | Whatever the prompt says, then delivers the result | Checks its scratch notes and replies `NO_REPLY` if nothing needs attention |
+| Use it for | Briefings, reports, recurring checks | "Is anything urgent?" sweeps, follow-ups on background work |
 
-No code required — you write plain Markdown.
+Rule of thumb: if the task has a time or interval in its name, it's an automation.
 
-## Your First Heartbeat
-
-Create the heartbeat file:
-
-```bash
-mkdir -p ~/.openclaw/workspace
-nano ~/.openclaw/workspace/HEARTBEAT.md
-```
-
-Paste this starter template:
-
-```markdown title="~/.openclaw/workspace/HEARTBEAT.md"
-## Every morning at 8am
-- Check the weather for my city
-- Summarize my unread emails
-- List my calendar events for today
-```
-
-Restart the gateway to pick up the new file:
-
-```bash
-openclaw gateway restart
-```
-
-That's it. Tomorrow morning at 8am, you'll get a briefing without lifting a finger.
-
-:::tip
-**Test it now** instead of waiting until morning:
-```bash
-openclaw heartbeat --now
-```
-This runs one heartbeat cycle immediately so you can see the output.
+:::info Coming from an older guide?
+Older OpenClaw versions read heartbeat tasks from a `HEARTBEAT.md` file in the workspace. That file was retired in 2026.8.1: OpenClaw no longer creates or reads it. If you still have one, run `openclaw doctor --fix`. Doctor imports its instructions into the heartbeat's monitor scratch, turns valid `tasks:` entries into automations, and archives the original ([retired HEARTBEAT.md](https://docs.openclaw.ai/reference/templates/HEARTBEAT)).
 :::
 
-## Heartbeat Configuration
+## Before You Start: Where Messages Go
 
-Control how the heartbeat behaves in your config file:
+Scheduled work needs somewhere to send its results.
 
-```json5 title="~/.openclaw/openclaw.json"
-{
-  "heartbeat": {
-    // How often the heartbeat fires (in minutes)
-    "interval": 60,
+- **Heartbeat alerts** go to the owner's direct message, taken from `commands.ownerAllowFrom` (or a concrete channel `allowFrom`). Without an owner, heartbeat polls are skipped with `reason=no-route`. If you approved your own first Telegram DM with `openclaw pairing approve`, the owner is already set. Otherwise set it yourself, using your numeric Telegram user ID:
 
-    // Don't wake up while you're sleeping
-    "quiet_hours": {
-      "start": "22:00",
-      "end": "07:00"
-    },
+  ```bash
+  openclaw config set commands.ownerAllowFrom '["telegram:123456789"]'
+  ```
 
-    // Use a cheap model for heartbeat — it runs often
-    "model": "google/gemini-2.5-flash"
-  }
-}
+- **Automations** you create from a chat reply to that chat. Automations you create from the CLI need a route: pass `--channel telegram --to "<chat id>"` (for a DM with your bot, the chat ID is your user ID).
+
+- **Times** use your timezone. Set `agents.defaults.userTimezone` (see [Day 1](./day-1-make-it-yours.md#tell-it-about-you)); automation cron expressions use the Gateway host's timezone unless you pass `--tz`.
+
+## Your First Automation {#your-first-heartbeat}
+
+The easiest way is to ask in chat:
+
+```
+Every weekday at 8am, send me the weather for Berlin and the top 5 Hacker News stories about AI.
 ```
 
-The `model` override is important. Your main brain might be Claude Sonnet or Opus, but the heartbeat fires repeatedly and doesn't need top-tier reasoning for most checks. See the [Model Selection Guide](/guides/model-selection) for cheap model options.
+The agent creates the automation with its `cron` tool and replies with the job details. The same job from the CLI:
 
-## Practical Heartbeat Ideas
+```bash
+openclaw cron add "0 8 * * 1-5" \
+  "Send me the weather for Berlin and the top 5 Hacker News stories about AI, one line each." \
+  --name "Morning brief" \
+  --tz Europe/Berlin \
+  --tools web_search,web_fetch,read \
+  --channel telegram --to "123456789"
+```
 
-Copy any of these into your `HEARTBEAT.md` and adapt to your needs.
+- The first argument is a standard 5-field cron expression; the second is the prompt.
+- `--tools` caps what the job may use. A briefing that only reads the web has no reason to run shell commands. Without `--tools`, each run inherits the agent's full tool policy.
+- `openclaw automations` is the same command as `openclaw cron`; use whichever reads better.
+
+Email and calendar items need a skill that can reach them, such as the bundled `gog` (Google Workspace) skill. You'll set that up on [Day 4](./day-4-skills.md).
+
+:::tip
+**Test it now** instead of waiting until morning. Find the job ID, then run it once and wait for the result:
+
+```bash
+openclaw cron list
+openclaw cron run <jobId> --wait
+```
+:::
+
+## Practical Automation Ideas {#practical-heartbeat-ideas}
+
+Each idea below is one command. Adjust the schedule, prompt and delivery target, or just describe the job to your bot in chat.
 
 ### Morning Briefing
 
-```markdown
-## Morning briefing (daily at 8am)
-- Weather forecast for Berlin
-- Top 5 Hacker News stories about AI
-- My Google Calendar events for today
-- Any unread emails from my VIP contacts
+```bash
+openclaw cron add "0 8 * * *" \
+  "Weather forecast for Berlin and the top 5 Hacker News stories about AI." \
+  --name "Morning brief" --tools web_search,web_fetch,read \
+  --channel telegram --to "123456789"
 ```
 
 ### GitHub Repo Monitoring
 
-```markdown
-## GitHub monitor (every heartbeat)
-- Check github.com/myorg/myrepo for new issues and PRs since last check
-- Summarize any new issues — categorize as bug, feature, or question
-- Alert me immediately if CI is failing on main branch
+```bash
+openclaw cron add "every 2h" \
+  "Check github.com/myorg/myrepo for issues and PRs opened in the last 2 hours. Categorize each as bug, feature or question. Say if CI is failing on main. If there is nothing new, reply NO_REPLY." \
+  --name "Repo watch" --tools web_fetch \
+  --channel telegram --to "123456789"
 ```
+
+Issue and PR text is written by strangers. Treat it as untrusted input: keep this job's tools to read-only web access, and don't give it a token that can merge or push. A `NO_REPLY` answer is not delivered, so quiet runs don't message you.
 
 ### Server Health Check
 
-```markdown
-## Server health (hourly)
-- SSH to myserver.com and check disk usage — alert if any partition > 85%
-- Check RAM usage — alert if > 90%
-- Check uptime — alert if server was recently rebooted
-- Verify nginx is running and responding on port 443
+For checks with a clear pass/fail rule, a **command job** is safer and cheaper than a model run. It executes a fixed shell command on the Gateway host, with no model in the loop, and delivers its output. Output that is exactly `NO_REPLY` is suppressed:
+
+```bash
+openclaw cron add "0 * * * *" \
+  --name "Disk check" \
+  --command 'p=$(df --output=pcent / | tail -1 | tr -dc 0-9); if [ "$p" -gt 85 ]; then echo "Root disk at ${p}%"; else echo NO_REPLY; fi' \
+  --announce --channel telegram --to "123456789"
 ```
+
+`df --output` is GNU coreutils (Linux). On macOS, adapt the command. To check a remote server, run this script on that server instead of giving your bot an SSH key; the [server monitoring recipe](/guides/recipes/advanced-recipes) shows the guardrails if you do want agent-driven SSH.
 
 ### Price Monitoring
 
-```markdown
-## Price watch (every 2 hours during market hours)
-- Check BTC and ETH prices
-- Alert me if BTC moves more than 5% in either direction since last check
-- Check if the Sony WH-1000XM6 has dropped below $300 on Amazon
+```bash
+openclaw cron add "every 2h" \
+  "Check the current BTC and ETH prices. Alert me only if BTC moved more than 5% since the previous check; otherwise reply NO_REPLY." \
+  --name "Price watch" --tools web_search,web_fetch \
+  --channel telegram --to "123456789"
 ```
+
+Each run is isolated by default, so "since the previous check" only works if the agent can see earlier results. Add `--session session:price-watch` to give the job a persistent named session that keeps its history across runs, or have the prompt compare against a fixed threshold instead.
 
 ### Daily Journal Prompt
 
-```markdown
-## Journal prompt (daily at 9pm)
-- Ask me: "What was the most interesting thing that happened today?"
-- Ask me: "What's one thing you want to do differently tomorrow?"
-- Save my responses to ~/journal/2026-06-08.md (use today's date)
+```bash
+openclaw cron add "0 21 * * *" \
+  "Ask me: What was the most interesting thing that happened today? And: What's one thing you want to do differently tomorrow?" \
+  --name "Journal prompt" --tools "" \
+  --channel telegram --to "123456789"
 ```
+
+`--tools ""` disables all tools: this job only needs to send a message. Reply in your normal chat and ask the bot to save your answers to `journal/` in the workspace.
 
 ### Weekly Summary
 
-```markdown
-## Weekly summary (every Sunday at 6pm)
-- Summarize my git commits across all repos this week
-- Count how many messages I exchanged with you
-- List the top 3 tasks I completed
-- Suggest one thing I should focus on next week
+```bash
+openclaw cron add "0 18 * * 0" \
+  "Read this week's daily notes in memory/ and list the top 3 things I worked on, plus one suggestion for next week." \
+  --name "Weekly summary" --tools read,memory_search \
+  --channel telegram --to "123456789"
 ```
 
-## Cost Warning
+## The Heartbeat Monitor {#heartbeat-configuration}
 
-The heartbeat runs every 30 minutes by default. Even with a cheap model, this adds up.
+The heartbeat is on by default. Every `30m` it runs a short turn in the agent's main session with this built-in prompt: follow the monitor scratch if there is one, keep recurring work in automations, don't dig up old tasks from earlier chats, and reply `NO_REPLY` if nothing needs attention ([heartbeat](https://docs.openclaw.ai/gateway/heartbeat)). On a fresh install it mostly stays silent.
 
-**The math:** 48 heartbeat runs per day x ~500 tokens per run = ~24,000 tokens/day. At Gemini Flash rates ($0.20/M tokens), that's about **$0.15/month** — negligible. But with Claude Sonnet at $9/M tokens, the same pattern costs **$6.50/month** just for heartbeat.
-
-Three ways to keep costs down:
-
-1. **Use a cheap model for heartbeat** (shown in config above)
-2. **Increase the interval** — 60 minutes instead of 30 cuts costs in half
-3. **Set quiet hours** — no point checking while you sleep
+Tune it in `agents.defaults.heartbeat`:
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
-  "heartbeat": {
-    "interval": 60,
-    "model": "ollama/qwen3:14b",  // Free if running locally
-    "quiet_hours": {
-      "start": "23:00",
-      "end": "07:00"
-    }
-  }
+  commands: {
+    ownerAllowFrom: ["telegram:123456789"],
+  },
+  agents: {
+    defaults: {
+      userTimezone: "Europe/Berlin",
+      heartbeat: {
+        // How often it runs: a duration string. "0m" turns off the recurring cadence.
+        every: "1h",
+        // When it may run, in userTimezone. Outside this window, ticks are skipped.
+        activeHours: { start: "07:00", end: "22:00" },
+        // Skip the workspace bootstrap files on heartbeat runs.
+        lightContext: true,
+        // Fresh session each run instead of your full chat history.
+        isolatedSession: true,
+      },
+    },
+  },
 }
 ```
 
-Use `openclaw stats heartbeat` to see what your heartbeat is actually costing you.
+Run `openclaw config validate` after editing. Unknown keys stop the Gateway from starting. The Gateway applies heartbeat changes on config reload, or run `openclaw gateway restart`.
 
-## Cron Jobs
+`activeHours` says when the heartbeat **may** run. That is the opposite of the "quiet hours" setting in some older guides. Scheduled heartbeats also need automations enabled; they stop if `cron.enabled` is `false`.
 
-For tasks that need more precise scheduling than "every N minutes," use `openclaw cron`. This gives you full cron syntax:
+### Give the heartbeat a checklist
+
+The heartbeat's instructions live in its **monitor scratch**, a small private note stored in the Gateway's database. Find the heartbeat job (it is listed as `Heartbeat (main)`) and set the scratch:
 
 ```bash
-# Run a task at exactly 9:15am on weekdays
-openclaw cron add "15 9 * * 1-5" "Check my work email and summarize anything urgent"
-
-# List active cron jobs
-openclaw cron list
-
-# Remove a cron job
-openclaw cron remove <job-id>
+openclaw cron list --all
+openclaw cron scratch <heartbeatJobId> --set "If a background job I started has finished, tell me the result. Remind me of any reminder I asked for that is now due."
 ```
 
-Cron jobs bypass the heartbeat entirely — they fire at the exact time you specify and run the quoted instruction as a one-shot task.
+Keep scratch short and about *checking*, not *scheduling*. Anything with a time in it ("at 8am", "every Monday") belongs in an automation.
+
+## Model Choice and Cost {#cost-warning}
+
+**Don't put tool-using scheduled jobs on your cheapest model.** Automations and heartbeats run unattended, and the jobs above read web pages and issues written by other people. Upstream's security guidance is explicit: smaller, cheaper models are more susceptible to prompt injection and tool misuse, so use a current top-tier model for any agent that can run tools or reads untrusted content ([prompt injection](https://docs.openclaw.ai/gateway/security/prompt-injection)). A small model is fine for a job with `--tools ""` that only formats a message.
+
+Control cost with scope instead:
+
+1. **Run less often.** The heartbeat's `every: "1h"` halves the runs of the 30-minute default, and `activeHours` skips the night.
+2. **Send less context.** A heartbeat in the main session carries your bootstrap files and conversation history on every run. `lightContext` and `isolatedSession` (above) shrink each run considerably. For automations, `--light-context` does the same.
+3. **Use command jobs** for anything a script can decide. They make no model call.
+4. **Narrow tools.** `--tools` keeps each job's tool list, and its tool schemas, small.
+
+See what you are actually spending:
+
+```bash
+openclaw gateway usage-cost --days 7
+```
+
+In chat, `/usage cost` shows the same for the current session. For model options and prices, see the [Model Selection Guide](/guides/model-selection).
+
+## Managing Automations {#cron-jobs}
+
+Automations take a **job ID**, shown by `openclaw cron list`:
+
+```bash
+# List enabled jobs (add --all to include disabled ones and the heartbeat)
+openclaw cron list
+
+# Show one job, including its resolved delivery route
+openclaw cron show <jobId>
+
+# Pause and resume
+openclaw cron disable <jobId>
+openclaw cron enable <jobId>
+
+# Delete
+openclaw cron rm <jobId>
+```
+
+`openclaw cron edit <jobId>` changes the prompt, schedule, tools or delivery of an existing job. See the [automations CLI](https://docs.openclaw.ai/cli/cron) for every option.
 
 ## Debugging
 
-If your heartbeat isn't working as expected:
+If a scheduled job or the heartbeat isn't doing what you expect:
 
 ```bash
-# Dry run — shows what the agent would do without executing anything
-openclaw heartbeat --now --dry-run
+# Is the scheduler running, and when is the next run?
+openclaw cron status
 
-# Run one heartbeat cycle immediately (actually executes)
-openclaw heartbeat --now
+# Run history for one job (status, errors, delivery)
+openclaw cron runs <jobId>
 
-# Stream heartbeat logs in real time
-openclaw logs --filter heartbeat --follow
+# Run a job right now and wait for it
+openclaw cron run <jobId> --wait
 
-# Check heartbeat stats (last run time, token usage, errors)
-openclaw stats heartbeat
+# What did the last heartbeat do?
+openclaw system heartbeat last
+
+# Wake the heartbeat now with a one-off note
+openclaw system event --text "Check whether my backup finished" --mode now
+
+# Stream Gateway logs
+openclaw logs --follow
 ```
 
 Common issues:
 
-- **Heartbeat not firing:** Check that `openclaw status` shows the gateway running. Restart with `openclaw gateway restart`.
-- **No output:** Make sure you have a channel configured. The heartbeat sends results to your default channel.
-- **Wrong timing:** Quiet hours might be suppressing runs. Check your config.
-- **High costs:** Switch to a cheaper model or increase the interval. Run `openclaw stats heartbeat` to see actual spend.
+- **Nothing runs:** Check that `openclaw gateway status` shows the Gateway running, and `openclaw cron status` shows the scheduler enabled. `cron.enabled: false` or `OPENCLAW_SKIP_CRON=1` turns scheduling off.
+- **Heartbeat never messages you:** That is normal when nothing needs attention (`NO_REPLY`). If the logs show heartbeat polls skipped with `reason=no-route`, there is no owner to deliver to: set `commands.ownerAllowFrom`.
+- **Automation runs but you get nothing:** Check the delivery column in `openclaw cron runs <jobId>`. CLI-created jobs need `--channel` and `--to`.
+- **Wrong timing:** Check `--tz` on the job and `agents.defaults.userTimezone`. Heartbeats outside `activeHours` are skipped.
+- **High costs:** Lower the frequency, add `lightContext`/`isolatedSession`, and move script-decidable checks to command jobs. Check `openclaw gateway usage-cost`.
 
-For the full technical details, see the [Heartbeat Guide](/guides/heartbeat) and [Heartbeat Architecture](/architecture/heartbeat).
+For the full technical details, see the [Heartbeat Guide](/guides/heartbeat), [Heartbeat Architecture](/architecture/heartbeat), and upstream's [automation troubleshooting](https://docs.openclaw.ai/automation/cron-jobs/troubleshooting).
 
 ---
 
-**Next: [Day 4: Supercharge It](day-4-skills)** — install community skills to give your bot new abilities.
+**Next: [Day 4: Supercharge It](day-4-skills)** — install skills to give your bot new abilities.

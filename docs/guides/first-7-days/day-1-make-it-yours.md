@@ -1,14 +1,15 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: "Day 1: Make It Yours"
 description: "Personalize your OpenClaw bot — name, personality, boundaries, and your first real conversation"
-keywords: [openclaw, setup, personalize, soul.md, first day, customize agent, bot personality]
+keywords: [openclaw, setup, personalize, soul.md, agents.md, user.md, first day, customize agent, bot personality]
 ---
 
 # Day 1: Make It Yours
 
-Your bot is running. It answers questions. But right now it's a blank slate — generic, nameless, with no idea who you are. Today you'll give it a personality, tell it about yourself, and have a conversation that actually shows what it can do.
+Your bot is running and answering questions. Today you'll replace its default persona with your own, tell it about yourself, and have a conversation that shows what it can do.
 
 **Time:** ~30 minutes
 
@@ -16,25 +17,49 @@ Your bot is running. It answers questions. But right now it's a blank slate — 
 
 ## Meet Your Bot
 
-OpenClaw ships with no personality. It's a raw language model wrapped in infrastructure. That's intentional — you define who it becomes.
+Onboarding already gave your agent a starting point. It created a workspace at `~/.openclaw/workspace/` and seeded it with default files, including a `BOOTSTRAP.md` "first-run ritual" in which the agent asks who it is and who you are. Today you take control of those files directly.
 
-Start a conversation to see where you're starting from:
+Open a conversation using any of these:
 
 ```bash
-# Terminal UI (recommended for setup)
+# Web chat in the Control UI (opens your browser)
+openclaw dashboard
+
+# Terminal UI connected to the Gateway
 openclaw tui
 
-# Or one-shot from the command line
-openclaw chat "Who are you?"
+# One message, one reply, straight from the shell
+openclaw agent --agent main --message "Who are you?"
 ```
 
-If you connected Telegram during install, you can message your bot there too. The response will be generic — something like "I'm an AI assistant." That changes now.
+`openclaw tui` also accepts `--message "Who are you?"` to send an opening message. Running `openclaw` with no arguments opens the TUI too. If you connected Telegram during setup, you can message your bot there as well.
+
+:::note Old tutorials
+Some older guides show `openclaw chat "Who are you?"`. That does not work: `openclaw chat` is an alias for `openclaw tui --local` and takes no message argument. Use `openclaw agent --message` for one-shot messages.
+:::
+
+---
+
+## The Workspace Files
+
+The workspace holds a handful of Markdown files that load at the start of every session ([agent workspace](https://docs.openclaw.ai/concepts/agent-workspace)):
+
+| File | What it's for |
+|---|---|
+| `AGENTS.md` | Operating instructions: rules, priorities, how to use memory. Its `## Tools` section holds notes about your local tools. Required. |
+| `SOUL.md` | Persona, tone and boundaries. |
+| `IDENTITY.md` | The agent's name, vibe and emoji. |
+| `USER.md` | Your preferences, written as directives (optional). |
+| `MEMORY.md` | Curated long-term facts and decisions (optional). |
+| `memory/YYYY-MM-DD.md` | Daily notes the agent writes as it goes. |
+
+You can edit them with any text editor, or in the Control UI under **Settings → Agents → Files**. If you delete one by accident, `openclaw setup` recreates missing defaults without overwriting the files you kept.
 
 ---
 
 ## Write Your SOUL.md
 
-SOUL.md is the single most important file in OpenClaw. It gets injected into the system prompt before every message. It literally defines who your bot is — its values, tone, boundaries, and expertise.
+`SOUL.md` defines who your bot is: its values, tone, boundaries and expertise. `AGENTS.md` says how it works; `SOUL.md` says how it sounds. Both are injected into every session, so keep them focused.
 
 The file lives at:
 
@@ -42,15 +67,9 @@ The file lives at:
 ~/.openclaw/workspace/SOUL.md
 ```
 
-Create it with your editor, or let OpenClaw do it:
+Setup already wrote a default one. Replace its contents with your own. Here's a practical starter:
 
-```bash
-openclaw chat "Create a SOUL.md file for me"
-```
-
-But you'll get better results writing it yourself. Here's a practical starter template:
-
-```markdown
+```markdown title="~/.openclaw/workspace/SOUL.md"
 # Nova
 
 I am a sharp, curious assistant who values clarity over formality.
@@ -63,7 +82,7 @@ I am a sharp, curious assistant who values clarity over formality.
 ## Boundaries
 - I never fabricate sources or citations
 - I flag when I'm uncertain vs. confident
-- I won't help with anything that could harm people
+- I ask before deleting, overwriting or sending anything on the user's behalf
 
 ## Vibe
 Conversational but precise. I use plain language, avoid jargon unless the user speaks it,
@@ -74,55 +93,87 @@ Software development, system administration, research, writing.
 I learn the user's stack and preferences over time.
 ```
 
-Save it and try again:
+Start a fresh session so the new file is loaded (type `/new` in the chat, or run):
 
 ```bash
-openclaw chat "Who are you?"
+openclaw agent --agent main --message "Who are you?"
 ```
 
-The difference is immediate. For deeper customization, see the full [SOUL.md Guide](/guides/soul-md).
+For deeper customization, see the [SOUL.md Guide](/guides/soul-md) and upstream's [SOUL.md personality guide](https://docs.openclaw.ai/concepts/soul).
 
 :::tip
-Keep SOUL.md under 30 lines to start. You can always add more. Overly long soul files dilute the parts that matter.
+Keep SOUL.md under 30 lines to start. You can always add more. Long files dilute the parts that matter, and anything past `agents.defaults.bootstrapMaxChars` (20,000 characters by default) is truncated.
+:::
+
+:::warning A boundary in SOUL.md is not a safety control
+"I ask before deleting" is an instruction the model usually follows, not an enforced rule. Real confirmation prompts come from exec approvals, covered on [Day 2](./day-2-daily-driver.md).
 :::
 
 ---
 
 ## Set Your Identity
 
-IDENTITY.md controls what **users see** — the bot's display name, emoji, and description. This is separate from SOUL.md on purpose: you can have a formal, precise soul with a playful public identity.
+`IDENTITY.md` holds the agent's name, vibe and emoji. It is separate from `SOUL.md` so you can pair a precise persona with a playful name. OpenClaw parses `- Label: value` lines; the recognised labels are **Name**, **Creature**, **Vibe**, **Theme**, **Emoji** and **Avatar** ([IDENTITY template](https://docs.openclaw.ai/reference/templates/IDENTITY)).
 
-Create `~/.openclaw/workspace/IDENTITY.md`:
+Edit `~/.openclaw/workspace/IDENTITY.md`:
 
-```markdown
-# Identity
+```markdown title="~/.openclaw/workspace/IDENTITY.md"
+# IDENTITY.md - Who Am I?
 
 - **Name:** Nova
-- **Emoji:** 🔭
-- **Description:** A sharp assistant that helps with code, research, and daily tasks
+- **Creature:** a research assistant who lives in a terminal
+- **Vibe:** calm, precise, quietly funny
+- **Emoji:** (pick one)
+- **Avatar:** avatars/nova.png
 ```
 
-This shows up in Telegram, the TUI header, and anywhere the bot introduces itself to others.
+Replace `(pick one)` with a single emoji. Placeholder text in parentheses is ignored, not saved. The avatar is a workspace-relative path, an `http(s)` URL, or a data URI; drop the line if you don't have one.
+
+To push the file into the agent's config (used by the Control UI and other surfaces), run:
+
+```bash
+openclaw agents set-identity --agent main --from-identity
+```
+
+Your Telegram bot's display name and profile picture are separate: set them in BotFather.
 
 ---
 
 ## Tell It About You
 
-USER.md gives the bot context about you so it doesn't have to ask the same questions every session.
+`USER.md` stores your stable preferences as **directives**: one imperative per entry, each with a dated metadata line ([USER template](https://docs.openclaw.ai/reference/templates/USER), [user model](https://docs.openclaw.ai/concepts/user-model)). It loads every session with its own 4,000-character budget.
 
-Create `~/.openclaw/workspace/USER.md`:
+Create or edit `~/.openclaw/workspace/USER.md`:
 
-```markdown
-# User
+```markdown title="~/.openclaw/workspace/USER.md"
+# USER.md - User Model
 
-- **Name:** Alex
-- **Timezone:** Europe/Berlin
-- **Work:** Full-stack developer, mostly TypeScript and Python
-- **Interests:** Open source, home automation, cycling
-- **Preferences:** Prefer concise answers. Use metric units. Default to Linux commands.
+## Directives
+
+<!-- observed: 2026-10-18 | status: active -->
+
+- Always call me Alex.
+
+<!-- observed: 2026-10-18 | status: active -->
+
+- Prefer concise answers, metric units and Linux commands.
+
+<!-- observed: 2026-10-18 | status: active -->
+
+- Prefer TypeScript or Python when writing scripts; I'm a full-stack developer.
+
+<!-- observed: 2026-10-18 | status: active -->
+
+- Always include error handling and comments on non-obvious code.
 ```
 
-The bot reads this at the start of every session. When you ask "what time is it?", it'll answer in your timezone. When you say "write a script," it'll default to your preferred languages.
+Use today's date. Start each directive with `Always`, `Never` or `Prefer`. When a preference changes, mark the old entry `superseded` and rewrite the active one, rather than adding a contradictory line.
+
+**Timezone is a config setting, not a USER.md line.** OpenClaw uses the host's timezone unless you set `agents.defaults.userTimezone` ([timezone](https://docs.openclaw.ai/concepts/timezone)):
+
+```bash
+openclaw config set agents.defaults.userTimezone Europe/Berlin
+```
 
 ---
 
@@ -147,58 +198,59 @@ I need a bash function that takes a directory path and returns the total size of
 
 **4. Set a preference:**
 ```
-When I ask you to write code, always include error handling and comments explaining non-obvious parts
+When I ask you to write code, always include error handling. Save that as a directive in USER.md.
 ```
 
 **5. Ask what it can do:**
 ```
-What tools and capabilities do you have access to right now?
+What tools and skills do you have access to right now?
 ```
 
-That last one is especially useful — the answer depends on what skills and tools you've configured. It's a quick way to see your bot's current setup.
+That last one is especially useful — the answer depends on your tool policy and which skills are ready. Prompt 2 needs a web search provider; if the bot says it can't search, see [web tools](https://docs.openclaw.ai/tools/web).
 
 ---
 
 ## Verify It Remembers
 
-OpenClaw stores memories across sessions so the bot learns about you over time. After your first conversation, test it:
+The model only remembers what is written to disk ([memory](https://docs.openclaw.ai/concepts/memory)). `USER.md` and `MEMORY.md` load at the start of each session; daily notes in `memory/` are searched on demand.
+
+Start a new session (`/new` in chat) and ask:
 
 ```bash
-# Start a new session
-openclaw chat "What do you know about me?"
+openclaw agent --agent main --message "What do you know about me?"
 ```
 
-The bot should reference information from USER.md and anything it learned during your conversation.
+The bot should reference your `USER.md` directives and anything it saved during your conversation.
 
-You can inspect stored memories directly:
+Inspect memory directly:
 
 ```bash
-ls ~/.openclaw/memory/
+# Curated long-term memory
+cat ~/.openclaw/workspace/MEMORY.md
+
+# Daily notes
+ls ~/.openclaw/workspace/memory/
+
+# Search everything the memory index knows
+openclaw memory search "timezone"
 ```
 
-Memory files are plain text — you can read, edit, or delete them. The bot forgets whatever you remove.
+Memory files are plain Markdown. To make the bot forget something, edit or delete the relevant lines. The search index can keep stale chunks until it is rebuilt with `openclaw memory index --force`. Session transcripts are stored separately; `openclaw memory forget` removes memories derived from selected sessions ([memory CLI](https://docs.openclaw.ai/cli/memory)).
 
-```bash
-# See what the bot remembers
-cat ~/.openclaw/memory/MEMORY.md
-
-# Delete a specific memory if you want
-# (just edit the file and remove the relevant lines)
-```
-
-:::info
-Memory is local by default. Nothing leaves your machine unless you configure a cloud sync. See [Privacy & Compliance](/guides/privacy-compliance) for details.
+:::info Where your data goes
+The files live on your machine, but they are not private from your model provider. Every turn sends the loaded context, including `SOUL.md`, `USER.md` and `MEMORY.md`, to the configured model. If memory search uses a remote embedding provider, memory text goes there too. Keep secrets out of workspace files. See [Privacy & Compliance](/guides/privacy-compliance).
 :::
 
 ---
 
 ## What You've Done Today
 
-- Gave your bot a personality with SOUL.md
-- Set its public identity with IDENTITY.md
-- Told it about yourself with USER.md
+- Learned which workspace files shape your agent
+- Replaced the default persona in `SOUL.md`
+- Set the agent's name and vibe in `IDENTITY.md`
+- Wrote your preferences as `USER.md` directives and set your timezone
 - Had a real conversation that tested its capabilities
-- Verified memory works across sessions
+- Checked what it remembers, and where that memory lives
 
 Your bot now has a name, a voice, and context about who it's working for. Tomorrow you put it to work.
 

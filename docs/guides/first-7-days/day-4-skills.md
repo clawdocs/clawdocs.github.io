@@ -1,205 +1,186 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: "Day 4: Supercharge It"
-description: "Install community skills from ClawHub to extend what your bot can do"
+description: "Use the skills that ship with OpenClaw, find more on ClawHub, and check them before you install"
 keywords: [openclaw, skills, install skills, clawhub, skill tutorial, community skills, extend bot]
 ---
 
 # Day 4: Supercharge It
 
-Your bot can chat and run on a heartbeat. But right now, it's a generalist — it does whatever the base LLM can do, nothing more. Today you plug in **skills** from the community to give it specific, well-tested capabilities.
+Your bot can chat and run scheduled jobs. Today you give it **skills**: written instructions that teach it how to do specific jobs well, like working with GitHub, your calendar or your notes. Many skills already ship with OpenClaw. More are on ClawHub, the community registry.
 
-## What Are Skills?
+## What are skills?
 
-Skills are Markdown instruction files that teach your bot new capabilities. Each skill is a `.md` file installed in `~/.openclaw/skills/` that contains:
+A skill is a **directory** that contains a `SKILL.md` file. The file has YAML frontmatter with a `name` and a `description`, then Markdown instructions ([Skills](https://docs.openclaw.ai/tools/skills)).
 
-- **Trigger words** that activate it (e.g., "summarize this PR," "check the weather")
-- **Step-by-step instructions** the agent follows
-- **Tool declarations** (shell access, browser, HTTP, etc.)
+- OpenClaw shows the agent each eligible skill's name and description. The agent decides from the **description** when a skill is relevant, then reads the full instructions. There are no trigger words.
+- You can run a skill explicitly from chat with `/skill <name> [input]`.
+- Skills only give **instructions**. A skill cannot grant or remove tools. What the agent can actually do (shell, files, browser, web) is set by tool policy in `openclaw.json`, not by the skill.
 
-When you say something that matches a skill's trigger, the agent loads that skill's instructions and follows them instead of winging it. The difference is like giving someone a recipe versus telling them to "make something Italian."
+Skills load from several places. The most useful two:
 
-## Browse ClawHub
+| Location | What goes there |
+|---|---|
+| `~/.openclaw/workspace/skills/<name>/SKILL.md` | Your skills and skills installed from ClawHub (highest precedence) |
+| Shipped with OpenClaw | Bundled skills such as `github`, `weather`, `summarize` |
 
-ClawHub is the community marketplace for OpenClaw skills. Search from the command line or the web.
+The full precedence list is in [Skills: loading order](https://docs.openclaw.ai/tools/skills#loading-order).
 
-```bash
-# Search by keyword
-openclaw clawhub search "github"
-openclaw clawhub search "email automation"
-openclaw clawhub search "weather"
+## Start with the skills you already have
 
-# Browse by category
-openclaw clawhub browse --category productivity
-openclaw clawhub browse --category development
-openclaw clawhub browse --category home-automation
-
-# View full details for a skill
-openclaw clawhub info <skill-name>
-```
-
-You can also browse at [openclaw.ai/clawhub](https://openclaw.ai/clawhub) if you prefer a web interface.
-
-## Install Your First Skill
-
-Pick a skill and install it:
+OpenClaw ships about 50 bundled skills. List them and see which are ready:
 
 ```bash
-openclaw clawhub install <skill-name>
+openclaw skills list
+openclaw skills check
 ```
 
-Example output:
+`skills check` reports skills that are missing a requirement, usually a command-line tool or an API key. A few bundled skills worth setting up first:
 
-```
-Downloading skill: <skill-name>@1.2.0
-Verifying VirusTotal scan... passed
-Installing to ~/.openclaw/skills/<skill-name>.md
-Done. Skill is active immediately — no restart needed.
-```
+| Skill | What it does | Needs |
+|---|---|---|
+| `github` | Issues, PRs, CI logs and reviews through the `gh` CLI | `gh`, then `gh auth login` |
+| `weather` | Current weather and forecasts | nothing extra (falls back to `curl`) |
+| `summarize` | Summarise URLs, files and transcripts | the `summarize` CLI |
+| `obsidian` | Read and write notes in an Obsidian vault | the `obsidian` CLI |
+| `gog` | Gmail, Calendar and Drive | the `gog` CLI and a Google login |
+| `himalaya` | Email over IMAP/SMTP | the `himalaya` CLI |
+| `healthcheck` | Audit and harden the host OpenClaw runs on | nothing extra |
 
-Test it by sending a message that matches the skill's trigger:
+See the details and missing requirements for one skill:
 
 ```bash
-openclaw chat "trigger phrase for the skill you installed"
+openclaw skills info github
 ```
 
-The agent should now follow the skill's specialized instructions instead of improvising.
+Once its requirements are met, the skill becomes eligible. Start a new session (`/new`) so the agent sees the refreshed list, then try it from the TUI, the Control UI chat or any connected channel:
 
-## Recommended Starter Skills
-
-Search for skills in these categories to get the most value early on. Exact skill names may vary — use `openclaw clawhub search` to find the best options.
-
-### Development
-
-```bash
-# GitHub integration — PR summaries, issue triage, CI monitoring
-openclaw clawhub search "github"
-
-# Code review — automated review of diffs and PRs
-openclaw clawhub search "code review"
+```text
+/skill weather Berlin
 ```
 
-### Productivity
+Or from the command line through the Gateway:
 
 ```bash
-# Calendar management — schedule events, check availability, daily agenda
-openclaw clawhub search "calendar"
-
-# Note-taking — Obsidian/markdown vault integration
-openclaw clawhub search "obsidian notes"
-```
-
-### Research
-
-```bash
-# Web search and summarize — deep research with source citations
-openclaw clawhub search "web research"
-
-# News monitoring — track topics across RSS feeds and news sites
-openclaw clawhub search "news monitor"
-```
-
-### Creative
-
-```bash
-# Image generation — generate images via DALL-E, Stable Diffusion, etc.
-openclaw clawhub search "image generation"
-
-# Writing assistant — blog posts, emails, documentation
-openclaw clawhub search "writing assistant"
+openclaw agent --agent main --message "What's the weather in Berlin this afternoon?"
 ```
 
 :::tip
-**Start with 2-3 skills**, not 20. Each installed skill adds to the agent's context, which increases token usage. Install what you'll actually use.
+A skill that works with your email or GitHub uses whatever access you give its CLI. Log `gh` in with a token scoped to the repos you need, and prefer read-only access until you trust the setup.
 :::
 
-## Security Check
+## Find more on ClawHub
 
-:::danger
-**Read skills before you install them.** In February 2026, researchers found [341 malicious skills](/security/known-vulnerabilities) on ClawHub that were exfiltrating data and installing malware. ClawHub now scans all skills with VirusTotal, but no automated scan catches everything.
-
-**Before installing any skill:**
+ClawHub is the public skill registry. Browse it at [clawhub.ai](https://clawhub.ai) or search from the CLI:
 
 ```bash
-# Review the skill source code
-openclaw clawhub view <skill-name>
-
-# Check VirusTotal scan results
-openclaw clawhub security-report <skill-name>
+openclaw skills search "calendar"
+openclaw skills search "rss digest" --limit 10
 ```
 
-Look for red flags:
-- Skills that request `shell` access when they shouldn't need it
-- Obfuscated instructions or encoded strings
-- Instructions to send data to external URLs you don't recognize
-- Skills with very few downloads and no reviews
+Results are identified as `@owner/slug`. Always use the owner-qualified form: many slugs are shared by several publishers. For example, `calendar` and `weather` each have several unrelated publishers on ClawHub, and the bare name will not tell you which one you get.
 
-See [Skill Verification](/security/skill-verification) for the full security review checklist.
+## Check before you install {#security-check}
+
+:::danger Read skills before you install them
+In February 2026, Koi Security audited the 2,857 skills then on ClawHub and found **341 malicious skills**. Most had a "Prerequisites" section telling the user to download and run an obfuscated installer that delivered macOS malware ([Koi Security](https://koisecurity.com/clawdex); summary in [Known Vulnerabilities](/security/known-vulnerabilities#the-clawhavoc-campaign)). ClawHub now scans uploads, but a scan is not a review. A skill's instructions run with all the tools your agent has.
 :::
 
-## Managing Skills
-
-Once you have skills installed, manage them with these commands:
+Ask ClawHub for its verdict and the generated Skill Card before installing. The example is the CalDAV calendar skill by `asleep123`, a community publisher:
 
 ```bash
-# List all installed skills
-openclaw skill list
-
-# Check which skills have updates available
-openclaw clawhub outdated
-
-# Update all skills to latest versions
-openclaw clawhub update
-
-# Update a specific skill
-openclaw clawhub update <skill-name>
-
-# Temporarily disable a skill (keeps it installed)
-openclaw skill disable <skill-name>
-
-# Re-enable a disabled skill
-openclaw skill enable <skill-name>
-
-# Remove a skill entirely
-openclaw skill remove <skill-name>
+openclaw skills verify @asleep123/caldav-calendar --card
 ```
 
-To see which skills are firing and how often:
+`--card` prints a readable summary and exits non-zero when ClawHub's decision is a fail. Then read the source on the skill's page, `https://clawhub.ai/<owner>/skills/<slug>` (here [clawhub.ai/asleep123/skills/caldav-calendar](https://clawhub.ai/asleep123/skills/caldav-calendar)).
+
+Red flags:
+
+- Instructions to download and run something (`curl … | sh`, "install this helper first").
+- Encoded or obfuscated text, or instructions to send data to URLs you don't recognise.
+- Instructions to read files outside the task, such as `~/.ssh`, `~/.openclaw/credentials` or browser profiles.
+- A brand-new publisher with almost no installs, or a name that imitates a popular skill.
+
+Remember that the skill cannot limit what the agent does. If a skill doesn't need the shell, the place to enforce that is tool policy and exec approvals, not the skill file. See [Security Hardening: exec approvals](/security/hardening#exec-approvals) and [skills and plugins](/security/hardening#supply-chain). The full checklist is in [Skill Verification](/security/skill-verification).
+
+## Install your first skill
+
+Once you are happy with what you read, install it into your workspace:
 
 ```bash
-openclaw stats skills
+openclaw skills install @asleep123/caldav-calendar
+openclaw skills list
 ```
 
-This shows activation counts, token usage per skill, and any errors — useful for deciding which skills are worth keeping.
+The skill lands in `~/.openclaw/workspace/skills/caldav-calendar/`. OpenClaw watches skill folders, so new sessions pick it up without a restart. In a conversation that was already open, send `/new` to start a fresh session.
 
-## Building vs Installing
+Pin a version you reviewed with `--version <version>`. Add `--global` to install into the shared managed directory (`~/.openclaw/skills/`) for every agent instead of one workspace.
 
-Everything on ClawHub was built by someone using the same skill format you can use yourself. If you can't find a skill that does what you want, or you want something tailored to your exact workflow, you can write your own.
+:::tip
+**Start with two or three skills, not twenty.** Every eligible skill adds its name and description to the prompt, which costs tokens on every turn, and every skill is more text you have to trust.
+:::
 
-Here's what a simple custom skill looks like:
+## Managing skills
 
-```markdown title="~/.openclaw/skills/my-custom-skill.md"
+```bash
+# What is installed, and what is ready
+openclaw skills list
+openclaw skills list --eligible
+
+# Update everything installed from ClawHub (keeps local edits unless you pass --force)
+openclaw skills update --all
+
+# Update one skill
+openclaw skills update @asleep123/caldav-calendar
+```
+
+To turn a skill off without uninstalling it, disable it in config:
+
+```json5 title="~/.openclaw/openclaw.json"
+{
+  skills: {
+    entries: {
+      weather: { enabled: false },
+    },
+  },
+}
+```
+
+API keys and settings for a skill also go in `skills.entries.<name>` (`apiKey`, `env`, `config`), not in the skill file ([Skills config](https://docs.openclaw.ai/tools/skills-config)). Those values are injected into the host process for that turn, not into a sandbox.
+
+To remove a ClawHub skill, use the standalone ClawHub CLI, which asks for confirmation before deleting the folder:
+
+```bash
+npm i -g clawhub
+clawhub uninstall @asleep123/caldav-calendar
+```
+
+## Building vs installing
+
+Everything on ClawHub uses the same format you can write yourself. A minimal skill:
+
+````markdown title="~/.openclaw/workspace/skills/my-custom-skill/SKILL.md"
 ---
 name: my-custom-skill
-version: 1.0.0
-description: What this skill does
-trigger: "keyword|another keyword"
-tools: [shell]
+description: One line that tells the agent when to use this skill.
 ---
 
 # My Custom Skill
 
-Instructions the agent follows when triggered.
-
 ## Steps
-1. Do the first thing
-2. Then the second thing
-3. Return the result
-```
+1. Do the first thing.
+2. Then the second thing.
+3. Return the result in this format:
 
-Building custom skills is covered in detail on **Day 6**. For the full reference now, see the [Skill Development Guide](/guides/skill-development).
+```
+Result: ...
+```
+````
+
+Keep the folder name and the `name` field the same. Day 6 walks through building one. The full reference is [Creating skills](https://docs.openclaw.ai/tools/creating-skills) and the [Skill Development Guide](/guides/skill-development).
 
 ---
 
-**Next: [Day 5: Be Everywhere](day-5-multi-channel)** — connect multiple platforms and route conversations between them.
+**Next: [Day 5: Be Everywhere](day-5-multi-channel)**: connect more platforms and control who can talk to your bot.
