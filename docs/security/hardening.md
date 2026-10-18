@@ -503,7 +503,7 @@ openclaw secrets audit --check     # non-zero exit while plaintext or unresolved
 openclaw secrets configure         # interactive migration helper
 ```
 
-Give the agent its own scoped, short-lived credentials: a read-only GitHub token, a separate email account, a bot number. Don't hand it your personal ones. File logs are written raw with `0600` permissions; add `logging.redactPatterns` for your own token formats, and share `openclaw status --all` (redacted) rather than raw logs.
+Give the agent its own scoped, short-lived credentials: a read-only GitHub token, a separate email account, a bot number. Don't hand it your personal ones. In v2026.10.4, sensitive-value redaction is always on and masks matching secrets before file-log lines and transcript text are written. It is best-effort pattern matching, so `logging.redactPatterns` for your own token formats is worth adding (it replaces the default string list; built-in structural protections still apply). Share `openclaw status --all` (redacted) rather than raw logs. (Upstream `main` changes this in a later release: file logs become raw `0600` files and redaction moves to log egress.)
 
 ## Skills and plugins {#supply-chain}
 
