@@ -262,7 +262,7 @@ For per-token prices, check your provider's pricing page; this guide does not qu
 
 Here only `ops` runs a heartbeat; `main` does not, because it has no block of its own. Give an agent `heartbeat: { every: "0m" }` to turn its recurring cadence off explicitly. Per-agent recurring checks are automation jobs with `--agent <id>`.
 
-Scheduled heartbeats do not queue behind other work. A plain heartbeat poll is skipped and waits for its next tick while the main queue is busy, an automation targets the same agent or session, or that agent has an active run. Bindings and their precedence route inbound messages; they do not affect heartbeats.
+Scheduled heartbeats do not queue behind other work. A plain heartbeat poll is skipped and waits for its next tick while the main queue or any automation work is busy, or that agent has an active run. (After 2026.10.4, only automation work that targets the same agent or session pauses a heartbeat.) Bindings and their precedence route inbound messages; they do not affect heartbeats.
 
 Multi-agent setup in general: [Multi-Agent Guide](/guides/multi-agent).
 
