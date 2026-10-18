@@ -1,166 +1,140 @@
 ---
 last_update:
-  date: 2026-06-09
+  date: 2026-10-18
+verified_with: 2026.10.4
 title: Architecture Overview
-description: How OpenClaw's Gateway-centric architecture connects LLMs to your system — request lifecycle, data flow, and design principles
+description: How OpenClaw's Gateway-centric architecture fits together — the Gateway, clients, nodes, the agent loop, tools, the workspace, and where state lives on disk
 keywords: [openclaw, architecture, system design, components, gateway, data flow, request lifecycle]
 ---
 
 # Architecture Overview
 
-OpenClaw uses a **Gateway-centric architecture** where a single long-running Node.js process orchestrates communication between an LLM (the "Brain"), local execution capabilities (the "Hands"), persistent memory, and external messaging channels.
+OpenClaw runs one long-lived **Gateway** process per host. The Gateway owns every messaging channel, runs the agent loop for each session, executes tools, and serves a WebSocket + HTTP API on one port (default `127.0.0.1:18789`). Everything else (the CLI, the Control UI, the desktop and mobile apps, and paired "node" devices) is a client of that Gateway.
 
-## High-Level Architecture
+This page is a map. The official reference is [Gateway architecture](https://docs.openclaw.ai/concepts/architecture) and [Agent loop](https://docs.openclaw.ai/concepts/agent-loop).
+
+## High-level architecture
 
 ```mermaid
 graph TD
-    Channels["🔗 Channels<br/>(WhatsApp, Telegram, Discord...)"]
-    CLI["💻 CLI<br/>(openclaw chat)"]
-    WebChat["🌐 WebChat<br/>(localhost:18789/chat)"]
+    Channels["Channels<br/>(WhatsApp, Telegram, Discord, Slack...)"]
+    Clients["Operator clients<br/>(CLI, Control UI, desktop/mobile apps)"]
+    Nodes["Nodes<br/>(macOS/iOS/Android/headless, role: node)"]
 
-    subgraph Gateway["⚡ Gateway (ws://localhost:18789)"]
-        Router["Router"]
-        Heartbeat["Heartbeat<br/>Timer"]
-        SkillReg["Skill<br/>Registry"]
-        Orchestrator["Orchestrator"]
-        Brain["🧠 Brain<br/>(LLM)"]
-        Hands["🤖 Hands<br/>(Exec)"]
-        Memory["💾 Memory<br/>(Local)"]
-        NodeReg["Node<br/>Registry"]
-        ExecMgr["Exec Approval<br/>Manager"]
+    subgraph Gateway["Gateway (ws + http, 127.0.0.1:18789)"]
+        Router["Routing + bindings"]
+        Queue["Per-session queue"]
+        Loop["Agent loop<br/>(prompt, model, tools)"]
+        Tools["Tools<br/>(exec, fs, browser, web, memory...)"]
+        Approvals["Exec approvals"]
+        Sched["Scheduler<br/>(automations, heartbeat)"]
+        Store["State<br/>(SQLite per agent)"]
     end
 
+    Provider["Model provider<br/>(Anthropic, OpenAI, local...)"]
+    Sandbox["Sandbox backend<br/>(optional: docker, podman, ssh...)"]
+
     Channels --> Router
-    CLI --> Router
-    WebChat --> Router
-    Router --> Orchestrator
-    Heartbeat --> Orchestrator
-    SkillReg --> Orchestrator
-    Orchestrator --> Brain
-    Orchestrator --> Hands
-    Orchestrator --> Memory
-    NodeReg --> Hands
-    ExecMgr --> Hands
+    Clients --> Router
+    Router --> Queue --> Loop
+    Sched --> Queue
+    Loop <--> Provider
+    Loop --> Tools
+    Approvals --> Tools
+    Tools --> Sandbox
+    Tools -->|node.invoke| Nodes
+    Loop --> Store
 ```
 
-## Component Summary
+## Components
 
-| Component | Role | Deep Dive |
+| Component | Role | Read more |
 |-----------|------|-----------|
-| **Gateway** | Central process — WebSocket server, daemon, process manager | [Gateway](/architecture/gateway) |
-| **Brain** | LLM reasoning — prompt assembly, model routing, provider fallback | [Brain & Hands](/architecture/brain-and-hands) |
-| **Hands** | Execution — shell, filesystem, browser, HTTP with sandboxing | [Brain & Hands](/architecture/brain-and-hands) |
-| **Memory** | Persistence — local Markdown files with hybrid search retrieval | [Memory System](/architecture/memory-system) |
-| **Heartbeat** | Autonomy — per-agent periodic task loop with Dreaming integration | [Heartbeat](/architecture/heartbeat) |
-| **Channels** | I/O — 26 messaging platform bridges (bundled + plugin) | [Channels](/guides/channels) |
-| **Skills** | Extensions — YAML+Markdown skill definitions from ClawHub | [Skills](/guides/skill-development) |
-| **Router** | Dispatch — routes messages to appropriate agent by channel binding | [Multi-Agent](/guides/multi-agent) |
-| **Node Registry** | Session tracking — connected execution sessions with command queues | [Gateway](/architecture/gateway) |
-| **Exec Approval Manager** | Command approval — serializes pending approval requests | [Gateway](/architecture/gateway) |
+| **Gateway** | The single process: channels, WebSocket API, agent runs, scheduler, Control UI | [Gateway](/architecture/gateway) |
+| **Agent runtime** | The agent loop: assembles the prompt, calls the model, runs tools, streams the reply | [Agent runtime and tools](/architecture/brain-and-hands) |
+| **Tools** | `exec`, `read`/`write`/`edit`/`apply_patch`, `browser`, `web_search`/`web_fetch`, `memory_search`, messaging, sessions, and plugin/MCP tools | [Agent runtime and tools](/architecture/brain-and-hands) |
+| **Sandbox** | Optional isolation for tool execution. **Off by default.** | [Sandboxing (official)](https://docs.openclaw.ai/gateway/sandboxing) |
+| **Nodes** | Companion devices that expose commands such as `camera.*` and `screen.record`; they do not run a Gateway | [Nodes (official)](https://docs.openclaw.ai/nodes) |
+| **Memory** | Markdown files in the agent workspace, plus a search index in the agent database | [Memory System](/architecture/memory-system) |
+| **Heartbeat and automations** | Scheduled agent turns, run by the Gateway scheduler | [Heartbeat](/architecture/heartbeat) |
+| **Channels** | Messaging integrations, mostly bundled plugins | [Channels](/guides/channels) |
+| **Skills** | Directories with a `SKILL.md` that teach the agent a task | [Skills](/guides/skill-development) |
+| **Bindings** | Route messages to agents by channel, account, or peer | [Multi-Agent](/guides/multi-agent) |
 
-## Request Lifecycle
+## Request lifecycle
 
-When a message arrives — from any channel, the CLI, or a heartbeat trigger — it follows this path:
+When a message arrives (from a channel, the CLI, the Control UI, or a scheduled job):
 
 ```mermaid
 sequenceDiagram
-    participant C as Channel/CLI
-    participant R as Router
-    participant O as Orchestrator
-    participant B as Brain (LLM)
-    participant H as Hands (Exec)
-    participant M as Memory
+    participant C as Channel / client
+    participant G as Gateway
+    participant A as Agent loop
+    participant P as Model provider
+    participant T as Tools
 
-    C->>R: Message arrives
-    R->>R: Match agent binding (channel/peer/account)
-    R->>O: Dispatch to agent's orchestrator
-    O->>M: Load relevant memory (hybrid search)
-    O->>O: Assemble prompt (SOUL.md + memory + skills + history)
-    O->>B: Send to LLM provider
-    B->>O: Response with tool calls
-    O->>H: Execute tool calls (shell/file/browser/http)
-    H->>O: Return results
-    O->>B: Feed results back (may loop)
-    B->>O: Final response
-    O->>M: Save new observations
-    O->>C: Reply through originating channel
+    C->>G: Inbound message
+    G->>G: Resolve agent + session (bindings, dmScope)
+    G->>A: Enqueue on the session lane
+    A->>A: Build system prompt (base + skills + bootstrap files)
+    A->>P: Model request
+    P->>A: Text and/or tool calls
+    A->>T: Run tool calls (policy, approvals, sandbox)
+    T->>A: Tool results
+    A->>P: Results fed back (loops until done)
+    P->>A: Final reply
+    A->>G: Persist transcript, stream events
+    G->>C: Reply on the originating channel
 ```
 
-### Prompt Assembly
+Runs are serialized per session, so two messages to the same session never race ([Command queue](https://docs.openclaw.ai/concepts/queue)).
 
-Each LLM call assembles context from multiple sources:
+### What goes into the prompt
 
-| Layer | Source | Typical Size |
-|-------|--------|-------------|
-| **System identity** | SOUL.md | 200-1,000 tokens |
-| **Agent instructions** | AGENTS.md, TOOLS.md | 100-500 tokens |
-| **Memory** | Hybrid search results from `~/.openclaw/memory/` | Up to `max_context_tokens` (default 2,000) |
-| **Active skills** | Matching skill instructions from SKILL.md files | 100-500 tokens per skill |
-| **Conversation history** | Recent messages in this session | Variable |
-| **Channel message** | The incoming message with EXTERNAL_UNTRUSTED_CONTENT markers | Variable |
+The system prompt is built from OpenClaw's base prompt, the skills prompt, the workspace bootstrap files, and per-run overrides ([System prompt](https://docs.openclaw.ai/concepts/system-prompt)).
 
-The Brain processes this assembled context and outputs either a text response, one or more tool calls, or both. Tool calls loop back through the Hands and return results to the Brain until it produces a final response.
+| Source | Notes |
+|--------|-------|
+| `AGENTS.md` | Operating instructions. Its `## Tools` section replaces the retired `TOOLS.md`. |
+| `SOUL.md` | Persona, tone, boundaries |
+| `USER.md` | Optional user model, separate 4,000-character budget |
+| `IDENTITY.md` | Name, vibe, emoji |
+| `MEMORY.md` | Curated long-term memory, main private session only |
+| Skills | Names and descriptions of eligible skills |
+| Conversation history | The session transcript, subject to compaction |
 
-## Data Flow
+Bootstrap files are truncated when injected: `agents.defaults.bootstrapMaxChars` (default 20000) per file and `bootstrapTotalMaxChars` (default 60000) in total ([Agent workspace](https://docs.openclaw.ai/concepts/agent-workspace)). Daily notes in `memory/` are not injected; the agent retrieves them with the `memory_search` tool. Untrusted tool and channel content is wrapped in `EXTERNAL_UNTRUSTED_CONTENT` markers before the model sees it.
 
-```
-Input Sources                    Gateway                         Output
-─────────────              ─────────────────────              ──────────
-WhatsApp message ──┐                                    ┌──► WhatsApp reply
-Telegram message ──┤       ┌─────────────────┐          ├──► Telegram reply
-Discord message  ──┤──────►│ Router          │          ├──► Shell commands
-Slack message    ──┤       │   ↓             │          ├──► File operations
-CLI command      ──┤       │ Orchestrator    │──────────┤──► Browser actions
-Heartbeat tick   ──┤       │   ↓       ↑     │          ├──► API requests
-Webhook          ──┘       │ Brain ──► Hands │          ├──► Memory updates
-                           │   ↓             │          └──► Proactive messages
-                           │ Memory          │
-                           └─────────────────┘
-```
+## Design notes
 
-## Design Principles
+- **One process per host.** One Gateway owns the channels and state for a host. Scale up, or run separate Gateways with separate state directories ([Multiple gateways](https://docs.openclaw.ai/gateway/multiple-gateways)).
+- **Local state, cloud models.** Config, transcripts, and memory live on your disk. Whatever goes into a prompt, including memory, is sent to your model provider. Memory search uses OpenAI embeddings by default, so memory chunks also go to the embedding API unless you pick a local provider.
+- **Model-agnostic.** Model refs are `provider/model` (for example `anthropic/claude-opus-5-5`), with fallbacks under `agents.defaults.model`. See [Model Selection](/guides/model-selection).
+- **Extensible.** Channels, providers, memory backends and many tools are plugins. Skills are directories with a `SKILL.md`.
+- **Strict config.** `openclaw.json` is validated against a schema, and the Gateway refuses to start on unknown keys. Check with `openclaw config validate`.
 
-### Single Process
+:::warning Defaults are permissive
+The Gateway binds to loopback and requires token auth by default. But host `exec` defaults to `tools.exec.mode: "full"` (no approval prompts), and sandboxing defaults to `off`. If the agent can reach a shell, set `tools.exec.mode` to `ask` or `allowlist`, and consider `agents.defaults.sandbox.mode`. See [Security Hardening](/security/hardening).
+:::
 
-One gateway manages everything — no microservices, no containers required, no inter-process communication complexity. The Node.js event loop handles concurrency naturally. This makes deployment simple (one binary, one config file) but means vertical scaling is the primary option.
+## Key files
 
-### Local-First
-
-All data stays on disk — memory as Markdown, config as JSON, credentials in `~/.openclaw/credentials/`. No cloud dependencies beyond the LLM API. If you use local models via Ollama or vLLM, nothing ever leaves your machine.
-
-### Model-Agnostic
-
-Swap LLM providers by changing a config line. The Brain abstracts provider differences behind a unified interface. Route different tasks to different models: Opus for complex reasoning, Haiku for heartbeat checks, local models for privacy-sensitive operations.
-
-### Extensible
-
-Skills are Markdown files — anyone can write them. Channels are plugins — install on demand from ClawHub. The Gateway's plugin architecture (v2026.3.22+) lets the community extend every layer without forking core.
-
-### Transparent
-
-Memory is human-readable Markdown. Config is JSON. The WebSocket protocol uses JSON text frames. When approvals are turned on (`tools.exec.mode` `ask` or `auto`; the default is `full`, with no prompts), they show the exact command before it runs. No black boxes.
-
-### Security-Conscious
-
-The Gateway binds to localhost by default. Authentication uses challenge-response with device pairing. External content is wrapped in `EXTERNAL_UNTRUSTED_CONTENT` boundary markers. Tool execution goes through approval workflows. But the security posture requires active configuration — see [Security Hardening](/security/hardening).
-
-## Key Files
-
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `~/.openclaw/openclaw.json` | Main configuration (gateway, brain, hands, channels, plugins) |
-| `~/.openclaw/SOUL.md` | Agent identity and personality |
-| `~/.openclaw/HEARTBEAT.md` | Autonomous task definitions |
-| `~/.openclaw/AGENTS.md` | Task instructions and operating rules |
-| `~/.openclaw/TOOLS.md` | Available capabilities and contact info |
-| `~/.openclaw/memory/` | Persistent memory files |
-| `~/.openclaw/credentials/` | Per-channel auth credentials |
-| `~/.openclaw/skills/` | Installed skill files |
-| `~/.openclaw/logs/` | Gateway and agent logs |
+| `~/.openclaw/openclaw.json` | Main configuration (JSON5) |
+| `~/.openclaw/.env` | Global fallback for environment variables such as API keys |
+| `~/.openclaw/workspace/` | Agent workspace: `AGENTS.md`, `SOUL.md`, `USER.md`, `IDENTITY.md`, `MEMORY.md`, `memory/`, `skills/` |
+| `~/.openclaw/agents/<agentId>/agent/openclaw-agent.sqlite` | Per-agent database: model auth profiles, sessions, transcripts, memory index |
+| `~/.openclaw/state/openclaw.sqlite` | Shared state database |
+| `~/.openclaw/credentials/` | Channel and provider state, legacy OAuth imports |
+| `~/.openclaw/skills/` | Managed (installed) skills |
+| `/tmp/openclaw/openclaw-YYYY-MM-DD.log` | Gateway log file ([Logging](https://docs.openclaw.ai/logging)) |
 
-## Deep Dives
+`HEARTBEAT.md` and `TOOLS.md` are retired. If you still have them, `openclaw doctor --fix` migrates their content.
 
-- [Gateway](/architecture/gateway) — Wire protocol, authentication, internal components, daemon management
-- [Brain & Hands](/architecture/brain-and-hands) — LLM integration, tool execution, sandboxing, model routing
-- [Memory System](/architecture/memory-system) — Hybrid retrieval, Dreaming mode, memory plugins
-- [Heartbeat](/architecture/heartbeat) — Per-agent scheduling, cost optimization, multi-agent coordination
+## Deep dives
+
+- [Gateway](/architecture/gateway): wire protocol, auth, pairing, service management
+- [Agent runtime and tools](/architecture/brain-and-hands): the agent loop, tools, exec approvals, sandboxing, nodes
+- [Memory System](/architecture/memory-system): memory files, hybrid search, dreaming
+- [Heartbeat](/architecture/heartbeat): scheduled check-ins
