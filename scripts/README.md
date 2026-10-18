@@ -100,14 +100,12 @@ node scripts/advisories.mjs --json static/data/openclaw-advisories.json
 node scripts/advisories.mjs --file adv.jsonl --json static/data/openclaw-advisories.json
 ```
 
-`.github/workflows/advisories.yml` runs this every Monday (and on manual
-dispatch) with the workflow's `GITHUB_TOKEN`. If any advisory changed (a
-`generatedAt`-only change is ignored), it opens or updates a PR from
-`bot/advisories-refresh` via `peter-evans/create-pull-request`. When merging,
-check whether the page's prose (batch sections, the latest release passed to
-`<MinimumSafeVersion latest="...">`) needs updating too. PRs opened with
-`GITHUB_TOKEN` don't trigger other workflows; re-run the snippet check by hand
-or push a commit to the branch if needed.
+Refreshing is manual for now: run the command above, and if the JSON changed
+(not just `generatedAt`), open a PR with it. When merging, check whether the
+page's prose (batch sections, the latest release passed to
+`<MinimumSafeVersion latest="...">`) needs updating too. A scheduled workflow
+that opens the PR automatically was removed until the repo allows GitHub
+Actions to create pull requests.
 
 ## Tutorial tests (`tutorial-tests/`)
 
