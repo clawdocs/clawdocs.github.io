@@ -132,6 +132,8 @@ Provider prices change often; check the provider's own pricing page rather than 
 - `realtime`: a provider's realtime voice model (OpenAI realtime and GPT-Live, among others) with the agent consulted for real work
 - `transcription`: captions or dictation with no spoken reply
 
+In 2026.10.4, `stt-tts` is the native-app loop; browser Talk in the Control UI uses `realtime` or `transcription` sessions. A browser `stt-tts` mode (and a **Read aloud** button on chat replies) is on upstream `main` for the next release.
+
 ```json5 title="~/.openclaw/openclaw.json"
 {
   talk: {

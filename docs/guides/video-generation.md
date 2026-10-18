@@ -161,17 +161,15 @@ openclaw skills install @shreefentsar/remotion-video-toolkit
 
 ### Pexo
 
-Video-agent skills from Pexo that turn a description into a finished video, routing each shot to a hosted video model (Seedance, Kling and others) through one Pexo API key. The most-downloaded one (about 40,000 installs) is listed through skills.sh; Pexo also publishes on ClawHub directly. Both call Pexo's hosted service; check its pricing first.
+Video-agent skills from Pexo that turn a description into a finished video, routing each shot to a hosted video model (Seedance, Kling and others) through one Pexo API key. Install it from ClawHub, where the publisher is verified and the moderation verdict is clean. It calls Pexo's hosted service; check its pricing first.
 
 ```bash
-openclaw skills install skills-sh:pexoai/pexo-skills/pexo-agent
-# or
 openclaw skills install @pexo/pexo-video-agent
 ```
 
 ### BibiGPT
 
-Wraps the BibiGPT CLI to summarize videos, audio and podcasts from a URL (YouTube, Bilibili and others), useful for research and repurposing. It uses the BibiGPT service.
+Wraps the BibiGPT CLI to summarize videos, audio and podcasts from a URL (YouTube, Bilibili and others), useful for research and repurposing. It uses the BibiGPT service. As of 2026-10-18 it has no ClawHub moderation verdict yet (unreviewed), so read its files before installing.
 
 ```bash
 openclaw skills install @jimmylv/bibigpt-skill

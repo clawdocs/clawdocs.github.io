@@ -9,7 +9,7 @@ keywords: [openclaw, openclaw custom channel, channel plugin, plugin sdk, create
 
 # Custom Channels
 
-OpenClaw supports 33 chat channels plus WebChat out of the box (see [Channels](/guides/channels)). If your platform is not among them, you can write a **channel plugin**. This page gives a short, correct skeleton and tells you where the upstream reference goes deeper. It was checked against OpenClaw **v2026.10.4** on 2026-10-18.
+OpenClaw 2026.10.4 supports 31 chat channels plus WebChat (see [Channels](/guides/channels)). If your platform is not among them, you can write a **channel plugin**. This page gives a short, correct skeleton and tells you where the upstream reference goes deeper. It was checked against OpenClaw **v2026.10.4** on 2026-10-18.
 
 The authoritative guide is [Building channel plugins](https://docs.openclaw.ai/plugins/sdk-channel-plugins). The SDK moves quickly (several subpaths were removed in 2026.8 to 2026.10), so check it before you start.
 
@@ -387,7 +387,7 @@ clawhub package publish myorg/openclaw-acme-chat --dry-run
 clawhub package publish myorg/openclaw-acme-chat
 ```
 
-Users then install it with `openclaw plugins install myorg/openclaw-acme-chat` (ClawHub) or `openclaw plugins install npm:@myorg/openclaw-acme-chat` (npm). Name packages `@<scope>/openclaw-<name>`; the `@openclaw/` scope belongs to the OpenClaw project. Reference: [Building plugins](https://docs.openclaw.ai/plugins/building-plugins).
+Users then install it with `openclaw plugins install clawhub:myorg/openclaw-acme-chat` (ClawHub) or `openclaw plugins install @myorg/openclaw-acme-chat` (npm). In 2026.10.4 a bare package spec installs from npm, so the `clawhub:` prefix is required for ClawHub. Name packages `@<scope>/openclaw-<name>`; the `@openclaw/` scope belongs to the OpenClaw project. Reference: [Building plugins](https://docs.openclaw.ai/plugins/building-plugins).
 
 ---
 

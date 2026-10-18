@@ -3,7 +3,7 @@ last_update:
   date: 2026-10-18
 verified_with: 2026.10.4
 title: Channels & Integrations
-description: Connect OpenClaw to Telegram, WhatsApp, Discord, Slack and 30 other chat platforms — which channels are bundled, how to install the rest, DM pairing, group policy, and troubleshooting
+description: Connect OpenClaw to Telegram, WhatsApp, Discord, Slack and 27 other chat platforms — which channels are bundled, how to install the rest, DM pairing, group policy, and troubleshooting
 keywords: [openclaw, openclaw channels, whatsapp, telegram, discord, slack, pairing, dmPolicy, groupPolicy]
 ---
 
@@ -11,7 +11,7 @@ keywords: [openclaw, openclaw channels, whatsapp, telegram, discord, slack, pair
 
 A **channel** is a chat platform connected to your OpenClaw Gateway. The same agent, memory and tools are reachable from Telegram on your phone, Discord on your desktop or Slack at work. Channels are transport: they decide who may reach the agent and how replies are delivered, not what the agent can do.
 
-Checked against OpenClaw **v2026.10.4** on 2026-10-18. The official catalog lists 33 channels plus WebChat: [docs.openclaw.ai/channels](https://docs.openclaw.ai/channels). This page is the opinionated short version; each section links the upstream page with the full key reference.
+Checked against OpenClaw **v2026.10.4** on 2026-10-18. The 2026.10.4 catalog lists 31 channels plus WebChat: [docs.openclaw.ai/channels](https://docs.openclaw.ai/channels). This page is the opinionated short version; each section links the upstream page with the full key reference.
 
 ---
 
@@ -19,7 +19,7 @@ Checked against OpenClaw **v2026.10.4** on 2026-10-18. The official catalog list
 
 Upstream sorts channels into four groups:
 
-- **Bundled plugin**: ships with the core install. Only **Telegram**, **A2A**, **Reef** and **X / Twitter**.
+- **Bundled plugin**: ships with the core install. Only **Telegram**, **A2A** and **Reef**.
 - **Included in core**: **WebChat** (the Control UI chat tab and the native apps).
 - **Official plugin**: maintained in the OpenClaw repo, installed on demand as `@openclaw/<id>`. `openclaw onboard` and `openclaw channels add` offer the install the first time you pick one.
 - **External plugin**: maintained by someone else, under their own package name.
@@ -47,7 +47,6 @@ Upstream sorts channels into four groups:
 | **Tlon / Urbit** | `tlon` | `@openclaw/tlon` | Ship credentials |
 | **Twitch** | `twitch` | `@openclaw/twitch` | OAuth (twurple), with token refresh |
 | **Zalo** / **Zalo personal** | `zalo` / `zalouser` | `@openclaw/zalo` / `@openclaw/zalouser` | Bot token / QR login |
-| **X / Twitter** | `x` | bundled | OAuth2 app; mentions and allowlisted public replies, no DMs |
 | **A2A**, **Reef** | `a2a`, `reef` | bundled | Agent-to-agent protocols |
 | **Buzz**, **ClickClack**, **Raft** | `buzz`, `clickclack`, `raft` | `@openclaw/<id>` | See the upstream page for each |
 | **WeChat** | — | external: `@tencent-weixin/openclaw-weixin` | Tencent's plugin |
@@ -85,7 +84,7 @@ openclaw channels status --probe
 
 With the default hot reload, a running Gateway applies new channel config without a restart. If the Gateway is not running, start it with `openclaw gateway start` (service) or `openclaw gateway run` (foreground).
 
-`openclaw plugins install <pkg>` resolves through ClawHub first; use `npm:@openclaw/<id>` to install straight from npm. Reference: [`openclaw channels`](https://docs.openclaw.ai/cli/channels), [plugins](https://docs.openclaw.ai/tools/plugin).
+In 2026.10.4, `openclaw plugins install @openclaw/<id>` installs from npm first and falls back to the package's ClawHub listing only when the npm target is unavailable; prefix `npm:` or `clawhub:` to force a source. Reference: [`openclaw channels`](https://docs.openclaw.ai/cli/channels), [plugins](https://docs.openclaw.ai/tools/plugin).
 
 ---
 
@@ -309,9 +308,13 @@ openclaw channels status --probe
 
 ## Twitter/X with TweetClaw {#twitterx-with-tweetclaw}
 
-OpenClaw now bundles an **X / Twitter channel** (`x`): it turns mentions of your bot account into conversations and posts public replies, only for allowlisted authors by default. It does not do DMs, likes or original posts. See [docs.openclaw.ai/channels/x](https://docs.openclaw.ai/channels/x).
+OpenClaw 2026.10.4 has no built-in X / Twitter channel.
 
-For broader automation (search, follower export, monitors, giveaways), [TweetClaw](https://github.com/Xquik-dev/tweetclaw) is a **third-party** plugin backed by Xquik's paid API:
+:::note Next release
+Upstream `main` adds a bundled **X channel** (`x`) that turns mentions of your bot account into conversations and posts public replies, only for allowlisted authors by default, with no DMs, likes or original posts. It is not in 2026.10.4. See [docs.openclaw.ai/channels/x](https://docs.openclaw.ai/channels/x) once you upgrade.
+:::
+
+For X automation today (search, follower export, monitors, giveaways), [TweetClaw](https://github.com/Xquik-dev/tweetclaw) is a **third-party** plugin backed by Xquik's paid API:
 
 ```bash
 openclaw plugins install @xquik/tweetclaw
@@ -530,7 +533,7 @@ There is no `reconnect` command. For a token channel, fix the token and let hot 
 
 ## Plugin Architecture
 
-Channels are plugins. Telegram, A2A, Reef and X ship in core; the official ones live in the OpenClaw repo under `extensions/<id>` and publish as `@openclaw/<id>`; external ones publish under their own scope. WhatsApp's runtime ships outside the core npm package so its dependencies stay with the plugin, and the Gateway loads it only when the channel is active.
+Channels are plugins. Telegram, A2A and Reef ship in core; the official ones live in the OpenClaw repo under `extensions/<id>` and publish as `@openclaw/<id>`; external ones publish under their own scope. WhatsApp's runtime ships outside the core npm package so its dependencies stay with the plugin, and the Gateway loads it only when the channel is active.
 
 The channel plugin SDK lives at `openclaw/plugin-sdk/channel-core` (`defineChannelPluginEntry`, `createChatChannelPlugin`). Core owns the shared `message` tool, session keys and dispatch; a plugin supplies config, security, pairing and outbound delivery for its platform. See [Custom Channels](/guides/custom-channels).
 
