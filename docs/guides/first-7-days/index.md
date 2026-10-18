@@ -9,9 +9,7 @@ keywords: [openclaw, tutorial, getting started, learn openclaw, beginner guide, 
 
 # First 7 Days with OpenClaw
 
-You installed OpenClaw. You typed "hello." It replied. Now what?
-
-This series takes you from first conversation to power user in 7 steps. Each "day" is a self-contained guide you can finish in under an hour. Do them at your own pace — one per day, or all in an afternoon. Every command and config block was checked against OpenClaw **v2026.10.4**.
+Seven self-contained guides that take you from a first conversation to a hardened, automated setup. Each takes under an hour; do one a day or several in an afternoon. Every command and config block was checked against OpenClaw **v2026.10.4**.
 
 | Day | What You'll Learn | Time |
 |-----|------------------|------|
@@ -31,7 +29,7 @@ This series takes you from first conversation to power user in 7 steps. Each "da
 
 - OpenClaw installed and onboarded. `openclaw onboard` (or the installer's Quick start) verifies your model access, starts the Gateway and seeds the workspace files used on Day 1. See [Getting started](https://docs.openclaw.ai/start/getting-started).
 - The Gateway running. `openclaw gateway status` should show it listening on port 18789, and `openclaw status` shows channel health.
-- A way to talk to the bot. The Control UI (`openclaw dashboard`) and the terminal UI (`openclaw tui`) work with no extra setup. For your phone, Telegram is the easiest first channel: it is built into core and needs only a bot token ([Telegram setup](https://docs.openclaw.ai/channels/telegram/setup)).
+- A way to talk to the bot. The Control UI (`openclaw dashboard`) and the terminal UI (`openclaw tui`) work with no extra setup. For your phone, Telegram is the easiest first channel: it is bundled with OpenClaw and needs only a bot token ([Telegram setup](https://docs.openclaw.ai/channels/telegram/setup)).
 - An owner set for proactive messages. Approving your own first Telegram DM with `openclaw pairing approve` sets `commands.ownerAllowFrom` for you; Day 3 explains why it matters.
 
 ```bash
@@ -52,5 +50,3 @@ Out of the box, OpenClaw runs shell commands **without asking** (`tools.exec.mod
 - Bundled and community skills installed and checked
 - At least one custom skill you built yourself
 - A hardened, backed-up, cost-aware setup
-
-Let's get started.

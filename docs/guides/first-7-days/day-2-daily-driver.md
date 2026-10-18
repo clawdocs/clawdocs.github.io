@@ -9,7 +9,7 @@ keywords: [openclaw, daily use, everyday tasks, productivity, chat commands, sum
 
 # Day 2: Your Daily Driver
 
-Yesterday you gave your bot a personality. Today you put it to work on the things you actually do every day — summarizing content, researching topics, managing files, writing scripts, and keeping your system healthy.
+Today you put the bot to work: summaries, research, file management, quick scripts and system checks.
 
 **Time:** ~30 minutes
 
@@ -59,7 +59,6 @@ For long content, tell the bot what you care about: "Summarize this, focusing on
 
 ## Research Assistant
 
-The bot can research topics, compare options, and find documentation — saving you the tab-switching and skimming.
 
 ```
 What are the main differences between SQLite, PostgreSQL, and MySQL for a small self-hosted app?
@@ -85,7 +84,20 @@ Web search needs a search provider. OpenClaw auto-detects one from the credentia
 
 ## File Management
 
-One of OpenClaw's strongest practical uses: managing files without memorizing find/xargs/sed incantations.
+Managing files without memorizing find/xargs/sed incantations. These prompts move and rename real files, so read this first:
+
+:::warning The bot does not ask first by default
+By default OpenClaw runs commands **without asking**, including destructive ones (deleting, moving, overwriting): `tools.exec.mode` defaults to `full` and the sandbox is off. Asking it to "show me the plan first" is a request the model may or may not honour, not a safety control.
+
+For a real confirmation step, turn on approvals and check the result:
+
+```bash
+openclaw config set tools.exec.mode ask
+openclaw exec-policy show
+```
+
+In `ask` mode, allowlisted commands run and everything else waits for you to approve it in the chat or Control UI. `openclaw approvals get` shows the requested policy, the host approvals file and the effective result. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and the [hardening checklist](/security/hardening#exec-approvals).
+:::
 
 ### Organize files
 
@@ -111,19 +123,6 @@ Rename all files in ~/screenshots to the format YYYY-MM-DD_HH-MM-SS.png based on
 Create a project structure for a Python CLI tool called "timetrack" with src, tests, docs, and config directories, including __init__.py files and a pyproject.toml
 ```
 
-:::warning The bot does not ask first by default
-By default OpenClaw runs commands **without asking**, including destructive ones (deleting, moving, overwriting): `tools.exec.mode` defaults to `full` and the sandbox is off. Asking it to "show me the plan first" is a request the model may or may not honour, not a safety control.
-
-For a real confirmation step, turn on approvals and check the result:
-
-```bash
-openclaw config set tools.exec.mode ask
-openclaw exec-policy show
-```
-
-In `ask` mode, allowlisted commands run and everything else waits for you to approve it in the chat or Control UI. `openclaw approvals get` shows the requested policy, the host approvals file and the effective result. See [permission modes](https://docs.openclaw.ai/tools/permission-modes) and the [hardening checklist](/security/hardening#exec-approvals).
-:::
-
 ---
 
 ## Quick Scripts
@@ -131,8 +130,10 @@ In `ask` mode, allowlisted commands run and everything else waits for you to app
 Need a one-off script? Describe what you want in plain language. The bot writes it, explains it, and can run it for you.
 
 ```
-Write a bash script that backs up my ~/.openclaw directory to ~/backups with a timestamp
+Write a bash script that backs up ~/Documents/notes to ~/backups with a timestamp
 ```
+
+(For OpenClaw's own state, use `openclaw backup create` instead; copying `~/.openclaw` while the Gateway runs can catch its SQLite databases mid-write. See [Day 7](./day-7-production.md#backups).)
 
 ```
 Write a Python script that reads a CSV file and outputs the rows where the "status" column is "failed"
@@ -181,36 +182,6 @@ Install htop if it's not already installed
 :::info
 System access depends on the permissions of the user running OpenClaw. The bot can do anything that user can do in a terminal. If that user has passwordless `sudo`, the bot can install packages and change system files without asking you, unless approvals are on. Run OpenClaw as an ordinary user without passwordless `sudo`, turn on approvals (above), and consider the [sandbox](/security/hardening#sandboxing) for anything that reads untrusted input.
 :::
-
----
-
-## Practical Examples
-
-Copy-paste these into your next chat session. Each one is a real task you can try right now:
-
-```
-Summarize https://news.ycombinator.com
-```
-
-```
-Find all files larger than 100MB in my home directory
-```
-
-```
-Write a bash script that backs up my ~/.openclaw directory to ~/backups with a timestamp
-```
-
-```
-What processes are using the most memory right now?
-```
-
-```
-Create a Python script that converts all PNG files in ~/images to JPEG
-```
-
-```
-Show my current git branches across all repos in ~/projects and flag any with uncommitted changes
-```
 
 ---
 

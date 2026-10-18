@@ -15,6 +15,8 @@ keywords: [openclaw, skills, install skills, clawhub, skill tutorial, community 
 
 Your bot can chat and run scheduled jobs. Today you give it **skills**: written instructions that teach it how to do specific jobs well, like working with GitHub, your calendar or your notes. Many skills already ship with OpenClaw. More are on ClawHub, the community registry.
 
+**Time:** ~30 minutes
+
 ## What are skills?
 
 A skill is a **directory** that contains a `SKILL.md` file. The file has YAML frontmatter with a `name` and a `description`, then Markdown instructions ([Skills](https://docs.openclaw.ai/tools/skills)).
@@ -154,11 +156,11 @@ To turn a skill off without uninstalling it, disable it in config:
 
 API keys and settings for a skill also go in `skills.entries.<name>` (`apiKey`, `env`, `config`), not in the skill file ([Skills config](https://docs.openclaw.ai/tools/skills-config)). Those values are injected into the host process for that turn, not into a sandbox.
 
-To remove a ClawHub skill, use the standalone ClawHub CLI, which asks for confirmation before deleting the folder:
+To remove a ClawHub skill, use the standalone ClawHub CLI. Point `--workdir` at the workspace it was installed into (`~/.openclaw` for a `--global` install); it asks for confirmation before deleting the folder ([remove a ClawHub skill](https://docs.openclaw.ai/cli/skills)):
 
 ```bash
 npm i -g clawhub
-clawhub uninstall @asleep123/caldav-calendar
+clawhub --workdir ~/.openclaw/workspace uninstall @asleep123/caldav-calendar
 ```
 
 ## Building vs installing

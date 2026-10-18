@@ -25,7 +25,7 @@ OpenClaw has two kinds of scheduled work, and both are run by the Gateway's auto
 |---|---|---|
 | What it is | A job you create: a schedule plus a prompt (or a command) | One system-owned monitor job per agent |
 | When it runs | Exactly when you say: `0 8 * * *`, `every 2h`, a one-shot `--at 20m` | Every `30m` by default (`1h` with Anthropic OAuth/token auth) |
-| Where it runs | Its own isolated session by default | The agent's main session by default |
+| Where it runs | A fresh isolated session when created from the CLI; the creating conversation when created in chat | The agent's main session by default |
 | What it does | Whatever the prompt says, then delivers the result | Checks its scratch notes and replies `NO_REPLY` if nothing needs attention |
 | Use it for | Briefings, reports, recurring checks | "Is anything urgent?" sweeps, follow-ups on background work |
 
@@ -45,7 +45,7 @@ Scheduled work needs somewhere to send its results.
   openclaw config set commands.ownerAllowFrom '["telegram:123456789"]'
   ```
 
-- **Automations** you create from a chat reply to that chat. Automations you create from the CLI need a route: pass `--channel telegram --to "<chat id>"` (for a DM with your bot, the chat ID is your user ID).
+- **Automations** you create from a chat reply to that chat. From the CLI, a job defaults to `--channel last`, which resolves from session history (or your only configured channel) and fails closed if it can't. Pin the destination with `--channel telegram --to "<chat id>"` (for a DM with your bot, the chat ID is your user ID); `openclaw cron show <jobId>` previews the resolved route.
 
 - **Times** use your timezone. Set `agents.defaults.userTimezone` (see [Day 1](./day-1-make-it-yours.md#tell-it-about-you)); automation cron expressions use the Gateway host's timezone unless you pass `--tz`.
 
@@ -109,7 +109,7 @@ Issue and PR text is written by strangers. Treat it as untrusted input: keep thi
 
 ### Server Health Check
 
-For checks with a clear pass/fail rule, a **command job** is safer and cheaper than a model run. It executes a fixed shell command on the Gateway host, with no model in the loop, and delivers its output. Output that is exactly `NO_REPLY` is suppressed:
+For checks with a clear pass/fail rule, a **command job** is safer and cheaper than a model run. It executes a fixed shell command on the Gateway host, with no model in the loop, and delivers its output. Output that is exactly `NO_REPLY` is suppressed. The command runs inside the Gateway process, not through the agent's `exec` tool, so exec approvals do not apply: only an operator (`operator.admin`) can create one, and the model can't change what it runs:
 
 ```bash
 openclaw cron add "0 * * * *" \
@@ -263,7 +263,7 @@ Common issues:
 
 - **Nothing runs:** Check that `openclaw gateway status` shows the Gateway running, and `openclaw cron status` shows the scheduler enabled. `cron.enabled: false` or `OPENCLAW_SKIP_CRON=1` turns scheduling off.
 - **Heartbeat never messages you:** That is normal when nothing needs attention (`NO_REPLY`). If the logs show heartbeat polls skipped with `reason=no-route`, there is no owner to deliver to: set `commands.ownerAllowFrom`.
-- **Automation runs but you get nothing:** Check the delivery column in `openclaw cron runs <jobId>`. CLI-created jobs need `--channel` and `--to`.
+- **Automation runs but you get nothing:** Check the delivery column in `openclaw cron runs <jobId>` and the route in `openclaw cron show <jobId>`. Pin it with `openclaw cron edit <jobId> --channel telegram --to "<chat id>"`.
 - **Wrong timing:** Check `--tz` on the job and `agents.defaults.userTimezone`. Heartbeats outside `activeHours` are skipped.
 - **High costs:** Lower the frequency, add `lightContext`/`isolatedSession`, and move script-decidable checks to command jobs. Check `openclaw gateway usage-cost`.
 
