@@ -15,8 +15,10 @@ Skills you write by hand (workspace, project, managed, ClawHub, plugin, bundled)
 
 The official reference is [Skill Workshop](https://docs.openclaw.ai/tools/skill-workshop) and [Self-learning](https://docs.openclaw.ai/tools/self-learning).
 
-:::info Version note
-This page describes **v2026.10.4**, the current stable release. The upstream `main` branch has already removed the proposal queue: learned skills apply immediately, every change keeps the previous version, and the CLI becomes `openclaw skills workshop list | changes | show | archive | restore`. docs.openclaw.ai may already describe that newer model. When you upgrade to the release that ships it, `openclaw doctor --fix` exports pending proposals and removes the old `approvalPolicy` and `maxPending` settings.
+:::warning Changing in 2026.10.10 (beta)
+This page describes **v2026.10.4**, the current stable release. **2026.10.10-beta.1** (npm `beta`, published 2026-10-15; not in 2026.10.4) retires the proposal flow: `propose` mode, `approvalPolicy`, `maxPending`, `propose-create`/`propose-update` and the other proposal subcommands are gone. Learned changes apply immediately, each keeps the previous version, and you revert with **Undo** (the Learned notice, or say "undo"). The CLI becomes `openclaw skills workshop list | changes | show | archive | restore`.
+
+On upgrade, `openclaw doctor --fix` rewrites `autonomous.mode: "propose"` to **`"off"`** (not `auto`), so self-learning is silently disabled, deletes `approvalPolicy` and `maxPending`, and exports pending or quarantined drafts to `<agentDir>/workshop-skills/.archive/.retired-proposals/` without installing them. If you use `propose` today, plan to check `openclaw config get skills.workshop.autonomous.mode` after upgrading and set it to `auto` or leave it `off` deliberately. Sources: [PR #161057](https://github.com/openclaw/openclaw/pull/161057), [PR #168577](https://github.com/openclaw/openclaw/pull/168577), [v2026.10.10-beta.1 notes](https://github.com/openclaw/openclaw/releases/tag/v2026.10.10-beta.1).
 :::
 
 ---
@@ -49,7 +51,7 @@ In the default `auto` mode, the agent edits its Workshop skills without asking. 
 | `"propose"` | The background review can stage **one pending proposal** per review. Nothing goes live until it is applied. |
 | `"off"` | No background learning. You can still create skills on request or with `/learn`. |
 
-The default is `auto`, so learning is **on** on a fresh install. If you want every change reviewed before it goes live, switch to `propose`:
+The default is `auto`, so learning is **on** on a fresh install. On 2026.10.4, if you want every change reviewed before it goes live, switch to `propose`. This setup does not survive the next release: 2026.10.10 removes it and `doctor --fix` turns learning **off** (see the warning above).
 
 ```json5 title="~/.openclaw/openclaw.json"
 {
@@ -78,7 +80,7 @@ openclaw config set skills.workshop.autonomous.mode off
 ```
 
 :::note
-`approvalPolicy: "pending"` only matters for proposals. In `auto` mode the background review edits skills directly and never asks. For a reviewed setup you need both `mode: "propose"` and `approvalPolicy: "pending"`.
+`approvalPolicy: "pending"` only matters for proposals. In `auto` mode the background review edits skills directly and never asks. For a reviewed setup on 2026.10.4 you need both `mode: "propose"` and `approvalPolicy: "pending"`. Both keys are removed in 2026.10.10.
 :::
 
 The background review uses the same model and provider as the conversation, so it costs tokens. Incognito turns are never reviewed. The review keeps the source session's shell approvals; the Workshop file root is not a shell sandbox.
@@ -235,7 +237,7 @@ Do not edit these directories by hand while the Gateway runs. Upgrades from rele
 | `Proposal scan failed` | Inspect the scanner findings, then revise or quarantine |
 | Proposal missing from `list` | Check `--agent` and `OPENCLAW_STATE_DIR` |
 | Agent cannot call `skill_workshop` | Sandboxed run, or tool policy hides it; see above |
-| Agent changes skills without asking | Mode is `auto`; switch to `propose` and set `approvalPolicy: "pending"` |
+| Agent changes skills without asking | Mode is `auto`; on 2026.10.4 switch to `propose` and set `approvalPolicy: "pending"` (removed in 2026.10.10, where you use Undo or `mode: "off"`) |
 
 ---
 

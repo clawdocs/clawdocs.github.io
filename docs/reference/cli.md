@@ -160,6 +160,12 @@ openclaw plugins list
 openclaw mcp list
 ```
 
+:::warning Changing in 2026.10.10 (beta)
+2026.10.10-beta.1 (npm `beta`, 2026-10-15; not in 2026.10.4) removes the Skill Workshop proposal subcommands (`propose-create`, `propose-update`, `inspect`, `revise`, `evaluate`, `apply`, `reject`, `quarantine`). `skills workshop` becomes `list`, `changes`, `show`, `archive` and `restore`. Scripts that call the proposal commands will fail after upgrading; see [Skill Workshop](/guides/skill-workshop).
+:::
+
+On 2026.10.4, `plugins install <name>` without a prefix installs from npm. Always write `clawhub:<package>` or `npm:<package>`: a change on upstream `main` (not in any release yet) makes bare names resolve to ClawHub, and explicit prefixes work on both sides of it. See [Plugin System](/guides/plugin-system).
+
 `openclaw clawhub` and `openclaw skill` (singular) do not exist. ClawHub also has its own separate `clawhub` CLI for publishing; see the [ClawHub CLI docs](https://docs.openclaw.ai/clawhub/cli).
 
 ## Security, approvals and sandbox
