@@ -93,7 +93,7 @@ As of 2026-10-18, [openclaw/openclaw](https://github.com/openclaw/openclaw) has 
 
 ## What OpenClaw is not
 
-- **Not just a CLI.** It ships a full web Control UI and desktop and mobile apps. [WebClaw](/guides/webclaw) is a separate third-party web client.
+- **Not just a CLI.** It ships a full web Control UI (open it with `openclaw dashboard`) and desktop and mobile apps. Use the Control UI rather than a third-party web client: [WebClaw](/guides/webclaw) only speaks Gateway protocol v3, and current Gateways require v4 from operator and UI clients ([protocol versioning](https://docs.openclaw.ai/gateway/protocol/versioning)), so it cannot connect.
 - **Not a coding IDE.** It can write and edit code, but it is a general-purpose agent, not a replacement for your editor.
 - **Not free to run.** OpenClaw is free; model API calls are not. Local models cost nothing per token but need capable hardware.
 - **Not safe by default.** It runs with your user's permissions, shell commands run without approval by default, and the sandbox is off. Read the [Security Overview](/security/overview) before connecting it to anything important.
