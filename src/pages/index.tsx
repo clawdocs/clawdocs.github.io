@@ -15,7 +15,7 @@ function HomepageHeader() {
         <div className="container">
           <div className={styles.heroBadge}>
             <span className={styles.badgeDot} />
-            Open Source &middot; 377k+ GitHub Stars
+            Open Source &middot; 390k+ GitHub Stars
           </div>
           <Heading as="h1" className={styles.heroTitle}>
             The Community Docs for{' '}
@@ -51,9 +51,9 @@ function HomepageHeader() {
 function StatsBar() {
   const stats = [
     {value: '70+', label: 'Guides'},
-    {value: '50+', label: 'Channels'},
-    {value: '32k+', label: 'MCP Servers'},
-    {value: '10,700+', label: 'Skills on ClawHub'},
+    {value: '31', label: 'Channels'},
+    {value: '2026.10.4', label: 'Verified Version'},
+    {value: '722', label: 'Tracked Advisories'},
   ];
   return (
     <section className={styles.statsBar}>
@@ -87,7 +87,7 @@ const features: FeatureItem[] = [
     link: '/architecture/heartbeat',
   },
   {
-    title: '50+ Integrations',
+    title: '31 Channels',
     icon: '🔗',
     description:
       'WhatsApp, Telegram, Discord, Slack, Gmail, GitHub, smart home — dozens of platforms out of the box.',
@@ -104,14 +104,14 @@ const features: FeatureItem[] = [
     title: 'MCP Ecosystem',
     icon: '🔌',
     description:
-      '32,600+ MCP servers with 229,800+ tools. Connect databases, APIs, and services with one protocol.',
+      'Connect databases, APIs and services through the Model Context Protocol, as a client or a server.',
     link: '/guides/mcp-servers',
   },
   {
     title: 'Extensible Skills',
     icon: '⚡',
     description:
-      'Build skills with Markdown + YAML. Browse 10,700+ community skills on ClawHub with security scanning.',
+      'Build skills with Markdown + YAML. Browse community skills on ClawHub, scanned before they are published.',
     link: '/guides/clawhub',
   },
   {
@@ -211,7 +211,7 @@ const newGuides: GuideCard[] = [
   },
   {
     title: 'MCP Servers',
-    description: 'Find, connect, and build MCP servers — the protocol powering 32k+ integrations',
+    description: 'Find, connect, and build MCP servers — one protocol for tools, data and services',
     link: '/guides/mcp-servers',
     tag: 'Popular',
     tagColor: '#7c3aed',
@@ -232,7 +232,7 @@ const newGuides: GuideCard[] = [
   },
   {
     title: 'ClawHub Marketplace',
-    description: '10,700+ skills — browse, install, verify, publish, and secure your skill supply chain',
+    description: 'Browse, install, verify, publish, and secure your skill supply chain',
     link: '/guides/clawhub',
     tag: 'Updated',
     tagColor: '#16a34a',
