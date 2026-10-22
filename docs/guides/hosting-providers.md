@@ -42,6 +42,7 @@ Prices are entry prices as of 2026-10-18, from each provider's site. Promotional
 | [Clawbase](#molty-hosting) | Managed | $19.99/mo | No | — | Browser dashboard |
 | [ClawBook.io](#clawbookio) | Managed | $20/mo | — | Partial | Crypto payments, global |
 | [xCloud](#xcloud) | Managed | $9.99/mo (promo, renews $19.99) | No | Partial | Beginners, white-label |
+| [serverserv](#serverserv) | VPS, pre-installed | $10.99/mo (3-yr), $14.99 monthly | Possible (high-RAM plans) | No | OpenClaw set up for you on your own KVM VPS |
 | [DigitalOcean](#digitalocean) | VPS 1-Click | $24/mo | No | No | Developers |
 | [ClawdHost](#clawdhost) | Managed | $29/mo | No | — | Simple single plan |
 | [BoostedHost](#boostedhost) | VPS | Varies | Possible | — | Performance, Auto-Burst |
@@ -375,6 +376,15 @@ Hostinger's former OpenClaw VPS page now redirects to its managed "AI automation
 - **URL**: [marketplace.digitalocean.com/apps/openclaw](https://marketplace.digitalocean.com/apps/openclaw)
 - **Price**: From $24/month (4 GB RAM Droplet; not re-checked 2026-10-18)
 - **Features** (per the listing): Docker isolation, unique Gateway token, firewall rules, non-root execution, fail2ban
+
+### serverserv {#serverserv}
+
+- **URL**: [serverserv.com/openclaw-hosting.html](https://serverserv.com/openclaw-hosting.html)
+- **Price** (as of 2026-10-22): OpenClaw Starter (2 vCPU, 4 GB RAM, 50 GB NVMe) $14.99 monthly or $10.99/month on a 3-year term; plans up to 18 vCPU, 96 GB RAM
+- **Setup**: OpenClaw installed and set up by the provider on your own KVM VPS; you add your model provider key and pair your chat apps
+- **Features**: Full root access, NVMe storage, monthly or 1 to 3-year terms, Ollama possible on the high-RAM plans
+- **Location**: North America
+- **Refund**: 14 days on the first order
 
 ### Alibaba Cloud {#alibaba-cloud}
 
