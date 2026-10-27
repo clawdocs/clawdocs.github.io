@@ -38,6 +38,7 @@ Prices are entry prices as of 2026-10-18, from each provider's site. Promotional
 | [MyClaw.ai](#myclawai) | Managed | $19/mo | No | Partial | Dedicated managed, also Hermes/Claude Code |
 | [OneClickClaw.io](#oneclickclaw) | Managed VPS | €14.99/mo | Yes (Hobbyist, Pro) | Yes | OpenClaw or Hermes Agent, 7-day free trial |
 | [OpenClaw Cloud](#openclaw-cloud) | Managed | $19/mo | Free model | Yes | Free trial, own URL |
+| [RoamerHost](#roamerhost) | Managed | NT$599/mo (≈$18) | No | — | Taiwan, Traditional Chinese support, model usage on Advanced |
 | [ClawHosters](#clawhosters) | Managed VPS | €19/mo | — | Yes | GDPR, German servers |
 | [Clawbase](#molty-hosting) | Managed | $19.99/mo | No | — | Browser dashboard |
 | [ClawBook.io](#clawbookio) | Managed | $20/mo | — | Partial | Crypto payments, global |
@@ -273,6 +274,25 @@ Managed OpenClaw with a workspace on top. Each workspace is a standard OpenClaw 
 - **Data**: Notes and agent files are plain `.md`; any note downloads as a file
 - **Hosting**: Germany (netcup, Nuremberg); operated by PIKsolution OÜ, Tallinn, Estonia (EU)
 - **Trade-offs**: Catalog models only, OpenClaw releases arrive after the provider has tested them, no arbitrary packages on the server — see [what differs from self-hosting](https://aplite.ai/docs/openclaw)
+- **Status**: Independent service, not affiliated with the OpenClaw project
+
+### RoamerHost {#roamerhost}
+
+Managed OpenClaw for Taiwan and Traditional Chinese speakers, billed in New Taiwan dollars. Each instance runs in its own Docker container with its own network, data volume and subdomain.
+
+- **URL**: [roamerhost.com/en/services/openclaw](https://roamerhost.com/en/services/openclaw)
+- **Pricing** (as of 2026-10-27, [source](https://roamerhost.com/en/services/openclaw)):
+
+| Plan | Price | Features |
+|------|-------|----------|
+| Pro | NT$599/mo (about $18) | Bring your own model API key, 10 GB for apps and memory |
+| Advanced | NT$1,599/mo (about $49) | Pro plus model usage included (daily allowance, no API key needed) and an AI assistant that sets up agents, rules and reminder schedules |
+
+- **Setup**: One-click deploy from the dashboard; Docker, SSL and OpenClaw updates are handled by the provider
+- **Channels**: Telegram, Discord
+- **Models**: Pro uses your own Claude, GPT or Gemini key; Advanced uses the provider's model by default, or your own key
+- **Data**: API keys and memory stay inside your container; after cancellation, data is kept for 3 months, then permanently deleted ([FAQ](https://roamerhost.com/en/services/openclaw))
+- **Payment**: Monthly, no contract; credit card in TWD (the card must support 3D Secure); Taiwan company invoices available
 - **Status**: Independent service, not affiliated with the OpenClaw project
 
 ---
