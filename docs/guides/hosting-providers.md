@@ -35,6 +35,7 @@ Prices are entry prices as of 2026-10-18, from each provider's site. Promotional
 | [Railway](#railway) | PaaS | $5/mo | No | No | Testing / development |
 | [Hostinger](#hostinger) | Managed apps | $5.99/mo (promo) | No | — | Managed AI automation apps |
 | [OpenClaw Launch](#openclawlaunch) | Managed | $6/mo | No | No | AI credits, fast setup |
+| [EasyNode](#easynode) | VPS template | $8.90/mo | Possible | - | Crypto payments, no ID check, Hermes Agent also preinstalled |
 | [MyClaw.ai](#myclawai) | Managed | $19/mo | No | Partial | Dedicated managed, also Hermes/Claude Code |
 | [OneClickClaw.io](#oneclickclaw) | Managed VPS | €14.99/mo | Yes (Hobbyist, Pro) | Yes | OpenClaw or Hermes Agent, 7-day free trial |
 | [OpenClaw Cloud](#openclaw-cloud) | Managed | $19/mo | Free model | Yes | Free trial, own URL |
@@ -392,6 +393,17 @@ OpenClaw image on a Simple Application Server, wired to Alibaba Cloud Model Stud
 - **Price** (as of 2026-10-18): VPS.S1 (2 vCPU, 2 GB RAM) $4.99/month billed yearly, $5.99 monthly; VPS.S2 (4 GB RAM) from $7.99
 - **Features**: Pre-installed on Ubuntu 24.04, AMD EPYC, NVMe SSD, unmetered bandwidth, DDoS protection, snapshots/backups
 - **Refund**: 30 days
+
+### EasyNode {#easynode}
+
+VPS with OpenClaw preinstalled behind a password-protected dashboard, paid in crypto or by card.
+
+- **URL**: [easy-node.xyz/vps/openclaw](https://easy-node.xyz/vps/openclaw/)
+- **Price** (as of 2026-10-31): Starter (4 vCPU, 8 GB RAM, 100 GB SSD) $8.90/month, billed monthly; plans up to 16 vCPU and 64 GB RAM; NVMe versions from $21.90/month
+- **Locations**: Europe, UK, US (Central), Japan, Australia, India
+- **Features**: OpenClaw installed at no extra cost, dashboard behind a login, full root access, DDoS protection
+- **Payment**: Crypto (via Cryptomus), card (Stripe), account balance; no identity verification
+- **Also offers**: Hermes Agent preinstalled on the same plans ([easy-node.xyz/vps/hermes-agent](https://easy-node.xyz/vps/hermes-agent/)); not OpenClaw
 
 ### BoostedHost {#boostedhost}
 
