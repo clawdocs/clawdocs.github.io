@@ -1,0 +1,259 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Environment Variables",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/reference/environment-variables",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#jds4n7",
+      "name": "LLM API Keys",
+      "x": -247,
+      "y": -34,
+      "link": "https://clawdocs.org/reference/environment-variables#llm-api-keys",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#s63a6a",
+      "name": "Gateway",
+      "x": -222,
+      "y": -98,
+      "link": "https://clawdocs.org/reference/environment-variables#gateway",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jsz36v",
+      "name": "Paths",
+      "x": -174,
+      "y": -149,
+      "link": "https://clawdocs.org/reference/environment-variables#paths",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#t8wqfe",
+      "name": "Brain",
+      "x": -146,
+      "y": -193,
+      "link": "https://clawdocs.org/reference/environment-variables#brain",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#kkscxd",
+      "name": "Heartbeat",
+      "x": -53,
+      "y": -211,
+      "link": "https://clawdocs.org/reference/environment-variables#heartbeat",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#zk2bbr",
+      "name": "Local Models",
+      "x": 66,
+      "y": -221,
+      "link": "https://clawdocs.org/reference/environment-variables#local-models",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#zumj5e",
+      "name": "Channel Credentials",
+      "x": 129,
+      "y": -175,
+      "link": "https://clawdocs.org/reference/environment-variables#channel-credentials",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jamy8y",
+      "name": "Search & Web Providers",
+      "x": 204,
+      "y": -123,
+      "link": "https://clawdocs.org/reference/environment-variables#search-web-providers",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#rhq3ji",
+      "name": "Browser Automation",
+      "x": 244,
+      "y": -45,
+      "link": "https://clawdocs.org/reference/environment-variables#browser-automation",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#xf8aiu",
+      "name": "Voice & TTS",
+      "x": 248,
+      "y": 28,
+      "link": "https://clawdocs.org/reference/environment-variables#voice-tts",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#82prrq",
+      "name": "Lobster",
+      "x": 225,
+      "y": 93,
+      "link": "https://clawdocs.org/reference/environment-variables#lobster-workflow-engine",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#hxfxss",
+      "name": "MCP Servers",
+      "x": 179,
+      "y": 140,
+      "link": "https://clawdocs.org/reference/environment-variables#mcp-servers",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#kf82r3",
+      "name": "Testing & CI",
+      "x": 115,
+      "y": 184,
+      "link": "https://clawdocs.org/reference/environment-variables#testing-ci",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#j4cyr9",
+      "name": "Legacy Variables",
+      "x": 37,
+      "y": 246,
+      "link": "https://clawdocs.org/reference/environment-variables#legacy-variables",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3sc8xi",
+      "name": "Workspace .env Security",
+      "x": -61,
+      "y": 202,
+      "link": "https://clawdocs.org/reference/environment-variables#workspace-env-security",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#hyc4wh",
+      "name": "Docker Compose Example",
+      "x": -160,
+      "y": 158,
+      "link": "https://clawdocs.org/reference/environment-variables#docker-compose-example",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#i4y8yb",
+      "name": "Precedence Order",
+      "x": -221,
+      "y": 100,
+      "link": "https://clawdocs.org/reference/environment-variables#precedence-order",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#r34f2d",
+      "name": "← Reference",
+      "x": -247,
+      "y": 34,
+      "link": "./reference.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    }
+  ],
+  "selectedNode": 0
+}

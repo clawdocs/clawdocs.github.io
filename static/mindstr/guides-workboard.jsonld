@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Workboard",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/workboard",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#a9ezza",
+      "name": "Enable the Workboard",
+      "x": -246,
+      "y": -39,
+      "link": "https://clawdocs.org/guides/workboard#enable-the-workboard",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jfpzbe",
+      "name": "Cards",
+      "x": -151,
+      "y": -169,
+      "link": "https://clawdocs.org/guides/workboard#cards",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#z4xres",
+      "name": "What a Card Contains",
+      "x": -408,
+      "y": -246,
+      "link": "https://clawdocs.org/guides/workboard#what-a-card-contains",
+      "bgColor": "#efe6ff",
+      "parent": "#jfpzbe"
+    },
+    {
+      "@id": "#4sr5g7",
+      "name": "Card Lifecycle",
+      "x": -369,
+      "y": -392,
+      "link": "https://clawdocs.org/guides/workboard#card-lifecycle",
+      "bgColor": "#efe6ff",
+      "parent": "#jfpzbe"
+    },
+    {
+      "@id": "#gr784p",
+      "name": "Automatic Lifecycle Sync",
+      "x": -181,
+      "y": -396,
+      "link": "https://clawdocs.org/guides/workboard#automatic-lifecycle-sync",
+      "bgColor": "#efe6ff",
+      "parent": "#jfpzbe"
+    },
+    {
+      "@id": "#ubm3ht",
+      "name": "CLI Commands",
+      "x": 153,
+      "y": -168,
+      "link": "https://clawdocs.org/guides/workboard#cli-commands",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#trq2cy",
+      "name": "Create a Card",
+      "x": 72,
+      "y": -421,
+      "link": "https://clawdocs.org/guides/workboard#create-a-card",
+      "bgColor": "#ffe2ed",
+      "parent": "#ubm3ht"
+    },
+    {
+      "@id": "#nx83ha",
+      "name": "List Cards",
+      "x": 225,
+      "y": -464,
+      "link": "https://clawdocs.org/guides/workboard#list-cards",
+      "bgColor": "#ffe2ed",
+      "parent": "#ubm3ht"
+    },
+    {
+      "@id": "#dypqks",
+      "name": "Show Card Details",
+      "x": 303,
+      "y": -338,
+      "link": "https://clawdocs.org/guides/workboard#show-card-details",
+      "bgColor": "#ffe2ed",
+      "parent": "#ubm3ht"
+    },
+    {
+      "@id": "#g2rdss",
+      "name": "Dispatch Workers",
+      "x": 470,
+      "y": -303,
+      "link": "https://clawdocs.org/guides/workboard#dispatch-workers",
+      "bgColor": "#ffe2ed",
+      "parent": "#ubm3ht"
+    },
+    {
+      "@id": "#zmaea6",
+      "name": "Slash Commands",
+      "x": 462,
+      "y": -163,
+      "link": "https://clawdocs.org/guides/workboard#slash-commands",
+      "bgColor": "#ffe2ed",
+      "parent": "#ubm3ht"
+    },
+    {
+      "@id": "#wt67sz",
+      "name": "Dispatch Workflow",
+      "x": 250,
+      "y": 3,
+      "link": "https://clawdocs.org/guides/workboard#dispatch-workflow",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#hcmcqd",
+      "name": "Agent Coordination Tools",
+      "x": 235,
+      "y": 71,
+      "link": "https://clawdocs.org/guides/workboard#agent-coordination-tools",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#e5zdis",
+      "name": "What This Enables",
+      "x": 471,
+      "y": 143,
+      "link": "https://clawdocs.org/guides/workboard#what-this-enables",
+      "bgColor": "#f2ecd2",
+      "parent": "#hcmcqd"
+    },
+    {
+      "@id": "#np6sjd",
+      "name": "Dashboard Workflow",
+      "x": 198,
+      "y": 129,
+      "link": "https://clawdocs.org/guides/workboard#dashboard-workflow",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#6mwz3t",
+      "name": "Templates",
+      "x": 397,
+      "y": 258,
+      "link": "https://clawdocs.org/guides/workboard#templates",
+      "bgColor": "#ddf2de",
+      "parent": "#np6sjd"
+    },
+    {
+      "@id": "#usfxdj",
+      "name": "Dreaming Tab & Agent Selector",
+      "x": 78,
+      "y": 202,
+      "link": "https://clawdocs.org/guides/workboard#dreaming-tab-agent-selector",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#n5vva4",
+      "name": "What Dreaming Is",
+      "x": 268,
+      "y": 359,
+      "link": "https://clawdocs.org/guides/workboard#what-dreaming-is",
+      "bgColor": "#d1f3f4",
+      "parent": "#usfxdj"
+    },
+    {
+      "@id": "#wqsd8m",
+      "name": "Enable Dreaming",
+      "x": 179,
+      "y": 478,
+      "link": "https://clawdocs.org/guides/workboard#enable-dreaming",
+      "bgColor": "#d1f3f4",
+      "parent": "#usfxdj"
+    },
+    {
+      "@id": "#gnqrvb",
+      "name": "Agent Selector",
+      "x": 30,
+      "y": 424,
+      "link": "https://clawdocs.org/guides/workboard#agent-selector",
+      "bgColor": "#d1f3f4",
+      "parent": "#usfxdj"
+    },
+    {
+      "@id": "#dp9pk4",
+      "name": "Practical Recipes",
+      "x": -162,
+      "y": 162,
+      "link": "https://clawdocs.org/guides/workboard#practical-recipes",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ax49iv",
+      "name": "Research → Writing Pipeline",
+      "x": -207,
+      "y": 387,
+      "link": "https://clawdocs.org/guides/workboard#research-writing-pipeline",
+      "bgColor": "#daeeff",
+      "parent": "#dp9pk4"
+    },
+    {
+      "@id": "#vw9ms9",
+      "name": "Bug Triage",
+      "x": -402,
+      "y": 367,
+      "link": "https://clawdocs.org/guides/workboard#bug-triage",
+      "bgColor": "#daeeff",
+      "parent": "#dp9pk4"
+    },
+    {
+      "@id": "#j3bkxt",
+      "name": "Autonomous Sub-Tasks",
+      "x": -428,
+      "y": 219,
+      "link": "https://clawdocs.org/guides/workboard#autonomous-sub-tasks",
+      "bgColor": "#daeeff",
+      "parent": "#dp9pk4"
+    },
+    {
+      "@id": "#9qucge",
+      "name": "← Guides",
+      "x": -247,
+      "y": 31,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 2,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 6,
+      "end": 7
+    },
+    {
+      "start": 6,
+      "end": 8
+    },
+    {
+      "start": 6,
+      "end": 9
+    },
+    {
+      "start": 6,
+      "end": 10
+    },
+    {
+      "start": 6,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 15,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    },
+    {
+      "start": 17,
+      "end": 18
+    },
+    {
+      "start": 17,
+      "end": 19
+    },
+    {
+      "start": 17,
+      "end": 20
+    },
+    {
+      "start": 0,
+      "end": 21
+    },
+    {
+      "start": 21,
+      "end": 22
+    },
+    {
+      "start": 21,
+      "end": 23
+    },
+    {
+      "start": 21,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

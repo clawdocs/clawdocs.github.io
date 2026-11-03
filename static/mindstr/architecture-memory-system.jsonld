@@ -1,0 +1,285 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Memory System",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/architecture/memory-system",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#2da7xj",
+      "name": "How It Works",
+      "x": -245,
+      "y": -41,
+      "link": "https://clawdocs.org/architecture/memory-system#how-it-works",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9e878e",
+      "name": "Memory Lifecycle",
+      "x": -201,
+      "y": -127,
+      "link": "https://clawdocs.org/architecture/memory-system#memory-lifecycle",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#cp2str",
+      "name": "What Gets Remembered",
+      "x": -401,
+      "y": -254,
+      "link": "https://clawdocs.org/architecture/memory-system#what-gets-remembered",
+      "bgColor": "#efe6ff",
+      "parent": "#9e878e"
+    },
+    {
+      "@id": "#swzzzt",
+      "name": "Memory Retrieval",
+      "x": -59,
+      "y": -206,
+      "link": "https://clawdocs.org/architecture/memory-system#memory-retrieval",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#pj9sd5",
+      "name": "Hybrid Search",
+      "x": -217,
+      "y": -383,
+      "link": "https://clawdocs.org/architecture/memory-system#hybrid-search-7030-split",
+      "bgColor": "#ffe2ed",
+      "parent": "#swzzzt"
+    },
+    {
+      "@id": "#9incsq",
+      "name": "Context Token Budget",
+      "x": -44,
+      "y": -500,
+      "link": "https://clawdocs.org/architecture/memory-system#context-token-budget",
+      "bgColor": "#ffe2ed",
+      "parent": "#swzzzt"
+    },
+    {
+      "@id": "#gwp9qx",
+      "name": "Dreaming Mode",
+      "x": 232,
+      "y": -80,
+      "link": "https://clawdocs.org/architecture/memory-system#dreaming-mode",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7csjb6",
+      "name": "Three Phases",
+      "x": 251,
+      "y": -368,
+      "link": "https://clawdocs.org/architecture/memory-system#three-phases",
+      "bgColor": "#ffe4d9",
+      "parent": "#gwp9qx"
+    },
+    {
+      "@id": "#cyfvb8",
+      "name": "Scoring Signals",
+      "x": 446,
+      "y": -328,
+      "link": "https://clawdocs.org/architecture/memory-system#scoring-signals-deep-phase",
+      "bgColor": "#ffe4d9",
+      "parent": "#gwp9qx"
+    },
+    {
+      "@id": "#ngjuhg",
+      "name": "Configuration",
+      "x": 464,
+      "y": -159,
+      "link": "https://clawdocs.org/architecture/memory-system#configuration",
+      "bgColor": "#ffe4d9",
+      "parent": "#gwp9qx"
+    },
+    {
+      "@id": "#ad25k5",
+      "name": "Output",
+      "x": 589,
+      "y": -27,
+      "link": "https://clawdocs.org/architecture/memory-system#output",
+      "bgColor": "#ffe4d9",
+      "parent": "#gwp9qx"
+    },
+    {
+      "@id": "#6zhwac",
+      "name": "Inspection",
+      "x": 481,
+      "y": 116,
+      "link": "https://clawdocs.org/architecture/memory-system#inspection",
+      "bgColor": "#ffe4d9",
+      "parent": "#gwp9qx"
+    },
+    {
+      "@id": "#sigj2h",
+      "name": "Memory Plugins",
+      "x": 140,
+      "y": 183,
+      "link": "https://clawdocs.org/architecture/memory-system#memory-plugins",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#2gvkzt",
+      "name": "Available Plugins",
+      "x": 330,
+      "y": 319,
+      "link": "https://clawdocs.org/architecture/memory-system#available-plugins",
+      "bgColor": "#f2ecd2",
+      "parent": "#sigj2h"
+    },
+    {
+      "@id": "#5gpqg5",
+      "name": "Why Use a Plugin?",
+      "x": 204,
+      "y": 471,
+      "link": "https://clawdocs.org/architecture/memory-system#why-use-a-plugin",
+      "bgColor": "#f2ecd2",
+      "parent": "#sigj2h"
+    },
+    {
+      "@id": "#wzta82",
+      "name": "Manual Memory Management",
+      "x": -44,
+      "y": 217,
+      "link": "https://clawdocs.org/architecture/memory-system#manual-memory-management",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jw3kjf",
+      "name": "Example Memory Entry",
+      "x": -74,
+      "y": 420,
+      "link": "https://clawdocs.org/architecture/memory-system#example-memory-entry",
+      "bgColor": "#ddf2de",
+      "parent": "#wzta82"
+    },
+    {
+      "@id": "#r76gtv",
+      "name": "Configuration",
+      "x": -140,
+      "y": 173,
+      "link": "https://clawdocs.org/architecture/memory-system#configuration",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qmk4u7",
+      "name": "Privacy",
+      "x": -208,
+      "y": 118,
+      "link": "https://clawdocs.org/architecture/memory-system#privacy",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ysvez3",
+      "name": "← Architecture",
+      "x": -245,
+      "y": 41,
+      "link": "./architecture.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 4,
+      "end": 5
+    },
+    {
+      "start": 4,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 7,
+      "end": 8
+    },
+    {
+      "start": 7,
+      "end": 9
+    },
+    {
+      "start": 7,
+      "end": 10
+    },
+    {
+      "start": 7,
+      "end": 11
+    },
+    {
+      "start": 7,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 13,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 16,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    },
+    {
+      "start": 0,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    }
+  ],
+  "selectedNode": 0
+}

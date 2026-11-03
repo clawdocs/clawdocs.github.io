@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Cloud GPU & Self-Hosted Models",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#3n8bgc",
+      "name": "Quick Decision Guide",
+      "x": -286,
+      "y": -34,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#quick-decision-guide",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qry47y",
+      "name": "GPU Cloud Providers",
+      "x": -135,
+      "y": -179,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#gpu-cloud-providers",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#dskmb8",
+      "name": "Dedicated GPU Cloud",
+      "x": -425,
+      "y": -224,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#dedicated-gpu-cloud",
+      "bgColor": "#efe6ff",
+      "parent": "#qry47y"
+    },
+    {
+      "@id": "#xtiknb",
+      "name": "GPU Size Guide",
+      "x": -415,
+      "y": -356,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#gpu-size-guide",
+      "bgColor": "#efe6ff",
+      "parent": "#qry47y"
+    },
+    {
+      "@id": "#cyduqq",
+      "name": "RunPod Setup",
+      "x": -270,
+      "y": -358,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#runpod-setup",
+      "bgColor": "#efe6ff",
+      "parent": "#qry47y"
+    },
+    {
+      "@id": "#c4smut",
+      "name": "Vast.ai Setup",
+      "x": -207,
+      "y": -469,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#vastai-setup",
+      "bgColor": "#efe6ff",
+      "parent": "#qry47y"
+    },
+    {
+      "@id": "#2h67yt",
+      "name": "AMD Developer Cloud",
+      "x": -63,
+      "y": -422,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#amd-developer-cloud-free",
+      "bgColor": "#efe6ff",
+      "parent": "#qry47y"
+    },
+    {
+      "@id": "#xahf87",
+      "name": "Inference-as-a-Service",
+      "x": 189,
+      "y": -139,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#inference-as-a-service",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#xknjsu",
+      "name": "Cerebras Configuration",
+      "x": 169,
+      "y": -395,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#cerebras-configuration",
+      "bgColor": "#ffe2ed",
+      "parent": "#xahf87"
+    },
+    {
+      "@id": "#f8wqe4",
+      "name": "Groq Configuration",
+      "x": 360,
+      "y": -402,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#groq-configuration",
+      "bgColor": "#ffe2ed",
+      "parent": "#xahf87"
+    },
+    {
+      "@id": "#aviq5u",
+      "name": "OpenRouter Configuration",
+      "x": 398,
+      "y": -257,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#openrouter-configuration",
+      "bgColor": "#ffe2ed",
+      "parent": "#xahf87"
+    },
+    {
+      "@id": "#xc7efr",
+      "name": "Custom OpenAI-Compatible Provider",
+      "x": 565,
+      "y": -145,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#custom-openai-compatible-provider",
+      "bgColor": "#ffe2ed",
+      "parent": "#xahf87"
+    },
+    {
+      "@id": "#3e3498",
+      "name": "Inference Server Options",
+      "x": 240,
+      "y": 66,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#inference-server-options",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vnbjwk",
+      "name": "vLLM",
+      "x": 493,
+      "y": 73,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#vllm-recommended-for-cloud",
+      "bgColor": "#ffe4d9",
+      "parent": "#3e3498"
+    },
+    {
+      "@id": "#ar4eav",
+      "name": "TabbyAPI",
+      "x": 547,
+      "y": 188,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#tabbyapi-best-for-consumer-gpus",
+      "bgColor": "#ffe4d9",
+      "parent": "#3e3498"
+    },
+    {
+      "@id": "#zuzczj",
+      "name": "OpenClaw Configuration Deep Dive",
+      "x": 55,
+      "y": 207,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#openclaw-configuration-deep-dive",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#56femq",
+      "name": "Config File Locations",
+      "x": 349,
+      "y": 305,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#config-file-locations",
+      "bgColor": "#f2ecd2",
+      "parent": "#zuzczj"
+    },
+    {
+      "@id": "#7x5wee",
+      "name": "Full Custom Provider Example",
+      "x": 260,
+      "y": 461,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#full-custom-provider-example",
+      "bgColor": "#f2ecd2",
+      "parent": "#zuzczj"
+    },
+    {
+      "@id": "#fjarhy",
+      "name": "Key Configuration Rules",
+      "x": 66,
+      "y": 415,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#key-configuration-rules",
+      "bgColor": "#f2ecd2",
+      "parent": "#zuzczj"
+    },
+    {
+      "@id": "#9ydn44",
+      "name": "Provider Priority",
+      "x": -80,
+      "y": 497,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#provider-priority",
+      "bgColor": "#f2ecd2",
+      "parent": "#zuzczj"
+    },
+    {
+      "@id": "#pfi5zk",
+      "name": "Known Issues",
+      "x": -176,
+      "y": 398,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#known-issues",
+      "bgColor": "#f2ecd2",
+      "parent": "#zuzczj"
+    },
+    {
+      "@id": "#3rasaj",
+      "name": "Cost Comparison",
+      "x": -204,
+      "y": 122,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#cost-comparison",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7inapr",
+      "name": "Monthly Costs by Approach",
+      "x": -363,
+      "y": 292,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#monthly-costs-by-approach",
+      "bgColor": "#ddf2de",
+      "parent": "#3rasaj"
+    },
+    {
+      "@id": "#iamqvg",
+      "name": "When Self-Hosting Wins",
+      "x": -530,
+      "y": 220,
+      "link": "https://clawdocs.org/guides/cloud-gpu-models#when-self-hosting-wins",
+      "bgColor": "#ddf2de",
+      "parent": "#3rasaj"
+    },
+    {
+      "@id": "#vhdgu3",
+      "name": "← Guides",
+      "x": -248,
+      "y": 27,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 2,
+      "end": 5
+    },
+    {
+      "start": 2,
+      "end": 6
+    },
+    {
+      "start": 2,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 8,
+      "end": 9
+    },
+    {
+      "start": 8,
+      "end": 10
+    },
+    {
+      "start": 8,
+      "end": 11
+    },
+    {
+      "start": 8,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 13,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 16,
+      "end": 17
+    },
+    {
+      "start": 16,
+      "end": 18
+    },
+    {
+      "start": 16,
+      "end": 19
+    },
+    {
+      "start": 16,
+      "end": 20
+    },
+    {
+      "start": 16,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 22,
+      "end": 23
+    },
+    {
+      "start": 22,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

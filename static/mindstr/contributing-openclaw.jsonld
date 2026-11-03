@@ -1,0 +1,103 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Contributing to OpenClaw",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/contributing/openclaw",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#44es2w",
+      "name": "Repository",
+      "x": -223,
+      "y": -95,
+      "link": "https://clawdocs.org/contributing/openclaw#repository",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#swjyit",
+      "name": "Development Setup",
+      "x": -30,
+      "y": -211,
+      "link": "https://clawdocs.org/contributing/openclaw#development-setup",
+      "bgColor": "#e0c4f6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#es8nbs",
+      "name": "Areas to Contribute",
+      "x": 206,
+      "y": -121,
+      "link": "https://clawdocs.org/contributing/openclaw#areas-to-contribute",
+      "bgColor": "#febdc6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#yqg75j",
+      "name": "Contribution Guidelines",
+      "x": 203,
+      "y": 124,
+      "link": "https://clawdocs.org/contributing/openclaw#contribution-guidelines",
+      "bgColor": "#f1c99c",
+      "parent": "#this"
+    },
+    {
+      "@id": "#i4spsq",
+      "name": "Community",
+      "x": -43,
+      "y": 209,
+      "link": "https://clawdocs.org/contributing/openclaw#community",
+      "bgColor": "#c1dba8",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3k7ud2",
+      "name": "← Contributing",
+      "x": -223,
+      "y": 95,
+      "link": "./contributing.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    }
+  ],
+  "selectedNode": 0
+}

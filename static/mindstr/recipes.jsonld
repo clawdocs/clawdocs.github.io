@@ -1,0 +1,102 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Recipes",
+      "x": 0,
+      "y": 0,
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#jsqew7",
+      "name": "Recipe: Email Assistant",
+      "x": -205,
+      "y": -121,
+      "link": "./guides-recipes-email-assistant.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#c3wf47",
+      "name": "Recipe: Code Reviewer",
+      "x": 51,
+      "y": -208,
+      "link": "./guides-recipes-code-reviewer.jsonld",
+      "bgColor": "#e0c4f6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vjyiki",
+      "name": "Recipe: Smart Home",
+      "x": 239,
+      "y": -63,
+      "link": "./guides-recipes-smart-home.jsonld",
+      "bgColor": "#febdc6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#huzzua",
+      "name": "Recipe: Research Agent",
+      "x": 177,
+      "y": 150,
+      "link": "./guides-recipes-research-agent.jsonld",
+      "bgColor": "#f1c99c",
+      "parent": "#this"
+    },
+    {
+      "@id": "#6fif6w",
+      "name": "Advanced Recipes",
+      "x": -64,
+      "y": 206,
+      "link": "./guides-recipes-advanced-recipes.jsonld",
+      "bgColor": "#c1dba8",
+      "parent": "#this"
+    },
+    {
+      "@id": "#fbmba2",
+      "name": "← Guides",
+      "x": -227,
+      "y": 88,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    }
+  ],
+  "selectedNode": 0
+}

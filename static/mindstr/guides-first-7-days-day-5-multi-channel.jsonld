@@ -1,0 +1,272 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Day 5: Be Everywhere",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#6kbx7u",
+      "name": "Why Multi-Channel?",
+      "x": -246,
+      "y": -37,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#why-multi-channel",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9bysfh",
+      "name": "Add a Second Channel",
+      "x": -214,
+      "y": -110,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#add-a-second-channel",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#cyd9xx",
+      "name": "Add More Channels",
+      "x": -99,
+      "y": -197,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#add-more-channels",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#bvsynb",
+      "name": "WhatsApp",
+      "x": -297,
+      "y": -342,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#whatsapp",
+      "bgColor": "#ffe2ed",
+      "parent": "#cyd9xx"
+    },
+    {
+      "@id": "#xintwj",
+      "name": "Slack",
+      "x": -219,
+      "y": -466,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#slack",
+      "bgColor": "#ffe2ed",
+      "parent": "#cyd9xx"
+    },
+    {
+      "@id": "#yhbdjy",
+      "name": "Signal",
+      "x": -63,
+      "y": -422,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#signal",
+      "bgColor": "#ffe2ed",
+      "parent": "#cyd9xx"
+    },
+    {
+      "@id": "#hgctui",
+      "name": "Channel Status",
+      "x": 59,
+      "y": -207,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#channel-status",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vz6dbr",
+      "name": "Cross-Channel Routing",
+      "x": 238,
+      "y": -65,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#cross-channel-routing",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ecv4rb",
+      "name": "Example 1: Forward urgent messages",
+      "x": 347,
+      "y": -306,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#example-1-forward-urgent-messages",
+      "bgColor": "#f2ecd2",
+      "parent": "#vz6dbr"
+    },
+    {
+      "@id": "#57jxgj",
+      "name": "Example 2: Post to another platform",
+      "x": 564,
+      "y": -147,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#example-2-post-to-another-platform",
+      "bgColor": "#f2ecd2",
+      "parent": "#vz6dbr"
+    },
+    {
+      "@id": "#ttdvnf",
+      "name": "Example 3: Cross-platform lookup",
+      "x": 490,
+      "y": 83,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#example-3-cross-platform-lookup",
+      "bgColor": "#f2ecd2",
+      "parent": "#vz6dbr"
+    },
+    {
+      "@id": "#pehema",
+      "name": "Per-Channel Settings",
+      "x": 180,
+      "y": 147,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#per-channel-settings",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#csimu2",
+      "name": "Group Chat Tips",
+      "x": 16,
+      "y": 212,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#group-chat-tips",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#y2vgqr",
+      "name": "Mention-gating",
+      "x": 194,
+      "y": 392,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#mention-gating",
+      "bgColor": "#d1f3f4",
+      "parent": "#csimu2"
+    },
+    {
+      "@id": "#nb2pv3",
+      "name": "Dedicated bot channels",
+      "x": 57,
+      "y": 499,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#dedicated-bot-channels",
+      "bgColor": "#d1f3f4",
+      "parent": "#csimu2"
+    },
+    {
+      "@id": "#gb9vd3",
+      "name": "Permissions per user",
+      "x": -118,
+      "y": 413,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#permissions-per-user",
+      "bgColor": "#d1f3f4",
+      "parent": "#csimu2"
+    },
+    {
+      "@id": "#85n9f9",
+      "name": "Pairing New Devices",
+      "x": -155,
+      "y": 166,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#pairing-new-devices",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#59pd9r",
+      "name": "What You've Done Today",
+      "x": -218,
+      "y": 104,
+      "link": "https://clawdocs.org/guides/first-7-days/day-5-multi-channel#what-youve-done-today",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#2ec6a3",
+      "name": "← First 7 Days",
+      "x": -247,
+      "y": 32,
+      "link": "./first-7-days.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 3,
+      "end": 4
+    },
+    {
+      "start": 3,
+      "end": 5
+    },
+    {
+      "start": 3,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 8,
+      "end": 9
+    },
+    {
+      "start": 8,
+      "end": 10
+    },
+    {
+      "start": 8,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 13,
+      "end": 15
+    },
+    {
+      "start": 13,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    },
+    {
+      "start": 0,
+      "end": 19
+    }
+  ],
+  "selectedNode": 0
+}

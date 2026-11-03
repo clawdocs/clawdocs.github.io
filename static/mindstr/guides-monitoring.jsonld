@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Monitoring & Observability",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/monitoring",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#p55sa6",
+      "name": "Built-In Monitoring",
+      "x": -224,
+      "y": -94,
+      "link": "https://clawdocs.org/guides/monitoring#built-in-monitoring",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#znzi88",
+      "name": "Status & Health",
+      "x": -491,
+      "y": -81,
+      "link": "https://clawdocs.org/guides/monitoring#status-health",
+      "bgColor": "#daeeff",
+      "parent": "#p55sa6"
+    },
+    {
+      "@id": "#qnbgsz",
+      "name": "Statistics",
+      "x": -538,
+      "y": -206,
+      "link": "https://clawdocs.org/guides/monitoring#statistics",
+      "bgColor": "#daeeff",
+      "parent": "#p55sa6"
+    },
+    {
+      "@id": "#hv53w5",
+      "name": "Component Diagnostics",
+      "x": -385,
+      "y": -271,
+      "link": "https://clawdocs.org/guides/monitoring#component-diagnostics",
+      "bgColor": "#daeeff",
+      "parent": "#p55sa6"
+    },
+    {
+      "@id": "#djsnf9",
+      "name": "Logging",
+      "x": -13,
+      "y": -212,
+      "link": "https://clawdocs.org/guides/monitoring#logging",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#wwtbyq",
+      "name": "Log Levels",
+      "x": -214,
+      "y": -384,
+      "link": "https://clawdocs.org/guides/monitoring#log-levels",
+      "bgColor": "#efe6ff",
+      "parent": "#djsnf9"
+    },
+    {
+      "@id": "#zfit6k",
+      "name": "Filtering by Component",
+      "x": -99,
+      "y": -494,
+      "link": "https://clawdocs.org/guides/monitoring#filtering-by-component",
+      "bgColor": "#efe6ff",
+      "parent": "#djsnf9"
+    },
+    {
+      "@id": "#5ckad9",
+      "name": "Log Rotation",
+      "x": 53,
+      "y": -423,
+      "link": "https://clawdocs.org/guides/monitoring#log-rotation",
+      "bgColor": "#efe6ff",
+      "parent": "#djsnf9"
+    },
+    {
+      "@id": "#um2tqa",
+      "name": "Audit Logging",
+      "x": 195,
+      "y": -473,
+      "link": "https://clawdocs.org/guides/monitoring#audit-logging",
+      "bgColor": "#efe6ff",
+      "parent": "#djsnf9"
+    },
+    {
+      "@id": "#27jhza",
+      "name": "Metrics",
+      "x": 195,
+      "y": -133,
+      "link": "https://clawdocs.org/guides/monitoring#metrics",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9brwfk",
+      "name": "What OpenClaw Tracks",
+      "x": 341,
+      "y": -311,
+      "link": "https://clawdocs.org/guides/monitoring#what-openclaw-tracks",
+      "bgColor": "#ffe2ed",
+      "parent": "#27jhza"
+    },
+    {
+      "@id": "#3q5x4d",
+      "name": "Token Cost Breakdown",
+      "x": 510,
+      "y": -253,
+      "link": "https://clawdocs.org/guides/monitoring#token-cost-breakdown",
+      "bgColor": "#ffe2ed",
+      "parent": "#27jhza"
+    },
+    {
+      "@id": "#n9bvq7",
+      "name": "OpenTelemetry",
+      "x": 226,
+      "y": 91,
+      "link": "https://clawdocs.org/guides/monitoring#opentelemetry",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#cqw46h",
+      "name": "Community Observability Plugin",
+      "x": 500,
+      "y": 1,
+      "link": "https://clawdocs.org/guides/monitoring#community-observability-plugin",
+      "bgColor": "#ffe4d9",
+      "parent": "#n9bvq7"
+    },
+    {
+      "@id": "#w6734b",
+      "name": "Setup",
+      "x": 560,
+      "y": 159,
+      "link": "https://clawdocs.org/guides/monitoring#setup",
+      "bgColor": "#ffe4d9",
+      "parent": "#n9bvq7"
+    },
+    {
+      "@id": "#whg83u",
+      "name": "Local Development with Jaeger",
+      "x": 402,
+      "y": 252,
+      "link": "https://clawdocs.org/guides/monitoring#local-development-with-jaeger",
+      "bgColor": "#ffe4d9",
+      "parent": "#n9bvq7"
+    },
+    {
+      "@id": "#ryeahv",
+      "name": "Knostic Telemetry",
+      "x": 337,
+      "y": 412,
+      "link": "https://clawdocs.org/guides/monitoring#knostic-telemetry-privacy-first",
+      "bgColor": "#ffe4d9",
+      "parent": "#n9bvq7"
+    },
+    {
+      "@id": "#c4zr3w",
+      "name": "Health Checks",
+      "x": -70,
+      "y": 204,
+      "link": "https://clawdocs.org/guides/monitoring#health-checks",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jgcv5z",
+      "name": "CLI Health Check",
+      "x": 65,
+      "y": 421,
+      "link": "https://clawdocs.org/guides/monitoring#cli-health-check",
+      "bgColor": "#f2ecd2",
+      "parent": "#c4zr3w"
+    },
+    {
+      "@id": "#bs5qn2",
+      "name": "Docker",
+      "x": -64,
+      "y": 499,
+      "link": "https://clawdocs.org/guides/monitoring#docker",
+      "bgColor": "#f2ecd2",
+      "parent": "#c4zr3w"
+    },
+    {
+      "@id": "#nteprv",
+      "name": "Kubernetes",
+      "x": -167,
+      "y": 401,
+      "link": "https://clawdocs.org/guides/monitoring#kubernetes",
+      "bgColor": "#f2ecd2",
+      "parent": "#c4zr3w"
+    },
+    {
+      "@id": "#uk3b6t",
+      "name": "External Uptime Monitoring",
+      "x": -351,
+      "y": 403,
+      "link": "https://clawdocs.org/guides/monitoring#external-uptime-monitoring",
+      "bgColor": "#f2ecd2",
+      "parent": "#c4zr3w"
+    },
+    {
+      "@id": "#vi5yj8",
+      "name": "Alerting",
+      "x": -224,
+      "y": 95,
+      "link": "https://clawdocs.org/guides/monitoring#alerting",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#k3j28m",
+      "name": "Heartbeat-Based Alerts",
+      "x": -447,
+      "y": 190,
+      "link": "https://clawdocs.org/guides/monitoring#heartbeat-based-alerts",
+      "bgColor": "#ddf2de",
+      "parent": "#vi5yj8"
+    },
+    {
+      "@id": "#taneds",
+      "name": "← Guides",
+      "x": -248,
+      "y": 29,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 5,
+      "end": 6
+    },
+    {
+      "start": 5,
+      "end": 7
+    },
+    {
+      "start": 5,
+      "end": 8
+    },
+    {
+      "start": 5,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 10,
+      "end": 11
+    },
+    {
+      "start": 10,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 13,
+      "end": 15
+    },
+    {
+      "start": 13,
+      "end": 16
+    },
+    {
+      "start": 13,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    },
+    {
+      "start": 18,
+      "end": 19
+    },
+    {
+      "start": 18,
+      "end": 20
+    },
+    {
+      "start": 18,
+      "end": 21
+    },
+    {
+      "start": 18,
+      "end": 22
+    },
+    {
+      "start": 0,
+      "end": 23
+    },
+    {
+      "start": 23,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

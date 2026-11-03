@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Heartbeat Guide",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/heartbeat",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#4qhe86",
+      "name": "How Heartbeat Works",
+      "x": -247,
+      "y": -32,
+      "link": "https://clawdocs.org/guides/heartbeat#how-heartbeat-works",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#z2x7bd",
+      "name": "Lifecycle",
+      "x": -494,
+      "y": -63,
+      "link": "https://clawdocs.org/guides/heartbeat#lifecycle",
+      "bgColor": "#daeeff",
+      "parent": "#4qhe86"
+    },
+    {
+      "@id": "#a22mzd",
+      "name": "Quick Setup",
+      "x": -225,
+      "y": -92,
+      "link": "https://clawdocs.org/guides/heartbeat#quick-setup",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#duad9x",
+      "name": "Heartbeat File Formats",
+      "x": -153,
+      "y": -166,
+      "link": "https://clawdocs.org/guides/heartbeat#heartbeat-file-formats",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#m37qt3",
+      "name": "Simple Format",
+      "x": -358,
+      "y": -296,
+      "link": "https://clawdocs.org/guides/heartbeat#simple-format-markdown",
+      "bgColor": "#ffe2ed",
+      "parent": "#duad9x"
+    },
+    {
+      "@id": "#k5nh46",
+      "name": "Structured Format",
+      "x": -300,
+      "y": -432,
+      "link": "https://clawdocs.org/guides/heartbeat#structured-format-since-v2026310",
+      "bgColor": "#ffe2ed",
+      "parent": "#duad9x"
+    },
+    {
+      "@id": "#rqeata",
+      "name": "HEARTBEATOK",
+      "x": -40,
+      "y": -211,
+      "link": "https://clawdocs.org/guides/heartbeat#heartbeatok-suppressing-noise",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#hk4piu",
+      "name": "Visibility Controls",
+      "x": -81,
+      "y": -419,
+      "link": "https://clawdocs.org/guides/heartbeat#visibility-controls",
+      "bgColor": "#ffe4d9",
+      "parent": "#rqeata"
+    },
+    {
+      "@id": "#k8arpb",
+      "name": "Recipes",
+      "x": 310,
+      "y": 12,
+      "link": "https://clawdocs.org/guides/heartbeat#recipes",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jqh9fh",
+      "name": "Email Triage",
+      "x": 194,
+      "y": -392,
+      "link": "https://clawdocs.org/guides/heartbeat#email-triage",
+      "bgColor": "#f2ecd2",
+      "parent": "#k8arpb"
+    },
+    {
+      "@id": "#t4du3j",
+      "name": "GitHub Monitor",
+      "x": 357,
+      "y": -399,
+      "link": "https://clawdocs.org/guides/heartbeat#github-monitor",
+      "bgColor": "#f2ecd2",
+      "parent": "#k8arpb"
+    },
+    {
+      "@id": "#dxtxsr",
+      "name": "System Health",
+      "x": 392,
+      "y": -264,
+      "link": "https://clawdocs.org/guides/heartbeat#system-health",
+      "bgColor": "#f2ecd2",
+      "parent": "#k8arpb"
+    },
+    {
+      "@id": "#nmjv76",
+      "name": "News & Research",
+      "x": 539,
+      "y": -204,
+      "link": "https://clawdocs.org/guides/heartbeat#news-research",
+      "bgColor": "#f2ecd2",
+      "parent": "#k8arpb"
+    },
+    {
+      "@id": "#mjdvee",
+      "name": "Financial Monitoring",
+      "x": 496,
+      "y": -56,
+      "link": "https://clawdocs.org/guides/heartbeat#financial-monitoring",
+      "bgColor": "#f2ecd2",
+      "parent": "#k8arpb"
+    },
+    {
+      "@id": "#d6tkb9",
+      "name": "Deployment Monitor",
+      "x": 581,
+      "y": 86,
+      "link": "https://clawdocs.org/guides/heartbeat#deployment-monitor",
+      "bgColor": "#f2ecd2",
+      "parent": "#k8arpb"
+    },
+    {
+      "@id": "#tefhrg",
+      "name": "Slack Digest",
+      "x": 452,
+      "y": 182,
+      "link": "https://clawdocs.org/guides/heartbeat#slack-digest",
+      "bgColor": "#f2ecd2",
+      "parent": "#k8arpb"
+    },
+    {
+      "@id": "#qmxg97",
+      "name": "Social Media Monitor",
+      "x": 441,
+      "y": 333,
+      "link": "https://clawdocs.org/guides/heartbeat#social-media-monitor",
+      "bgColor": "#f2ecd2",
+      "parent": "#k8arpb"
+    },
+    {
+      "@id": "#g4d8c6",
+      "name": "Smart Home",
+      "x": 266,
+      "y": 360,
+      "link": "https://clawdocs.org/guides/heartbeat#smart-home",
+      "bgColor": "#f2ecd2",
+      "parent": "#k8arpb"
+    },
+    {
+      "@id": "#yzue8k",
+      "name": "Code Quality",
+      "x": 180,
+      "y": 478,
+      "link": "https://clawdocs.org/guides/heartbeat#code-quality",
+      "bgColor": "#f2ecd2",
+      "parent": "#k8arpb"
+    },
+    {
+      "@id": "#7jcj9y",
+      "name": "Cost Optimization",
+      "x": -156,
+      "y": 166,
+      "link": "https://clawdocs.org/guides/heartbeat#cost-optimization",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#a69dfq",
+      "name": "The Cost Levers",
+      "x": -145,
+      "y": 407,
+      "link": "https://clawdocs.org/guides/heartbeat#the-cost-levers",
+      "bgColor": "#ddf2de",
+      "parent": "#7jcj9y"
+    },
+    {
+      "@id": "#sfg4qv",
+      "name": "isolatedSession",
+      "x": -308,
+      "y": 428,
+      "link": "https://clawdocs.org/guides/heartbeat#isolatedsession",
+      "bgColor": "#ddf2de",
+      "parent": "#7jcj9y"
+    },
+    {
+      "@id": "#xww8q9",
+      "name": "lightContext",
+      "x": -359,
+      "y": 296,
+      "link": "https://clawdocs.org/guides/heartbeat#lightcontext",
+      "bgColor": "#ddf2de",
+      "parent": "#7jcj9y"
+    },
+    {
+      "@id": "#yv5i54",
+      "name": "Model Tiering",
+      "x": -512,
+      "y": 249,
+      "link": "https://clawdocs.org/guides/heartbeat#model-tiering",
+      "bgColor": "#ddf2de",
+      "parent": "#7jcj9y"
+    },
+    {
+      "@id": "#cfextr",
+      "name": "← Guides",
+      "x": -247,
+      "y": 32,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 4,
+      "end": 5
+    },
+    {
+      "start": 4,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 7,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 9,
+      "end": 10
+    },
+    {
+      "start": 9,
+      "end": 11
+    },
+    {
+      "start": 9,
+      "end": 12
+    },
+    {
+      "start": 9,
+      "end": 13
+    },
+    {
+      "start": 9,
+      "end": 14
+    },
+    {
+      "start": 9,
+      "end": 15
+    },
+    {
+      "start": 9,
+      "end": 16
+    },
+    {
+      "start": 9,
+      "end": 17
+    },
+    {
+      "start": 9,
+      "end": 18
+    },
+    {
+      "start": 9,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 20,
+      "end": 21
+    },
+    {
+      "start": 20,
+      "end": 22
+    },
+    {
+      "start": 20,
+      "end": 23
+    },
+    {
+      "start": 20,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

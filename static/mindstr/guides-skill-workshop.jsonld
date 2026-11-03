@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Skill Workshop",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/skill-workshop",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#8gars2",
+      "name": "Why Skill Workshop?",
+      "x": -247,
+      "y": -33,
+      "link": "https://clawdocs.org/guides/skill-workshop#why-skill-workshop",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ttudn3",
+      "name": "Quick Start",
+      "x": -226,
+      "y": -91,
+      "link": "https://clawdocs.org/guides/skill-workshop#quick-start",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#nm9jmm",
+      "name": "Proposal Lifecycle",
+      "x": -188,
+      "y": -140,
+      "link": "https://clawdocs.org/guides/skill-workshop#proposal-lifecycle",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#fcu6nk",
+      "name": "CLI Commands",
+      "x": 114,
+      "y": -245,
+      "link": "https://clawdocs.org/guides/skill-workshop#cli-commands",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#im3caa",
+      "name": "Create a Proposal",
+      "x": -198,
+      "y": -390,
+      "link": "https://clawdocs.org/guides/skill-workshop#create-a-proposal",
+      "bgColor": "#ffe4d9",
+      "parent": "#fcu6nk"
+    },
+    {
+      "@id": "#up5tww",
+      "name": "Update an Existing Skill",
+      "x": -76,
+      "y": -497,
+      "link": "https://clawdocs.org/guides/skill-workshop#update-an-existing-skill",
+      "bgColor": "#ffe4d9",
+      "parent": "#fcu6nk"
+    },
+    {
+      "@id": "#w7nqyt",
+      "name": "Add Support Files",
+      "x": 75,
+      "y": -414,
+      "link": "https://clawdocs.org/guides/skill-workshop#add-support-files",
+      "bgColor": "#ffe4d9",
+      "parent": "#fcu6nk"
+    },
+    {
+      "@id": "#csuere",
+      "name": "Revise a Pending Proposal",
+      "x": 249,
+      "y": -458,
+      "link": "https://clawdocs.org/guides/skill-workshop#revise-a-pending-proposal",
+      "bgColor": "#ffe4d9",
+      "parent": "#fcu6nk"
+    },
+    {
+      "@id": "#vb2ctp",
+      "name": "List Proposals",
+      "x": 319,
+      "y": -323,
+      "link": "https://clawdocs.org/guides/skill-workshop#list-proposals",
+      "bgColor": "#ffe4d9",
+      "parent": "#fcu6nk"
+    },
+    {
+      "@id": "#gfdcab",
+      "name": "Inspect a Proposal",
+      "x": 480,
+      "y": -296,
+      "link": "https://clawdocs.org/guides/skill-workshop#inspect-a-proposal",
+      "bgColor": "#ffe4d9",
+      "parent": "#fcu6nk"
+    },
+    {
+      "@id": "#u3dr42",
+      "name": "Review Actions",
+      "x": 461,
+      "y": -164,
+      "link": "https://clawdocs.org/guides/skill-workshop#review-actions",
+      "bgColor": "#ffe4d9",
+      "parent": "#fcu6nk"
+    },
+    {
+      "@id": "#hjxwny",
+      "name": "Scanner Gating",
+      "x": 250,
+      "y": 6,
+      "link": "https://clawdocs.org/guides/skill-workshop#scanner-gating",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#u49sh5",
+      "name": "ClawScan Verdicts",
+      "x": 500,
+      "y": 12,
+      "link": "https://clawdocs.org/guides/skill-workshop#clawscan-verdicts",
+      "bgColor": "#f2ecd2",
+      "parent": "#hjxwny"
+    },
+    {
+      "@id": "#xdk3d5",
+      "name": "Hash Binding",
+      "x": 239,
+      "y": 63,
+      "link": "https://clawdocs.org/guides/skill-workshop#hash-binding",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#f4wxnt",
+      "name": "Rollback",
+      "x": 212,
+      "y": 112,
+      "link": "https://clawdocs.org/guides/skill-workshop#rollback",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#izya3w",
+      "name": "The skillworkshop Agent Tool",
+      "x": 155,
+      "y": 164,
+      "link": "https://clawdocs.org/guides/skill-workshop#the-skillworkshop-agent-tool",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#wpzfj8",
+      "name": "Control UI",
+      "x": 70,
+      "y": 209,
+      "link": "https://clawdocs.org/guides/skill-workshop#control-ui",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#fdyzb2",
+      "name": "Board View",
+      "x": 151,
+      "y": 405,
+      "link": "https://clawdocs.org/guides/skill-workshop#board-view",
+      "bgColor": "#efe6ff",
+      "parent": "#wpzfj8"
+    },
+    {
+      "@id": "#wdpbcx",
+      "name": "Today View",
+      "x": 54,
+      "y": 499,
+      "link": "https://clawdocs.org/guides/skill-workshop#today-view",
+      "bgColor": "#efe6ff",
+      "parent": "#wpzfj8"
+    },
+    {
+      "@id": "#fjs37a",
+      "name": "Configuration",
+      "x": -58,
+      "y": 227,
+      "link": "https://clawdocs.org/guides/skill-workshop#configuration",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#yxptnb",
+      "name": "Storage",
+      "x": -107,
+      "y": 183,
+      "link": "https://clawdocs.org/guides/skill-workshop#storage",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#96tbf9",
+      "name": "Practical Examples",
+      "x": -202,
+      "y": 125,
+      "link": "https://clawdocs.org/guides/skill-workshop#practical-examples",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#f2gvzm",
+      "name": "Agent-Driven Skill Creation",
+      "x": -361,
+      "y": 294,
+      "link": "https://clawdocs.org/guides/skill-workshop#agent-driven-skill-creation",
+      "bgColor": "#f2ecd2",
+      "parent": "#96tbf9"
+    },
+    {
+      "@id": "#2y862s",
+      "name": "Iterative Refinement",
+      "x": -530,
+      "y": 220,
+      "link": "https://clawdocs.org/guides/skill-workshop#iterative-refinement",
+      "bgColor": "#f2ecd2",
+      "parent": "#96tbf9"
+    },
+    {
+      "@id": "#8x5xg4",
+      "name": "← Guides",
+      "x": -248,
+      "y": 27,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 4,
+      "end": 5
+    },
+    {
+      "start": 4,
+      "end": 6
+    },
+    {
+      "start": 4,
+      "end": 7
+    },
+    {
+      "start": 4,
+      "end": 8
+    },
+    {
+      "start": 4,
+      "end": 9
+    },
+    {
+      "start": 4,
+      "end": 10
+    },
+    {
+      "start": 4,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 12,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    },
+    {
+      "start": 17,
+      "end": 18
+    },
+    {
+      "start": 17,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 0,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 22,
+      "end": 23
+    },
+    {
+      "start": 22,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

@@ -1,0 +1,259 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Security Overview",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/security/overview",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#tg68vr",
+      "name": "Secure Your Setup in 5 Steps",
+      "x": -94,
+      "y": -197,
+      "link": "https://clawdocs.org/security/overview#secure-your-setup-in-5-steps",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jr4ba3",
+      "name": "Update to the latest version",
+      "x": -462,
+      "y": -162,
+      "link": "https://clawdocs.org/security/overview#1-update-to-the-latest-version",
+      "bgColor": "#daeeff",
+      "parent": "#tg68vr"
+    },
+    {
+      "@id": "#h46fgs",
+      "name": "Verify gateway binds to localhost",
+      "x": -399,
+      "y": -366,
+      "link": "https://clawdocs.org/security/overview#2-verify-gateway-binds-to-localhost",
+      "bgColor": "#daeeff",
+      "parent": "#tg68vr"
+    },
+    {
+      "@id": "#5x6chy",
+      "name": "Verify authentication is enabled",
+      "x": -139,
+      "y": -410,
+      "link": "https://clawdocs.org/security/overview#3-verify-authentication-is-enabled",
+      "bgColor": "#daeeff",
+      "parent": "#tg68vr"
+    },
+    {
+      "@id": "#jjmu7c",
+      "name": "Set channel allowlists",
+      "x": 65,
+      "y": -498,
+      "link": "https://clawdocs.org/security/overview#4-set-channel-allowlists",
+      "bgColor": "#daeeff",
+      "parent": "#tg68vr"
+    },
+    {
+      "@id": "#9rfhte",
+      "name": "Run the security audit",
+      "x": 214,
+      "y": -384,
+      "link": "https://clawdocs.org/security/overview#5-run-the-security-audit",
+      "bgColor": "#daeeff",
+      "parent": "#tg68vr"
+    },
+    {
+      "@id": "#w6qzyt",
+      "name": "What OpenClaw Has Access To",
+      "x": 215,
+      "y": -109,
+      "link": "https://clawdocs.org/security/overview#what-openclaw-has-access-to",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9q5iht",
+      "name": "Threat Model",
+      "x": 249,
+      "y": 18,
+      "link": "https://clawdocs.org/security/overview#threat-model",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#w76eji",
+      "name": "Attack Surfaces",
+      "x": 497,
+      "y": -50,
+      "link": "https://clawdocs.org/security/overview#attack-surfaces",
+      "bgColor": "#ffe2ed",
+      "parent": "#9q5iht"
+    },
+    {
+      "@id": "#un422y",
+      "name": "The Prompt Injection Problem",
+      "x": 577,
+      "y": 104,
+      "link": "https://clawdocs.org/security/overview#the-prompt-injection-problem",
+      "bgColor": "#ffe2ed",
+      "parent": "#9q5iht"
+    },
+    {
+      "@id": "#wmjexp",
+      "name": "Full Security Checklist",
+      "x": 195,
+      "y": 133,
+      "link": "https://clawdocs.org/security/overview#full-security-checklist",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#pdfwsu",
+      "name": "Community Security Tools",
+      "x": 114,
+      "y": 178,
+      "link": "https://clawdocs.org/security/overview#community-security-tools",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#tsr422",
+      "name": "Enterprise Assessment",
+      "x": 18,
+      "y": 224,
+      "link": "https://clawdocs.org/security/overview#enterprise-assessment",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#nndbzx",
+      "name": "Security Incident History",
+      "x": -132,
+      "y": 178,
+      "link": "https://clawdocs.org/security/overview#security-incident-history",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#x3syg6",
+      "name": "Timeline",
+      "x": -152,
+      "y": 405,
+      "link": "https://clawdocs.org/security/overview#timeline",
+      "bgColor": "#d1f3f4",
+      "parent": "#nndbzx"
+    },
+    {
+      "@id": "#p32gnc",
+      "name": "Who Has Published Security Research",
+      "x": -369,
+      "y": 391,
+      "link": "https://clawdocs.org/security/overview#who-has-published-security-research",
+      "bgColor": "#d1f3f4",
+      "parent": "#nndbzx"
+    },
+    {
+      "@id": "#aztfip",
+      "name": "Deep Dives",
+      "x": -227,
+      "y": 89,
+      "link": "https://clawdocs.org/security/overview#deep-dives",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ern4z7",
+      "name": "← Security",
+      "x": -247,
+      "y": 31,
+      "link": "./security.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 1,
+      "end": 5
+    },
+    {
+      "start": 1,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 8,
+      "end": 9
+    },
+    {
+      "start": 8,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 14,
+      "end": 15
+    },
+    {
+      "start": 14,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    }
+  ],
+  "selectedNode": 0
+}

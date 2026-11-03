@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Advanced Recipes",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#pmmk7u",
+      "name": "Multi-Agent DevOps Pipeline",
+      "x": -185,
+      "y": -143,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#multi-agent-devops-pipeline",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vyu7hu",
+      "name": "Architecture",
+      "x": -488,
+      "y": -94,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#architecture",
+      "bgColor": "#daeeff",
+      "parent": "#pmmk7u"
+    },
+    {
+      "@id": "#8dfucg",
+      "name": "Agent Configuration",
+      "x": -530,
+      "y": -221,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#agent-configuration",
+      "bgColor": "#daeeff",
+      "parent": "#pmmk7u"
+    },
+    {
+      "@id": "#em4fgk",
+      "name": "Reviewer Skill",
+      "x": -386,
+      "y": -270,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#reviewer-skill",
+      "bgColor": "#daeeff",
+      "parent": "#pmmk7u"
+    },
+    {
+      "@id": "#94c29c",
+      "name": "Heartbeat for Auto-Detection",
+      "x": -349,
+      "y": -414,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#heartbeat-for-auto-detection",
+      "bgColor": "#daeeff",
+      "parent": "#pmmk7u"
+    },
+    {
+      "@id": "#q5s64p",
+      "name": "Deployer Skill",
+      "x": -150,
+      "y": -403,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#deployer-skill",
+      "bgColor": "#daeeff",
+      "parent": "#pmmk7u"
+    },
+    {
+      "@id": "#5m9ysx",
+      "name": "RAG Pipeline",
+      "x": 191,
+      "y": -137,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#rag-pipeline-chat-with-your-docs",
+      "bgColor": "#e9c1ef",
+      "parent": "#this"
+    },
+    {
+      "@id": "#zhx52d",
+      "name": "Architecture",
+      "x": 80,
+      "y": -414,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#architecture",
+      "bgColor": "#f7e4f9",
+      "parent": "#5m9ysx"
+    },
+    {
+      "@id": "#y9485z",
+      "name": "Option 1: Built-In Memory",
+      "x": 244,
+      "y": -460,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#option-1-built-in-memory-simplest",
+      "bgColor": "#f7e4f9",
+      "parent": "#5m9ysx"
+    },
+    {
+      "@id": "#v2q9jg",
+      "name": "Option 2: MCP Knowledge Base Server",
+      "x": 358,
+      "y": -297,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#option-2-mcp-knowledge-base-server",
+      "bgColor": "#f7e4f9",
+      "parent": "#5m9ysx"
+    },
+    {
+      "@id": "#yfeius",
+      "name": "Ingestion Skill",
+      "x": 530,
+      "y": -220,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#ingestion-skill",
+      "bgColor": "#f7e4f9",
+      "parent": "#5m9ysx"
+    },
+    {
+      "@id": "#c68jdy",
+      "name": "Query Skill",
+      "x": 485,
+      "y": -102,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#query-skill",
+      "bgColor": "#f7e4f9",
+      "parent": "#5m9ysx"
+    },
+    {
+      "@id": "#r6cu5d",
+      "name": "Practical Examples",
+      "x": 590,
+      "y": -7,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#practical-examples",
+      "bgColor": "#f7e4f9",
+      "parent": "#5m9ysx"
+    },
+    {
+      "@id": "#s7dufv",
+      "name": "Home Assistant Control",
+      "x": 138,
+      "y": 177,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#home-assistant-control",
+      "bgColor": "#fec0b1",
+      "parent": "#this"
+    },
+    {
+      "@id": "#2yqihn",
+      "name": "Prerequisites",
+      "x": 443,
+      "y": 198,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#prerequisites",
+      "bgColor": "#ffe3dc",
+      "parent": "#s7dufv"
+    },
+    {
+      "@id": "#fp6n3v",
+      "name": "Configuration",
+      "x": 456,
+      "y": 321,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#configuration",
+      "bgColor": "#ffe3dc",
+      "parent": "#s7dufv"
+    },
+    {
+      "@id": "#stzbnh",
+      "name": "Smart Home Skill",
+      "x": 305,
+      "y": 336,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#smart-home-skill",
+      "bgColor": "#ffe3dc",
+      "parent": "#s7dufv"
+    },
+    {
+      "@id": "#6thrat",
+      "name": "Heartbeat for Home Monitoring",
+      "x": 212,
+      "y": 468,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#heartbeat-for-home-monitoring",
+      "bgColor": "#ffe3dc",
+      "parent": "#s7dufv"
+    },
+    {
+      "@id": "#47wswh",
+      "name": "Usage",
+      "x": 41,
+      "y": 424,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#usage",
+      "bgColor": "#ffe3dc",
+      "parent": "#s7dufv"
+    },
+    {
+      "@id": "#gyacrq",
+      "name": "Server Monitoring and Auto-Remediation",
+      "x": -167,
+      "y": 158,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#server-monitoring-and-auto-remediation",
+      "bgColor": "#d7d59b",
+      "parent": "#this"
+    },
+    {
+      "@id": "#699cj2",
+      "name": "Monitoring Skill",
+      "x": -156,
+      "y": 400,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#monitoring-skill",
+      "bgColor": "#eeedd3",
+      "parent": "#gyacrq"
+    },
+    {
+      "@id": "#4m4kni",
+      "name": "Heartbeat Configuration",
+      "x": -344,
+      "y": 412,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#heartbeat-configuration",
+      "bgColor": "#eeedd3",
+      "parent": "#gyacrq"
+    },
+    {
+      "@id": "#y3tqzj",
+      "name": "Server Inventory",
+      "x": -382,
+      "y": 275,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#server-inventory",
+      "bgColor": "#eeedd3",
+      "parent": "#gyacrq"
+    },
+    {
+      "@id": "#8incj7",
+      "name": "Example Alert Flow",
+      "x": -527,
+      "y": 226,
+      "link": "https://clawdocs.org/guides/recipes/advanced-recipes#example-alert-flow",
+      "bgColor": "#eeedd3",
+      "parent": "#gyacrq"
+    },
+    {
+      "@id": "#eekj9y",
+      "name": "← Recipes",
+      "x": -248,
+      "y": 27,
+      "link": "./recipes.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 1,
+      "end": 5
+    },
+    {
+      "start": 1,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 7,
+      "end": 8
+    },
+    {
+      "start": 7,
+      "end": 9
+    },
+    {
+      "start": 7,
+      "end": 10
+    },
+    {
+      "start": 7,
+      "end": 11
+    },
+    {
+      "start": 7,
+      "end": 12
+    },
+    {
+      "start": 7,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 14,
+      "end": 15
+    },
+    {
+      "start": 14,
+      "end": 16
+    },
+    {
+      "start": 14,
+      "end": 17
+    },
+    {
+      "start": 14,
+      "end": 18
+    },
+    {
+      "start": 14,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 20,
+      "end": 21
+    },
+    {
+      "start": 20,
+      "end": 22
+    },
+    {
+      "start": 20,
+      "end": 23
+    },
+    {
+      "start": 20,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

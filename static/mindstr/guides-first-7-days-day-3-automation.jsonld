@@ -1,0 +1,207 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Day 3: Set It Free",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#spatem",
+      "name": "What Is the Heartbeat?",
+      "x": -240,
+      "y": -60,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#what-is-the-heartbeat",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#twzhxn",
+      "name": "Your First Heartbeat",
+      "x": -168,
+      "y": -158,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#your-first-heartbeat",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ir6eif",
+      "name": "Heartbeat Configuration",
+      "x": -43,
+      "y": -209,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#heartbeat-configuration",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#bwj4g5",
+      "name": "Practical Heartbeat Ideas",
+      "x": 250,
+      "y": 2,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#practical-heartbeat-ideas",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9fjvd8",
+      "name": "Morning Briefing",
+      "x": 258,
+      "y": -364,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#morning-briefing",
+      "bgColor": "#ffe4d9",
+      "parent": "#bwj4g5"
+    },
+    {
+      "@id": "#6fwnzy",
+      "name": "GitHub Repo Monitoring",
+      "x": 487,
+      "y": -284,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#github-repo-monitoring",
+      "bgColor": "#ffe4d9",
+      "parent": "#bwj4g5"
+    },
+    {
+      "@id": "#rtnzsk",
+      "name": "Server Health Check",
+      "x": 495,
+      "y": -62,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#server-health-check",
+      "bgColor": "#ffe4d9",
+      "parent": "#bwj4g5"
+    },
+    {
+      "@id": "#v8phzs",
+      "name": "Price Monitoring",
+      "x": 571,
+      "y": 126,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#price-monitoring",
+      "bgColor": "#ffe4d9",
+      "parent": "#bwj4g5"
+    },
+    {
+      "@id": "#izxsmt",
+      "name": "Daily Journal Prompt",
+      "x": 394,
+      "y": 262,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#daily-journal-prompt",
+      "bgColor": "#ffe4d9",
+      "parent": "#bwj4g5"
+    },
+    {
+      "@id": "#er3xwg",
+      "name": "Weekly Summary",
+      "x": 288,
+      "y": 438,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#weekly-summary",
+      "bgColor": "#ffe4d9",
+      "parent": "#bwj4g5"
+    },
+    {
+      "@id": "#3p4wn2",
+      "name": "Cost Warning",
+      "x": -13,
+      "y": 211,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#cost-warning",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#f356md",
+      "name": "Cron Jobs",
+      "x": -133,
+      "y": 184,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#cron-jobs",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#c9pfmk",
+      "name": "Debugging",
+      "x": -202,
+      "y": 125,
+      "link": "https://clawdocs.org/guides/first-7-days/day-3-automation#debugging",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#metvfr",
+      "name": "← First 7 Days",
+      "x": -245,
+      "y": 44,
+      "link": "./first-7-days.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 4,
+      "end": 5
+    },
+    {
+      "start": 4,
+      "end": 6
+    },
+    {
+      "start": 4,
+      "end": 7
+    },
+    {
+      "start": 4,
+      "end": 8
+    },
+    {
+      "start": 4,
+      "end": 9
+    },
+    {
+      "start": 4,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    }
+  ],
+  "selectedNode": 0
+}

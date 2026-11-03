@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Ecosystem & Community Tools",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/reference/ecosystem",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#rv4re4",
+      "name": "Top Projects by Stars",
+      "x": -274,
+      "y": -36,
+      "link": "https://clawdocs.org/reference/ecosystem#top-projects-by-stars",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#8nixxw",
+      "name": "Official Projects",
+      "x": -200,
+      "y": -128,
+      "link": "https://clawdocs.org/reference/ecosystem#official-projects",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#urxiny",
+      "name": "Lobster {#lobster}",
+      "x": -435,
+      "y": -210,
+      "link": "https://clawdocs.org/reference/ecosystem#lobster-lobster",
+      "bgColor": "#efe6ff",
+      "parent": "#8nixxw"
+    },
+    {
+      "@id": "#3qwn3z",
+      "name": "ClawHub {#clawhub}",
+      "x": -423,
+      "y": -349,
+      "link": "https://clawdocs.org/reference/ecosystem#clawhub-clawhub",
+      "bgColor": "#efe6ff",
+      "parent": "#8nixxw"
+    },
+    {
+      "@id": "#gqwdse",
+      "name": "Alternative Clients & Frontends",
+      "x": -50,
+      "y": -208,
+      "link": "https://clawdocs.org/reference/ecosystem#alternative-clients-frontends",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vaejn3",
+      "name": "WebClaw",
+      "x": -216,
+      "y": -383,
+      "link": "https://clawdocs.org/reference/ecosystem#webclaw",
+      "bgColor": "#ffe2ed",
+      "parent": "#gqwdse"
+    },
+    {
+      "@id": "#gsgk8g",
+      "name": "OpenClaw Windows Hub",
+      "x": -118,
+      "y": -491,
+      "link": "https://clawdocs.org/reference/ecosystem#openclaw-windows-hub",
+      "bgColor": "#ffe2ed",
+      "parent": "#gqwdse"
+    },
+    {
+      "@id": "#4cvp6j",
+      "name": "TitanShell",
+      "x": 23,
+      "y": -425,
+      "link": "https://clawdocs.org/reference/ecosystem#titanshell",
+      "bgColor": "#ffe2ed",
+      "parent": "#gqwdse"
+    },
+    {
+      "@id": "#7hys4n",
+      "name": "Deployment Tools",
+      "x": 237,
+      "y": -68,
+      "link": "https://clawdocs.org/reference/ecosystem#deployment-tools",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7ncxmd",
+      "name": "Moltworker {#moltworker}",
+      "x": 245,
+      "y": -363,
+      "link": "https://clawdocs.org/reference/ecosystem#moltworker-moltworker",
+      "bgColor": "#ffe4d9",
+      "parent": "#7hys4n"
+    },
+    {
+      "@id": "#cp974u",
+      "name": "OpenClaw Helm Chart",
+      "x": 447,
+      "y": -335,
+      "link": "https://clawdocs.org/reference/ecosystem#openclaw-helm-chart",
+      "bgColor": "#ffe4d9",
+      "parent": "#7hys4n"
+    },
+    {
+      "@id": "#kn96vj",
+      "name": "OpenClaw for Coolify",
+      "x": 448,
+      "y": -189,
+      "link": "https://clawdocs.org/reference/ecosystem#openclaw-for-coolify",
+      "bgColor": "#ffe4d9",
+      "parent": "#7hys4n"
+    },
+    {
+      "@id": "#m8ex6s",
+      "name": "CoolLabs Docker Images",
+      "x": 581,
+      "y": -87,
+      "link": "https://clawdocs.org/reference/ecosystem#coollabs-docker-images",
+      "bgColor": "#ffe4d9",
+      "parent": "#7hys4n"
+    },
+    {
+      "@id": "#ja42zz",
+      "name": "OpenClaw Host Kit",
+      "x": 498,
+      "y": 40,
+      "link": "https://clawdocs.org/reference/ecosystem#openclaw-host-kit",
+      "bgColor": "#ffe4d9",
+      "parent": "#7hys4n"
+    },
+    {
+      "@id": "#ij9gnj",
+      "name": "Other Deployment Options",
+      "x": 549,
+      "y": 184,
+      "link": "https://clawdocs.org/reference/ecosystem#other-deployment-options",
+      "bgColor": "#ffe4d9",
+      "parent": "#7hys4n"
+    },
+    {
+      "@id": "#9jz8pb",
+      "name": "Lightweight Alternatives",
+      "x": 33,
+      "y": 211,
+      "link": "https://clawdocs.org/reference/ecosystem#lightweight-alternatives",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#26hebb",
+      "name": "Nanobot {#nanobot}",
+      "x": 293,
+      "y": 345,
+      "link": "https://clawdocs.org/reference/ecosystem#nanobot-nanobot",
+      "bgColor": "#f2ecd2",
+      "parent": "#9jz8pb"
+    },
+    {
+      "@id": "#x98nfn",
+      "name": "NanoClaw {#nanoclaw}",
+      "x": 208,
+      "y": 469,
+      "link": "https://clawdocs.org/reference/ecosystem#nanoclaw-nanoclaw",
+      "bgColor": "#f2ecd2",
+      "parent": "#9jz8pb"
+    },
+    {
+      "@id": "#nwcy4w",
+      "name": "MimiClaw {#mimiclaw}",
+      "x": 42,
+      "y": 423,
+      "link": "https://clawdocs.org/reference/ecosystem#mimiclaw-mimiclaw",
+      "bgColor": "#f2ecd2",
+      "parent": "#9jz8pb"
+    },
+    {
+      "@id": "#rgqtdn",
+      "name": "Mini-Claw",
+      "x": -95,
+      "y": 495,
+      "link": "https://clawdocs.org/reference/ecosystem#mini-claw",
+      "bgColor": "#f2ecd2",
+      "parent": "#9jz8pb"
+    },
+    {
+      "@id": "#636wqk",
+      "name": "Comparison",
+      "x": -185,
+      "y": 395,
+      "link": "https://clawdocs.org/reference/ecosystem#comparison",
+      "bgColor": "#f2ecd2",
+      "parent": "#9jz8pb"
+    },
+    {
+      "@id": "#ubyfia",
+      "name": "Memory & Companion Tools",
+      "x": -205,
+      "y": 122,
+      "link": "https://clawdocs.org/reference/ecosystem#memory-companion-tools",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#y3qzbz",
+      "name": "memU {#memu}",
+      "x": -349,
+      "y": 304,
+      "link": "https://clawdocs.org/reference/ecosystem#memu-memu",
+      "bgColor": "#ddf2de",
+      "parent": "#ubyfia"
+    },
+    {
+      "@id": "#jbnfg3",
+      "name": "OpenClaw Observability Plugin",
+      "x": -517,
+      "y": 242,
+      "link": "https://clawdocs.org/reference/ecosystem#openclaw-observability-plugin",
+      "bgColor": "#ddf2de",
+      "parent": "#ubyfia"
+    },
+    {
+      "@id": "#ixxrfg",
+      "name": "← Reference",
+      "x": -248,
+      "y": 27,
+      "link": "./reference.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 5,
+      "end": 6
+    },
+    {
+      "start": 5,
+      "end": 7
+    },
+    {
+      "start": 5,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 9,
+      "end": 10
+    },
+    {
+      "start": 9,
+      "end": 11
+    },
+    {
+      "start": 9,
+      "end": 12
+    },
+    {
+      "start": 9,
+      "end": 13
+    },
+    {
+      "start": 9,
+      "end": 14
+    },
+    {
+      "start": 9,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 16,
+      "end": 17
+    },
+    {
+      "start": 16,
+      "end": 18
+    },
+    {
+      "start": 16,
+      "end": 19
+    },
+    {
+      "start": 16,
+      "end": 20
+    },
+    {
+      "start": 16,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 22,
+      "end": 23
+    },
+    {
+      "start": 22,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

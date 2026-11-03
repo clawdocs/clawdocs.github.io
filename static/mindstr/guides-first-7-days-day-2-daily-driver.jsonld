@@ -1,0 +1,233 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Day 2: Your Daily Driver",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#u6iz6f",
+      "name": "Summarize Anything",
+      "x": -174,
+      "y": -152,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#summarize-anything",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vb6nak",
+      "name": "Summarize a web page",
+      "x": -474,
+      "y": -135,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#summarize-a-web-page",
+      "bgColor": "#daeeff",
+      "parent": "#u6iz6f"
+    },
+    {
+      "@id": "#zv6fek",
+      "name": "Summarize a local file",
+      "x": -440,
+      "y": -334,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#summarize-a-local-file",
+      "bgColor": "#daeeff",
+      "parent": "#u6iz6f"
+    },
+    {
+      "@id": "#y6p8te",
+      "name": "Summarize a long email thread",
+      "x": -179,
+      "y": -397,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#summarize-a-long-email-thread",
+      "bgColor": "#daeeff",
+      "parent": "#u6iz6f"
+    },
+    {
+      "@id": "#kpttum",
+      "name": "Research Assistant",
+      "x": 60,
+      "y": -206,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#research-assistant",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#t62ib9",
+      "name": "File Management",
+      "x": 241,
+      "y": -55,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#file-management",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qcu5gk",
+      "name": "Organize files",
+      "x": 340,
+      "y": -312,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#organize-files",
+      "bgColor": "#ffe2ed",
+      "parent": "#t62ib9"
+    },
+    {
+      "@id": "#za8che",
+      "name": "Find duplicates",
+      "x": 514,
+      "y": -246,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#find-duplicates",
+      "bgColor": "#ffe2ed",
+      "parent": "#t62ib9"
+    },
+    {
+      "@id": "#rbwcef",
+      "name": "Rename batches",
+      "x": 490,
+      "y": -85,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#rename-batches",
+      "bgColor": "#ffe2ed",
+      "parent": "#t62ib9"
+    },
+    {
+      "@id": "#mvt9ib",
+      "name": "Create directory structures",
+      "x": 578,
+      "y": 101,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#create-directory-structures",
+      "bgColor": "#ffe2ed",
+      "parent": "#t62ib9"
+    },
+    {
+      "@id": "#4cdvsg",
+      "name": "Quick Scripts",
+      "x": 179,
+      "y": 141,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#quick-scripts",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ur7wv9",
+      "name": "System Admin",
+      "x": 105,
+      "y": 185,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#system-admin",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#j2eaqz",
+      "name": "Practical Examples",
+      "x": 8,
+      "y": 231,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#practical-examples",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vqbwbg",
+      "name": "Tips for Better Results",
+      "x": -107,
+      "y": 185,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#tips-for-better-results",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#y9jt3w",
+      "name": "What You've Done Today",
+      "x": -204,
+      "y": 123,
+      "link": "https://clawdocs.org/guides/first-7-days/day-2-daily-driver#what-youve-done-today",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vxinpu",
+      "name": "← First 7 Days",
+      "x": -246,
+      "y": 39,
+      "link": "./first-7-days.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 6,
+      "end": 7
+    },
+    {
+      "start": 6,
+      "end": 8
+    },
+    {
+      "start": 6,
+      "end": 9
+    },
+    {
+      "start": 6,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    }
+  ],
+  "selectedNode": 0
+}

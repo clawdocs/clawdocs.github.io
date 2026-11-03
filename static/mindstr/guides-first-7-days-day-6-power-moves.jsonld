@@ -1,0 +1,298 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Day 6: Build Your Own",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#ta2q85",
+      "name": "Your First Custom Skill",
+      "x": -252,
+      "y": -50,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#your-first-custom-skill",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#f6qx4w",
+      "name": "Step 1: Create the file",
+      "x": -486,
+      "y": -101,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#step-1-create-the-file",
+      "bgColor": "#daeeff",
+      "parent": "#ta2q85"
+    },
+    {
+      "@id": "#su9mmy",
+      "name": "Standup",
+      "x": -165,
+      "y": -159,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#standup-todays-date",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#puabcz",
+      "name": "Step 2: Test it",
+      "x": -388,
+      "y": -268,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#step-2-test-it",
+      "bgColor": "#efe6ff",
+      "parent": "#su9mmy"
+    },
+    {
+      "@id": "#pggewd",
+      "name": "Step 3: Install it",
+      "x": -322,
+      "y": -420,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#step-3-install-it",
+      "bgColor": "#efe6ff",
+      "parent": "#su9mmy"
+    },
+    {
+      "@id": "#7cv7qa",
+      "name": "Skill Ideas",
+      "x": 137,
+      "y": -178,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#skill-ideas",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4evz5w",
+      "name": "Meeting summarizer",
+      "x": -19,
+      "y": -425,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#meeting-summarizer",
+      "bgColor": "#ffe2ed",
+      "parent": "#7cv7qa"
+    },
+    {
+      "@id": "#vh32g5",
+      "name": "Code reviewer",
+      "x": 158,
+      "y": -483,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#code-reviewer",
+      "bgColor": "#ffe2ed",
+      "parent": "#7cv7qa"
+    },
+    {
+      "@id": "#6ktxue",
+      "name": "Expense tracker",
+      "x": 264,
+      "y": -361,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#expense-tracker",
+      "bgColor": "#ffe2ed",
+      "parent": "#7cv7qa"
+    },
+    {
+      "@id": "#qrakrq",
+      "name": "Learning journal",
+      "x": 445,
+      "y": -330,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#learning-journal",
+      "bgColor": "#ffe2ed",
+      "parent": "#7cv7qa"
+    },
+    {
+      "@id": "#ppuaac",
+      "name": "Deployment checklist",
+      "x": 463,
+      "y": -160,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#deployment-checklist",
+      "bgColor": "#ffe2ed",
+      "parent": "#7cv7qa"
+    },
+    {
+      "@id": "#f77hg7",
+      "name": "Cron Jobs",
+      "x": 221,
+      "y": 100,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#cron-jobs",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#kpihvt",
+      "name": "Add a cron job",
+      "x": 493,
+      "y": 73,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#add-a-cron-job",
+      "bgColor": "#ffe4d9",
+      "parent": "#f77hg7"
+    },
+    {
+      "@id": "#k58b5b",
+      "name": "Manage cron jobs",
+      "x": 527,
+      "y": 226,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#manage-cron-jobs",
+      "bgColor": "#ffe4d9",
+      "parent": "#f77hg7"
+    },
+    {
+      "@id": "#htircd",
+      "name": "Cron vs. Heartbeat",
+      "x": 354,
+      "y": 300,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#cron-vs-heartbeat",
+      "bgColor": "#ffe4d9",
+      "parent": "#f77hg7"
+    },
+    {
+      "@id": "#sixamq",
+      "name": "Multi-Agent Basics",
+      "x": 26,
+      "y": 220,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#multi-agent-basics",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#j99zi5",
+      "name": "Create a second agent",
+      "x": 137,
+      "y": 409,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#create-a-second-agent",
+      "bgColor": "#f2ecd2",
+      "parent": "#sixamq"
+    },
+    {
+      "@id": "#kwrapz",
+      "name": "Agent communication",
+      "x": -49,
+      "y": 500,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#agent-communication",
+      "bgColor": "#f2ecd2",
+      "parent": "#sixamq"
+    },
+    {
+      "@id": "#n3epze",
+      "name": "Publishing to ClawHub",
+      "x": -130,
+      "y": 176,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#publishing-to-clawhub",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#42eis4",
+      "name": "What You've Done Today",
+      "x": -211,
+      "y": 115,
+      "link": "https://clawdocs.org/guides/first-7-days/day-6-power-moves#what-youve-done-today",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#f65d8e",
+      "name": "← First 7 Days",
+      "x": -246,
+      "y": 36,
+      "link": "./first-7-days.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 3,
+      "end": 4
+    },
+    {
+      "start": 3,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 6,
+      "end": 7
+    },
+    {
+      "start": 6,
+      "end": 8
+    },
+    {
+      "start": 6,
+      "end": 9
+    },
+    {
+      "start": 6,
+      "end": 10
+    },
+    {
+      "start": 6,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 12,
+      "end": 13
+    },
+    {
+      "start": 12,
+      "end": 14
+    },
+    {
+      "start": 12,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 16,
+      "end": 17
+    },
+    {
+      "start": 16,
+      "end": 18
+    },
+    {
+      "start": 0,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 0,
+      "end": 21
+    }
+  ],
+  "selectedNode": 0
+}

@@ -1,0 +1,337 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "The Gateway",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/architecture/gateway",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#sbf4ee",
+      "name": "Starting the Gateway",
+      "x": -246,
+      "y": -40,
+      "link": "https://clawdocs.org/architecture/gateway#starting-the-gateway",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#t6q67m",
+      "name": "Process Lifecycle",
+      "x": -214,
+      "y": -110,
+      "link": "https://clawdocs.org/architecture/gateway#process-lifecycle",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#abq85r",
+      "name": "Shutdown Sequence",
+      "x": -428,
+      "y": -220,
+      "link": "https://clawdocs.org/architecture/gateway#shutdown-sequence",
+      "bgColor": "#efe6ff",
+      "parent": "#t6q67m"
+    },
+    {
+      "@id": "#sy2ncx",
+      "name": "Wire Protocol",
+      "x": 57,
+      "y": -207,
+      "link": "https://clawdocs.org/architecture/gateway#wire-protocol",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#fertai",
+      "name": "Message Frame Types",
+      "x": -254,
+      "y": -366,
+      "link": "https://clawdocs.org/architecture/gateway#message-frame-types",
+      "bgColor": "#ffe2ed",
+      "parent": "#sy2ncx"
+    },
+    {
+      "@id": "#9u36xp",
+      "name": "Connection Handshake",
+      "x": -130,
+      "y": -489,
+      "link": "https://clawdocs.org/architecture/gateway#connection-handshake",
+      "bgColor": "#ffe2ed",
+      "parent": "#sy2ncx"
+    },
+    {
+      "@id": "#5q2nc4",
+      "name": "Payload Limits",
+      "x": 31,
+      "y": -424,
+      "link": "https://clawdocs.org/architecture/gateway#payload-limits",
+      "bgColor": "#ffe2ed",
+      "parent": "#sy2ncx"
+    },
+    {
+      "@id": "#eegh3a",
+      "name": "Key RPC Methods",
+      "x": 183,
+      "y": -477,
+      "link": "https://clawdocs.org/architecture/gateway#key-rpc-methods",
+      "bgColor": "#ffe2ed",
+      "parent": "#sy2ncx"
+    },
+    {
+      "@id": "#tmtdcb",
+      "name": "Idempotency",
+      "x": 269,
+      "y": -358,
+      "link": "https://clawdocs.org/architecture/gateway#idempotency",
+      "bgColor": "#ffe2ed",
+      "parent": "#sy2ncx"
+    },
+    {
+      "@id": "#ziixui",
+      "name": "Example: Sending a Chat Message",
+      "x": 469,
+      "y": -304,
+      "link": "https://clawdocs.org/architecture/gateway#example-sending-a-chat-message",
+      "bgColor": "#ffe2ed",
+      "parent": "#sy2ncx"
+    },
+    {
+      "@id": "#qnf7j2",
+      "name": "Authentication",
+      "x": 225,
+      "y": 92,
+      "link": "https://clawdocs.org/architecture/gateway#authentication",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#rx55k2",
+      "name": "Modes",
+      "x": 500,
+      "y": -5,
+      "link": "https://clawdocs.org/architecture/gateway#modes",
+      "bgColor": "#ffe4d9",
+      "parent": "#qnf7j2"
+    },
+    {
+      "@id": "#ux93wm",
+      "name": "Challenge-Response Handshake",
+      "x": 560,
+      "y": 159,
+      "link": "https://clawdocs.org/architecture/gateway#challenge-response-handshake",
+      "bgColor": "#ffe4d9",
+      "parent": "#qnf7j2"
+    },
+    {
+      "@id": "#a464iu",
+      "name": "Device Pairing",
+      "x": 396,
+      "y": 259,
+      "link": "https://clawdocs.org/architecture/gateway#device-pairing",
+      "bgColor": "#ffe4d9",
+      "parent": "#qnf7j2"
+    },
+    {
+      "@id": "#simp87",
+      "name": "Configuration",
+      "x": 364,
+      "y": 395,
+      "link": "https://clawdocs.org/architecture/gateway#configuration",
+      "bgColor": "#ffe4d9",
+      "parent": "#qnf7j2"
+    },
+    {
+      "@id": "#tzmucf",
+      "name": "Internal Components",
+      "x": -17,
+      "y": 212,
+      "link": "https://clawdocs.org/architecture/gateway#internal-components",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#xmtzgz",
+      "name": "Node Registry",
+      "x": 111,
+      "y": 414,
+      "link": "https://clawdocs.org/architecture/gateway#node-registry",
+      "bgColor": "#f2ecd2",
+      "parent": "#tzmucf"
+    },
+    {
+      "@id": "#b9snuz",
+      "name": "Exec Approval Manager",
+      "x": -40,
+      "y": 500,
+      "link": "https://clawdocs.org/architecture/gateway#exec-approval-manager",
+      "bgColor": "#f2ecd2",
+      "parent": "#tzmucf"
+    },
+    {
+      "@id": "#nxqgmq",
+      "name": "Command Queue",
+      "x": -175,
+      "y": 398,
+      "link": "https://clawdocs.org/architecture/gateway#command-queue",
+      "bgColor": "#f2ecd2",
+      "parent": "#tzmucf"
+    },
+    {
+      "@id": "#dguykc",
+      "name": "Daemon Mode",
+      "x": -169,
+      "y": 156,
+      "link": "https://clawdocs.org/architecture/gateway#daemon-mode",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#28eue2",
+      "name": "Management Commands",
+      "x": -338,
+      "y": 313,
+      "link": "https://clawdocs.org/architecture/gateway#management-commands",
+      "bgColor": "#ddf2de",
+      "parent": "#dguykc"
+    },
+    {
+      "@id": "#f4n9qu",
+      "name": "Configuration",
+      "x": -223,
+      "y": 97,
+      "link": "https://clawdocs.org/architecture/gateway#configuration",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#krwt6e",
+      "name": "Transport Security",
+      "x": -445,
+      "y": 193,
+      "link": "https://clawdocs.org/architecture/gateway#transport-security",
+      "bgColor": "#d1f3f4",
+      "parent": "#f4n9qu"
+    },
+    {
+      "@id": "#emecna",
+      "name": "← Architecture",
+      "x": -247,
+      "y": 32,
+      "link": "./architecture.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 4,
+      "end": 5
+    },
+    {
+      "start": 4,
+      "end": 6
+    },
+    {
+      "start": 4,
+      "end": 7
+    },
+    {
+      "start": 4,
+      "end": 8
+    },
+    {
+      "start": 4,
+      "end": 9
+    },
+    {
+      "start": 4,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 11,
+      "end": 12
+    },
+    {
+      "start": 11,
+      "end": 13
+    },
+    {
+      "start": 11,
+      "end": 14
+    },
+    {
+      "start": 11,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 16,
+      "end": 17
+    },
+    {
+      "start": 16,
+      "end": 18
+    },
+    {
+      "start": 16,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 20,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 22,
+      "end": 23
+    },
+    {
+      "start": 0,
+      "end": 24
+    }
+  ],
+  "selectedNode": 0
+}

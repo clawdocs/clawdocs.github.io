@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "MCP Servers",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/mcp-servers",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#n4bn2e",
+      "name": "What MCP Provides",
+      "x": -247,
+      "y": -32,
+      "link": "https://clawdocs.org/guides/mcp-servers#what-mcp-provides",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#eud79w",
+      "name": "Wire Protocol",
+      "x": -494,
+      "y": -64,
+      "link": "https://clawdocs.org/guides/mcp-servers#wire-protocol",
+      "bgColor": "#daeeff",
+      "parent": "#n4bn2e"
+    },
+    {
+      "@id": "#wn4gws",
+      "name": "Configuring MCP Servers",
+      "x": -181,
+      "y": -146,
+      "link": "https://clawdocs.org/guides/mcp-servers#configuring-mcp-servers",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7urzyg",
+      "name": "Local Servers",
+      "x": -438,
+      "y": -205,
+      "link": "https://clawdocs.org/guides/mcp-servers#local-servers-stdio",
+      "bgColor": "#efe6ff",
+      "parent": "#wn4gws"
+    },
+    {
+      "@id": "#fcdibk",
+      "name": "Remote Servers",
+      "x": -428,
+      "y": -345,
+      "link": "https://clawdocs.org/guides/mcp-servers#remote-servers-http",
+      "bgColor": "#efe6ff",
+      "parent": "#wn4gws"
+    },
+    {
+      "@id": "#tmtxc2",
+      "name": "Transport Types",
+      "x": -264,
+      "y": -361,
+      "link": "https://clawdocs.org/guides/mcp-servers#transport-types",
+      "bgColor": "#efe6ff",
+      "parent": "#wn4gws"
+    },
+    {
+      "@id": "#f5mzxc",
+      "name": "CLI Commands",
+      "x": -50,
+      "y": -208,
+      "link": "https://clawdocs.org/guides/mcp-servers#cli-commands",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#assz83",
+      "name": "Quick Examples",
+      "x": -100,
+      "y": -416,
+      "link": "https://clawdocs.org/guides/mcp-servers#quick-examples",
+      "bgColor": "#ffe2ed",
+      "parent": "#f5mzxc"
+    },
+    {
+      "@id": "#ef2zi4",
+      "name": "Popular Servers",
+      "x": 108,
+      "y": -192,
+      "link": "https://clawdocs.org/guides/mcp-servers#popular-servers",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#mmiwv8",
+      "name": "Official Reference Servers",
+      "x": 109,
+      "y": -414,
+      "link": "https://clawdocs.org/guides/mcp-servers#official-reference-servers",
+      "bgColor": "#ffe4d9",
+      "parent": "#ef2zi4"
+    },
+    {
+      "@id": "#nac2qv",
+      "name": "Community Servers by Category",
+      "x": 357,
+      "y": -400,
+      "link": "https://clawdocs.org/guides/mcp-servers#community-servers-by-category",
+      "bgColor": "#ffe4d9",
+      "parent": "#ef2zi4"
+    },
+    {
+      "@id": "#jgxjap",
+      "name": "Finding Servers",
+      "x": 246,
+      "y": -36,
+      "link": "https://clawdocs.org/guides/mcp-servers#finding-servers",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#a2eq5j",
+      "name": "MCP Registries",
+      "x": 455,
+      "y": -176,
+      "link": "https://clawdocs.org/guides/mcp-servers#mcp-registries",
+      "bgColor": "#f2ecd2",
+      "parent": "#jgxjap"
+    },
+    {
+      "@id": "#wgv26u",
+      "name": "From the CLI",
+      "x": 581,
+      "y": -85,
+      "link": "https://clawdocs.org/guides/mcp-servers#from-the-cli",
+      "bgColor": "#f2ecd2",
+      "parent": "#jgxjap"
+    },
+    {
+      "@id": "#35akk8",
+      "name": "From npm / PyPI",
+      "x": 498,
+      "y": 36,
+      "link": "https://clawdocs.org/guides/mcp-servers#from-npm-pypi",
+      "bgColor": "#f2ecd2",
+      "parent": "#jgxjap"
+    },
+    {
+      "@id": "#hm3hwr",
+      "name": "Building Custom Servers",
+      "x": 157,
+      "y": 174,
+      "link": "https://clawdocs.org/guides/mcp-servers#building-custom-servers",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3i5a36",
+      "name": "TypeScript",
+      "x": 433,
+      "y": 212,
+      "link": "https://clawdocs.org/guides/mcp-servers#typescript-recommended-for-most-cases",
+      "bgColor": "#ddf2de",
+      "parent": "#hm3hwr"
+    },
+    {
+      "@id": "#vvg4pd",
+      "name": "Python",
+      "x": 421,
+      "y": 352,
+      "link": "https://clawdocs.org/guides/mcp-servers#python-fastmcp",
+      "bgColor": "#ddf2de",
+      "parent": "#hm3hwr"
+    },
+    {
+      "@id": "#auchct",
+      "name": "Server Capabilities",
+      "x": 245,
+      "y": 371,
+      "link": "https://clawdocs.org/guides/mcp-servers#server-capabilities",
+      "bgColor": "#ddf2de",
+      "parent": "#hm3hwr"
+    },
+    {
+      "@id": "#jc8bp2",
+      "name": "Testing Your Server",
+      "x": 118,
+      "y": 491,
+      "link": "https://clawdocs.org/guides/mcp-servers#testing-your-server",
+      "bgColor": "#ddf2de",
+      "parent": "#hm3hwr"
+    },
+    {
+      "@id": "#xftmry",
+      "name": "Expose OpenClaw as an MCP Server",
+      "x": -91,
+      "y": 200,
+      "link": "https://clawdocs.org/guides/mcp-servers#expose-openclaw-as-an-mcp-server",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#yykvgk",
+      "name": "Security",
+      "x": -203,
+      "y": 124,
+      "link": "https://clawdocs.org/guides/mcp-servers#security",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#iuspsm",
+      "name": "Trust Model",
+      "x": -360,
+      "y": 295,
+      "link": "https://clawdocs.org/guides/mcp-servers#trust-model",
+      "bgColor": "#daeeff",
+      "parent": "#yykvgk"
+    },
+    {
+      "@id": "#ncvdiq",
+      "name": "Credential Safety",
+      "x": -519,
+      "y": 239,
+      "link": "https://clawdocs.org/guides/mcp-servers#credential-safety",
+      "bgColor": "#daeeff",
+      "parent": "#yykvgk"
+    },
+    {
+      "@id": "#95c6bh",
+      "name": "← Guides",
+      "x": -247,
+      "y": 32,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 3,
+      "end": 4
+    },
+    {
+      "start": 3,
+      "end": 5
+    },
+    {
+      "start": 3,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 7,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 9,
+      "end": 10
+    },
+    {
+      "start": 9,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 12,
+      "end": 13
+    },
+    {
+      "start": 12,
+      "end": 14
+    },
+    {
+      "start": 12,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 16,
+      "end": 17
+    },
+    {
+      "start": 16,
+      "end": 18
+    },
+    {
+      "start": 16,
+      "end": 19
+    },
+    {
+      "start": 16,
+      "end": 20
+    },
+    {
+      "start": 0,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 22,
+      "end": 23
+    },
+    {
+      "start": 22,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

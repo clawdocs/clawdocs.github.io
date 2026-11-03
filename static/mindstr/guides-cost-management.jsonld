@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Cost Management",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/cost-management",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#vy3tsq",
+      "name": "Where Does the Money Go?",
+      "x": -203,
+      "y": -124,
+      "link": "https://clawdocs.org/guides/cost-management#where-does-the-money-go",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#pibigc",
+      "name": "Cost Breakdown by Component",
+      "x": -484,
+      "y": -107,
+      "link": "https://clawdocs.org/guides/cost-management#cost-breakdown-by-component",
+      "bgColor": "#daeeff",
+      "parent": "#vy3tsq"
+    },
+    {
+      "@id": "#gh56tu",
+      "name": "Heartbeat Costs",
+      "x": -515,
+      "y": -241,
+      "link": "https://clawdocs.org/guides/cost-management#heartbeat-costs",
+      "bgColor": "#daeeff",
+      "parent": "#vy3tsq"
+    },
+    {
+      "@id": "#8vbc5u",
+      "name": "Context Accumulation",
+      "x": -373,
+      "y": -285,
+      "link": "https://clawdocs.org/guides/cost-management#context-accumulation",
+      "bgColor": "#daeeff",
+      "parent": "#vy3tsq"
+    },
+    {
+      "@id": "#qtqg2a",
+      "name": "What Causes Runaway Costs",
+      "x": -321,
+      "y": -421,
+      "link": "https://clawdocs.org/guides/cost-management#what-causes-runaway-costs",
+      "bgColor": "#daeeff",
+      "parent": "#vy3tsq"
+    },
+    {
+      "@id": "#5xddae",
+      "name": "Optimization Strategies",
+      "x": 156,
+      "y": -166,
+      "link": "https://clawdocs.org/guides/cost-management#optimization-strategies",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#g56v86",
+      "name": "Model Routing",
+      "x": -36,
+      "y": -424,
+      "link": "https://clawdocs.org/guides/cost-management#1-model-routing-biggest-impact",
+      "bgColor": "#efe6ff",
+      "parent": "#5xddae"
+    },
+    {
+      "@id": "#7ptw38",
+      "name": "Context Window Management",
+      "x": 99,
+      "y": -494,
+      "link": "https://clawdocs.org/guides/cost-management#2-context-window-management",
+      "bgColor": "#efe6ff",
+      "parent": "#5xddae"
+    },
+    {
+      "@id": "#hkakqp",
+      "name": "Heartbeat Tuning",
+      "x": 166,
+      "y": -388,
+      "link": "https://clawdocs.org/guides/cost-management#3-heartbeat-tuning",
+      "bgColor": "#efe6ff",
+      "parent": "#5xddae"
+    },
+    {
+      "@id": "#cmc5g4",
+      "name": "Disable Thinking Mode for Routine Tasks",
+      "x": 414,
+      "y": -373,
+      "link": "https://clawdocs.org/guides/cost-management#4-disable-thinking-mode-for-routine-tasks",
+      "bgColor": "#efe6ff",
+      "parent": "#5xddae"
+    },
+    {
+      "@id": "#h64kxg",
+      "name": "Leverage Prompt Caching",
+      "x": 442,
+      "y": -199,
+      "link": "https://clawdocs.org/guides/cost-management#5-leverage-prompt-caching",
+      "bgColor": "#efe6ff",
+      "parent": "#5xddae"
+    },
+    {
+      "@id": "#3mw9e8",
+      "name": "Use Existing Subscriptions",
+      "x": 578,
+      "y": -100,
+      "link": "https://clawdocs.org/guides/cost-management#6-use-existing-subscriptions-zero-additional-cost",
+      "bgColor": "#efe6ff",
+      "parent": "#5xddae"
+    },
+    {
+      "@id": "#3yvsbg",
+      "name": "Budget Controls",
+      "x": 214,
+      "y": 110,
+      "link": "https://clawdocs.org/guides/cost-management#budget-controls",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ijvikk",
+      "name": "Set Spending Limits",
+      "x": 478,
+      "y": 125,
+      "link": "https://clawdocs.org/guides/cost-management#set-spending-limits",
+      "bgColor": "#ffe2ed",
+      "parent": "#3yvsbg"
+    },
+    {
+      "@id": "#4dijv5",
+      "name": "Provider-Level Alerts",
+      "x": 506,
+      "y": 258,
+      "link": "https://clawdocs.org/guides/cost-management#provider-level-alerts",
+      "bgColor": "#ffe2ed",
+      "parent": "#3yvsbg"
+    },
+    {
+      "@id": "#ievj7v",
+      "name": "Model Failover Chain",
+      "x": 352,
+      "y": 302,
+      "link": "https://clawdocs.org/guides/cost-management#model-failover-chain",
+      "bgColor": "#ffe2ed",
+      "parent": "#3yvsbg"
+    },
+    {
+      "@id": "#ak9asq",
+      "name": "Real Cost Data",
+      "x": 106,
+      "y": 206,
+      "link": "https://clawdocs.org/guides/cost-management#real-cost-data",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#8vzryr",
+      "name": "Monthly Spending by Usage Pattern",
+      "x": 172,
+      "y": 399,
+      "link": "https://clawdocs.org/guides/cost-management#monthly-spending-by-usage-pattern",
+      "bgColor": "#ffe4d9",
+      "parent": "#ak9asq"
+    },
+    {
+      "@id": "#wsjdx6",
+      "name": "Additional Costs",
+      "x": 38,
+      "y": 500,
+      "link": "https://clawdocs.org/guides/cost-management#additional-costs",
+      "bgColor": "#ffe4d9",
+      "parent": "#ak9asq"
+    },
+    {
+      "@id": "#ukqvr4",
+      "name": "The $1,200 to $36 Case Study",
+      "x": -93,
+      "y": 204,
+      "link": "https://clawdocs.org/guides/cost-management#the-1200-to-36-case-study",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ixkv7h",
+      "name": "Monitoring Tools",
+      "x": -197,
+      "y": 131,
+      "link": "https://clawdocs.org/guides/cost-management#monitoring-tools",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#yq8nzx",
+      "name": "Built-in",
+      "x": -297,
+      "y": 341,
+      "link": "https://clawdocs.org/guides/cost-management#built-in",
+      "bgColor": "#ddf2de",
+      "parent": "#ixkv7h"
+    },
+    {
+      "@id": "#rh653j",
+      "name": "Third-Party Dashboards",
+      "x": -451,
+      "y": 324,
+      "link": "https://clawdocs.org/guides/cost-management#third-party-dashboards",
+      "bgColor": "#ddf2de",
+      "parent": "#ixkv7h"
+    },
+    {
+      "@id": "#9h4kpt",
+      "name": "OpenRouter Auto-Routing",
+      "x": -454,
+      "y": 179,
+      "link": "https://clawdocs.org/guides/cost-management#openrouter-auto-routing",
+      "bgColor": "#ddf2de",
+      "parent": "#ixkv7h"
+    },
+    {
+      "@id": "#7vtshd",
+      "name": "← Guides",
+      "x": -248,
+      "y": 24,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 1,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 6,
+      "end": 7
+    },
+    {
+      "start": 6,
+      "end": 8
+    },
+    {
+      "start": 6,
+      "end": 9
+    },
+    {
+      "start": 6,
+      "end": 10
+    },
+    {
+      "start": 6,
+      "end": 11
+    },
+    {
+      "start": 6,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 13,
+      "end": 15
+    },
+    {
+      "start": 13,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    },
+    {
+      "start": 17,
+      "end": 18
+    },
+    {
+      "start": 17,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 0,
+      "end": 21
+    },
+    {
+      "start": 21,
+      "end": 22
+    },
+    {
+      "start": 21,
+      "end": 23
+    },
+    {
+      "start": 21,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

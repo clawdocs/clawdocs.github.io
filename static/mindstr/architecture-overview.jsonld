@@ -1,0 +1,220 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Architecture Overview",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/architecture/overview",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#6cicry",
+      "name": "High-Level Architecture",
+      "x": -237,
+      "y": -68,
+      "link": "https://clawdocs.org/architecture/overview#high-level-architecture",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7c28q6",
+      "name": "Component Summary",
+      "x": -154,
+      "y": -165,
+      "link": "https://clawdocs.org/architecture/overview#component-summary",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4qbh3e",
+      "name": "Request Lifecycle",
+      "x": -60,
+      "y": -210,
+      "link": "https://clawdocs.org/architecture/overview#request-lifecycle",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#m3xps2",
+      "name": "Prompt Assembly",
+      "x": -88,
+      "y": -418,
+      "link": "https://clawdocs.org/architecture/overview#prompt-assembly",
+      "bgColor": "#ffe2ed",
+      "parent": "#4qbh3e"
+    },
+    {
+      "@id": "#yxjf84",
+      "name": "Data Flow",
+      "x": 79,
+      "y": -204,
+      "link": "https://clawdocs.org/architecture/overview#data-flow",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#mrv4db",
+      "name": "Design Principles",
+      "x": 234,
+      "y": 74,
+      "link": "https://clawdocs.org/architecture/overview#design-principles",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#i6483q",
+      "name": "Single Process",
+      "x": 401,
+      "y": -253,
+      "link": "https://clawdocs.org/architecture/overview#single-process",
+      "bgColor": "#f2ecd2",
+      "parent": "#mrv4db"
+    },
+    {
+      "@id": "#kmcrgd",
+      "name": "Local-First",
+      "x": 571,
+      "y": -126,
+      "link": "https://clawdocs.org/architecture/overview#local-first",
+      "bgColor": "#f2ecd2",
+      "parent": "#mrv4db"
+    },
+    {
+      "@id": "#ktiw89",
+      "name": "Model-Agnostic",
+      "x": 496,
+      "y": 55,
+      "link": "https://clawdocs.org/architecture/overview#model-agnostic",
+      "bgColor": "#f2ecd2",
+      "parent": "#mrv4db"
+    },
+    {
+      "@id": "#c74y5q",
+      "name": "Extensible",
+      "x": 513,
+      "y": 247,
+      "link": "https://clawdocs.org/architecture/overview#extensible",
+      "bgColor": "#f2ecd2",
+      "parent": "#mrv4db"
+    },
+    {
+      "@id": "#374kep",
+      "name": "Transparent",
+      "x": 311,
+      "y": 333,
+      "link": "https://clawdocs.org/architecture/overview#transparent",
+      "bgColor": "#f2ecd2",
+      "parent": "#mrv4db"
+    },
+    {
+      "@id": "#ba2cgp",
+      "name": "Security-Conscious",
+      "x": 148,
+      "y": 485,
+      "link": "https://clawdocs.org/architecture/overview#security-conscious",
+      "bgColor": "#f2ecd2",
+      "parent": "#mrv4db"
+    },
+    {
+      "@id": "#h7ym9k",
+      "name": "Key Files",
+      "x": -103,
+      "y": 194,
+      "link": "https://clawdocs.org/architecture/overview#key-files",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ius84b",
+      "name": "Deep Dives",
+      "x": -193,
+      "y": 135,
+      "link": "https://clawdocs.org/architecture/overview#deep-dives",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#583aqh",
+      "name": "← Architecture",
+      "x": -243,
+      "y": 48,
+      "link": "./architecture.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 3,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 6,
+      "end": 7
+    },
+    {
+      "start": 6,
+      "end": 8
+    },
+    {
+      "start": 6,
+      "end": 9
+    },
+    {
+      "start": 6,
+      "end": 10
+    },
+    {
+      "start": 6,
+      "end": 11
+    },
+    {
+      "start": 6,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    }
+  ],
+  "selectedNode": 0
+}

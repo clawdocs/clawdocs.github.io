@@ -1,0 +1,259 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "CLI Reference",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/reference/cli",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#gyyw4i",
+      "name": "Global Flags",
+      "x": -246,
+      "y": -37,
+      "link": "https://clawdocs.org/reference/cli#global-flags",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#cgeu24",
+      "name": "Commands",
+      "x": 305,
+      "y": -46,
+      "link": "https://clawdocs.org/reference/cli#commands",
+      "bgColor": "#f3bee1",
+      "parent": "#this"
+    },
+    {
+      "@id": "#wyvwkv",
+      "name": "openclaw onboard",
+      "x": -299,
+      "y": -340,
+      "link": "https://clawdocs.org/reference/cli#openclaw-onboard",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#agzsi8",
+      "name": "openclaw dashboard",
+      "x": -181,
+      "y": -477,
+      "link": "https://clawdocs.org/reference/cli#openclaw-dashboard",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#pxr9w9",
+      "name": "openclaw gateway",
+      "x": 10,
+      "y": -425,
+      "link": "https://clawdocs.org/reference/cli#openclaw-gateway",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#a2vrf9",
+      "name": "openclaw chat",
+      "x": 189,
+      "y": -475,
+      "link": "https://clawdocs.org/reference/cli#openclaw-chat",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#yry4un",
+      "name": "openclaw channel",
+      "x": 295,
+      "y": -343,
+      "link": "https://clawdocs.org/reference/cli#openclaw-channel",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#9s3mtd",
+      "name": "openclaw skill",
+      "x": 476,
+      "y": -297,
+      "link": "https://clawdocs.org/reference/cli#openclaw-skill",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#hatkbi",
+      "name": "openclaw plugins",
+      "x": 474,
+      "y": -136,
+      "link": "https://clawdocs.org/reference/cli#openclaw-plugins",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#mkdtm4",
+      "name": "openclaw clawhub",
+      "x": 590,
+      "y": -5,
+      "link": "https://clawdocs.org/reference/cli#openclaw-clawhub",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#xvtviu",
+      "name": "openclaw heartbeat",
+      "x": 475,
+      "y": 134,
+      "link": "https://clawdocs.org/reference/cli#openclaw-heartbeat",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#9aazej",
+      "name": "openclaw logs",
+      "x": 473,
+      "y": 300,
+      "link": "https://clawdocs.org/reference/cli#openclaw-logs",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#id6zww",
+      "name": "openclaw status",
+      "x": 295,
+      "y": 343,
+      "link": "https://clawdocs.org/reference/cli#openclaw-status",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#df3ui4",
+      "name": "openclaw stats",
+      "x": 193,
+      "y": 474,
+      "link": "https://clawdocs.org/reference/cli#openclaw-stats",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#rg5bxv",
+      "name": "openclaw security",
+      "x": 10,
+      "y": 425,
+      "link": "https://clawdocs.org/reference/cli#openclaw-security",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#acpt2u",
+      "name": "openclaw config",
+      "x": -173,
+      "y": 480,
+      "link": "https://clawdocs.org/reference/cli#openclaw-config",
+      "bgColor": "#fce3f3",
+      "parent": "#cgeu24"
+    },
+    {
+      "@id": "#fiuwwi",
+      "name": "Exit Codes",
+      "x": -216,
+      "y": 107,
+      "link": "https://clawdocs.org/reference/cli#exit-codes",
+      "bgColor": "#f1c99c",
+      "parent": "#this"
+    },
+    {
+      "@id": "#2it2zf",
+      "name": "← Reference",
+      "x": -246,
+      "y": 37,
+      "link": "./reference.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 2,
+      "end": 5
+    },
+    {
+      "start": 2,
+      "end": 6
+    },
+    {
+      "start": 2,
+      "end": 7
+    },
+    {
+      "start": 2,
+      "end": 8
+    },
+    {
+      "start": 2,
+      "end": 9
+    },
+    {
+      "start": 2,
+      "end": 10
+    },
+    {
+      "start": 2,
+      "end": 11
+    },
+    {
+      "start": 2,
+      "end": 12
+    },
+    {
+      "start": 2,
+      "end": 13
+    },
+    {
+      "start": 2,
+      "end": 14
+    },
+    {
+      "start": 2,
+      "end": 15
+    },
+    {
+      "start": 2,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    }
+  ],
+  "selectedNode": 0
+}

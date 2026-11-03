@@ -1,0 +1,246 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Introduction",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/getting-started/introduction",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#8edjsn",
+      "name": "What Makes OpenClaw Different",
+      "x": -237,
+      "y": -68,
+      "link": "https://clawdocs.org/getting-started/introduction#what-makes-openclaw-different",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#75s7ir",
+      "name": "Key Capabilities",
+      "x": -24,
+      "y": -212,
+      "link": "https://clawdocs.org/getting-started/introduction#key-capabilities",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7x3k79",
+      "name": "Agent Fundamentals",
+      "x": -281,
+      "y": -352,
+      "link": "https://clawdocs.org/getting-started/introduction#agent-fundamentals",
+      "bgColor": "#efe6ff",
+      "parent": "#75s7ir"
+    },
+    {
+      "@id": "#4af2dc",
+      "name": "Integrations",
+      "x": -145,
+      "y": -486,
+      "link": "https://clawdocs.org/getting-started/introduction#integrations",
+      "bgColor": "#efe6ff",
+      "parent": "#75s7ir"
+    },
+    {
+      "@id": "#7iui3z",
+      "name": "Extensibility",
+      "x": 36,
+      "y": -424,
+      "link": "https://clawdocs.org/getting-started/introduction#extensibility",
+      "bgColor": "#efe6ff",
+      "parent": "#75s7ir"
+    },
+    {
+      "@id": "#bq9ccn",
+      "name": "Advanced Features",
+      "x": 237,
+      "y": -459,
+      "link": "https://clawdocs.org/getting-started/introduction#advanced-features",
+      "bgColor": "#efe6ff",
+      "parent": "#75s7ir"
+    },
+    {
+      "@id": "#3yirdr",
+      "name": "A Brief History",
+      "x": 199,
+      "y": -129,
+      "link": "https://clawdocs.org/getting-started/introduction#a-brief-history",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ptf2jy",
+      "name": "Community and Ecosystem",
+      "x": 246,
+      "y": -40,
+      "link": "https://clawdocs.org/getting-started/introduction#community-and-ecosystem",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4bfy6j",
+      "name": "Who Is This For?",
+      "x": 240,
+      "y": 60,
+      "link": "https://clawdocs.org/getting-started/introduction#who-is-this-for",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4wkdd9",
+      "name": "What OpenClaw is NOT",
+      "x": 186,
+      "y": 140,
+      "link": "https://clawdocs.org/getting-started/introduction#what-openclaw-is-not",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#yiscsp",
+      "name": "Security: Read This First",
+      "x": 101,
+      "y": 184,
+      "link": "https://clawdocs.org/getting-started/introduction#security-read-this-first",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#2fzfhg",
+      "name": "How to Stay Safe",
+      "x": 191,
+      "y": 393,
+      "link": "https://clawdocs.org/getting-started/introduction#how-to-stay-safe",
+      "bgColor": "#d1f3f4",
+      "parent": "#yiscsp"
+    },
+    {
+      "@id": "#6ab87r",
+      "name": "The Cost Question",
+      "x": -1,
+      "y": 232,
+      "link": "https://clawdocs.org/getting-started/introduction#the-cost-question",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#uyfscv",
+      "name": "Reducing Costs",
+      "x": -2,
+      "y": 425,
+      "link": "https://clawdocs.org/getting-started/introduction#reducing-costs",
+      "bgColor": "#daeeff",
+      "parent": "#6ab87r"
+    },
+    {
+      "@id": "#z5cumb",
+      "name": "How Does It Compare?",
+      "x": -109,
+      "y": 186,
+      "link": "https://clawdocs.org/getting-started/introduction#how-does-it-compare",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7iejm3",
+      "name": "System Requirements",
+      "x": -198,
+      "y": 130,
+      "link": "https://clawdocs.org/getting-started/introduction#system-requirements",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#452y5w",
+      "name": "← Getting Started",
+      "x": -244,
+      "y": 45,
+      "link": "./getting-started.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 2,
+      "end": 5
+    },
+    {
+      "start": 2,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 11,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    }
+  ],
+  "selectedNode": 0
+}

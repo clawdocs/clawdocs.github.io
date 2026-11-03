@@ -1,0 +1,142 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Contributing to These Docs",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/contributing/docs",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#sp4jnq",
+      "name": "Quick Edits",
+      "x": -234,
+      "y": -75,
+      "link": "https://clawdocs.org/contributing/docs#quick-edits",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qfhesf",
+      "name": "Local Development",
+      "x": -107,
+      "y": -192,
+      "link": "https://clawdocs.org/contributing/docs#local-development",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#t28q2v",
+      "name": "Adding a New Page",
+      "x": 102,
+      "y": -194,
+      "link": "https://clawdocs.org/contributing/docs#adding-a-new-page",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#xwcvid",
+      "name": "Frontmatter Template",
+      "x": 203,
+      "y": -388,
+      "link": "https://clawdocs.org/contributing/docs#frontmatter-template",
+      "bgColor": "#ffe2ed",
+      "parent": "#t28q2v"
+    },
+    {
+      "@id": "#t6qfbj",
+      "name": "Style Guidelines",
+      "x": 238,
+      "y": -64,
+      "link": "https://clawdocs.org/contributing/docs#style-guidelines",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7b2wvk",
+      "name": "Submitting Changes",
+      "x": 219,
+      "y": 102,
+      "link": "https://clawdocs.org/contributing/docs#submitting-changes",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#8cfcjr",
+      "name": "Reporting Issues",
+      "x": 65,
+      "y": 205,
+      "link": "https://clawdocs.org/contributing/docs#reporting-issues",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#p55t59",
+      "name": "Note",
+      "x": -117,
+      "y": 188,
+      "link": "https://clawdocs.org/contributing/docs#note",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ifai9r",
+      "name": "← Contributing",
+      "x": -234,
+      "y": 75,
+      "link": "./contributing.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 3,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    }
+  ],
+  "selectedNode": 0
+}

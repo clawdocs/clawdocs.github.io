@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Model Selection Guide",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/model-selection",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#jdqw4m",
+      "name": "Quick Pick",
+      "x": -248,
+      "y": -29,
+      "link": "https://clawdocs.org/guides/model-selection#quick-pick",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ci6a2d",
+      "name": "Recently Added Model Support",
+      "x": -220,
+      "y": -102,
+      "link": "https://clawdocs.org/guides/model-selection#recently-added-model-support-junejuly-2026",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#e9ev2h",
+      "name": "By Use Case",
+      "x": 34,
+      "y": -210,
+      "link": "https://clawdocs.org/guides/model-selection#by-use-case",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qg3m9n",
+      "name": "Heartbeat",
+      "x": -271,
+      "y": -357,
+      "link": "https://clawdocs.org/guides/model-selection#heartbeat-runs-every-30-min-cost-adds-up",
+      "bgColor": "#ffe2ed",
+      "parent": "#e9ev2h"
+    },
+    {
+      "@id": "#hd3dbi",
+      "name": "Complex Reasoning & Planning",
+      "x": -157,
+      "y": -483,
+      "link": "https://clawdocs.org/guides/model-selection#complex-reasoning-planning",
+      "bgColor": "#ffe2ed",
+      "parent": "#e9ev2h"
+    },
+    {
+      "@id": "#pkx9gj",
+      "name": "Coding Tasks",
+      "x": 18,
+      "y": -425,
+      "link": "https://clawdocs.org/guides/model-selection#coding-tasks",
+      "bgColor": "#ffe2ed",
+      "parent": "#e9ev2h"
+    },
+    {
+      "@id": "#zm97u9",
+      "name": "General Chat & Daily Tasks",
+      "x": 190,
+      "y": -475,
+      "link": "https://clawdocs.org/guides/model-selection#general-chat-daily-tasks",
+      "bgColor": "#ffe2ed",
+      "parent": "#e9ev2h"
+    },
+    {
+      "@id": "#dxk4uv",
+      "name": "Long Context",
+      "x": 291,
+      "y": -345,
+      "link": "https://clawdocs.org/guides/model-selection#long-context-large-files-codebases",
+      "bgColor": "#ffe2ed",
+      "parent": "#e9ev2h"
+    },
+    {
+      "@id": "#zxxzax",
+      "name": "Tool Use",
+      "x": 443,
+      "y": -331,
+      "link": "https://clawdocs.org/guides/model-selection#tool-use-agent-workloads",
+      "bgColor": "#ffe2ed",
+      "parent": "#e9ev2h"
+    },
+    {
+      "@id": "#w59yz8",
+      "name": "By Budget",
+      "x": 249,
+      "y": 20,
+      "link": "https://clawdocs.org/guides/model-selection#by-budget",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#n6njdt",
+      "name": "$0/month",
+      "x": 485,
+      "y": -104,
+      "link": "https://clawdocs.org/guides/model-selection#0month-local-models-only",
+      "bgColor": "#ffe4d9",
+      "parent": "#w59yz8"
+    },
+    {
+      "@id": "#we24ey",
+      "name": "$5-30/month",
+      "x": 590,
+      "y": -10,
+      "link": "https://clawdocs.org/guides/model-selection#5-30month-budget-cloud",
+      "bgColor": "#ffe4d9",
+      "parent": "#w59yz8"
+    },
+    {
+      "@id": "#9e76te",
+      "name": "$30-150/month",
+      "x": 489,
+      "y": 88,
+      "link": "https://clawdocs.org/guides/model-selection#30-150month-premium-cloud",
+      "bgColor": "#ffe4d9",
+      "parent": "#w59yz8"
+    },
+    {
+      "@id": "#z9jayy",
+      "name": "Hybrid",
+      "x": 534,
+      "y": 213,
+      "link": "https://clawdocs.org/guides/model-selection#hybrid-best-of-both",
+      "bgColor": "#ffe4d9",
+      "parent": "#w59yz8"
+    },
+    {
+      "@id": "#7c6syt",
+      "name": "Model Routing",
+      "x": 151,
+      "y": 176,
+      "link": "https://clawdocs.org/guides/model-selection#model-routing",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#attg7q",
+      "name": "Per-Task Routing",
+      "x": 343,
+      "y": 309,
+      "link": "https://clawdocs.org/guides/model-selection#per-task-routing",
+      "bgColor": "#f2ecd2",
+      "parent": "#7c6syt"
+    },
+    {
+      "@id": "#rf2fdu",
+      "name": "Three Hybrid Strategies",
+      "x": 268,
+      "y": 447,
+      "link": "https://clawdocs.org/guides/model-selection#three-hybrid-strategies",
+      "bgColor": "#f2ecd2",
+      "parent": "#7c6syt"
+    },
+    {
+      "@id": "#rfrezv",
+      "name": "Provider Comparison",
+      "x": -11,
+      "y": 212,
+      "link": "https://clawdocs.org/guides/model-selection#provider-comparison",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#wjrmez",
+      "name": "Cloud Providers",
+      "x": 48,
+      "y": 423,
+      "link": "https://clawdocs.org/guides/model-selection#cloud-providers",
+      "bgColor": "#ddf2de",
+      "parent": "#rfrezv"
+    },
+    {
+      "@id": "#8f9s7w",
+      "name": "Local Providers",
+      "x": -80,
+      "y": 497,
+      "link": "https://clawdocs.org/guides/model-selection#local-providers",
+      "bgColor": "#ddf2de",
+      "parent": "#rfrezv"
+    },
+    {
+      "@id": "#xdptk7",
+      "name": "OpenRouter",
+      "x": -179,
+      "y": 148,
+      "link": "https://clawdocs.org/guides/model-selection#openrouter",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#x4i3m8",
+      "name": "Why Use OpenRouter",
+      "x": -244,
+      "y": 371,
+      "link": "https://clawdocs.org/guides/model-selection#why-use-openrouter",
+      "bgColor": "#d1f3f4",
+      "parent": "#xdptk7"
+    },
+    {
+      "@id": "#2dm2gz",
+      "name": "Configuration",
+      "x": -406,
+      "y": 364,
+      "link": "https://clawdocs.org/guides/model-selection#configuration",
+      "bgColor": "#d1f3f4",
+      "parent": "#xdptk7"
+    },
+    {
+      "@id": "#gmpnfq",
+      "name": "Advanced Routing Metadata",
+      "x": -433,
+      "y": 213,
+      "link": "https://clawdocs.org/guides/model-selection#advanced-routing-metadata",
+      "bgColor": "#d1f3f4",
+      "parent": "#xdptk7"
+    },
+    {
+      "@id": "#4hwtf3",
+      "name": "← Guides",
+      "x": -248,
+      "y": 29,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 3,
+      "end": 4
+    },
+    {
+      "start": 3,
+      "end": 5
+    },
+    {
+      "start": 3,
+      "end": 6
+    },
+    {
+      "start": 3,
+      "end": 7
+    },
+    {
+      "start": 3,
+      "end": 8
+    },
+    {
+      "start": 3,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 10,
+      "end": 11
+    },
+    {
+      "start": 10,
+      "end": 12
+    },
+    {
+      "start": 10,
+      "end": 13
+    },
+    {
+      "start": 10,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 15,
+      "end": 16
+    },
+    {
+      "start": 15,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    },
+    {
+      "start": 18,
+      "end": 19
+    },
+    {
+      "start": 18,
+      "end": 20
+    },
+    {
+      "start": 0,
+      "end": 21
+    },
+    {
+      "start": 21,
+      "end": 22
+    },
+    {
+      "start": 21,
+      "end": 23
+    },
+    {
+      "start": 21,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

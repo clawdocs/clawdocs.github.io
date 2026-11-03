@@ -1,0 +1,102 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Architecture",
+      "x": 0,
+      "y": 0,
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#kwm3he",
+      "name": "Architecture Overview",
+      "x": -199,
+      "y": -128,
+      "link": "./architecture-overview.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qvd9cw",
+      "name": "The Gateway",
+      "x": 54,
+      "y": -207,
+      "link": "./architecture-gateway.jsonld",
+      "bgColor": "#e0c4f6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#sf37xb",
+      "name": "Brain & Hands",
+      "x": 233,
+      "y": -77,
+      "link": "./architecture-brain-and-hands.jsonld",
+      "bgColor": "#febdc6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#fuhjpf",
+      "name": "Memory System",
+      "x": 204,
+      "y": 123,
+      "link": "./architecture-memory-system.jsonld",
+      "bgColor": "#f1c99c",
+      "parent": "#this"
+    },
+    {
+      "@id": "#dry8wx",
+      "name": "Heartbeat System",
+      "x": -15,
+      "y": 212,
+      "link": "./architecture-heartbeat.jsonld",
+      "bgColor": "#c1dba8",
+      "parent": "#this"
+    },
+    {
+      "@id": "#rmckuv",
+      "name": "← clawdocs",
+      "x": -220,
+      "y": 100,
+      "link": "./index.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    }
+  ],
+  "selectedNode": 0
+}

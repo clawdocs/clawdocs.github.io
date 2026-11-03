@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "ClawHub",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/clawhub",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#zp376s",
+      "name": "How Skills Work",
+      "x": -184,
+      "y": -144,
+      "link": "https://clawdocs.org/guides/clawhub#how-skills-work",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#fttzmy",
+      "name": "Frontmatter Fields",
+      "x": -485,
+      "y": -104,
+      "link": "https://clawdocs.org/guides/clawhub#frontmatter-fields",
+      "bgColor": "#daeeff",
+      "parent": "#zp376s"
+    },
+    {
+      "@id": "#xdbbqx",
+      "name": "Triggers",
+      "x": -521,
+      "y": -235,
+      "link": "https://clawdocs.org/guides/clawhub#triggers",
+      "bgColor": "#daeeff",
+      "parent": "#zp376s"
+    },
+    {
+      "@id": "#bdpfdm",
+      "name": "Tools",
+      "x": -380,
+      "y": -276,
+      "link": "https://clawdocs.org/guides/clawhub#tools",
+      "bgColor": "#daeeff",
+      "parent": "#zp376s"
+    },
+    {
+      "@id": "#jxrv7z",
+      "name": "Conditional Activation",
+      "x": -344,
+      "y": -413,
+      "link": "https://clawdocs.org/guides/clawhub#conditional-activation",
+      "bgColor": "#daeeff",
+      "parent": "#zp376s"
+    },
+    {
+      "@id": "#eg4hex",
+      "name": "Multi-File Skills",
+      "x": -156,
+      "y": -402,
+      "link": "https://clawdocs.org/guides/clawhub#multi-file-skills",
+      "bgColor": "#daeeff",
+      "parent": "#zp376s"
+    },
+    {
+      "@id": "#i9n2qa",
+      "name": "Browsing & Discovery",
+      "x": 152,
+      "y": -169,
+      "link": "https://clawdocs.org/guides/clawhub#browsing-discovery",
+      "bgColor": "#e0c4f6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#wvr5de",
+      "name": "CLI Search",
+      "x": 71,
+      "y": -421,
+      "link": "https://clawdocs.org/guides/clawhub#cli-search",
+      "bgColor": "#f2e5fd",
+      "parent": "#i9n2qa"
+    },
+    {
+      "@id": "#gbn8c4",
+      "name": "Web Interface",
+      "x": 210,
+      "y": -469,
+      "link": "https://clawdocs.org/guides/clawhub#web-interface",
+      "bgColor": "#f2e5fd",
+      "parent": "#i9n2qa"
+    },
+    {
+      "@id": "#sfmbqd",
+      "name": "Skill Categories",
+      "x": 279,
+      "y": -353,
+      "link": "https://clawdocs.org/guides/clawhub#skill-categories",
+      "bgColor": "#f2e5fd",
+      "parent": "#i9n2qa"
+    },
+    {
+      "@id": "#k6gbtk",
+      "name": "Curated Lists",
+      "x": 432,
+      "y": -342,
+      "link": "https://clawdocs.org/guides/clawhub#curated-lists",
+      "bgColor": "#f2e5fd",
+      "parent": "#i9n2qa"
+    },
+    {
+      "@id": "#bsvecc",
+      "name": "Recommended Starter Skills",
+      "x": 447,
+      "y": -191,
+      "link": "https://clawdocs.org/guides/clawhub#recommended-starter-skills",
+      "bgColor": "#f2e5fd",
+      "parent": "#i9n2qa"
+    },
+    {
+      "@id": "#nqwhp5",
+      "name": "Installing Skills",
+      "x": 240,
+      "y": 59,
+      "link": "https://clawdocs.org/guides/clawhub#installing-skills",
+      "bgColor": "#febdc6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4ddtfz",
+      "name": "From ClawHub",
+      "x": 500,
+      "y": 3,
+      "link": "https://clawdocs.org/guides/clawhub#from-clawhub",
+      "bgColor": "#ffe2e6",
+      "parent": "#nqwhp5"
+    },
+    {
+      "@id": "#kg5gyc",
+      "name": "From a URL",
+      "x": 575,
+      "y": 114,
+      "link": "https://clawdocs.org/guides/clawhub#from-a-url",
+      "bgColor": "#ffe2e6",
+      "parent": "#nqwhp5"
+    },
+    {
+      "@id": "#wm3jqn",
+      "name": "Verify Before Installing",
+      "x": 438,
+      "y": 204,
+      "link": "https://clawdocs.org/guides/clawhub#verify-before-installing",
+      "bgColor": "#ffe2e6",
+      "parent": "#nqwhp5"
+    },
+    {
+      "@id": "#dk3qrv",
+      "name": "Managing Skills",
+      "x": 130,
+      "y": 181,
+      "link": "https://clawdocs.org/guides/clawhub#managing-skills",
+      "bgColor": "#f1c99c",
+      "parent": "#this"
+    },
+    {
+      "@id": "#42e9f9",
+      "name": "Configuring Skills",
+      "x": 307,
+      "y": 336,
+      "link": "https://clawdocs.org/guides/clawhub#configuring-skills",
+      "bgColor": "#fbe8d3",
+      "parent": "#dk3qrv"
+    },
+    {
+      "@id": "#67im5f",
+      "name": "Version Pinning",
+      "x": 240,
+      "y": 458,
+      "link": "https://clawdocs.org/guides/clawhub#version-pinning",
+      "bgColor": "#fbe8d3",
+      "parent": "#dk3qrv"
+    },
+    {
+      "@id": "#2s3p2q",
+      "name": "Publishing Skills",
+      "x": -125,
+      "y": 184,
+      "link": "https://clawdocs.org/guides/clawhub#publishing-skills",
+      "bgColor": "#c1dba8",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3iptbx",
+      "name": "Three Publishing Pathways",
+      "x": -16,
+      "y": 425,
+      "link": "https://clawdocs.org/guides/clawhub#three-publishing-pathways",
+      "bgColor": "#e3f0d8",
+      "parent": "#2s3p2q"
+    },
+    {
+      "@id": "#t582wt",
+      "name": "Publishing to ClawHub",
+      "x": -200,
+      "y": 472,
+      "link": "https://clawdocs.org/guides/clawhub#publishing-to-clawhub",
+      "bgColor": "#e3f0d8",
+      "parent": "#2s3p2q"
+    },
+    {
+      "@id": "#8feax3",
+      "name": "Publishing Requirements",
+      "x": -301,
+      "y": 339,
+      "link": "https://clawdocs.org/guides/clawhub#publishing-requirements",
+      "bgColor": "#e3f0d8",
+      "parent": "#2s3p2q"
+    },
+    {
+      "@id": "#86megc",
+      "name": "What Happens After Publishing",
+      "x": -494,
+      "y": 274,
+      "link": "https://clawdocs.org/guides/clawhub#what-happens-after-publishing",
+      "bgColor": "#e3f0d8",
+      "parent": "#2s3p2q"
+    },
+    {
+      "@id": "#jzaxer",
+      "name": "← Guides",
+      "x": -248,
+      "y": 28,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 1,
+      "end": 5
+    },
+    {
+      "start": 1,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 7,
+      "end": 8
+    },
+    {
+      "start": 7,
+      "end": 9
+    },
+    {
+      "start": 7,
+      "end": 10
+    },
+    {
+      "start": 7,
+      "end": 11
+    },
+    {
+      "start": 7,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 13,
+      "end": 15
+    },
+    {
+      "start": 13,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    },
+    {
+      "start": 17,
+      "end": 18
+    },
+    {
+      "start": 17,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 20,
+      "end": 21
+    },
+    {
+      "start": 20,
+      "end": 22
+    },
+    {
+      "start": 20,
+      "end": 23
+    },
+    {
+      "start": 20,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

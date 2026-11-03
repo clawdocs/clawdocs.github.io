@@ -1,0 +1,181 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Day 4: Supercharge It",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#rnyi3y",
+      "name": "What Are Skills?",
+      "x": -240,
+      "y": -59,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#what-are-skills",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ph8a5e",
+      "name": "Browse ClawHub",
+      "x": -169,
+      "y": -156,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#browse-clawhub",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#uncmtp",
+      "name": "Install Your First Skill",
+      "x": -24,
+      "y": -212,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#install-your-first-skill",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3vjzm2",
+      "name": "Recommended Starter Skills",
+      "x": 264,
+      "y": -47,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#recommended-starter-skills",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#6wz95i",
+      "name": "Development",
+      "x": 315,
+      "y": -330,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#development",
+      "bgColor": "#ffe4d9",
+      "parent": "#3vjzm2"
+    },
+    {
+      "@id": "#mkijzp",
+      "name": "Productivity",
+      "x": 532,
+      "y": -216,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#productivity",
+      "bgColor": "#ffe4d9",
+      "parent": "#3vjzm2"
+    },
+    {
+      "@id": "#wm3fr8",
+      "name": "Research",
+      "x": 500,
+      "y": -1,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#research",
+      "bgColor": "#ffe4d9",
+      "parent": "#3vjzm2"
+    },
+    {
+      "@id": "#xx6ai9",
+      "name": "Creative",
+      "x": 534,
+      "y": 214,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#creative",
+      "bgColor": "#ffe4d9",
+      "parent": "#3vjzm2"
+    },
+    {
+      "@id": "#t5gcp9",
+      "name": "Security Check",
+      "x": 129,
+      "y": 189,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#security-check",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#wdgxta",
+      "name": "Managing Skills",
+      "x": -21,
+      "y": 212,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#managing-skills",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4pcagq",
+      "name": "Building vs Installing",
+      "x": -158,
+      "y": 165,
+      "link": "https://clawdocs.org/guides/first-7-days/day-4-skills#building-vs-installing",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#5b4mbz",
+      "name": "← First 7 Days",
+      "x": -241,
+      "y": 55,
+      "link": "./first-7-days.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 4,
+      "end": 5
+    },
+    {
+      "start": 4,
+      "end": 6
+    },
+    {
+      "start": 4,
+      "end": 7
+    },
+    {
+      "start": 4,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    }
+  ],
+  "selectedNode": 0
+}

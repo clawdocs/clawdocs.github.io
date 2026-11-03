@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Hosting Providers",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/hosting-providers",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#wb696p",
+      "name": "Pricing at a Glance",
+      "x": -248,
+      "y": -25,
+      "link": "https://clawdocs.org/guides/hosting-providers#pricing-at-a-glance",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#47aizi",
+      "name": "Quick Comparison",
+      "x": -236,
+      "y": -71,
+      "link": "https://clawdocs.org/guides/hosting-providers#quick-comparison",
+      "bgColor": "#e0c4f6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9j6hei",
+      "name": "Fully Managed Hosting",
+      "x": 244,
+      "y": -162,
+      "link": "https://clawdocs.org/guides/hosting-providers#fully-managed-hosting",
+      "bgColor": "#febdc6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#espuc3",
+      "name": "xCloud {#xcloud}",
+      "x": -327,
+      "y": -322,
+      "link": "https://clawdocs.org/guides/hosting-providers#xcloud-xcloud",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#auikny",
+      "name": "MyClaw.ai {#myclawai}",
+      "x": -292,
+      "y": -450,
+      "link": "https://clawdocs.org/guides/hosting-providers#myclawai-myclawai",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#vkn9ke",
+      "name": "OpenClaw Launch {#openclawlaunch}",
+      "x": -125,
+      "y": -405,
+      "link": "https://clawdocs.org/guides/hosting-providers#openclaw-launch-openclawlaunch",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#q2zjub",
+      "name": "OpenClaw Cloud {#openclaw-cloud}",
+      "x": 34,
+      "y": -501,
+      "link": "https://clawdocs.org/guides/hosting-providers#openclaw-cloud-openclaw-cloud",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#6p8j2c",
+      "name": "OpenClawd.ai {#openclawdai}",
+      "x": 168,
+      "y": -382,
+      "link": "https://clawdocs.org/guides/hosting-providers#openclawdai-openclawdai",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#2e3bf7",
+      "name": "ClawdHost {#clawdhost}",
+      "x": 327,
+      "y": -426,
+      "link": "https://clawdocs.org/guides/hosting-providers#clawdhost-clawdhost",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#4vgvse",
+      "name": "Clawhost.dev {#clawhostdev}",
+      "x": 370,
+      "y": -286,
+      "link": "https://clawdocs.org/guides/hosting-providers#clawhostdev-clawhostdev",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#i68n7t",
+      "name": "RunClaw.ai {#runclawai}",
+      "x": 521,
+      "y": -236,
+      "link": "https://clawdocs.org/guides/hosting-providers#runclawai-runclawai",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#64akma",
+      "name": "Agent37 {#agent37}",
+      "x": 481,
+      "y": -117,
+      "link": "https://clawdocs.org/guides/hosting-providers#agent37-agent37",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#pa7vig",
+      "name": "Molty Hosting {#molty-hosting}",
+      "x": 590,
+      "y": -19,
+      "link": "https://clawdocs.org/guides/hosting-providers#molty-hosting-molty-hosting",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#7jhy3x",
+      "name": "ClawHosters {#clawhosters}",
+      "x": 486,
+      "y": 99,
+      "link": "https://clawdocs.org/guides/hosting-providers#clawhosters-clawhosters",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#y3292y",
+      "name": "ClawBook.io {#clawbookio}",
+      "x": 521,
+      "y": 235,
+      "link": "https://clawdocs.org/guides/hosting-providers#clawbookio-clawbookio",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#jbw4mz",
+      "name": "Clowd.bot {#clowdbot}",
+      "x": 376,
+      "y": 280,
+      "link": "https://clawdocs.org/guides/hosting-providers#clowdbot-clowdbot",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#kx9emz",
+      "name": "Kilo Claw {#kiloclaw}",
+      "x": 350,
+      "y": 404,
+      "link": "https://clawdocs.org/guides/hosting-providers#kilo-claw-kiloclaw",
+      "bgColor": "#ffe2e6",
+      "parent": "#9j6hei"
+    },
+    {
+      "@id": "#2gg6te",
+      "name": "BYOS Platforms",
+      "x": -103,
+      "y": 194,
+      "link": "https://clawdocs.org/guides/hosting-providers#byos-bring-your-own-server-platforms",
+      "bgColor": "#f1c99c",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qc7art",
+      "name": "OpenClawHosting.io {#openclawhosting}",
+      "x": -36,
+      "y": 422,
+      "link": "https://clawdocs.org/guides/hosting-providers#openclawhostingio-openclawhosting",
+      "bgColor": "#fbe8d3",
+      "parent": "#2gg6te"
+    },
+    {
+      "@id": "#q274mi",
+      "name": "MoltBotHost {#moltbothost}",
+      "x": -215,
+      "y": 468,
+      "link": "https://clawdocs.org/guides/hosting-providers#moltbothost-moltbothost",
+      "bgColor": "#fbe8d3",
+      "parent": "#2gg6te"
+    },
+    {
+      "@id": "#z4qvzf",
+      "name": "Elest.io {#elestio}",
+      "x": -248,
+      "y": 350,
+      "link": "https://clawdocs.org/guides/hosting-providers#elestio-elestio",
+      "bgColor": "#fbe8d3",
+      "parent": "#2gg6te"
+    },
+    {
+      "@id": "#nwriyh",
+      "name": "ClawRun.dev {#clawrundev}",
+      "x": -453,
+      "y": 340,
+      "link": "https://clawdocs.org/guides/hosting-providers#clawrundev-clawrundev",
+      "bgColor": "#fbe8d3",
+      "parent": "#2gg6te"
+    },
+    {
+      "@id": "#igx8e6",
+      "name": "VPS Providers with OpenClaw Templates",
+      "x": -234,
+      "y": 74,
+      "link": "https://clawdocs.org/guides/hosting-providers#vps-providers-with-openclaw-templates",
+      "bgColor": "#c1dba8",
+      "parent": "#this"
+    },
+    {
+      "@id": "#yuz5fu",
+      "name": "Oracle Cloud {#oracle-cloud}",
+      "x": -468,
+      "y": 149,
+      "link": "https://clawdocs.org/guides/hosting-providers#oracle-cloud-free-tier-oracle-cloud",
+      "bgColor": "#e3f0d8",
+      "parent": "#igx8e6"
+    },
+    {
+      "@id": "#td6k3a",
+      "name": "← Guides",
+      "x": -249,
+      "y": 21,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 3,
+      "end": 4
+    },
+    {
+      "start": 3,
+      "end": 5
+    },
+    {
+      "start": 3,
+      "end": 6
+    },
+    {
+      "start": 3,
+      "end": 7
+    },
+    {
+      "start": 3,
+      "end": 8
+    },
+    {
+      "start": 3,
+      "end": 9
+    },
+    {
+      "start": 3,
+      "end": 10
+    },
+    {
+      "start": 3,
+      "end": 11
+    },
+    {
+      "start": 3,
+      "end": 12
+    },
+    {
+      "start": 3,
+      "end": 13
+    },
+    {
+      "start": 3,
+      "end": 14
+    },
+    {
+      "start": 3,
+      "end": 15
+    },
+    {
+      "start": 3,
+      "end": 16
+    },
+    {
+      "start": 3,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    },
+    {
+      "start": 18,
+      "end": 19
+    },
+    {
+      "start": 18,
+      "end": 20
+    },
+    {
+      "start": 18,
+      "end": 21
+    },
+    {
+      "start": 18,
+      "end": 22
+    },
+    {
+      "start": 0,
+      "end": 23
+    },
+    {
+      "start": 23,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

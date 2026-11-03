@@ -1,0 +1,337 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Migration Guide",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/migration",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#gqzakv",
+      "name": "The Triple Rebrand",
+      "x": -244,
+      "y": -45,
+      "link": "https://clawdocs.org/guides/migration#the-triple-rebrand",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9usesq",
+      "name": "What Changed in Each Rename",
+      "x": -489,
+      "y": -90,
+      "link": "https://clawdocs.org/guides/migration#what-changed-in-each-rename",
+      "bgColor": "#daeeff",
+      "parent": "#gqzakv"
+    },
+    {
+      "@id": "#wv2z6e",
+      "name": "Upgrade Steps",
+      "x": -94,
+      "y": -197,
+      "link": "https://clawdocs.org/guides/migration#upgrade-steps",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#86z6ac",
+      "name": "From Clawdbot or Moltbot to OpenClaw",
+      "x": -356,
+      "y": -299,
+      "link": "https://clawdocs.org/guides/migration#from-clawdbot-or-moltbot-to-openclaw",
+      "bgColor": "#efe6ff",
+      "parent": "#wv2z6e"
+    },
+    {
+      "@id": "#ee35k3",
+      "name": "Systemd Migration {#systemd-migration}",
+      "x": -186,
+      "y": -476,
+      "link": "https://clawdocs.org/guides/migration#systemd-migration-systemd-migration",
+      "bgColor": "#efe6ff",
+      "parent": "#wv2z6e"
+    },
+    {
+      "@id": "#x35ud6",
+      "name": "npm Stuck on Old Version",
+      "x": 42,
+      "y": -424,
+      "link": "https://clawdocs.org/guides/migration#npm-stuck-on-old-version",
+      "bgColor": "#efe6ff",
+      "parent": "#wv2z6e"
+    },
+    {
+      "@id": "#jzmitc",
+      "name": "Critical Version Upgrades",
+      "x": 195,
+      "y": -133,
+      "link": "https://clawdocs.org/guides/migration#critical-version-upgrades",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#j48f92",
+      "name": "v2026.1.29",
+      "x": 267,
+      "y": -359,
+      "link": "https://clawdocs.org/guides/migration#v2026129-cve-2026-25253-patch-january-30",
+      "bgColor": "#ffe2ed",
+      "parent": "#jzmitc"
+    },
+    {
+      "@id": "#6bpsta",
+      "name": "v2026.1.30",
+      "x": 418,
+      "y": -354,
+      "link": "https://clawdocs.org/guides/migration#v2026130-cli-improvements-january-31",
+      "bgColor": "#ffe2ed",
+      "parent": "#jzmitc"
+    },
+    {
+      "@id": "#i9h752",
+      "name": "v2026.2.2–2.5",
+      "x": 423,
+      "y": -227,
+      "link": "https://clawdocs.org/guides/migration#v20262225-feature-updates-february-2-5",
+      "bgColor": "#ffe2ed",
+      "parent": "#jzmitc"
+    },
+    {
+      "@id": "#878qjb",
+      "name": "v2026.2.6",
+      "x": 556,
+      "y": -167,
+      "link": "https://clawdocs.org/guides/migration#v202626-virustotal-integration-february-6",
+      "bgColor": "#ffe2ed",
+      "parent": "#jzmitc"
+    },
+    {
+      "@id": "#nbac28",
+      "name": "Configuration Migration",
+      "x": 202,
+      "y": 125,
+      "link": "https://clawdocs.org/guides/migration#configuration-migration",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3guvdm",
+      "name": "Automatic Migration",
+      "x": 497,
+      "y": 49,
+      "link": "https://clawdocs.org/guides/migration#automatic-migration",
+      "bgColor": "#ffe4d9",
+      "parent": "#nbac28"
+    },
+    {
+      "@id": "#8fh9u9",
+      "name": "Config Path Reference",
+      "x": 544,
+      "y": 194,
+      "link": "https://clawdocs.org/guides/migration#config-path-reference",
+      "bgColor": "#ffe4d9",
+      "parent": "#nbac28"
+    },
+    {
+      "@id": "#w3r2r8",
+      "name": "Environment Variables",
+      "x": 385,
+      "y": 271,
+      "link": "https://clawdocs.org/guides/migration#environment-variables",
+      "bgColor": "#ffe4d9",
+      "parent": "#nbac28"
+    },
+    {
+      "@id": "#4peydu",
+      "name": "Docker Images",
+      "x": 344,
+      "y": 407,
+      "link": "https://clawdocs.org/guides/migration#docker-images",
+      "bgColor": "#ffe4d9",
+      "parent": "#nbac28"
+    },
+    {
+      "@id": "#53tpq4",
+      "name": "npm Packages",
+      "x": 195,
+      "y": 391,
+      "link": "https://clawdocs.org/guides/migration#npm-packages",
+      "bgColor": "#ffe4d9",
+      "parent": "#nbac28"
+    },
+    {
+      "@id": "#55f5bz",
+      "name": "Data Preservation",
+      "x": 4,
+      "y": 230,
+      "link": "https://clawdocs.org/guides/migration#data-preservation",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#v39aag",
+      "name": "Community Migration Tools",
+      "x": -99,
+      "y": 186,
+      "link": "https://clawdocs.org/guides/migration#community-migration-tools",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3fvvrm",
+      "name": "clawdmigrate",
+      "x": -141,
+      "y": 408,
+      "link": "https://clawdocs.org/guides/migration#clawdmigrate",
+      "bgColor": "#ddf2de",
+      "parent": "#v39aag"
+    },
+    {
+      "@id": "#exyz4v",
+      "name": "OpenClaw Ansible",
+      "x": -291,
+      "y": 436,
+      "link": "https://clawdocs.org/guides/migration#openclaw-ansible",
+      "bgColor": "#ddf2de",
+      "parent": "#v39aag"
+    },
+    {
+      "@id": "#ex63ey",
+      "name": "CI/CD Pipeline Updates",
+      "x": -189,
+      "y": 139,
+      "link": "https://clawdocs.org/guides/migration#cicd-pipeline-updates",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ntfn35",
+      "name": "Rollback",
+      "x": -231,
+      "y": 82,
+      "link": "https://clawdocs.org/guides/migration#rollback",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#b8mf9t",
+      "name": "← Guides",
+      "x": -248,
+      "y": 28,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 3,
+      "end": 4
+    },
+    {
+      "start": 3,
+      "end": 5
+    },
+    {
+      "start": 3,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 7,
+      "end": 8
+    },
+    {
+      "start": 7,
+      "end": 9
+    },
+    {
+      "start": 7,
+      "end": 10
+    },
+    {
+      "start": 7,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 12,
+      "end": 13
+    },
+    {
+      "start": 12,
+      "end": 14
+    },
+    {
+      "start": 12,
+      "end": 15
+    },
+    {
+      "start": 12,
+      "end": 16
+    },
+    {
+      "start": 12,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    },
+    {
+      "start": 0,
+      "end": 19
+    },
+    {
+      "start": 19,
+      "end": 20
+    },
+    {
+      "start": 19,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 0,
+      "end": 23
+    },
+    {
+      "start": 0,
+      "end": 24
+    }
+  ],
+  "selectedNode": 0
+}

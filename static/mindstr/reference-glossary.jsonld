@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Glossary",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/reference/glossary",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#663fzf",
+      "name": "AMOS",
+      "x": 308,
+      "y": -33,
+      "link": "https://clawdocs.org/reference/glossary#amos",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#j5fe38",
+      "name": "Brain",
+      "x": -416,
+      "y": -235,
+      "link": "https://clawdocs.org/reference/glossary#brain",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#ddht39",
+      "name": "Channel",
+      "x": -413,
+      "y": -358,
+      "link": "https://clawdocs.org/reference/glossary#channel",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#p9r7ih",
+      "name": "ClawBands",
+      "x": -269,
+      "y": -358,
+      "link": "https://clawdocs.org/reference/glossary#clawbands",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#74ssvc",
+      "name": "Clawdbot",
+      "x": -208,
+      "y": -469,
+      "link": "https://clawdocs.org/reference/glossary#clawdbot",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#y9pj4b",
+      "name": "Clawdex",
+      "x": -76,
+      "y": -420,
+      "link": "https://clawdocs.org/reference/glossary#clawdex",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#859dt2",
+      "name": "ClawHub {#clawhub}",
+      "x": 43,
+      "y": -500,
+      "link": "https://clawdocs.org/reference/glossary#clawhub-clawhub",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#t5pn99",
+      "name": "ClawHavoc {#clawhavoc}",
+      "x": 165,
+      "y": -401,
+      "link": "https://clawdocs.org/reference/glossary#clawhavoc-clawhavoc",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#f56gtr",
+      "name": "ClawPhone",
+      "x": 324,
+      "y": -419,
+      "link": "https://clawdocs.org/reference/glossary#clawphone",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#8hd325",
+      "name": "Clawprint",
+      "x": 355,
+      "y": -299,
+      "link": "https://clawdocs.org/reference/glossary#clawprint",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#fz6gs6",
+      "name": "ClawSec",
+      "x": 495,
+      "y": -272,
+      "link": "https://clawdocs.org/reference/glossary#clawsec",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#cktar7",
+      "name": "Clawery",
+      "x": 467,
+      "y": -152,
+      "link": "https://clawdocs.org/reference/glossary#clawery",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#jreehv",
+      "name": "Code Insight",
+      "x": 583,
+      "y": -79,
+      "link": "https://clawdocs.org/reference/glossary#code-insight",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#b3sck7",
+      "name": "openclaw.json",
+      "x": 499,
+      "y": 21,
+      "link": "https://clawdocs.org/reference/glossary#openclawjson",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#qq5ytc",
+      "name": "Context Accumulation",
+      "x": 566,
+      "y": 141,
+      "link": "https://clawdocs.org/reference/glossary#context-accumulation",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#g6bbk9",
+      "name": "Control Plane",
+      "x": 434,
+      "y": 211,
+      "link": "https://clawdocs.org/reference/glossary#control-plane",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#y28w8c",
+      "name": "CVE-2026-25253",
+      "x": 440,
+      "y": 334,
+      "link": "https://clawdocs.org/reference/glossary#cve-2026-25253",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#chmpt9",
+      "name": "Daemon Mode",
+      "x": 296,
+      "y": 342,
+      "link": "https://clawdocs.org/reference/glossary#daemon-mode",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#yrh839",
+      "name": "Gateway {#gateway}",
+      "x": 235,
+      "y": 460,
+      "link": "https://clawdocs.org/reference/glossary#gateway-gateway",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#gjnigr",
+      "name": "Hands",
+      "x": 92,
+      "y": 418,
+      "link": "https://clawdocs.org/reference/glossary#hands",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#uu7uwz",
+      "name": "HEARTBEAT.md",
+      "x": -14,
+      "y": 501,
+      "link": "https://clawdocs.org/reference/glossary#heartbeatmd",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#x9au82",
+      "name": "Heartbeat {#heartbeat}",
+      "x": -133,
+      "y": 410,
+      "link": "https://clawdocs.org/reference/glossary#heartbeat-heartbeat",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#x5aak7",
+      "name": "Lobster",
+      "x": -291,
+      "y": 436,
+      "link": "https://clawdocs.org/reference/glossary#lobster",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#m3yjmk",
+      "name": "Memory {#memory}",
+      "x": -333,
+      "y": 317,
+      "link": "https://clawdocs.org/reference/glossary#memory-memory",
+      "bgColor": "#daeeff",
+      "parent": "#663fzf"
+    },
+    {
+      "@id": "#ksht4k",
+      "name": "← Reference",
+      "x": -248,
+      "y": 26,
+      "link": "./reference.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 1,
+      "end": 5
+    },
+    {
+      "start": 1,
+      "end": 6
+    },
+    {
+      "start": 1,
+      "end": 7
+    },
+    {
+      "start": 1,
+      "end": 8
+    },
+    {
+      "start": 1,
+      "end": 9
+    },
+    {
+      "start": 1,
+      "end": 10
+    },
+    {
+      "start": 1,
+      "end": 11
+    },
+    {
+      "start": 1,
+      "end": 12
+    },
+    {
+      "start": 1,
+      "end": 13
+    },
+    {
+      "start": 1,
+      "end": 14
+    },
+    {
+      "start": 1,
+      "end": 15
+    },
+    {
+      "start": 1,
+      "end": 16
+    },
+    {
+      "start": 1,
+      "end": 17
+    },
+    {
+      "start": 1,
+      "end": 18
+    },
+    {
+      "start": 1,
+      "end": 19
+    },
+    {
+      "start": 1,
+      "end": 20
+    },
+    {
+      "start": 1,
+      "end": 21
+    },
+    {
+      "start": 1,
+      "end": 22
+    },
+    {
+      "start": 1,
+      "end": 23
+    },
+    {
+      "start": 1,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

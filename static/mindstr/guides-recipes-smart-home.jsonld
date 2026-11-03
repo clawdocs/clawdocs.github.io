@@ -1,0 +1,64 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Recipe: Smart Home",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/recipes/smart-home",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#fcswkn",
+      "name": "The Skill",
+      "x": -125,
+      "y": -184,
+      "link": "https://clawdocs.org/guides/recipes/smart-home#the-skill",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#uiq39f",
+      "name": "Usage",
+      "x": 250,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/recipes/smart-home#usage",
+      "bgColor": "#febdc6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#yv9ggy",
+      "name": "← Recipes",
+      "x": -125,
+      "y": 184,
+      "link": "./recipes.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    }
+  ],
+  "selectedNode": 0
+}

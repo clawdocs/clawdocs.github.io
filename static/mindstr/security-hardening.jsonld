@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Security Hardening",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/security/hardening",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#3a8wmf",
+      "name": "Level 1: Essential",
+      "x": -179,
+      "y": -149,
+      "link": "https://clawdocs.org/security/hardening#level-1-essential-do-these-immediately",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#rpsv9h",
+      "name": "Update to Latest Version",
+      "x": -483,
+      "y": -109,
+      "link": "https://clawdocs.org/security/hardening#update-to-latest-version",
+      "bgColor": "#daeeff",
+      "parent": "#3a8wmf"
+    },
+    {
+      "@id": "#642kmr",
+      "name": "Bind Gateway to Localhost",
+      "x": -508,
+      "y": -255,
+      "link": "https://clawdocs.org/security/hardening#bind-gateway-to-localhost",
+      "bgColor": "#daeeff",
+      "parent": "#3a8wmf"
+    },
+    {
+      "@id": "#hjevdh",
+      "name": "Enable Authentication",
+      "x": -351,
+      "y": -303,
+      "link": "https://clawdocs.org/security/hardening#enable-authentication",
+      "bgColor": "#daeeff",
+      "parent": "#3a8wmf"
+    },
+    {
+      "@id": "#6peftc",
+      "name": "Run the Security Audit",
+      "x": -298,
+      "y": -447,
+      "link": "https://clawdocs.org/security/hardening#run-the-security-audit",
+      "bgColor": "#daeeff",
+      "parent": "#3a8wmf"
+    },
+    {
+      "@id": "#7ecbxa",
+      "name": "Restrict Shell Commands",
+      "x": -135,
+      "y": -402,
+      "link": "https://clawdocs.org/security/hardening#restrict-shell-commands",
+      "bgColor": "#daeeff",
+      "parent": "#3a8wmf"
+    },
+    {
+      "@id": "#uhfjmx",
+      "name": "Level 2: Recommended",
+      "x": 272,
+      "y": -126,
+      "link": "https://clawdocs.org/security/hardening#level-2-recommended",
+      "bgColor": "#e9c1ef",
+      "parent": "#this"
+    },
+    {
+      "@id": "#543p3n",
+      "name": "Configure trustedProxies",
+      "x": 143,
+      "y": -396,
+      "link": "https://clawdocs.org/security/hardening#configure-trustedproxies-critical-for-reverse-proxies",
+      "bgColor": "#f7e4f9",
+      "parent": "#uhfjmx"
+    },
+    {
+      "@id": "#4fgdy3",
+      "name": "Nginx Hardening",
+      "x": 292,
+      "y": -442,
+      "link": "https://clawdocs.org/security/hardening#nginx-hardening",
+      "bgColor": "#f7e4f9",
+      "parent": "#uhfjmx"
+    },
+    {
+      "@id": "#7hqrg8",
+      "name": "HAProxy with Brute-Force Protection",
+      "x": 357,
+      "y": -297,
+      "link": "https://clawdocs.org/security/hardening#haproxy-with-brute-force-protection",
+      "bgColor": "#f7e4f9",
+      "parent": "#uhfjmx"
+    },
+    {
+      "@id": "#c2tfhj",
+      "name": "Caddy Configuration",
+      "x": 524,
+      "y": -230,
+      "link": "https://clawdocs.org/security/hardening#caddy-configuration",
+      "bgColor": "#f7e4f9",
+      "parent": "#uhfjmx"
+    },
+    {
+      "@id": "#tcfetu",
+      "name": "Channel Allowlists",
+      "x": 483,
+      "y": -108,
+      "link": "https://clawdocs.org/security/hardening#channel-allowlists",
+      "bgColor": "#f7e4f9",
+      "parent": "#uhfjmx"
+    },
+    {
+      "@id": "#7dgp6i",
+      "name": "Browser Domain Restrictions",
+      "x": 590,
+      "y": -1,
+      "link": "https://clawdocs.org/security/hardening#browser-domain-restrictions",
+      "bgColor": "#f7e4f9",
+      "parent": "#uhfjmx"
+    },
+    {
+      "@id": "#e9epsz",
+      "name": "File System Restrictions",
+      "x": 480,
+      "y": 118,
+      "link": "https://clawdocs.org/security/hardening#file-system-restrictions",
+      "bgColor": "#f7e4f9",
+      "parent": "#uhfjmx"
+    },
+    {
+      "@id": "#tiafs4",
+      "name": "Level 3: Production / Sensitive Environments",
+      "x": -24,
+      "y": 263,
+      "link": "https://clawdocs.org/security/hardening#level-3-production-sensitive-environments",
+      "bgColor": "#fec0b1",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ezt56d",
+      "name": "Docker Sandboxing",
+      "x": 325,
+      "y": 323,
+      "link": "https://clawdocs.org/security/hardening#docker-sandboxing",
+      "bgColor": "#ffe3dc",
+      "parent": "#tiafs4"
+    },
+    {
+      "@id": "#esipnw",
+      "name": "Sandbox Mode for Tool Execution",
+      "x": 250,
+      "y": 461,
+      "link": "https://clawdocs.org/security/hardening#sandbox-mode-for-tool-execution",
+      "bgColor": "#ffe3dc",
+      "parent": "#tiafs4"
+    },
+    {
+      "@id": "#bxrfew",
+      "name": "Credential Protection",
+      "x": 80,
+      "y": 417,
+      "link": "https://clawdocs.org/security/hardening#credential-protection",
+      "bgColor": "#ffe3dc",
+      "parent": "#tiafs4"
+    },
+    {
+      "@id": "#jp7mca",
+      "name": "Local Models Only",
+      "x": -43,
+      "y": 500,
+      "link": "https://clawdocs.org/security/hardening#local-models-only",
+      "bgColor": "#ffe3dc",
+      "parent": "#tiafs4"
+    },
+    {
+      "@id": "#vejtej",
+      "name": "Disable Skill Installation",
+      "x": -137,
+      "y": 403,
+      "link": "https://clawdocs.org/security/hardening#disable-skill-installation",
+      "bgColor": "#ffe3dc",
+      "parent": "#tiafs4"
+    },
+    {
+      "@id": "#8h7shp",
+      "name": "Audit Logging",
+      "x": -325,
+      "y": 426,
+      "link": "https://clawdocs.org/security/hardening#audit-logging",
+      "bgColor": "#ffe3dc",
+      "parent": "#tiafs4"
+    },
+    {
+      "@id": "#84zdwj",
+      "name": "Monitor SOUL.md for Tampering",
+      "x": -361,
+      "y": 294,
+      "link": "https://clawdocs.org/security/hardening#monitor-soulmd-for-tampering",
+      "bgColor": "#ffe3dc",
+      "parent": "#tiafs4"
+    },
+    {
+      "@id": "#j3a89x",
+      "name": "MCP Server Hardening",
+      "x": -237,
+      "y": 69,
+      "link": "https://clawdocs.org/security/hardening#mcp-server-hardening",
+      "bgColor": "#d7d59b",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7pgmcp",
+      "name": "Trust Tiers",
+      "x": -473,
+      "y": 137,
+      "link": "https://clawdocs.org/security/hardening#trust-tiers",
+      "bgColor": "#eeedd3",
+      "parent": "#j3a89x"
+    },
+    {
+      "@id": "#m6cj8g",
+      "name": "← Security",
+      "x": -249,
+      "y": 23,
+      "link": "./security.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 1,
+      "end": 5
+    },
+    {
+      "start": 1,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 7,
+      "end": 8
+    },
+    {
+      "start": 7,
+      "end": 9
+    },
+    {
+      "start": 7,
+      "end": 10
+    },
+    {
+      "start": 7,
+      "end": 11
+    },
+    {
+      "start": 7,
+      "end": 12
+    },
+    {
+      "start": 7,
+      "end": 13
+    },
+    {
+      "start": 7,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 15,
+      "end": 16
+    },
+    {
+      "start": 15,
+      "end": 17
+    },
+    {
+      "start": 15,
+      "end": 18
+    },
+    {
+      "start": 15,
+      "end": 19
+    },
+    {
+      "start": 15,
+      "end": 20
+    },
+    {
+      "start": 15,
+      "end": 21
+    },
+    {
+      "start": 15,
+      "end": 22
+    },
+    {
+      "start": 0,
+      "end": 23
+    },
+    {
+      "start": 23,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

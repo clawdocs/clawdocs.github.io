@@ -1,0 +1,90 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Recipe: Email Assistant",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/recipes/email-assistant",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#v3z7sx",
+      "name": "The Skill",
+      "x": -202,
+      "y": -125,
+      "link": "https://clawdocs.org/guides/recipes/email-assistant#the-skill",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#cbcd4b",
+      "name": "Setup",
+      "x": 77,
+      "y": -202,
+      "link": "https://clawdocs.org/guides/recipes/email-assistant#setup",
+      "bgColor": "#e9c1ef",
+      "parent": "#this"
+    },
+    {
+      "@id": "#97kxyz",
+      "name": "Usage",
+      "x": 250,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/recipes/email-assistant#usage",
+      "bgColor": "#fec0b1",
+      "parent": "#this"
+    },
+    {
+      "@id": "#a5qzu2",
+      "name": "Results",
+      "x": 77,
+      "y": 202,
+      "link": "https://clawdocs.org/guides/recipes/email-assistant#results",
+      "bgColor": "#d7d59b",
+      "parent": "#this"
+    },
+    {
+      "@id": "#h7i2v2",
+      "name": "← Recipes",
+      "x": -202,
+      "y": 125,
+      "link": "./recipes.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    }
+  ],
+  "selectedNode": 0
+}

@@ -1,0 +1,89 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Security",
+      "x": 0,
+      "y": 0,
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#fyizgp",
+      "name": "Security Overview",
+      "x": -205,
+      "y": -121,
+      "link": "./security-overview.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jyxtum",
+      "name": "Security Hardening",
+      "x": 69,
+      "y": -204,
+      "link": "./security-hardening.jsonld",
+      "bgColor": "#e9c1ef",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4u2pat",
+      "name": "Known Vulnerabilities",
+      "x": 249,
+      "y": 13,
+      "link": "./security-known-vulnerabilities.jsonld",
+      "bgColor": "#fec0b1",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jczkhg",
+      "name": "Skill Verification",
+      "x": 38,
+      "y": 210,
+      "link": "./security-skill-verification.jsonld",
+      "bgColor": "#d7d59b",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jtqwjq",
+      "name": "← clawdocs",
+      "x": -214,
+      "y": 110,
+      "link": "./index.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    }
+  ],
+  "selectedNode": 0
+}

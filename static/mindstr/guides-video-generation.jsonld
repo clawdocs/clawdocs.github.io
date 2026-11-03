@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Video Generation with Remotion",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/video-generation",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#6pcqhm",
+      "name": "Quick vs Full: Choosing Your Approach",
+      "x": -240,
+      "y": -64,
+      "link": "https://clawdocs.org/guides/video-generation#quick-vs-full-choosing-your-approach",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#xabtvt",
+      "name": "Why Remotion?",
+      "x": -189,
+      "y": -139,
+      "link": "https://clawdocs.org/guides/video-generation#why-remotion",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#5i939p",
+      "name": "Core concepts",
+      "x": -378,
+      "y": -278,
+      "link": "https://clawdocs.org/guides/video-generation#core-concepts",
+      "bgColor": "#efe6ff",
+      "parent": "#xabtvt"
+    },
+    {
+      "@id": "#r6k6jg",
+      "name": "Quick Start",
+      "x": -37,
+      "y": -210,
+      "link": "https://clawdocs.org/guides/video-generation#quick-start",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#tjbqv9",
+      "name": "Install Remotion",
+      "x": -243,
+      "y": -372,
+      "link": "https://clawdocs.org/guides/video-generation#1-install-remotion",
+      "bgColor": "#ffe2ed",
+      "parent": "#r6k6jg"
+    },
+    {
+      "@id": "#jdaec9",
+      "name": "Install Remotion Agent Skills",
+      "x": -110,
+      "y": -493,
+      "link": "https://clawdocs.org/guides/video-generation#2-install-remotion-agent-skills",
+      "bgColor": "#ffe2ed",
+      "parent": "#r6k6jg"
+    },
+    {
+      "@id": "#kczsjy",
+      "name": "Render your first video",
+      "x": 85,
+      "y": -419,
+      "link": "https://clawdocs.org/guides/video-generation#3-render-your-first-video",
+      "bgColor": "#ffe2ed",
+      "parent": "#r6k6jg"
+    },
+    {
+      "@id": "#tufdet",
+      "name": "ClawHub Video Skills",
+      "x": 240,
+      "y": -65,
+      "link": "https://clawdocs.org/guides/video-generation#clawhub-video-skills",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#wg9kzv",
+      "name": "Remotion Video Toolkit",
+      "x": 330,
+      "y": -319,
+      "link": "https://clawdocs.org/guides/video-generation#remotion-video-toolkit",
+      "bgColor": "#ffe4d9",
+      "parent": "#tufdet"
+    },
+    {
+      "@id": "#6rthdu",
+      "name": "ClawVid",
+      "x": 494,
+      "y": -274,
+      "link": "https://clawdocs.org/guides/video-generation#clawvid",
+      "bgColor": "#ffe4d9",
+      "parent": "#tufdet"
+    },
+    {
+      "@id": "#f4uytf",
+      "name": "TikTok Engine",
+      "x": 470,
+      "y": -146,
+      "link": "https://clawdocs.org/guides/video-generation#tiktok-engine",
+      "bgColor": "#ffe4d9",
+      "parent": "#tufdet"
+    },
+    {
+      "@id": "#72myfu",
+      "name": "Pexo",
+      "x": 586,
+      "y": -60,
+      "link": "https://clawdocs.org/guides/video-generation#pexo",
+      "bgColor": "#ffe4d9",
+      "parent": "#tufdet"
+    },
+    {
+      "@id": "#twufja",
+      "name": "BibiGPT",
+      "x": 497,
+      "y": 46,
+      "link": "https://clawdocs.org/guides/video-generation#bibigpt",
+      "bgColor": "#ffe4d9",
+      "parent": "#tufdet"
+    },
+    {
+      "@id": "#2tj4qk",
+      "name": "video-agent",
+      "x": 557,
+      "y": 166,
+      "link": "https://clawdocs.org/guides/video-generation#video-agent",
+      "bgColor": "#ffe4d9",
+      "parent": "#tufdet"
+    },
+    {
+      "@id": "#ahwdri",
+      "name": "MCP Servers for Video",
+      "x": 32,
+      "y": 211,
+      "link": "https://clawdocs.org/guides/video-generation#mcp-servers-for-video",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#cayvbp",
+      "name": "@remotion/mcp",
+      "x": 333,
+      "y": 317,
+      "link": "https://clawdocs.org/guides/video-generation#remotionmcp-official",
+      "bgColor": "#f2ecd2",
+      "parent": "#ahwdri"
+    },
+    {
+      "@id": "#mwaxry",
+      "name": "remotion-media-mcp",
+      "x": 278,
+      "y": 445,
+      "link": "https://clawdocs.org/guides/video-generation#remotion-media-mcp",
+      "bgColor": "#f2ecd2",
+      "parent": "#ahwdri"
+    },
+    {
+      "@id": "#z8judn",
+      "name": "remotion-mcp-app",
+      "x": 109,
+      "y": 414,
+      "link": "https://clawdocs.org/guides/video-generation#remotion-mcp-app",
+      "bgColor": "#f2ecd2",
+      "parent": "#ahwdri"
+    },
+    {
+      "@id": "#e9tfin",
+      "name": "ffmpeg-mcp",
+      "x": -7,
+      "y": 501,
+      "link": "https://clawdocs.org/guides/video-generation#ffmpeg-mcp",
+      "bgColor": "#f2ecd2",
+      "parent": "#ahwdri"
+    },
+    {
+      "@id": "#w56zhr",
+      "name": "sora-2-mcp",
+      "x": -119,
+      "y": 413,
+      "link": "https://clawdocs.org/guides/video-generation#sora-2-mcp",
+      "bgColor": "#f2ecd2",
+      "parent": "#ahwdri"
+    },
+    {
+      "@id": "#wahhz5",
+      "name": "mcp-video",
+      "x": -267,
+      "y": 447,
+      "link": "https://clawdocs.org/guides/video-generation#mcp-video",
+      "bgColor": "#f2ecd2",
+      "parent": "#ahwdri"
+    },
+    {
+      "@id": "#t63udb",
+      "name": "Remotion AI Integration",
+      "x": -212,
+      "y": 113,
+      "link": "https://clawdocs.org/guides/video-generation#remotion-ai-integration",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#uejjqf",
+      "name": "Agent Skills",
+      "x": -386,
+      "y": 270,
+      "link": "https://clawdocs.org/guides/video-generation#agent-skills",
+      "bgColor": "#ddf2de",
+      "parent": "#t63udb"
+    },
+    {
+      "@id": "#vbj3uf",
+      "name": "AI-Optimized Docs",
+      "x": -532,
+      "y": 217,
+      "link": "https://clawdocs.org/guides/video-generation#ai-optimized-docs",
+      "bgColor": "#ddf2de",
+      "parent": "#t63udb"
+    },
+    {
+      "@id": "#mdrkcw",
+      "name": "← Guides",
+      "x": -248,
+      "y": 29,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 4,
+      "end": 5
+    },
+    {
+      "start": 4,
+      "end": 6
+    },
+    {
+      "start": 4,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 8,
+      "end": 9
+    },
+    {
+      "start": 8,
+      "end": 10
+    },
+    {
+      "start": 8,
+      "end": 11
+    },
+    {
+      "start": 8,
+      "end": 12
+    },
+    {
+      "start": 8,
+      "end": 13
+    },
+    {
+      "start": 8,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 15,
+      "end": 16
+    },
+    {
+      "start": 15,
+      "end": 17
+    },
+    {
+      "start": 15,
+      "end": 18
+    },
+    {
+      "start": 15,
+      "end": 19
+    },
+    {
+      "start": 15,
+      "end": 20
+    },
+    {
+      "start": 15,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 22,
+      "end": 23
+    },
+    {
+      "start": 22,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

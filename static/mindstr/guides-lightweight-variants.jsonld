@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Lightweight Variants",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/lightweight-variants",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#psssnm",
+      "name": "Quick Comparison",
+      "x": -247,
+      "y": -35,
+      "link": "https://clawdocs.org/guides/lightweight-variants#quick-comparison",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#2j4ca7",
+      "name": "Zero-Setup / Browser-Based",
+      "x": -200,
+      "y": -127,
+      "link": "https://clawdocs.org/guides/lightweight-variants#zero-setup-browser-based",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#r2hw89",
+      "name": "VibeClaw",
+      "x": -436,
+      "y": -208,
+      "link": "https://clawdocs.org/guides/lightweight-variants#vibeclaw",
+      "bgColor": "#efe6ff",
+      "parent": "#2j4ca7"
+    },
+    {
+      "@id": "#va8sd8",
+      "name": "JSClaw",
+      "x": -423,
+      "y": -349,
+      "link": "https://clawdocs.org/guides/lightweight-variants#jsclaw",
+      "bgColor": "#efe6ff",
+      "parent": "#2j4ca7"
+    },
+    {
+      "@id": "#uxepdk",
+      "name": "Ultra-Lightweight / Embedded",
+      "x": -39,
+      "y": -210,
+      "link": "https://clawdocs.org/guides/lightweight-variants#ultra-lightweight-embedded",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#yan66s",
+      "name": "NullClaw",
+      "x": -202,
+      "y": -389,
+      "link": "https://clawdocs.org/guides/lightweight-variants#nullclaw",
+      "bgColor": "#ffe2ed",
+      "parent": "#uxepdk"
+    },
+    {
+      "@id": "#iak73k",
+      "name": "MimiClaw",
+      "x": -92,
+      "y": -495,
+      "link": "https://clawdocs.org/guides/lightweight-variants#mimiclaw",
+      "bgColor": "#ffe2ed",
+      "parent": "#uxepdk"
+    },
+    {
+      "@id": "#cdkk64",
+      "name": "PicoClaw",
+      "x": 52,
+      "y": -423,
+      "link": "https://clawdocs.org/guides/lightweight-variants#picoclaw",
+      "bgColor": "#ffe2ed",
+      "parent": "#uxepdk"
+    },
+    {
+      "@id": "#kg8kpu",
+      "name": "Security-First",
+      "x": 175,
+      "y": -152,
+      "link": "https://clawdocs.org/guides/lightweight-variants#security-first",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#yugkch",
+      "name": "NanoClaw",
+      "x": 245,
+      "y": -370,
+      "link": "https://clawdocs.org/guides/lightweight-variants#nanoclaw",
+      "bgColor": "#ffe4d9",
+      "parent": "#kg8kpu"
+    },
+    {
+      "@id": "#uuc27i",
+      "name": "ZeroClaw",
+      "x": 412,
+      "y": -359,
+      "link": "https://clawdocs.org/guides/lightweight-variants#zeroclaw",
+      "bgColor": "#ffe4d9",
+      "parent": "#kg8kpu"
+    },
+    {
+      "@id": "#gzruct",
+      "name": "IronClaw",
+      "x": 430,
+      "y": -218,
+      "link": "https://clawdocs.org/guides/lightweight-variants#ironclaw",
+      "bgColor": "#ffe4d9",
+      "parent": "#kg8kpu"
+    },
+    {
+      "@id": "#6jbdaq",
+      "name": "Research / Multi-LLM",
+      "x": 246,
+      "y": -38,
+      "link": "https://clawdocs.org/guides/lightweight-variants#research-multi-llm",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#348gdh",
+      "name": "Nanobot",
+      "x": 492,
+      "y": -75,
+      "link": "https://clawdocs.org/guides/lightweight-variants#nanobot",
+      "bgColor": "#f2ecd2",
+      "parent": "#6jbdaq"
+    },
+    {
+      "@id": "#gsnvh4",
+      "name": "Efficient Multi-Channel",
+      "x": 248,
+      "y": 60,
+      "link": "https://clawdocs.org/guides/lightweight-variants#efficient-multi-channel",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#gudp78",
+      "name": "MicroClaw",
+      "x": 494,
+      "y": 66,
+      "link": "https://clawdocs.org/guides/lightweight-variants#microclaw",
+      "bgColor": "#ddf2de",
+      "parent": "#gsnvh4"
+    },
+    {
+      "@id": "#n8egug",
+      "name": "TinyClaw",
+      "x": 540,
+      "y": 203,
+      "link": "https://clawdocs.org/guides/lightweight-variants#tinyclaw",
+      "bgColor": "#ddf2de",
+      "parent": "#gsnvh4"
+    },
+    {
+      "@id": "#3qf76e",
+      "name": "Mobile",
+      "x": 181,
+      "y": 147,
+      "link": "https://clawdocs.org/guides/lightweight-variants#mobile",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#8ecink",
+      "name": "ZeroClaw-Android",
+      "x": 362,
+      "y": 293,
+      "link": "https://clawdocs.org/guides/lightweight-variants#zeroclaw-android",
+      "bgColor": "#d1f3f4",
+      "parent": "#3qf76e"
+    },
+    {
+      "@id": "#wvse45",
+      "name": "Decision Framework",
+      "x": -24,
+      "y": 212,
+      "link": "https://clawdocs.org/guides/lightweight-variants#decision-framework",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4fgkh2",
+      "name": "By Resource Constraints",
+      "x": 167,
+      "y": 400,
+      "link": "https://clawdocs.org/guides/lightweight-variants#by-resource-constraints",
+      "bgColor": "#daeeff",
+      "parent": "#wvse45"
+    },
+    {
+      "@id": "#f2ugyb",
+      "name": "By Priority",
+      "x": 16,
+      "y": 501,
+      "link": "https://clawdocs.org/guides/lightweight-variants#by-priority",
+      "bgColor": "#daeeff",
+      "parent": "#wvse45"
+    },
+    {
+      "@id": "#xc2nxf",
+      "name": "When to Use a Variant vs Standard OpenClaw",
+      "x": -200,
+      "y": 390,
+      "link": "https://clawdocs.org/guides/lightweight-variants#when-to-use-a-variant-vs-standard-openclaw",
+      "bgColor": "#daeeff",
+      "parent": "#wvse45"
+    },
+    {
+      "@id": "#thqpdd",
+      "name": "Contributing a Variant",
+      "x": -217,
+      "y": 106,
+      "link": "https://clawdocs.org/guides/lightweight-variants#contributing-a-variant",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#6nwcs8",
+      "name": "← Guides",
+      "x": -247,
+      "y": 33,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 5,
+      "end": 6
+    },
+    {
+      "start": 5,
+      "end": 7
+    },
+    {
+      "start": 5,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 9,
+      "end": 10
+    },
+    {
+      "start": 9,
+      "end": 11
+    },
+    {
+      "start": 9,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 15,
+      "end": 16
+    },
+    {
+      "start": 15,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    },
+    {
+      "start": 18,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 20,
+      "end": 21
+    },
+    {
+      "start": 20,
+      "end": 22
+    },
+    {
+      "start": 20,
+      "end": 23
+    },
+    {
+      "start": 0,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

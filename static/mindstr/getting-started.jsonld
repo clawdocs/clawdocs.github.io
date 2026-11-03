@@ -1,0 +1,89 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Getting Started",
+      "x": 0,
+      "y": 0,
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#z8kicz",
+      "name": "Introduction",
+      "x": -202,
+      "y": -125,
+      "link": "./getting-started-introduction.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7348h9",
+      "name": "Installation",
+      "x": 77,
+      "y": -202,
+      "link": "./getting-started-installation.jsonld",
+      "bgColor": "#e9c1ef",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jtny2v",
+      "name": "Quick Start",
+      "x": 250,
+      "y": 0,
+      "link": "./getting-started-quick-start.jsonld",
+      "bgColor": "#fec0b1",
+      "parent": "#this"
+    },
+    {
+      "@id": "#zvvi4r",
+      "name": "Core Concepts",
+      "x": 77,
+      "y": 202,
+      "link": "./getting-started-core-concepts.jsonld",
+      "bgColor": "#d7d59b",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ezqtt6",
+      "name": "← clawdocs",
+      "x": -202,
+      "y": 125,
+      "link": "./index.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    }
+  ],
+  "selectedNode": 0
+}

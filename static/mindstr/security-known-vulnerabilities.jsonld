@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Known Vulnerabilities",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/security/known-vulnerabilities",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#j5t7kb",
+      "name": "CVE-2026-25253: One-Click Remote Code Execution",
+      "x": -179,
+      "y": -146,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#cve-2026-25253-one-click-remote-code-execution",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ft8nku",
+      "name": "Description",
+      "x": -487,
+      "y": -98,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#description",
+      "bgColor": "#daeeff",
+      "parent": "#j5t7kb"
+    },
+    {
+      "@id": "#acwqfq",
+      "name": "Attack Flow",
+      "x": -532,
+      "y": -217,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#attack-flow",
+      "bgColor": "#daeeff",
+      "parent": "#j5t7kb"
+    },
+    {
+      "@id": "#3353ig",
+      "name": "Additional CVE: CVE-2026-25157",
+      "x": -367,
+      "y": -288,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#additional-cve-cve-2026-25157",
+      "bgColor": "#daeeff",
+      "parent": "#j5t7kb"
+    },
+    {
+      "@id": "#3yd94p",
+      "name": "Advisories Issued By",
+      "x": -282,
+      "y": -440,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#advisories-issued-by",
+      "bgColor": "#daeeff",
+      "parent": "#j5t7kb"
+    },
+    {
+      "@id": "#n73upd",
+      "name": "Mitigation",
+      "x": -126,
+      "y": -411,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#mitigation",
+      "bgColor": "#daeeff",
+      "parent": "#j5t7kb"
+    },
+    {
+      "@id": "#e8wyip",
+      "name": "June 2026 Advisory Batch",
+      "x": 115,
+      "y": -190,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#june-2026-advisory-batch-june-30-2026",
+      "bgColor": "#e0c4f6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vxqc57",
+      "name": "Notable Advisories",
+      "x": 72,
+      "y": -418,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#notable-advisories",
+      "bgColor": "#f2e5fd",
+      "parent": "#e8wyip"
+    },
+    {
+      "@id": "#b24p5h",
+      "name": "v2026.6.11 Security Hardening",
+      "x": 290,
+      "y": -442,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#v2026611-security-hardening",
+      "bgColor": "#f2e5fd",
+      "parent": "#e8wyip"
+    },
+    {
+      "@id": "#e6s4ny",
+      "name": "Mitigation",
+      "x": 354,
+      "y": -300,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#mitigation",
+      "bgColor": "#f2e5fd",
+      "parent": "#e8wyip"
+    },
+    {
+      "@id": "#t4fcfx",
+      "name": "Gateway Authentication Bypass",
+      "x": 274,
+      "y": -38,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#gateway-authentication-bypass-jfrog",
+      "bgColor": "#febdc6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#zu8nzk",
+      "name": "The Bypass Mechanism",
+      "x": 462,
+      "y": -163,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#the-bypass-mechanism",
+      "bgColor": "#ffe2e6",
+      "parent": "#t4fcfx"
+    },
+    {
+      "@id": "#m4e6ys",
+      "name": "Impact",
+      "x": 583,
+      "y": -74,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#impact",
+      "bgColor": "#ffe2e6",
+      "parent": "#t4fcfx"
+    },
+    {
+      "@id": "#cdbijn",
+      "name": "Fix",
+      "x": 499,
+      "y": 28,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#fix",
+      "bgColor": "#ffe2e6",
+      "parent": "#t4fcfx"
+    },
+    {
+      "@id": "#psrjf8",
+      "name": "Exposed Instances",
+      "x": 101,
+      "y": 194,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#exposed-instances-january-february-2026",
+      "bgColor": "#f1c99c",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qfcya8",
+      "name": "Geographic Distribution",
+      "x": 429,
+      "y": 219,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#geographic-distribution",
+      "bgColor": "#fbe8d3",
+      "parent": "#psrjf8"
+    },
+    {
+      "@id": "#a9txyz",
+      "name": "Key Finding",
+      "x": 411,
+      "y": 360,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#key-finding",
+      "bgColor": "#fbe8d3",
+      "parent": "#psrjf8"
+    },
+    {
+      "@id": "#7ts43d",
+      "name": "Detection Method",
+      "x": 260,
+      "y": 363,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#detection-method",
+      "bgColor": "#fbe8d3",
+      "parent": "#psrjf8"
+    },
+    {
+      "@id": "#7zhtxj",
+      "name": "Active Exploitation",
+      "x": 175,
+      "y": 479,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#active-exploitation",
+      "bgColor": "#fbe8d3",
+      "parent": "#psrjf8"
+    },
+    {
+      "@id": "#nnd9yr",
+      "name": "Root Cause",
+      "x": 31,
+      "y": 424,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#root-cause",
+      "bgColor": "#fbe8d3",
+      "parent": "#psrjf8"
+    },
+    {
+      "@id": "#fkirgi",
+      "name": "Check If You're Exposed",
+      "x": -116,
+      "y": 492,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#check-if-youre-exposed",
+      "bgColor": "#fbe8d3",
+      "parent": "#psrjf8"
+    },
+    {
+      "@id": "#7tsipb",
+      "name": "Malicious ClawHub Skills",
+      "x": -197,
+      "y": 131,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#malicious-clawhub-skills-february-2026",
+      "bgColor": "#c1dba8",
+      "parent": "#this"
+    },
+    {
+      "@id": "#smmx55",
+      "name": "The ClawHavoc Campaign",
+      "x": -326,
+      "y": 322,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#the-clawhavoc-campaign",
+      "bgColor": "#e3f0d8",
+      "parent": "#7tsipb"
+    },
+    {
+      "@id": "#hk5zkj",
+      "name": "The \"What Would Elon Do?\" Skill",
+      "x": -513,
+      "y": 248,
+      "link": "https://clawdocs.org/security/known-vulnerabilities#the-what-would-elon-do-skill",
+      "bgColor": "#e3f0d8",
+      "parent": "#7tsipb"
+    },
+    {
+      "@id": "#htz9xa",
+      "name": "← Security",
+      "x": -248,
+      "y": 27,
+      "link": "./security.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 1,
+      "end": 5
+    },
+    {
+      "start": 1,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 7,
+      "end": 8
+    },
+    {
+      "start": 7,
+      "end": 9
+    },
+    {
+      "start": 7,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 11,
+      "end": 12
+    },
+    {
+      "start": 11,
+      "end": 13
+    },
+    {
+      "start": 11,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 15,
+      "end": 16
+    },
+    {
+      "start": 15,
+      "end": 17
+    },
+    {
+      "start": 15,
+      "end": 18
+    },
+    {
+      "start": 15,
+      "end": 19
+    },
+    {
+      "start": 15,
+      "end": 20
+    },
+    {
+      "start": 15,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 22,
+      "end": 23
+    },
+    {
+      "start": 22,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

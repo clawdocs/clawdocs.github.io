@@ -1,0 +1,466 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Guides",
+      "x": 0,
+      "y": 0,
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#ucs9ug",
+      "name": "Basic Usage",
+      "x": -249,
+      "y": 55,
+      "link": "./guides-basic-usage.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#tse2je",
+      "name": "Channels & Integrations",
+      "x": -241,
+      "y": 33,
+      "link": "./guides-channels.jsonld",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#cvh8ee",
+      "name": "Custom Channels",
+      "x": -224,
+      "y": -4,
+      "link": "./guides-custom-channels.jsonld",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3xd5xn",
+      "name": "SOUL.md Guide",
+      "x": -204,
+      "y": -46,
+      "link": "./guides-soul-md.jsonld",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jingvu",
+      "name": "Skill Development",
+      "x": -177,
+      "y": -90,
+      "link": "./guides-skill-development.jsonld",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#u9rrt3",
+      "name": "Skill Workshop",
+      "x": -145,
+      "y": -135,
+      "link": "./guides-skill-workshop.jsonld",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#kgvapt",
+      "name": "Heartbeat Guide",
+      "x": -128,
+      "y": -180,
+      "link": "./guides-heartbeat.jsonld",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#6yp854",
+      "name": "MCP Servers",
+      "x": -109,
+      "y": -224,
+      "link": "./guides-mcp-servers.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#g8htk4",
+      "name": "Model Selection Guide",
+      "x": -30,
+      "y": -419,
+      "link": "./guides-model-selection.jsonld",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#iq664j",
+      "name": "Local Models",
+      "x": 26,
+      "y": -379,
+      "link": "./guides-local-models.jsonld",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#gz4cvb",
+      "name": "Cloud GPU & Self-Hosted Models",
+      "x": 85,
+      "y": -342,
+      "link": "./guides-cloud-gpu-models.jsonld",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#itdh4e",
+      "name": "Cost Management",
+      "x": 119,
+      "y": -305,
+      "link": "./guides-cost-management.jsonld",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#wymkpw",
+      "name": "ClawHub",
+      "x": 152,
+      "y": -268,
+      "link": "./guides-clawhub.jsonld",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qhm56x",
+      "name": "Multi-Agent Workflows",
+      "x": 186,
+      "y": -231,
+      "link": "./guides-multi-agent.jsonld",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#gyahr4",
+      "name": "Workboard",
+      "x": 213,
+      "y": -191,
+      "link": "./guides-workboard.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#wt6f72",
+      "name": "Plugin System",
+      "x": 231,
+      "y": -151,
+      "link": "./guides-plugin-system.jsonld",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#zy9np2",
+      "name": "Memory Systems Compared",
+      "x": 245,
+      "y": -109,
+      "link": "./guides-memory-systems.jsonld",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3jk3i5",
+      "name": "API & Webhooks",
+      "x": 250,
+      "y": -65,
+      "link": "./guides-api-webhooks.jsonld",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#94asrn",
+      "name": "Automation & Integrations",
+      "x": 246,
+      "y": -19,
+      "link": "./guides-automation.jsonld",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#kgrwxb",
+      "name": "Lobster Workflows",
+      "x": 231,
+      "y": 26,
+      "link": "./guides-lobster-workflows.jsonld",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#aj9t28",
+      "name": "WebClaw Web Client",
+      "x": 211,
+      "y": 70,
+      "link": "./guides-webclaw.jsonld",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vx7khw",
+      "name": "CI/CD & Testing",
+      "x": 184,
+      "y": 114,
+      "link": "./guides-cicd-testing.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#34dvu3",
+      "name": "Monitoring & Observability",
+      "x": 147,
+      "y": 159,
+      "link": "./guides-monitoring.jsonld",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#v52rfv",
+      "name": "Performance Tuning",
+      "x": 112,
+      "y": 204,
+      "link": "./guides-performance-tuning.jsonld",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#gitnhm",
+      "name": "Video Generation with Remotion",
+      "x": 45,
+      "y": 424,
+      "link": "./guides-video-generation.jsonld",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#hzes4u",
+      "name": "Voice & Multimodal",
+      "x": -12,
+      "y": 386,
+      "link": "./guides-voice-multimodal.jsonld",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#mciseu",
+      "name": "Deployment Options",
+      "x": -65,
+      "y": 350,
+      "link": "./guides-deployment-options.jsonld",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#dm48gj",
+      "name": "Hosting Providers",
+      "x": -100,
+      "y": 314,
+      "link": "./guides-hosting-providers.jsonld",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#k6cm7k",
+      "name": "Lightweight Variants",
+      "x": -141,
+      "y": 278,
+      "link": "./guides-lightweight-variants.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#djkutb",
+      "name": "Privacy & Compliance",
+      "x": -179,
+      "y": 241,
+      "link": "./guides-privacy-compliance.jsonld",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#pu9sy8",
+      "name": "Real-World Use Cases",
+      "x": -210,
+      "y": 204,
+      "link": "./guides-use-cases.jsonld",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7ppwsy",
+      "name": "Migration Guide",
+      "x": -231,
+      "y": 167,
+      "link": "./guides-migration.jsonld",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#c8rxju",
+      "name": "Recipes",
+      "x": -243,
+      "y": 130,
+      "link": "./recipes.jsonld",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jr3z4p",
+      "name": "← clawdocs",
+      "x": -249,
+      "y": 89,
+      "link": "./index.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    },
+    {
+      "start": 0,
+      "end": 18
+    },
+    {
+      "start": 0,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 0,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 0,
+      "end": 23
+    },
+    {
+      "start": 0,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    },
+    {
+      "start": 0,
+      "end": 26
+    },
+    {
+      "start": 0,
+      "end": 27
+    },
+    {
+      "start": 0,
+      "end": 28
+    },
+    {
+      "start": 0,
+      "end": 29
+    },
+    {
+      "start": 0,
+      "end": 30
+    },
+    {
+      "start": 0,
+      "end": 31
+    },
+    {
+      "start": 0,
+      "end": 32
+    },
+    {
+      "start": 0,
+      "end": 33
+    },
+    {
+      "start": 0,
+      "end": 34
+    }
+  ],
+  "selectedNode": 0
+}

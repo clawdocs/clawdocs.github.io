@@ -1,0 +1,220 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Day 7: Lock It Down",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#ncsetq",
+      "name": "Security in 5 Minutes",
+      "x": -242,
+      "y": -55,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#security-in-5-minutes",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#b9nzdc",
+      "name": "Cost Check",
+      "x": -46,
+      "y": -209,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#cost-check",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#k8wdpx",
+      "name": "Check token usage",
+      "x": -332,
+      "y": -318,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#check-token-usage",
+      "bgColor": "#efe6ff",
+      "parent": "#b9nzdc"
+    },
+    {
+      "@id": "#a9fnph",
+      "name": "Check your provider dashboard",
+      "x": -148,
+      "y": -486,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#check-your-provider-dashboard",
+      "bgColor": "#efe6ff",
+      "parent": "#b9nzdc"
+    },
+    {
+      "@id": "#yyu7jz",
+      "name": "Quick cost-reduction tips",
+      "x": 141,
+      "y": -408,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#quick-cost-reduction-tips",
+      "bgColor": "#efe6ff",
+      "parent": "#b9nzdc"
+    },
+    {
+      "@id": "#wkrebf",
+      "name": "Monitoring",
+      "x": 248,
+      "y": 27,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#monitoring",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#bu5bte",
+      "name": "Quick health check",
+      "x": 430,
+      "y": -217,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#quick-health-check",
+      "bgColor": "#ffe2ed",
+      "parent": "#wkrebf"
+    },
+    {
+      "@id": "#4hakzu",
+      "name": "Watch real-time logs",
+      "x": 585,
+      "y": -66,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#watch-real-time-logs",
+      "bgColor": "#ffe2ed",
+      "parent": "#wkrebf"
+    },
+    {
+      "@id": "#yhcpjw",
+      "name": "Watch memory growth",
+      "x": 480,
+      "y": 118,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#watch-memory-growth",
+      "bgColor": "#ffe2ed",
+      "parent": "#wkrebf"
+    },
+    {
+      "@id": "#m7mgcv",
+      "name": "Self-monitoring heartbeat",
+      "x": 437,
+      "y": 337,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#self-monitoring-heartbeat",
+      "bgColor": "#ffe2ed",
+      "parent": "#wkrebf"
+    },
+    {
+      "@id": "#gekznt",
+      "name": "Backups",
+      "x": 66,
+      "y": 207,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#backups",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#beqq5j",
+      "name": "Upgrades",
+      "x": -31,
+      "y": 209,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#upgrades",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#6r28st",
+      "name": "What's Next?",
+      "x": -147,
+      "y": 179,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#whats-next",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#d5e2jv",
+      "name": "Congratulations",
+      "x": -207,
+      "y": 120,
+      "link": "https://clawdocs.org/guides/first-7-days/day-7-production#congratulations",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3g77sx",
+      "name": "← First 7 Days",
+      "x": -245,
+      "y": 42,
+      "link": "./first-7-days.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 2,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 6,
+      "end": 7
+    },
+    {
+      "start": 6,
+      "end": 8
+    },
+    {
+      "start": 6,
+      "end": 9
+    },
+    {
+      "start": 6,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    }
+  ],
+  "selectedNode": 0
+}

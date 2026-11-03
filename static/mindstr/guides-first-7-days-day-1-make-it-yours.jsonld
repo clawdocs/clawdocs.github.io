@@ -1,0 +1,129 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Day 1: Make It Yours",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/first-7-days/day-1-make-it-yours",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#48j6uy",
+      "name": "Meet Your Bot",
+      "x": -236,
+      "y": -69,
+      "link": "https://clawdocs.org/guides/first-7-days/day-1-make-it-yours#meet-your-bot",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9kbx2m",
+      "name": "Write Your SOUL.md",
+      "x": -124,
+      "y": -185,
+      "link": "https://clawdocs.org/guides/first-7-days/day-1-make-it-yours#write-your-soulmd",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9gbbfy",
+      "name": "Set Your Identity",
+      "x": 60,
+      "y": -206,
+      "link": "https://clawdocs.org/guides/first-7-days/day-1-make-it-yours#set-your-identity",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#kue24d",
+      "name": "Tell It About You",
+      "x": 208,
+      "y": -118,
+      "link": "https://clawdocs.org/guides/first-7-days/day-1-make-it-yours#tell-it-about-you",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ezqvf7",
+      "name": "Have a Real Conversation",
+      "x": 251,
+      "y": 57,
+      "link": "https://clawdocs.org/guides/first-7-days/day-1-make-it-yours#have-a-real-conversation",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4c22a7",
+      "name": "Verify It Remembers",
+      "x": 99,
+      "y": 195,
+      "link": "https://clawdocs.org/guides/first-7-days/day-1-make-it-yours#verify-it-remembers",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#zpagjg",
+      "name": "What You've Done Today",
+      "x": -109,
+      "y": 191,
+      "link": "https://clawdocs.org/guides/first-7-days/day-1-make-it-yours#what-youve-done-today",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#sptvks",
+      "name": "← First 7 Days",
+      "x": -236,
+      "y": 69,
+      "link": "./first-7-days.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    }
+  ],
+  "selectedNode": 0
+}

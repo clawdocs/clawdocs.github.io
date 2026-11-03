@@ -1,0 +1,311 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Configuration",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/reference/configuration",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#5wa3s6",
+      "name": "Full Example",
+      "x": -247,
+      "y": -30,
+      "link": "https://clawdocs.org/reference/configuration#full-example",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jcmupr",
+      "name": "Section Reference",
+      "x": 280,
+      "y": -113,
+      "link": "https://clawdocs.org/reference/configuration#section-reference",
+      "bgColor": "#e9c1ef",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4nvi3t",
+      "name": "brain",
+      "x": -352,
+      "y": -302,
+      "link": "https://clawdocs.org/reference/configuration#brain",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#rjkp3d",
+      "name": "models",
+      "x": -305,
+      "y": -429,
+      "link": "https://clawdocs.org/reference/configuration#models",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#cpfg3u",
+      "name": "gateway",
+      "x": -150,
+      "y": -405,
+      "link": "https://clawdocs.org/reference/configuration#gateway",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#teqddy",
+      "name": "hands",
+      "x": -39,
+      "y": -500,
+      "link": "https://clawdocs.org/reference/configuration#hands",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#2a5xks",
+      "name": "sandbox",
+      "x": 86,
+      "y": -419,
+      "link": "https://clawdocs.org/reference/configuration#sandbox",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#69b9qb",
+      "name": "tools",
+      "x": 236,
+      "y": -460,
+      "link": "https://clawdocs.org/reference/configuration#tools",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#wg75mv",
+      "name": "agents",
+      "x": 302,
+      "y": -339,
+      "link": "https://clawdocs.org/reference/configuration#agents",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#w27283",
+      "name": "bindings",
+      "x": 458,
+      "y": -317,
+      "link": "https://clawdocs.org/reference/configuration#bindings",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#je4y5g",
+      "name": "session",
+      "x": 451,
+      "y": -183,
+      "link": "https://clawdocs.org/reference/configuration#session",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#6jr5p6",
+      "name": "dm",
+      "x": 577,
+      "y": -103,
+      "link": "https://clawdocs.org/reference/configuration#dm",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#vsxgmk",
+      "name": "heartbeat",
+      "x": 500,
+      "y": 14,
+      "link": "https://clawdocs.org/reference/configuration#heartbeat",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#9qzfhw",
+      "name": "memory",
+      "x": 569,
+      "y": 134,
+      "link": "https://clawdocs.org/reference/configuration#memory",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#knesmb",
+      "name": "skills",
+      "x": 437,
+      "y": 207,
+      "link": "https://clawdocs.org/reference/configuration#skills",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#24mfsx",
+      "name": "permissions",
+      "x": 433,
+      "y": 341,
+      "link": "https://clawdocs.org/reference/configuration#permissions",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#zwdf7k",
+      "name": "mcp",
+      "x": 276,
+      "y": 354,
+      "link": "https://clawdocs.org/reference/configuration#mcp",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#e6vvgw",
+      "name": "channels",
+      "x": 200,
+      "y": 472,
+      "link": "https://clawdocs.org/reference/configuration#channels",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#56waad",
+      "name": "logging",
+      "x": 54,
+      "y": 423,
+      "link": "https://clawdocs.org/reference/configuration#logging",
+      "bgColor": "#f7e4f9",
+      "parent": "#jcmupr"
+    },
+    {
+      "@id": "#84ek77",
+      "name": "Environment Variable Substitution",
+      "x": -155,
+      "y": 167,
+      "link": "https://clawdocs.org/reference/configuration#environment-variable-substitution",
+      "bgColor": "#fec0b1",
+      "parent": "#this"
+    },
+    {
+      "@id": "#w99s4n",
+      "name": "Backup and Recovery",
+      "x": -224,
+      "y": 94,
+      "link": "https://clawdocs.org/reference/configuration#backup-and-recovery",
+      "bgColor": "#d7d59b",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9m2ugw",
+      "name": "← Reference",
+      "x": -247,
+      "y": 30,
+      "link": "./reference.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 2,
+      "end": 5
+    },
+    {
+      "start": 2,
+      "end": 6
+    },
+    {
+      "start": 2,
+      "end": 7
+    },
+    {
+      "start": 2,
+      "end": 8
+    },
+    {
+      "start": 2,
+      "end": 9
+    },
+    {
+      "start": 2,
+      "end": 10
+    },
+    {
+      "start": 2,
+      "end": 11
+    },
+    {
+      "start": 2,
+      "end": 12
+    },
+    {
+      "start": 2,
+      "end": 13
+    },
+    {
+      "start": 2,
+      "end": 14
+    },
+    {
+      "start": 2,
+      "end": 15
+    },
+    {
+      "start": 2,
+      "end": 16
+    },
+    {
+      "start": 2,
+      "end": 17
+    },
+    {
+      "start": 2,
+      "end": 18
+    },
+    {
+      "start": 2,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 0,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    }
+  ],
+  "selectedNode": 0
+}

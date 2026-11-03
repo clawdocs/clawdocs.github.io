@@ -1,0 +1,233 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Gateway API",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/reference/gateway-api",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#dmf894",
+      "name": "Connecting",
+      "x": -244,
+      "y": -46,
+      "link": "https://clawdocs.org/reference/gateway-api#connecting",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#tvkbr6",
+      "name": "Message Format",
+      "x": -198,
+      "y": -130,
+      "link": "https://clawdocs.org/reference/gateway-api#message-format",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#e2vwgp",
+      "name": "Client → Gateway Messages",
+      "x": 50,
+      "y": -208,
+      "link": "https://clawdocs.org/reference/gateway-api#client-gateway-messages",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#c5hiyp",
+      "name": "chat",
+      "x": -178,
+      "y": -397,
+      "link": "https://clawdocs.org/reference/gateway-api#chat",
+      "bgColor": "#ffe2ed",
+      "parent": "#e2vwgp"
+    },
+    {
+      "@id": "#sr5qxx",
+      "name": "heartbeattrigger",
+      "x": 10,
+      "y": -501,
+      "link": "https://clawdocs.org/reference/gateway-api#heartbeattrigger",
+      "bgColor": "#ffe2ed",
+      "parent": "#e2vwgp"
+    },
+    {
+      "@id": "#t7nuqb",
+      "name": "status",
+      "x": 194,
+      "y": -392,
+      "link": "https://clawdocs.org/reference/gateway-api#status",
+      "bgColor": "#ffe2ed",
+      "parent": "#e2vwgp"
+    },
+    {
+      "@id": "#2a5zeh",
+      "name": "skillinvoke",
+      "x": 410,
+      "y": -361,
+      "link": "https://clawdocs.org/reference/gateway-api#skillinvoke",
+      "bgColor": "#ffe2ed",
+      "parent": "#e2vwgp"
+    },
+    {
+      "@id": "#zdbudb",
+      "name": "Gateway → Client Messages",
+      "x": 203,
+      "y": 125,
+      "link": "https://clawdocs.org/reference/gateway-api#gateway-client-messages",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#y6as4g",
+      "name": "response",
+      "x": 497,
+      "y": -49,
+      "link": "https://clawdocs.org/reference/gateway-api#response",
+      "bgColor": "#ffe4d9",
+      "parent": "#zdbudb"
+    },
+    {
+      "@id": "#66vjuw",
+      "name": "toolcall",
+      "x": 571,
+      "y": 126,
+      "link": "https://clawdocs.org/reference/gateway-api#toolcall",
+      "bgColor": "#ffe4d9",
+      "parent": "#zdbudb"
+    },
+    {
+      "@id": "#en342p",
+      "name": "toolresult",
+      "x": 406,
+      "y": 248,
+      "link": "https://clawdocs.org/reference/gateway-api#toolresult",
+      "bgColor": "#ffe4d9",
+      "parent": "#zdbudb"
+    },
+    {
+      "@id": "#bcnz7u",
+      "name": "error",
+      "x": 323,
+      "y": 420,
+      "link": "https://clawdocs.org/reference/gateway-api#error",
+      "bgColor": "#ffe4d9",
+      "parent": "#zdbudb"
+    },
+    {
+      "@id": "#uirxwn",
+      "name": "heartbeatstatus",
+      "x": 103,
+      "y": 416,
+      "link": "https://clawdocs.org/reference/gateway-api#heartbeatstatus",
+      "bgColor": "#ffe4d9",
+      "parent": "#zdbudb"
+    },
+    {
+      "@id": "#m9m2ua",
+      "name": "Authentication",
+      "x": -92,
+      "y": 198,
+      "link": "https://clawdocs.org/reference/gateway-api#authentication",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4dvw3v",
+      "name": "Protocol Versioning",
+      "x": -190,
+      "y": 138,
+      "link": "https://clawdocs.org/reference/gateway-api#protocol-versioning",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#eqrhnh",
+      "name": "← Reference",
+      "x": -244,
+      "y": 46,
+      "link": "./reference.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 3,
+      "end": 4
+    },
+    {
+      "start": 3,
+      "end": 5
+    },
+    {
+      "start": 3,
+      "end": 6
+    },
+    {
+      "start": 3,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 8,
+      "end": 9
+    },
+    {
+      "start": 8,
+      "end": 10
+    },
+    {
+      "start": 8,
+      "end": 11
+    },
+    {
+      "start": 8,
+      "end": 12
+    },
+    {
+      "start": 8,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    }
+  ],
+  "selectedNode": 0
+}

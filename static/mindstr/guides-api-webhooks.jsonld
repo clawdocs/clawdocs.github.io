@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "API & Webhooks",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/api-webhooks",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#8qyphq",
+      "name": "Architecture",
+      "x": -248,
+      "y": -26,
+      "link": "https://clawdocs.org/guides/api-webhooks#architecture",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#awt4ph",
+      "name": "WebSocket API",
+      "x": -116,
+      "y": -244,
+      "link": "https://clawdocs.org/guides/api-webhooks#websocket-api",
+      "bgColor": "#e0c4f6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#j3ffm5",
+      "name": "Connecting",
+      "x": -440,
+      "y": -202,
+      "link": "https://clawdocs.org/guides/api-webhooks#connecting",
+      "bgColor": "#f2e5fd",
+      "parent": "#awt4ph"
+    },
+    {
+      "@id": "#s2vv4u",
+      "name": "Message Format",
+      "x": -457,
+      "y": -323,
+      "link": "https://clawdocs.org/guides/api-webhooks#message-format",
+      "bgColor": "#f2e5fd",
+      "parent": "#awt4ph"
+    },
+    {
+      "@id": "#8gx4pf",
+      "name": "Sending Messages",
+      "x": -303,
+      "y": -336,
+      "link": "https://clawdocs.org/guides/api-webhooks#sending-messages",
+      "bgColor": "#f2e5fd",
+      "parent": "#awt4ph"
+    },
+    {
+      "@id": "#knn5ve",
+      "name": "Event Stream",
+      "x": -266,
+      "y": -452,
+      "link": "https://clawdocs.org/guides/api-webhooks#event-stream",
+      "bgColor": "#f2e5fd",
+      "parent": "#awt4ph"
+    },
+    {
+      "@id": "#hgjzm6",
+      "name": "Node.js Client Example",
+      "x": -97,
+      "y": -416,
+      "link": "https://clawdocs.org/guides/api-webhooks#nodejs-client-example",
+      "bgColor": "#f2e5fd",
+      "parent": "#awt4ph"
+    },
+    {
+      "@id": "#hxgis3",
+      "name": "Python Client Example",
+      "x": 40,
+      "y": -500,
+      "link": "https://clawdocs.org/guides/api-webhooks#python-client-example",
+      "bgColor": "#f2e5fd",
+      "parent": "#awt4ph"
+    },
+    {
+      "@id": "#jqxvqz",
+      "name": "curl",
+      "x": 150,
+      "y": -405,
+      "link": "https://clawdocs.org/guides/api-webhooks#curl-quick-test",
+      "bgColor": "#f2e5fd",
+      "parent": "#awt4ph"
+    },
+    {
+      "@id": "#3b8m9c",
+      "name": "Webhook Ingress",
+      "x": 220,
+      "y": -100,
+      "link": "https://clawdocs.org/guides/api-webhooks#webhook-ingress-external-to-agent",
+      "bgColor": "#febdc6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4wrpia",
+      "name": "Configuration",
+      "x": 332,
+      "y": -313,
+      "link": "https://clawdocs.org/guides/api-webhooks#configuration",
+      "bgColor": "#ffe2e6",
+      "parent": "#3b8m9c"
+    },
+    {
+      "@id": "#v2ex7g",
+      "name": "Sending a Webhook",
+      "x": 486,
+      "y": -288,
+      "link": "https://clawdocs.org/guides/api-webhooks#sending-a-webhook",
+      "bgColor": "#ffe2e6",
+      "parent": "#3b8m9c"
+    },
+    {
+      "@id": "#nkrjkg",
+      "name": "Template Variables",
+      "x": 465,
+      "y": -157,
+      "link": "https://clawdocs.org/guides/api-webhooks#template-variables",
+      "bgColor": "#ffe2e6",
+      "parent": "#3b8m9c"
+    },
+    {
+      "@id": "#b7k6ur",
+      "name": "Security",
+      "x": 583,
+      "y": -78,
+      "link": "https://clawdocs.org/guides/api-webhooks#security",
+      "bgColor": "#ffe2e6",
+      "parent": "#3b8m9c"
+    },
+    {
+      "@id": "#bcmvix",
+      "name": "Webhook Egress",
+      "x": 230,
+      "y": 83,
+      "link": "https://clawdocs.org/guides/api-webhooks#webhook-egress-agent-to-external",
+      "bgColor": "#f1c99c",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ffcp4d",
+      "name": "Configuration",
+      "x": 491,
+      "y": 80,
+      "link": "https://clawdocs.org/guides/api-webhooks#configuration",
+      "bgColor": "#fbe8d3",
+      "parent": "#bcmvix"
+    },
+    {
+      "@id": "#g8z5p2",
+      "name": "Supported Events",
+      "x": 543,
+      "y": 196,
+      "link": "https://clawdocs.org/guides/api-webhooks#supported-events",
+      "bgColor": "#fbe8d3",
+      "parent": "#bcmvix"
+    },
+    {
+      "@id": "#xqipyb",
+      "name": "Filtering",
+      "x": 409,
+      "y": 244,
+      "link": "https://clawdocs.org/guides/api-webhooks#filtering",
+      "bgColor": "#fbe8d3",
+      "parent": "#bcmvix"
+    },
+    {
+      "@id": "#aa3kv2",
+      "name": "Integration Patterns",
+      "x": -66,
+      "y": 205,
+      "link": "https://clawdocs.org/guides/api-webhooks#integration-patterns",
+      "bgColor": "#c1dba8",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ee3shg",
+      "name": "Pattern 1: GitHub Actions Trigger",
+      "x": 209,
+      "y": 386,
+      "link": "https://clawdocs.org/guides/api-webhooks#pattern-1-github-actions-trigger",
+      "bgColor": "#e3f0d8",
+      "parent": "#aa3kv2"
+    },
+    {
+      "@id": "#rmz6un",
+      "name": "Pattern 2: Slack Bot via Webhooks",
+      "x": 23,
+      "y": 501,
+      "link": "https://clawdocs.org/guides/api-webhooks#pattern-2-slack-bot-via-webhooks",
+      "bgColor": "#e3f0d8",
+      "parent": "#aa3kv2"
+    },
+    {
+      "@id": "#8dsc8w",
+      "name": "Pattern 3: Home Assistant",
+      "x": -124,
+      "y": 405,
+      "link": "https://clawdocs.org/guides/api-webhooks#pattern-3-home-assistant",
+      "bgColor": "#e3f0d8",
+      "parent": "#aa3kv2"
+    },
+    {
+      "@id": "#esbs6z",
+      "name": "Pattern 4: n8n / Make / Zapier",
+      "x": -371,
+      "y": 400,
+      "link": "https://clawdocs.org/guides/api-webhooks#pattern-4-n8n-make-zapier",
+      "bgColor": "#e3f0d8",
+      "parent": "#aa3kv2"
+    },
+    {
+      "@id": "#suwi6b",
+      "name": "Pattern 5: Custom Dashboard",
+      "x": -419,
+      "y": 232,
+      "link": "https://clawdocs.org/guides/api-webhooks#pattern-5-custom-dashboard",
+      "bgColor": "#e3f0d8",
+      "parent": "#aa3kv2"
+    },
+    {
+      "@id": "#94tsvd",
+      "name": "← Guides",
+      "x": -248,
+      "y": 26,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 2,
+      "end": 5
+    },
+    {
+      "start": 2,
+      "end": 6
+    },
+    {
+      "start": 2,
+      "end": 7
+    },
+    {
+      "start": 2,
+      "end": 8
+    },
+    {
+      "start": 2,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 10,
+      "end": 11
+    },
+    {
+      "start": 10,
+      "end": 12
+    },
+    {
+      "start": 10,
+      "end": 13
+    },
+    {
+      "start": 10,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 15,
+      "end": 16
+    },
+    {
+      "start": 15,
+      "end": 17
+    },
+    {
+      "start": 15,
+      "end": 18
+    },
+    {
+      "start": 0,
+      "end": 19
+    },
+    {
+      "start": 19,
+      "end": 20
+    },
+    {
+      "start": 19,
+      "end": 21
+    },
+    {
+      "start": 19,
+      "end": 22
+    },
+    {
+      "start": 19,
+      "end": 23
+    },
+    {
+      "start": 19,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

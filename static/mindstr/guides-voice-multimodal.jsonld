@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Voice & Multimodal",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/voice-multimodal",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#jc7q9p",
+      "name": "Architecture Overview",
+      "x": -246,
+      "y": -39,
+      "link": "https://clawdocs.org/guides/voice-multimodal#architecture-overview",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#8vdzgd",
+      "name": "Media Attachments",
+      "x": -182,
+      "y": -145,
+      "link": "https://clawdocs.org/guides/voice-multimodal#media-attachments",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#5jwgsg",
+      "name": "Supported Media by Channel",
+      "x": -410,
+      "y": -244,
+      "link": "https://clawdocs.org/guides/voice-multimodal#supported-media-by-channel",
+      "bgColor": "#efe6ff",
+      "parent": "#8vdzgd"
+    },
+    {
+      "@id": "#tc4wnh",
+      "name": "Channel Permissions",
+      "x": -350,
+      "y": -404,
+      "link": "https://clawdocs.org/guides/voice-multimodal#channel-permissions",
+      "bgColor": "#efe6ff",
+      "parent": "#8vdzgd"
+    },
+    {
+      "@id": "#m3wqpa",
+      "name": "Voice Control",
+      "x": 49,
+      "y": -208,
+      "link": "https://clawdocs.org/guides/voice-multimodal#voice-control",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ragrmk",
+      "name": "Speech-to-Text",
+      "x": -106,
+      "y": -415,
+      "link": "https://clawdocs.org/guides/voice-multimodal#speech-to-text-stt",
+      "bgColor": "#ffe2ed",
+      "parent": "#m3wqpa"
+    },
+    {
+      "@id": "#n2sm32",
+      "name": "Text-to-Speech",
+      "x": 12,
+      "y": -501,
+      "link": "https://clawdocs.org/guides/voice-multimodal#text-to-speech-tts",
+      "bgColor": "#ffe2ed",
+      "parent": "#m3wqpa"
+    },
+    {
+      "@id": "#s7m6fy",
+      "name": "Full Voice Pipeline",
+      "x": 132,
+      "y": -409,
+      "link": "https://clawdocs.org/guides/voice-multimodal#full-voice-pipeline",
+      "bgColor": "#ffe2ed",
+      "parent": "#m3wqpa"
+    },
+    {
+      "@id": "#rt8c5m",
+      "name": "Voice Cost Comparison",
+      "x": 324,
+      "y": -421,
+      "link": "https://clawdocs.org/guides/voice-multimodal#voice-cost-comparison",
+      "bgColor": "#ffe2ed",
+      "parent": "#m3wqpa"
+    },
+    {
+      "@id": "#z7c9s8",
+      "name": "Vision & Image Analysis",
+      "x": 250,
+      "y": -11,
+      "link": "https://clawdocs.org/guides/voice-multimodal#vision-image-analysis",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#dj24gd",
+      "name": "Vision-Capable Models",
+      "x": 444,
+      "y": -195,
+      "link": "https://clawdocs.org/guides/voice-multimodal#vision-capable-models",
+      "bgColor": "#ffe4d9",
+      "parent": "#z7c9s8"
+    },
+    {
+      "@id": "#i466dv",
+      "name": "Image Analysis Skill",
+      "x": 581,
+      "y": -88,
+      "link": "https://clawdocs.org/guides/voice-multimodal#image-analysis-skill",
+      "bgColor": "#ffe4d9",
+      "parent": "#z7c9s8"
+    },
+    {
+      "@id": "#nwg6mc",
+      "name": "Browser Screenshots",
+      "x": 497,
+      "y": 49,
+      "link": "https://clawdocs.org/guides/voice-multimodal#browser-screenshots",
+      "bgColor": "#ffe4d9",
+      "parent": "#z7c9s8"
+    },
+    {
+      "@id": "#raxty2",
+      "name": "MCP Vision Servers",
+      "x": 545,
+      "y": 192,
+      "link": "https://clawdocs.org/guides/voice-multimodal#mcp-vision-servers",
+      "bgColor": "#ffe4d9",
+      "parent": "#z7c9s8"
+    },
+    {
+      "@id": "#is4r8e",
+      "name": "Image Generation",
+      "x": 121,
+      "y": 186,
+      "link": "https://clawdocs.org/guides/voice-multimodal#image-generation",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#kkzds3",
+      "name": "ClawHub Skills",
+      "x": 339,
+      "y": 312,
+      "link": "https://clawdocs.org/guides/voice-multimodal#clawhub-skills",
+      "bgColor": "#f2ecd2",
+      "parent": "#is4r8e"
+    },
+    {
+      "@id": "#vzavfv",
+      "name": "DALL-E Skill",
+      "x": 289,
+      "y": 437,
+      "link": "https://clawdocs.org/guides/voice-multimodal#dall-e-skill",
+      "bgColor": "#f2ecd2",
+      "parent": "#is4r8e"
+    },
+    {
+      "@id": "#cpenrd",
+      "name": "Stable Diffusion",
+      "x": 134,
+      "y": 409,
+      "link": "https://clawdocs.org/guides/voice-multimodal#stable-diffusion-local",
+      "bgColor": "#f2ecd2",
+      "parent": "#is4r8e"
+    },
+    {
+      "@id": "#dic9kt",
+      "name": "Real-Time Audio Streaming",
+      "x": -81,
+      "y": 201,
+      "link": "https://clawdocs.org/guides/voice-multimodal#real-time-audio-streaming",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ctfstm",
+      "name": "Gemini Live API",
+      "x": -40,
+      "y": 423,
+      "link": "https://clawdocs.org/guides/voice-multimodal#gemini-live-api",
+      "bgColor": "#ddf2de",
+      "parent": "#dic9kt"
+    },
+    {
+      "@id": "#qtathz",
+      "name": "When to Use Real-Time vs Pipeline",
+      "x": -262,
+      "y": 452,
+      "link": "https://clawdocs.org/guides/voice-multimodal#when-to-use-real-time-vs-pipeline",
+      "bgColor": "#ddf2de",
+      "parent": "#dic9kt"
+    },
+    {
+      "@id": "#acvh67",
+      "name": "Wearable & Mobile Multimodal",
+      "x": -212,
+      "y": 112,
+      "link": "https://clawdocs.org/guides/voice-multimodal#wearable-mobile-multimodal",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#er8sen",
+      "name": "VisionClaw",
+      "x": -391,
+      "y": 265,
+      "link": "https://clawdocs.org/guides/voice-multimodal#visionclaw-smart-glasses",
+      "bgColor": "#d1f3f4",
+      "parent": "#acvh67"
+    },
+    {
+      "@id": "#rwcfts",
+      "name": "ClawPhone",
+      "x": -534,
+      "y": 213,
+      "link": "https://clawdocs.org/guides/voice-multimodal#clawphone-android",
+      "bgColor": "#d1f3f4",
+      "parent": "#acvh67"
+    },
+    {
+      "@id": "#agt8wh",
+      "name": "← Guides",
+      "x": -248,
+      "y": 29,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 5,
+      "end": 6
+    },
+    {
+      "start": 5,
+      "end": 7
+    },
+    {
+      "start": 5,
+      "end": 8
+    },
+    {
+      "start": 5,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 10,
+      "end": 11
+    },
+    {
+      "start": 10,
+      "end": 12
+    },
+    {
+      "start": 10,
+      "end": 13
+    },
+    {
+      "start": 10,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 15,
+      "end": 16
+    },
+    {
+      "start": 15,
+      "end": 17
+    },
+    {
+      "start": 15,
+      "end": 18
+    },
+    {
+      "start": 0,
+      "end": 19
+    },
+    {
+      "start": 19,
+      "end": 20
+    },
+    {
+      "start": 19,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 22,
+      "end": 23
+    },
+    {
+      "start": 22,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

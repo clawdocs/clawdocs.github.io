@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Real-World Use Cases",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/use-cases",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#ecc9ps",
+      "name": "Developer Workflows",
+      "x": -212,
+      "y": -112,
+      "link": "https://clawdocs.org/guides/use-cases#developer-workflows",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#d5uvc5",
+      "name": "Multi-Agent Development Coordinator",
+      "x": -483,
+      "y": -109,
+      "link": "https://clawdocs.org/guides/use-cases#1-multi-agent-development-coordinator",
+      "bgColor": "#daeeff",
+      "parent": "#ecc9ps"
+    },
+    {
+      "@id": "#9e2rcx",
+      "name": "SMS Chatbot Diagnosis and Repair",
+      "x": -492,
+      "y": -277,
+      "link": "https://clawdocs.org/guides/use-cases#2-sms-chatbot-diagnosis-and-repair",
+      "bgColor": "#daeeff",
+      "parent": "#ecc9ps"
+    },
+    {
+      "@id": "#y7aute",
+      "name": "Autonomous Coding from Phone",
+      "x": -317,
+      "y": -329,
+      "link": "https://clawdocs.org/guides/use-cases#3-autonomous-coding-from-phone",
+      "bgColor": "#daeeff",
+      "parent": "#ecc9ps"
+    },
+    {
+      "@id": "#e2rfgf",
+      "name": "DevOps & SysAdmin",
+      "x": 61,
+      "y": -206,
+      "link": "https://clawdocs.org/guides/use-cases#devops-sysadmin",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7f8mi6",
+      "name": "3AM Error Auto-Pilot",
+      "x": -118,
+      "y": -413,
+      "link": "https://clawdocs.org/guides/use-cases#4-3am-error-auto-pilot",
+      "bgColor": "#efe6ff",
+      "parent": "#e2rfgf"
+    },
+    {
+      "@id": "#5q7p4z",
+      "name": "Slack/Basecamp + Sentry + Auto-PR",
+      "x": 17,
+      "y": -501,
+      "link": "https://clawdocs.org/guides/use-cases#5-slackbasecamp-sentry-auto-pr",
+      "bgColor": "#efe6ff",
+      "parent": "#e2rfgf"
+    },
+    {
+      "@id": "#it9xnv",
+      "name": "CI/CD Pipeline Monitor + Dependency Scanner",
+      "x": 192,
+      "y": -412,
+      "link": "https://clawdocs.org/guides/use-cases#6-cicd-pipeline-monitor-dependency-scanner",
+      "bgColor": "#efe6ff",
+      "parent": "#e2rfgf"
+    },
+    {
+      "@id": "#de72di",
+      "name": "Pull Request Review Bot",
+      "x": 388,
+      "y": -368,
+      "link": "https://clawdocs.org/guides/use-cases#7-pull-request-review-bot",
+      "bgColor": "#efe6ff",
+      "parent": "#e2rfgf"
+    },
+    {
+      "@id": "#stakqr",
+      "name": "Knowledge Management & Productivity",
+      "x": 292,
+      "y": -38,
+      "link": "https://clawdocs.org/guides/use-cases#knowledge-management-productivity",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#fg7vrn",
+      "name": "Full-Stack Knowledge Pipeline",
+      "x": 459,
+      "y": -168,
+      "link": "https://clawdocs.org/guides/use-cases#8-full-stack-knowledge-pipeline-reef",
+      "bgColor": "#ffe2ed",
+      "parent": "#stakqr"
+    },
+    {
+      "@id": "#89mkyj",
+      "name": "Inbox Zero",
+      "x": 581,
+      "y": -89,
+      "link": "https://clawdocs.org/guides/use-cases#9-inbox-zero-15000-emails",
+      "bgColor": "#ffe2ed",
+      "parent": "#stakqr"
+    },
+    {
+      "@id": "#p7m76q",
+      "name": "CRM + Monday Morning Reports",
+      "x": 499,
+      "y": 20,
+      "link": "https://clawdocs.org/guides/use-cases#10-crm-monday-morning-reports",
+      "bgColor": "#ffe2ed",
+      "parent": "#stakqr"
+    },
+    {
+      "@id": "#n3cpu4",
+      "name": "Smart Home & IoT",
+      "x": 205,
+      "y": 122,
+      "link": "https://clawdocs.org/guides/use-cases#smart-home-iot",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qcu7i2",
+      "name": "Home Assistant Control",
+      "x": 455,
+      "y": 177,
+      "link": "https://clawdocs.org/guides/use-cases#11-home-assistant-control-claudette",
+      "bgColor": "#ffe4d9",
+      "parent": "#n3cpu4"
+    },
+    {
+      "@id": "#2sgyfv",
+      "name": "Raspberry Pi + WHOOP Fitness Dashboard",
+      "x": 441,
+      "y": 333,
+      "link": "https://clawdocs.org/guides/use-cases#12-raspberry-pi-whoop-fitness-dashboard",
+      "bgColor": "#ffe4d9",
+      "parent": "#n3cpu4"
+    },
+    {
+      "@id": "#mrf7q5",
+      "name": "Content & Social Media",
+      "x": 68,
+      "y": 204,
+      "link": "https://clawdocs.org/guides/use-cases#content-social-media",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#dw6fds",
+      "name": "RSS-to-Twitter Content Pipeline",
+      "x": 194,
+      "y": 392,
+      "link": "https://clawdocs.org/guides/use-cases#13-rss-to-twitter-content-pipeline",
+      "bgColor": "#f2ecd2",
+      "parent": "#mrf7q5"
+    },
+    {
+      "@id": "#qrdifd",
+      "name": "OpusClip Content Machine",
+      "x": 72,
+      "y": 498,
+      "link": "https://clawdocs.org/guides/use-cases#14-opusclip-content-machine",
+      "bgColor": "#f2ecd2",
+      "parent": "#mrf7q5"
+    },
+    {
+      "@id": "#cxscyq",
+      "name": "Finance & Trading",
+      "x": -139,
+      "y": 177,
+      "link": "https://clawdocs.org/guides/use-cases#finance-trading",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#nukx48",
+      "name": "Polymarket Prediction Market Bot",
+      "x": -146,
+      "y": 383,
+      "link": "https://clawdocs.org/guides/use-cases#15-polymarket-prediction-market-bot",
+      "bgColor": "#ddf2de",
+      "parent": "#cxscyq"
+    },
+    {
+      "@id": "#h3fdx5",
+      "name": "Crypto Whale Wallet Monitor",
+      "x": -328,
+      "y": 429,
+      "link": "https://clawdocs.org/guides/use-cases#16-crypto-whale-wallet-monitor",
+      "bgColor": "#ddf2de",
+      "parent": "#cxscyq"
+    },
+    {
+      "@id": "#gdbyg8",
+      "name": "Wall Street-Grade Stock Screener",
+      "x": -386,
+      "y": 270,
+      "link": "https://clawdocs.org/guides/use-cases#17-wall-street-grade-stock-screener",
+      "bgColor": "#ddf2de",
+      "parent": "#cxscyq"
+    },
+    {
+      "@id": "#5q845u",
+      "name": "Creative & Personal",
+      "x": -237,
+      "y": 67,
+      "link": "https://clawdocs.org/guides/use-cases#creative-personal",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#xm4fi4",
+      "name": "← Guides",
+      "x": -249,
+      "y": 21,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 5,
+      "end": 6
+    },
+    {
+      "start": 5,
+      "end": 7
+    },
+    {
+      "start": 5,
+      "end": 8
+    },
+    {
+      "start": 5,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 10,
+      "end": 11
+    },
+    {
+      "start": 10,
+      "end": 12
+    },
+    {
+      "start": 10,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 14,
+      "end": 15
+    },
+    {
+      "start": 14,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    },
+    {
+      "start": 17,
+      "end": 18
+    },
+    {
+      "start": 17,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 20,
+      "end": 21
+    },
+    {
+      "start": 20,
+      "end": 22
+    },
+    {
+      "start": 20,
+      "end": 23
+    },
+    {
+      "start": 0,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

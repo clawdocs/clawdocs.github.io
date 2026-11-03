@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Skill Development",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/skill-development",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#bkdx9m",
+      "name": "Your First Skill",
+      "x": -248,
+      "y": -30,
+      "link": "https://clawdocs.org/guides/skill-development#your-first-skill",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#uyi44v",
+      "name": "SKILL.md Format",
+      "x": -211,
+      "y": -113,
+      "link": "https://clawdocs.org/guides/skill-development#skillmd-format",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#pepean",
+      "name": "Frontmatter Fields",
+      "x": -450,
+      "y": -186,
+      "link": "https://clawdocs.org/guides/skill-development#frontmatter-fields",
+      "bgColor": "#efe6ff",
+      "parent": "#uyi44v"
+    },
+    {
+      "@id": "#uxyq6b",
+      "name": "Markdown Body",
+      "x": -455,
+      "y": -320,
+      "link": "https://clawdocs.org/guides/skill-development#markdown-body",
+      "bgColor": "#efe6ff",
+      "parent": "#uyi44v"
+    },
+    {
+      "@id": "#pms64g",
+      "name": "Triggers",
+      "x": 41,
+      "y": -210,
+      "link": "https://clawdocs.org/guides/skill-development#triggers",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#cywvmh",
+      "name": "Keyword Triggers",
+      "x": -224,
+      "y": -380,
+      "link": "https://clawdocs.org/guides/skill-development#keyword-triggers",
+      "bgColor": "#ffe2ed",
+      "parent": "#pms64g"
+    },
+    {
+      "@id": "#mmmrka",
+      "name": "Regex Triggers",
+      "x": -139,
+      "y": -487,
+      "link": "https://clawdocs.org/guides/skill-development#regex-triggers",
+      "bgColor": "#ffe2ed",
+      "parent": "#pms64g"
+    },
+    {
+      "@id": "#u2r43v",
+      "name": "Attachment Triggers",
+      "x": 3,
+      "y": -425,
+      "link": "https://clawdocs.org/guides/skill-development#attachment-triggers",
+      "bgColor": "#ffe2ed",
+      "parent": "#pms64g"
+    },
+    {
+      "@id": "#pnzi2z",
+      "name": "Always-On Triggers",
+      "x": 156,
+      "y": -484,
+      "link": "https://clawdocs.org/guides/skill-development#always-on-triggers",
+      "bgColor": "#ffe2ed",
+      "parent": "#pms64g"
+    },
+    {
+      "@id": "#2yz4j8",
+      "name": "Compound Triggers",
+      "x": 241,
+      "y": -369,
+      "link": "https://clawdocs.org/guides/skill-development#compound-triggers",
+      "bgColor": "#ffe2ed",
+      "parent": "#pms64g"
+    },
+    {
+      "@id": "#xgkrrw",
+      "name": "Trigger Design Tips",
+      "x": 416,
+      "y": -358,
+      "link": "https://clawdocs.org/guides/skill-development#trigger-design-tips",
+      "bgColor": "#ffe2ed",
+      "parent": "#pms64g"
+    },
+    {
+      "@id": "#2yqrnt",
+      "name": "Tools",
+      "x": 239,
+      "y": -63,
+      "link": "https://clawdocs.org/guides/skill-development#tools",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#igep64",
+      "name": "Principle of Least Privilege",
+      "x": 478,
+      "y": -126,
+      "link": "https://clawdocs.org/guides/skill-development#principle-of-least-privilege",
+      "bgColor": "#ffe4d9",
+      "parent": "#2yqrnt"
+    },
+    {
+      "@id": "#hgg764",
+      "name": "Configuration",
+      "x": 208,
+      "y": 118,
+      "link": "https://clawdocs.org/guides/skill-development#configuration",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#pqcgpp",
+      "name": "Basic Config",
+      "x": 495,
+      "y": 57,
+      "link": "https://clawdocs.org/guides/skill-development#basic-config",
+      "bgColor": "#f2ecd2",
+      "parent": "#hgg764"
+    },
+    {
+      "@id": "#jhj67c",
+      "name": "Typed Config",
+      "x": 553,
+      "y": 174,
+      "link": "https://clawdocs.org/guides/skill-development#typed-config",
+      "bgColor": "#f2ecd2",
+      "parent": "#hgg764"
+    },
+    {
+      "@id": "#mr58qm",
+      "name": "User Configuration",
+      "x": 415,
+      "y": 237,
+      "link": "https://clawdocs.org/guides/skill-development#user-configuration",
+      "bgColor": "#f2ecd2",
+      "parent": "#hgg764"
+    },
+    {
+      "@id": "#hawxjn",
+      "name": "Referencing Config in Instructions",
+      "x": 349,
+      "y": 404,
+      "link": "https://clawdocs.org/guides/skill-development#referencing-config-in-instructions",
+      "bgColor": "#f2ecd2",
+      "parent": "#hgg764"
+    },
+    {
+      "@id": "#y6wpy5",
+      "name": "Conditional Activation",
+      "x": -88,
+      "y": 199,
+      "link": "https://clawdocs.org/guides/skill-development#conditional-activation",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4q7gbw",
+      "name": "Binary Dependencies",
+      "x": 34,
+      "y": 424,
+      "link": "https://clawdocs.org/guides/skill-development#binary-dependencies",
+      "bgColor": "#ddf2de",
+      "parent": "#y6wpy5"
+    },
+    {
+      "@id": "#98geuv",
+      "name": "Environment Variables",
+      "x": -123,
+      "y": 491,
+      "link": "https://clawdocs.org/guides/skill-development#environment-variables",
+      "bgColor": "#ddf2de",
+      "parent": "#y6wpy5"
+    },
+    {
+      "@id": "#x5dcei",
+      "name": "Platform Constraints",
+      "x": -225,
+      "y": 374,
+      "link": "https://clawdocs.org/guides/skill-development#platform-constraints",
+      "bgColor": "#ddf2de",
+      "parent": "#y6wpy5"
+    },
+    {
+      "@id": "#uchvmk",
+      "name": "Combined Requirements",
+      "x": -421,
+      "y": 357,
+      "link": "https://clawdocs.org/guides/skill-development#combined-requirements",
+      "bgColor": "#ddf2de",
+      "parent": "#y6wpy5"
+    },
+    {
+      "@id": "#72kqt7",
+      "name": "State Management",
+      "x": -230,
+      "y": 83,
+      "link": "https://clawdocs.org/guides/skill-development#state-management",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vbasu4",
+      "name": "← Guides",
+      "x": -248,
+      "y": 28,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 5,
+      "end": 6
+    },
+    {
+      "start": 5,
+      "end": 7
+    },
+    {
+      "start": 5,
+      "end": 8
+    },
+    {
+      "start": 5,
+      "end": 9
+    },
+    {
+      "start": 5,
+      "end": 10
+    },
+    {
+      "start": 5,
+      "end": 11
+    },
+    {
+      "start": 0,
+      "end": 12
+    },
+    {
+      "start": 12,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 14,
+      "end": 15
+    },
+    {
+      "start": 14,
+      "end": 16
+    },
+    {
+      "start": 14,
+      "end": 17
+    },
+    {
+      "start": 14,
+      "end": 18
+    },
+    {
+      "start": 0,
+      "end": 19
+    },
+    {
+      "start": 19,
+      "end": 20
+    },
+    {
+      "start": 19,
+      "end": 21
+    },
+    {
+      "start": 19,
+      "end": 22
+    },
+    {
+      "start": 19,
+      "end": 23
+    },
+    {
+      "start": 0,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

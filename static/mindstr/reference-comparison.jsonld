@@ -1,0 +1,246 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Comparison",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/reference/comparison",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#p3ufd5",
+      "name": "Quick Comparison Matrix",
+      "x": -238,
+      "y": -66,
+      "link": "https://clawdocs.org/reference/comparison#quick-comparison-matrix",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7wjdud",
+      "name": "Autonomous AI Agents",
+      "x": -116,
+      "y": -188,
+      "link": "https://clawdocs.org/reference/comparison#autonomous-ai-agents",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#hiz6s8",
+      "name": "Auto-GPT",
+      "x": -315,
+      "y": -330,
+      "link": "https://clawdocs.org/reference/comparison#auto-gpt",
+      "bgColor": "#efe6ff",
+      "parent": "#7wjdud"
+    },
+    {
+      "@id": "#giqb45",
+      "name": "Open Interpreter",
+      "x": -171,
+      "y": -480,
+      "link": "https://clawdocs.org/reference/comparison#open-interpreter",
+      "bgColor": "#efe6ff",
+      "parent": "#7wjdud"
+    },
+    {
+      "@id": "#b2t6ad",
+      "name": "Multi-Agent Frameworks",
+      "x": 164,
+      "y": -160,
+      "link": "https://clawdocs.org/reference/comparison#multi-agent-frameworks",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#fs9a6q",
+      "name": "CrewAI",
+      "x": 139,
+      "y": -408,
+      "link": "https://clawdocs.org/reference/comparison#crewai",
+      "bgColor": "#ffe2ed",
+      "parent": "#b2t6ad"
+    },
+    {
+      "@id": "#grzrcy",
+      "name": "LangChain / LangGraph",
+      "x": 387,
+      "y": -379,
+      "link": "https://clawdocs.org/reference/comparison#langchain-langgraph",
+      "bgColor": "#ffe2ed",
+      "parent": "#b2t6ad"
+    },
+    {
+      "@id": "#92eda3",
+      "name": "MetaGPT",
+      "x": 456,
+      "y": -175,
+      "link": "https://clawdocs.org/reference/comparison#metagpt",
+      "bgColor": "#ffe2ed",
+      "parent": "#b2t6ad"
+    },
+    {
+      "@id": "#gf9353",
+      "name": "AI Coding Tools",
+      "x": 175,
+      "y": 152,
+      "link": "https://clawdocs.org/reference/comparison#ai-coding-tools",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#w3kv5h",
+      "name": "Devin",
+      "x": 489,
+      "y": 90,
+      "link": "https://clawdocs.org/reference/comparison#devin-by-cognition",
+      "bgColor": "#ffe4d9",
+      "parent": "#gf9353"
+    },
+    {
+      "@id": "#335yww",
+      "name": "Claude Code / Cursor / GitHub Copilot",
+      "x": 413,
+      "y": 359,
+      "link": "https://clawdocs.org/reference/comparison#claude-code-cursor-github-copilot",
+      "bgColor": "#ffe4d9",
+      "parent": "#gf9353"
+    },
+    {
+      "@id": "#q9ne5i",
+      "name": "Goose",
+      "x": 96,
+      "y": 417,
+      "link": "https://clawdocs.org/reference/comparison#goose-by-block",
+      "bgColor": "#ffe4d9",
+      "parent": "#gf9353"
+    },
+    {
+      "@id": "#ckzen2",
+      "name": "Workflow Automation",
+      "x": -100,
+      "y": 195,
+      "link": "https://clawdocs.org/reference/comparison#workflow-automation",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#bkbqhs",
+      "name": "n8n / Make / Zapier",
+      "x": -200,
+      "y": 390,
+      "link": "https://clawdocs.org/reference/comparison#n8n-make-zapier",
+      "bgColor": "#f2ecd2",
+      "parent": "#ckzen2"
+    },
+    {
+      "@id": "#aukyc8",
+      "name": "What Makes OpenClaw Unique",
+      "x": -196,
+      "y": 131,
+      "link": "https://clawdocs.org/reference/comparison#what-makes-openclaw-unique",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#d2uwxu",
+      "name": "The Trade-off",
+      "x": -393,
+      "y": 263,
+      "link": "https://clawdocs.org/reference/comparison#the-trade-off",
+      "bgColor": "#ddf2de",
+      "parent": "#aukyc8"
+    },
+    {
+      "@id": "#9fns9g",
+      "name": "← Reference",
+      "x": -244,
+      "y": 47,
+      "link": "./reference.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 5,
+      "end": 6
+    },
+    {
+      "start": 5,
+      "end": 7
+    },
+    {
+      "start": 5,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 9,
+      "end": 10
+    },
+    {
+      "start": 9,
+      "end": 11
+    },
+    {
+      "start": 9,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 15,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    }
+  ],
+  "selectedNode": 0
+}

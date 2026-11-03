@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Plugin System",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/plugin-system",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#48sh62",
+      "name": "Plugins vs Skills",
+      "x": -246,
+      "y": -38,
+      "link": "https://clawdocs.org/guides/plugin-system#plugins-vs-skills",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7p9b7p",
+      "name": "CLI Commands",
+      "x": -218,
+      "y": -105,
+      "link": "https://clawdocs.org/guides/plugin-system#cli-commands",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qg6nvb",
+      "name": "Quick Examples",
+      "x": -435,
+      "y": -209,
+      "link": "https://clawdocs.org/guides/plugin-system#quick-examples",
+      "bgColor": "#efe6ff",
+      "parent": "#7p9b7p"
+    },
+    {
+      "@id": "#w94kzu",
+      "name": "Official Plugins",
+      "x": -63,
+      "y": -206,
+      "link": "https://clawdocs.org/guides/plugin-system#official-plugins",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#hhm2db",
+      "name": "Core Plugins",
+      "x": -306,
+      "y": -336,
+      "link": "https://clawdocs.org/guides/plugin-system#core-plugins-bundled",
+      "bgColor": "#ffe2ed",
+      "parent": "#w94kzu"
+    },
+    {
+      "@id": "#gdy6vg",
+      "name": "External Official Plugins",
+      "x": -187,
+      "y": -476,
+      "link": "https://clawdocs.org/guides/plugin-system#external-official-plugins-install-on-demand",
+      "bgColor": "#ffe2ed",
+      "parent": "#w94kzu"
+    },
+    {
+      "@id": "#tuysn4",
+      "name": "Notable Community Plugins",
+      "x": 42,
+      "y": -424,
+      "link": "https://clawdocs.org/guides/plugin-system#notable-community-plugins",
+      "bgColor": "#ffe2ed",
+      "parent": "#w94kzu"
+    },
+    {
+      "@id": "#hnkmaq",
+      "name": "Configuration",
+      "x": 134,
+      "y": -179,
+      "link": "https://clawdocs.org/guides/plugin-system#configuration",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jsu8k6",
+      "name": "Per-Plugin Config",
+      "x": 269,
+      "y": -359,
+      "link": "https://clawdocs.org/guides/plugin-system#per-plugin-config",
+      "bgColor": "#ffe4d9",
+      "parent": "#hnkmaq"
+    },
+    {
+      "@id": "#4um8px",
+      "name": "SecretRef Contract",
+      "x": 223,
+      "y": -97,
+      "link": "https://clawdocs.org/guides/plugin-system#secretref-contract",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#gd73b7",
+      "name": "How It Works",
+      "x": 402,
+      "y": -252,
+      "link": "https://clawdocs.org/guides/plugin-system#how-it-works",
+      "bgColor": "#f2ecd2",
+      "parent": "#4um8px"
+    },
+    {
+      "@id": "#yn33b8",
+      "name": "Security Properties",
+      "x": 556,
+      "y": -167,
+      "link": "https://clawdocs.org/guides/plugin-system#security-properties",
+      "bgColor": "#f2ecd2",
+      "parent": "#4um8px"
+    },
+    {
+      "@id": "#tsfy3q",
+      "name": "SQLite Plugin Index",
+      "x": 245,
+      "y": 42,
+      "link": "https://clawdocs.org/guides/plugin-system#sqlite-plugin-index",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#hrjit4",
+      "name": "Benefits",
+      "x": 499,
+      "y": 28,
+      "link": "https://clawdocs.org/guides/plugin-system#benefits",
+      "bgColor": "#ddf2de",
+      "parent": "#tsfy3q"
+    },
+    {
+      "@id": "#i4zz58",
+      "name": "Diagnostics",
+      "x": 558,
+      "y": 164,
+      "link": "https://clawdocs.org/guides/plugin-system#diagnostics",
+      "bgColor": "#ddf2de",
+      "parent": "#tsfy3q"
+    },
+    {
+      "@id": "#zatcmm",
+      "name": "Plugin Hooks",
+      "x": 136,
+      "y": 178,
+      "link": "https://clawdocs.org/guides/plugin-system#plugin-hooks",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#9cssmz",
+      "name": "Channel Hooks",
+      "x": 373,
+      "y": 283,
+      "link": "https://clawdocs.org/guides/plugin-system#channel-hooks",
+      "bgColor": "#d1f3f4",
+      "parent": "#zatcmm"
+    },
+    {
+      "@id": "#ndns5v",
+      "name": "Provider Hooks",
+      "x": 321,
+      "y": 421,
+      "link": "https://clawdocs.org/guides/plugin-system#provider-hooks",
+      "bgColor": "#d1f3f4",
+      "parent": "#zatcmm"
+    },
+    {
+      "@id": "#gjn6ec",
+      "name": "Agent Hooks",
+      "x": 151,
+      "y": 405,
+      "link": "https://clawdocs.org/guides/plugin-system#agent-hooks",
+      "bgColor": "#d1f3f4",
+      "parent": "#zatcmm"
+    },
+    {
+      "@id": "#n4grmd",
+      "name": "Building a Custom Plugin",
+      "x": -137,
+      "y": 178,
+      "link": "https://clawdocs.org/guides/plugin-system#building-a-custom-plugin",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#2fazp6",
+      "name": "Package Structure",
+      "x": -80,
+      "y": 420,
+      "link": "https://clawdocs.org/guides/plugin-system#package-structure",
+      "bgColor": "#daeeff",
+      "parent": "#n4grmd"
+    },
+    {
+      "@id": "#2fnbdr",
+      "name": "Minimal Plugin",
+      "x": -253,
+      "y": 453,
+      "link": "https://clawdocs.org/guides/plugin-system#minimal-plugin",
+      "bgColor": "#daeeff",
+      "parent": "#n4grmd"
+    },
+    {
+      "@id": "#sn5ddx",
+      "name": "package.json",
+      "x": -326,
+      "y": 322,
+      "link": "https://clawdocs.org/guides/plugin-system#packagejson",
+      "bgColor": "#daeeff",
+      "parent": "#n4grmd"
+    },
+    {
+      "@id": "#6j9knm",
+      "name": "Build and Install",
+      "x": -495,
+      "y": 273,
+      "link": "https://clawdocs.org/guides/plugin-system#build-and-install",
+      "bgColor": "#daeeff",
+      "parent": "#n4grmd"
+    },
+    {
+      "@id": "#sejhpy",
+      "name": "← Guides",
+      "x": -247,
+      "y": 34,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 4,
+      "end": 5
+    },
+    {
+      "start": 4,
+      "end": 6
+    },
+    {
+      "start": 4,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 8,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 10,
+      "end": 11
+    },
+    {
+      "start": 10,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 13,
+      "end": 14
+    },
+    {
+      "start": 13,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 16,
+      "end": 17
+    },
+    {
+      "start": 16,
+      "end": 18
+    },
+    {
+      "start": 16,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 20,
+      "end": 21
+    },
+    {
+      "start": 20,
+      "end": 22
+    },
+    {
+      "start": 20,
+      "end": 23
+    },
+    {
+      "start": 20,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

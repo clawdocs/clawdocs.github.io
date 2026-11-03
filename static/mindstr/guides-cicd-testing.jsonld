@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "CI/CD & Testing",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/cicd-testing",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#4e33t4",
+      "name": "Testing Skills",
+      "x": -230,
+      "y": -83,
+      "link": "https://clawdocs.org/guides/cicd-testing#testing-skills",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#5kr5a2",
+      "name": "Dry-Run Testing",
+      "x": -492,
+      "y": -74,
+      "link": "https://clawdocs.org/guides/cicd-testing#dry-run-testing",
+      "bgColor": "#daeeff",
+      "parent": "#4e33t4"
+    },
+    {
+      "@id": "#h8q6vb",
+      "name": "Validation",
+      "x": -545,
+      "y": -192,
+      "link": "https://clawdocs.org/guides/cicd-testing#validation",
+      "bgColor": "#daeeff",
+      "parent": "#4e33t4"
+    },
+    {
+      "@id": "#mrdm83",
+      "name": "Heartbeat Dry-Run",
+      "x": -406,
+      "y": -247,
+      "link": "https://clawdocs.org/guides/cicd-testing#heartbeat-dry-run",
+      "bgColor": "#daeeff",
+      "parent": "#4e33t4"
+    },
+    {
+      "@id": "#ikfnks",
+      "name": "Security Scanning",
+      "x": -71,
+      "y": -204,
+      "link": "https://clawdocs.org/guides/cicd-testing#security-scanning",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#bpp6gq",
+      "name": "Built-In Scanners",
+      "x": -269,
+      "y": -359,
+      "link": "https://clawdocs.org/guides/cicd-testing#built-in-scanners",
+      "bgColor": "#efe6ff",
+      "parent": "#ikfnks"
+    },
+    {
+      "@id": "#smrrfn",
+      "name": "Third-Party Scanners",
+      "x": -180,
+      "y": -478,
+      "link": "https://clawdocs.org/guides/cicd-testing#third-party-scanners",
+      "bgColor": "#efe6ff",
+      "parent": "#ikfnks"
+    },
+    {
+      "@id": "#u9ytiq",
+      "name": "Skill Workshop Gating",
+      "x": -15,
+      "y": -425,
+      "link": "https://clawdocs.org/guides/cicd-testing#skill-workshop-gating",
+      "bgColor": "#efe6ff",
+      "parent": "#ikfnks"
+    },
+    {
+      "@id": "#7zygv8",
+      "name": "Integration Testing",
+      "x": 195,
+      "y": -133,
+      "link": "https://clawdocs.org/guides/cicd-testing#integration-testing",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vixu2n",
+      "name": "Testing Agent Responses",
+      "x": 220,
+      "y": -389,
+      "link": "https://clawdocs.org/guides/cicd-testing#testing-agent-responses",
+      "bgColor": "#ffe2ed",
+      "parent": "#7zygv8"
+    },
+    {
+      "@id": "#8vejzr",
+      "name": "Conversation Regression Testing",
+      "x": 425,
+      "y": -345,
+      "link": "https://clawdocs.org/guides/cicd-testing#conversation-regression-testing",
+      "bgColor": "#ffe2ed",
+      "parent": "#7zygv8"
+    },
+    {
+      "@id": "#2wpawm",
+      "name": "Testing MCP Servers",
+      "x": 453,
+      "y": -180,
+      "link": "https://clawdocs.org/guides/cicd-testing#testing-mcp-servers",
+      "bgColor": "#ffe2ed",
+      "parent": "#7zygv8"
+    },
+    {
+      "@id": "#vhrqun",
+      "name": "Testing Plugins",
+      "x": 579,
+      "y": -98,
+      "link": "https://clawdocs.org/guides/cicd-testing#testing-plugins",
+      "bgColor": "#ffe2ed",
+      "parent": "#7zygv8"
+    },
+    {
+      "@id": "#u8fjrm",
+      "name": "GitHub Actions",
+      "x": 200,
+      "y": 128,
+      "link": "https://clawdocs.org/guides/cicd-testing#github-actions",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#k8pnp6",
+      "name": "PR Review Bot",
+      "x": 487,
+      "y": 98,
+      "link": "https://clawdocs.org/guides/cicd-testing#pr-review-bot",
+      "bgColor": "#ffe4d9",
+      "parent": "#u8fjrm"
+    },
+    {
+      "@id": "#p7yi8y",
+      "name": "Skill Validation Pipeline",
+      "x": 516,
+      "y": 243,
+      "link": "https://clawdocs.org/guides/cicd-testing#skill-validation-pipeline",
+      "bgColor": "#ffe4d9",
+      "parent": "#u8fjrm"
+    },
+    {
+      "@id": "#mu3vnx",
+      "name": "Deploy on Merge",
+      "x": 356,
+      "y": 299,
+      "link": "https://clawdocs.org/guides/cicd-testing#deploy-on-merge",
+      "bgColor": "#ffe4d9",
+      "parent": "#u8fjrm"
+    },
+    {
+      "@id": "#yshrhk",
+      "name": "Nightly Health Check",
+      "x": 306,
+      "y": 429,
+      "link": "https://clawdocs.org/guides/cicd-testing#nightly-health-check",
+      "bgColor": "#ffe4d9",
+      "parent": "#u8fjrm"
+    },
+    {
+      "@id": "#mmbzgb",
+      "name": "GitLab CI",
+      "x": 45,
+      "y": 209,
+      "link": "https://clawdocs.org/guides/cicd-testing#gitlab-ci",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#pfyzxs",
+      "name": "Docker Deployment",
+      "x": -147,
+      "y": 172,
+      "link": "https://clawdocs.org/guides/cicd-testing#docker-deployment",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ezzp3f",
+      "name": "Basic Docker Compose",
+      "x": -79,
+      "y": 417,
+      "link": "https://clawdocs.org/guides/cicd-testing#basic-docker-compose",
+      "bgColor": "#ddf2de",
+      "parent": "#pfyzxs"
+    },
+    {
+      "@id": "#vpe5jw",
+      "name": "Production-Hardened Docker",
+      "x": -293,
+      "y": 440,
+      "link": "https://clawdocs.org/guides/cicd-testing#production-hardened-docker",
+      "bgColor": "#ddf2de",
+      "parent": "#pfyzxs"
+    },
+    {
+      "@id": "#iista7",
+      "name": "Docker with Local Models",
+      "x": -369,
+      "y": 287,
+      "link": "https://clawdocs.org/guides/cicd-testing#docker-with-local-models",
+      "bgColor": "#ddf2de",
+      "parent": "#pfyzxs"
+    },
+    {
+      "@id": "#7tqy9e",
+      "name": "Kubernetes",
+      "x": -525,
+      "y": 229,
+      "link": "https://clawdocs.org/guides/cicd-testing#kubernetes-helm",
+      "bgColor": "#ddf2de",
+      "parent": "#pfyzxs"
+    },
+    {
+      "@id": "#im7js4",
+      "name": "← Guides",
+      "x": -248,
+      "y": 27,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 5,
+      "end": 6
+    },
+    {
+      "start": 5,
+      "end": 7
+    },
+    {
+      "start": 5,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 9,
+      "end": 10
+    },
+    {
+      "start": 9,
+      "end": 11
+    },
+    {
+      "start": 9,
+      "end": 12
+    },
+    {
+      "start": 9,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 14,
+      "end": 15
+    },
+    {
+      "start": 14,
+      "end": 16
+    },
+    {
+      "start": 14,
+      "end": 17
+    },
+    {
+      "start": 14,
+      "end": 18
+    },
+    {
+      "start": 0,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 20,
+      "end": 21
+    },
+    {
+      "start": 20,
+      "end": 22
+    },
+    {
+      "start": 20,
+      "end": 23
+    },
+    {
+      "start": 20,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

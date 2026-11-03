@@ -1,0 +1,77 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Recipe: Code Reviewer",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/recipes/code-reviewer",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#92zyxr",
+      "name": "The Skill",
+      "x": -187,
+      "y": -141,
+      "link": "https://clawdocs.org/guides/recipes/code-reviewer#the-skill",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vmbe6s",
+      "name": "Heartbeat Integration",
+      "x": 187,
+      "y": -141,
+      "link": "https://clawdocs.org/guides/recipes/code-reviewer#heartbeat-integration",
+      "bgColor": "#f3bee1",
+      "parent": "#this"
+    },
+    {
+      "@id": "#xgxe9a",
+      "name": "Usage",
+      "x": 144,
+      "y": 174,
+      "link": "https://clawdocs.org/guides/recipes/code-reviewer#usage",
+      "bgColor": "#f1c99c",
+      "parent": "#this"
+    },
+    {
+      "@id": "#gi9ic6",
+      "name": "← Recipes",
+      "x": -187,
+      "y": 141,
+      "link": "./recipes.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    }
+  ],
+  "selectedNode": 0
+}

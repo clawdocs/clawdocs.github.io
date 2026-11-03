@@ -1,0 +1,246 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Heartbeat System",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/architecture/heartbeat",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#83zuf9",
+      "name": "How It Works",
+      "x": -240,
+      "y": -59,
+      "link": "https://clawdocs.org/architecture/heartbeat#how-it-works",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#vrzefk",
+      "name": "Per-Agent Scheduling",
+      "x": -480,
+      "y": -118,
+      "link": "https://clawdocs.org/architecture/heartbeat#per-agent-scheduling",
+      "bgColor": "#daeeff",
+      "parent": "#83zuf9"
+    },
+    {
+      "@id": "#hvyxxr",
+      "name": "Defining Heartbeat Tasks",
+      "x": -118,
+      "y": -189,
+      "link": "https://clawdocs.org/architecture/heartbeat#defining-heartbeat-tasks",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qahfae",
+      "name": "Writing Effective Tasks",
+      "x": -307,
+      "y": -336,
+      "link": "https://clawdocs.org/architecture/heartbeat#writing-effective-tasks",
+      "bgColor": "#efe6ff",
+      "parent": "#hvyxxr"
+    },
+    {
+      "@id": "#tgdsut",
+      "name": "Keep It Concise",
+      "x": -122,
+      "y": -491,
+      "link": "https://clawdocs.org/architecture/heartbeat#keep-it-concise",
+      "bgColor": "#efe6ff",
+      "parent": "#hvyxxr"
+    },
+    {
+      "@id": "#ijf3kk",
+      "name": "Heartbeat Responses",
+      "x": 85,
+      "y": -201,
+      "link": "https://clawdocs.org/architecture/heartbeat#heartbeat-responses",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#anp567",
+      "name": "Cost Analysis",
+      "x": 244,
+      "y": -46,
+      "link": "https://clawdocs.org/architecture/heartbeat#cost-analysis",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#svn3gp",
+      "name": "Cost Per Model",
+      "x": 395,
+      "y": -261,
+      "link": "https://clawdocs.org/architecture/heartbeat#cost-per-model",
+      "bgColor": "#ffe4d9",
+      "parent": "#anp567"
+    },
+    {
+      "@id": "#vbyvwg",
+      "name": "Cost Reduction Levers",
+      "x": 574,
+      "y": -114,
+      "link": "https://clawdocs.org/architecture/heartbeat#cost-reduction-levers",
+      "bgColor": "#ffe4d9",
+      "parent": "#anp567"
+    },
+    {
+      "@id": "#ahre4u",
+      "name": "Combined Example",
+      "x": 489,
+      "y": 90,
+      "link": "https://clawdocs.org/architecture/heartbeat#combined-example",
+      "bgColor": "#ffe4d9",
+      "parent": "#anp567"
+    },
+    {
+      "@id": "#ibdfdz",
+      "name": "Configuration",
+      "x": 170,
+      "y": 156,
+      "link": "https://clawdocs.org/architecture/heartbeat#configuration",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#z7edqb",
+      "name": "Configuration Options",
+      "x": 340,
+      "y": 311,
+      "link": "https://clawdocs.org/architecture/heartbeat#configuration-options",
+      "bgColor": "#f2ecd2",
+      "parent": "#ibdfdz"
+    },
+    {
+      "@id": "#2qq2fn",
+      "name": "Multi-Agent Heartbeat",
+      "x": 76,
+      "y": 210,
+      "link": "https://clawdocs.org/architecture/heartbeat#multi-agent-heartbeat",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#ri2pzw",
+      "name": "Dreaming Integration",
+      "x": -118,
+      "y": 195,
+      "link": "https://clawdocs.org/architecture/heartbeat#dreaming-integration",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#qbizrq",
+      "name": "Debugging",
+      "x": -197,
+      "y": 131,
+      "link": "https://clawdocs.org/architecture/heartbeat#debugging",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#yyfuzg",
+      "name": "Common Issues",
+      "x": -394,
+      "y": 262,
+      "link": "https://clawdocs.org/architecture/heartbeat#common-issues",
+      "bgColor": "#daeeff",
+      "parent": "#qbizrq"
+    },
+    {
+      "@id": "#xet7zf",
+      "name": "← Architecture",
+      "x": -244,
+      "y": 47,
+      "link": "./architecture.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 3,
+      "end": 4
+    },
+    {
+      "start": 3,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 7,
+      "end": 8
+    },
+    {
+      "start": 7,
+      "end": 9
+    },
+    {
+      "start": 7,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 11,
+      "end": 12
+    },
+    {
+      "start": 0,
+      "end": 13
+    },
+    {
+      "start": 0,
+      "end": 14
+    },
+    {
+      "start": 0,
+      "end": 15
+    },
+    {
+      "start": 15,
+      "end": 16
+    },
+    {
+      "start": 0,
+      "end": 17
+    }
+  ],
+  "selectedNode": 0
+}

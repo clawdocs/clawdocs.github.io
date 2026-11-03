@@ -1,0 +1,141 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "First 7 Days",
+      "x": 0,
+      "y": 0,
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#wjzwqw",
+      "name": "First 7 Days with OpenClaw",
+      "x": -228,
+      "y": -88,
+      "link": "./guides-first-7-days-index.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#cpmgtf",
+      "name": "Day 1: Make It Yours",
+      "x": -108,
+      "y": -198,
+      "link": "./guides-first-7-days-day-1-make-it-yours.jsonld",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#a85fzz",
+      "name": "Day 2: Your Daily Driver",
+      "x": 97,
+      "y": -199,
+      "link": "./guides-first-7-days-day-2-daily-driver.jsonld",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#eitj67",
+      "name": "Day 3: Set It Free",
+      "x": 220,
+      "y": -101,
+      "link": "./guides-first-7-days-day-3-automation.jsonld",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#bpmjzd",
+      "name": "Day 4: Supercharge It",
+      "x": 246,
+      "y": 38,
+      "link": "./guides-first-7-days-day-4-skills.jsonld",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#r8aetn",
+      "name": "Day 5: Be Everywhere",
+      "x": 159,
+      "y": 164,
+      "link": "./guides-first-7-days-day-5-multi-channel.jsonld",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#j3rh5f",
+      "name": "Day 6: Build Your Own",
+      "x": -3,
+      "y": 212,
+      "link": "./guides-first-7-days-day-6-power-moves.jsonld",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#mhgzj7",
+      "name": "Day 7: Lock It Down",
+      "x": -161,
+      "y": 163,
+      "link": "./guides-first-7-days-day-7-production.jsonld",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#67qhwk",
+      "name": "← clawdocs",
+      "x": -241,
+      "y": 57,
+      "link": "./index.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    }
+  ],
+  "selectedNode": 0
+}

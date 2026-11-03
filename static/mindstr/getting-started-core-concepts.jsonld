@@ -1,0 +1,168 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Core Concepts",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/getting-started/core-concepts",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#uhqx6j",
+      "name": "The Gateway",
+      "x": -241,
+      "y": -57,
+      "link": "https://clawdocs.org/getting-started/core-concepts#the-gateway",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#aurbbn",
+      "name": "The Brain",
+      "x": -171,
+      "y": -155,
+      "link": "https://clawdocs.org/getting-started/core-concepts#the-brain-reasoning-engine",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#fxz322",
+      "name": "The Hands",
+      "x": -52,
+      "y": -208,
+      "link": "https://clawdocs.org/getting-started/core-concepts#the-hands-execution-environment",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#s77s87",
+      "name": "The Memory System",
+      "x": 89,
+      "y": -199,
+      "link": "https://clawdocs.org/getting-started/core-concepts#the-memory-system",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#k73rni",
+      "name": "The Heartbeat",
+      "x": 202,
+      "y": -125,
+      "link": "https://clawdocs.org/getting-started/core-concepts#the-heartbeat",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#r8zm2z",
+      "name": "How They Fit Together",
+      "x": 250,
+      "y": 0,
+      "link": "https://clawdocs.org/getting-started/core-concepts#how-they-fit-together",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#wzv4c3",
+      "name": "SOUL.md",
+      "x": 202,
+      "y": 125,
+      "link": "https://clawdocs.org/getting-started/core-concepts#soulmd-identity-personality",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#7fnz2s",
+      "name": "Skills",
+      "x": 97,
+      "y": 196,
+      "link": "https://clawdocs.org/getting-started/core-concepts#skills",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#p89exh",
+      "name": "MCP",
+      "x": -37,
+      "y": 210,
+      "link": "https://clawdocs.org/getting-started/core-concepts#mcp-model-context-protocol",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#urtpxv",
+      "name": "Multi-Agent",
+      "x": -159,
+      "y": 164,
+      "link": "https://clawdocs.org/getting-started/core-concepts#multi-agent",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#4dg5c4",
+      "name": "← Getting Started",
+      "x": -239,
+      "y": 64,
+      "link": "./getting-started.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 0,
+      "end": 3
+    },
+    {
+      "start": 0,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 0,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 0,
+      "end": 9
+    },
+    {
+      "start": 0,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    }
+  ],
+  "selectedNode": 0
+}

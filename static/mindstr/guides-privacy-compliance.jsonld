@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Privacy & Compliance",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/privacy-compliance",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#z628rq",
+      "name": "Data Flow Map",
+      "x": -225,
+      "y": -93,
+      "link": "https://clawdocs.org/guides/privacy-compliance#data-flow-map",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#k4yvu5",
+      "name": "What Leaves Your Machine",
+      "x": -489,
+      "y": -89,
+      "link": "https://clawdocs.org/guides/privacy-compliance#what-leaves-your-machine",
+      "bgColor": "#daeeff",
+      "parent": "#z628rq"
+    },
+    {
+      "@id": "#zacst3",
+      "name": "What Stays Local",
+      "x": -531,
+      "y": -218,
+      "link": "https://clawdocs.org/guides/privacy-compliance#what-stays-local",
+      "bgColor": "#daeeff",
+      "parent": "#z628rq"
+    },
+    {
+      "@id": "#grwyj6",
+      "name": "Does OpenClaw Phone Home?",
+      "x": -385,
+      "y": -272,
+      "link": "https://clawdocs.org/guides/privacy-compliance#does-openclaw-phone-home",
+      "bgColor": "#daeeff",
+      "parent": "#z628rq"
+    },
+    {
+      "@id": "#yhtgag",
+      "name": "Channel Encryption Comparison",
+      "x": -113,
+      "y": -190,
+      "link": "https://clawdocs.org/guides/privacy-compliance#channel-encryption-comparison",
+      "bgColor": "#d9c6fb",
+      "parent": "#this"
+    },
+    {
+      "@id": "#e538m2",
+      "name": "GDPR Compliance",
+      "x": 97,
+      "y": -196,
+      "link": "https://clawdocs.org/guides/privacy-compliance#gdpr-compliance",
+      "bgColor": "#f9bdd5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jtjwb8",
+      "name": "Is OpenClaw GDPR-Compliant?",
+      "x": -8,
+      "y": -425,
+      "link": "https://clawdocs.org/guides/privacy-compliance#is-openclaw-gdpr-compliant",
+      "bgColor": "#ffe2ed",
+      "parent": "#e538m2"
+    },
+    {
+      "@id": "#pa7irf",
+      "name": "LLM Provider Data Processing Agreements",
+      "x": 199,
+      "y": -472,
+      "link": "https://clawdocs.org/guides/privacy-compliance#llm-provider-data-processing-agreements",
+      "bgColor": "#ffe2ed",
+      "parent": "#e538m2"
+    },
+    {
+      "@id": "#gvm9ha",
+      "name": "Right to Erasure",
+      "x": 290,
+      "y": -337,
+      "link": "https://clawdocs.org/guides/privacy-compliance#right-to-erasure",
+      "bgColor": "#ffe2ed",
+      "parent": "#e538m2"
+    },
+    {
+      "@id": "#k6usfa",
+      "name": "EU Data Residency",
+      "x": 454,
+      "y": -327,
+      "link": "https://clawdocs.org/guides/privacy-compliance#eu-data-residency",
+      "bgColor": "#ffe2ed",
+      "parent": "#e538m2"
+    },
+    {
+      "@id": "#tyxsbq",
+      "name": "Enterprise Compliance",
+      "x": 250,
+      "y": 5,
+      "link": "https://clawdocs.org/guides/privacy-compliance#enterprise-compliance",
+      "bgColor": "#fcc2a9",
+      "parent": "#this"
+    },
+    {
+      "@id": "#s72u5e",
+      "name": "SOC 2",
+      "x": 475,
+      "y": -134,
+      "link": "https://clawdocs.org/guides/privacy-compliance#soc-2",
+      "bgColor": "#ffe4d9",
+      "parent": "#tyxsbq"
+    },
+    {
+      "@id": "#4ba893",
+      "name": "HIPAA",
+      "x": 585,
+      "y": -66,
+      "link": "https://clawdocs.org/guides/privacy-compliance#hipaa",
+      "bgColor": "#ffe4d9",
+      "parent": "#tyxsbq"
+    },
+    {
+      "@id": "#f44e2u",
+      "name": "Air-Gapped Deployments",
+      "x": 498,
+      "y": 39,
+      "link": "https://clawdocs.org/guides/privacy-compliance#air-gapped-deployments",
+      "bgColor": "#ffe4d9",
+      "parent": "#tyxsbq"
+    },
+    {
+      "@id": "#m4gnq2",
+      "name": "Network Segmentation",
+      "x": 556,
+      "y": 167,
+      "link": "https://clawdocs.org/guides/privacy-compliance#network-segmentation",
+      "bgColor": "#ffe4d9",
+      "parent": "#tyxsbq"
+    },
+    {
+      "@id": "#4u6tfw",
+      "name": "Access Control",
+      "x": 147,
+      "y": 172,
+      "link": "https://clawdocs.org/guides/privacy-compliance#access-control",
+      "bgColor": "#e0d199",
+      "parent": "#this"
+    },
+    {
+      "@id": "#72ecck",
+      "name": "Current State",
+      "x": 382,
+      "y": 274,
+      "link": "https://clawdocs.org/guides/privacy-compliance#current-state-february-2026",
+      "bgColor": "#f2ecd2",
+      "parent": "#4u6tfw"
+    },
+    {
+      "@id": "#vx58jh",
+      "name": "Workarounds for Enterprise",
+      "x": 366,
+      "y": 406,
+      "link": "https://clawdocs.org/guides/privacy-compliance#workarounds-for-enterprise",
+      "bgColor": "#f2ecd2",
+      "parent": "#4u6tfw"
+    },
+    {
+      "@id": "#zaxnik",
+      "name": "Planned RBAC",
+      "x": 183,
+      "y": 394,
+      "link": "https://clawdocs.org/guides/privacy-compliance#planned-rbac",
+      "bgColor": "#f2ecd2",
+      "parent": "#4u6tfw"
+    },
+    {
+      "@id": "#qd248e",
+      "name": "Audit and Data Control",
+      "x": -104,
+      "y": 193,
+      "link": "https://clawdocs.org/guides/privacy-compliance#audit-and-data-control",
+      "bgColor": "#b1dfb5",
+      "parent": "#this"
+    },
+    {
+      "@id": "#493myw",
+      "name": "How to Audit What OpenClaw Has Stored",
+      "x": -41,
+      "y": 411,
+      "link": "https://clawdocs.org/guides/privacy-compliance#how-to-audit-what-openclaw-has-stored",
+      "bgColor": "#ddf2de",
+      "parent": "#qd248e"
+    },
+    {
+      "@id": "#4dnng8",
+      "name": "Conversation Logging and Retention",
+      "x": -263,
+      "y": 456,
+      "link": "https://clawdocs.org/guides/privacy-compliance#conversation-logging-and-retention",
+      "bgColor": "#ddf2de",
+      "parent": "#qd248e"
+    },
+    {
+      "@id": "#ds6mnw",
+      "name": "Memory File Encryption Options",
+      "x": -363,
+      "y": 292,
+      "link": "https://clawdocs.org/guides/privacy-compliance#memory-file-encryption-options",
+      "bgColor": "#ddf2de",
+      "parent": "#qd248e"
+    },
+    {
+      "@id": "#9nsksx",
+      "name": "API Key Protection",
+      "x": -234,
+      "y": 74,
+      "link": "https://clawdocs.org/guides/privacy-compliance#api-key-protection",
+      "bgColor": "#95e1e3",
+      "parent": "#this"
+    },
+    {
+      "@id": "#i5s927",
+      "name": "← Guides",
+      "x": -248,
+      "y": 24,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 1,
+      "end": 2
+    },
+    {
+      "start": 1,
+      "end": 3
+    },
+    {
+      "start": 1,
+      "end": 4
+    },
+    {
+      "start": 0,
+      "end": 5
+    },
+    {
+      "start": 0,
+      "end": 6
+    },
+    {
+      "start": 6,
+      "end": 7
+    },
+    {
+      "start": 6,
+      "end": 8
+    },
+    {
+      "start": 6,
+      "end": 9
+    },
+    {
+      "start": 6,
+      "end": 10
+    },
+    {
+      "start": 0,
+      "end": 11
+    },
+    {
+      "start": 11,
+      "end": 12
+    },
+    {
+      "start": 11,
+      "end": 13
+    },
+    {
+      "start": 11,
+      "end": 14
+    },
+    {
+      "start": 11,
+      "end": 15
+    },
+    {
+      "start": 0,
+      "end": 16
+    },
+    {
+      "start": 16,
+      "end": 17
+    },
+    {
+      "start": 16,
+      "end": 18
+    },
+    {
+      "start": 16,
+      "end": 19
+    },
+    {
+      "start": 0,
+      "end": 20
+    },
+    {
+      "start": 20,
+      "end": 21
+    },
+    {
+      "start": 20,
+      "end": 22
+    },
+    {
+      "start": 20,
+      "end": 23
+    },
+    {
+      "start": 0,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}

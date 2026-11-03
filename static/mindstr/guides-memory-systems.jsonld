@@ -1,0 +1,350 @@
+{
+  "@context": {
+    "@vocab": "https://mindstr.org/ns#",
+    "link": {
+      "@type": "@id"
+    },
+    "parent": {
+      "@type": "@id"
+    }
+  },
+  "version": "0.2",
+  "nodes": [
+    {
+      "@id": "#this",
+      "name": "Memory Systems Compared",
+      "x": 0,
+      "y": 0,
+      "link": "https://clawdocs.org/guides/memory-systems",
+      "bgColor": "#ebc573"
+    },
+    {
+      "@id": "#xrjau3",
+      "name": "Quick Decision",
+      "x": -248,
+      "y": -29,
+      "link": "https://clawdocs.org/guides/memory-systems#quick-decision",
+      "bgColor": "#acd5ff",
+      "parent": "#this"
+    },
+    {
+      "@id": "#73hjj4",
+      "name": "Built-In Memory",
+      "x": -134,
+      "y": -179,
+      "link": "https://clawdocs.org/guides/memory-systems#built-in-memory",
+      "bgColor": "#e0c4f6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#uz4naj",
+      "name": "How It Works",
+      "x": -438,
+      "y": -205,
+      "link": "https://clawdocs.org/guides/memory-systems#how-it-works",
+      "bgColor": "#f2e5fd",
+      "parent": "#73hjj4"
+    },
+    {
+      "@id": "#adp4rg",
+      "name": "Configuration",
+      "x": -439,
+      "y": -335,
+      "link": "https://clawdocs.org/guides/memory-systems#configuration",
+      "bgColor": "#f2e5fd",
+      "parent": "#73hjj4"
+    },
+    {
+      "@id": "#his493",
+      "name": "Retrieval",
+      "x": -287,
+      "y": -348,
+      "link": "https://clawdocs.org/guides/memory-systems#retrieval",
+      "bgColor": "#f2e5fd",
+      "parent": "#73hjj4"
+    },
+    {
+      "@id": "#hxyeus",
+      "name": "Dreaming",
+      "x": -221,
+      "y": -465,
+      "link": "https://clawdocs.org/guides/memory-systems#dreaming-memory-core-plugin",
+      "bgColor": "#f2e5fd",
+      "parent": "#73hjj4"
+    },
+    {
+      "@id": "#rtnati",
+      "name": "When Built-In Is Enough",
+      "x": -55,
+      "y": -422,
+      "link": "https://clawdocs.org/guides/memory-systems#when-built-in-is-enough",
+      "bgColor": "#f2e5fd",
+      "parent": "#73hjj4"
+    },
+    {
+      "@id": "#secv9p",
+      "name": "Community Memory Systems",
+      "x": 288,
+      "y": 97,
+      "link": "https://clawdocs.org/guides/memory-systems#community-memory-systems",
+      "bgColor": "#febdc6",
+      "parent": "#this"
+    },
+    {
+      "@id": "#sapcqr",
+      "name": "Comparison Matrix",
+      "x": 275,
+      "y": -355,
+      "link": "https://clawdocs.org/guides/memory-systems#comparison-matrix",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#rud7zp",
+      "name": "Mem0",
+      "x": 432,
+      "y": -341,
+      "link": "https://clawdocs.org/guides/memory-systems#mem0",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#awrgkd",
+      "name": "memU",
+      "x": 434,
+      "y": -211,
+      "link": "https://clawdocs.org/guides/memory-systems#memu",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#6npnp6",
+      "name": "OpenViking",
+      "x": 565,
+      "y": -145,
+      "link": "https://clawdocs.org/guides/memory-systems#openviking",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#abay86",
+      "name": "MemPalace",
+      "x": 499,
+      "y": -28,
+      "link": "https://clawdocs.org/guides/memory-systems#mempalace",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#ci9c3c",
+      "name": "Supermemory",
+      "x": 582,
+      "y": 81,
+      "link": "https://clawdocs.org/guides/memory-systems#supermemory",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#c54vbt",
+      "name": "Lossless Claw",
+      "x": 462,
+      "y": 162,
+      "link": "https://clawdocs.org/guides/memory-systems#lossless-claw",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#e7mcpc",
+      "name": "Hindsight",
+      "x": 481,
+      "y": 291,
+      "link": "https://clawdocs.org/guides/memory-systems#hindsight",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#x6r876",
+      "name": "claude-mem",
+      "x": 331,
+      "y": 318,
+      "link": "https://clawdocs.org/guides/memory-systems#claude-mem",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#m5cayp",
+      "name": "MemoV",
+      "x": 281,
+      "y": 441,
+      "link": "https://clawdocs.org/guides/memory-systems#memov",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#95hxn6",
+      "name": "PowerMem",
+      "x": 133,
+      "y": 410,
+      "link": "https://clawdocs.org/guides/memory-systems#powermem",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#m2z7s3",
+      "name": "Cognee",
+      "x": 24,
+      "y": 501,
+      "link": "https://clawdocs.org/guides/memory-systems#cognee",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#iznddb",
+      "name": "Letta",
+      "x": -93,
+      "y": 418,
+      "link": "https://clawdocs.org/guides/memory-systems#letta",
+      "bgColor": "#ffe2e6",
+      "parent": "#secv9p"
+    },
+    {
+      "@id": "#5gmfss",
+      "name": "Integration Methods",
+      "x": -170,
+      "y": 155,
+      "link": "https://clawdocs.org/guides/memory-systems#integration-methods",
+      "bgColor": "#f1c99c",
+      "parent": "#this"
+    },
+    {
+      "@id": "#3v7g7s",
+      "name": "Decision Framework",
+      "x": -224,
+      "y": 95,
+      "link": "https://clawdocs.org/guides/memory-systems#decision-framework",
+      "bgColor": "#c1dba8",
+      "parent": "#this"
+    },
+    {
+      "@id": "#jjpc9k",
+      "name": "By Privacy Requirements",
+      "x": -447,
+      "y": 190,
+      "link": "https://clawdocs.org/guides/memory-systems#by-privacy-requirements",
+      "bgColor": "#e3f0d8",
+      "parent": "#3v7g7s"
+    },
+    {
+      "@id": "#vxdvti",
+      "name": "← Guides",
+      "x": -248,
+      "y": 29,
+      "link": "./guides.jsonld",
+      "bgColor": "#ececec",
+      "parent": "#this"
+    }
+  ],
+  "connections": [
+    {
+      "start": 0,
+      "end": 1
+    },
+    {
+      "start": 0,
+      "end": 2
+    },
+    {
+      "start": 2,
+      "end": 3
+    },
+    {
+      "start": 2,
+      "end": 4
+    },
+    {
+      "start": 2,
+      "end": 5
+    },
+    {
+      "start": 2,
+      "end": 6
+    },
+    {
+      "start": 2,
+      "end": 7
+    },
+    {
+      "start": 0,
+      "end": 8
+    },
+    {
+      "start": 8,
+      "end": 9
+    },
+    {
+      "start": 8,
+      "end": 10
+    },
+    {
+      "start": 8,
+      "end": 11
+    },
+    {
+      "start": 8,
+      "end": 12
+    },
+    {
+      "start": 8,
+      "end": 13
+    },
+    {
+      "start": 8,
+      "end": 14
+    },
+    {
+      "start": 8,
+      "end": 15
+    },
+    {
+      "start": 8,
+      "end": 16
+    },
+    {
+      "start": 8,
+      "end": 17
+    },
+    {
+      "start": 8,
+      "end": 18
+    },
+    {
+      "start": 8,
+      "end": 19
+    },
+    {
+      "start": 8,
+      "end": 20
+    },
+    {
+      "start": 8,
+      "end": 21
+    },
+    {
+      "start": 0,
+      "end": 22
+    },
+    {
+      "start": 0,
+      "end": 23
+    },
+    {
+      "start": 23,
+      "end": 24
+    },
+    {
+      "start": 0,
+      "end": 25
+    }
+  ],
+  "selectedNode": 0
+}
