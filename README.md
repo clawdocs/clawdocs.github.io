@@ -1,5 +1,7 @@
 # OpenClaw Docs
 
+[![Mind map](https://mindstr.org/badge.svg)](https://mindstr.org/?uri=https://clawdocs.github.io/mindstr/index.jsonld)
+
 Community documentation for [OpenClaw](https://openclaw.ai), published at [clawdocs.org](https://clawdocs.org). Built with [Docusaurus](https://docusaurus.io/).
 
 ## Installation
