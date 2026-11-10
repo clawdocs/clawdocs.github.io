@@ -108,6 +108,12 @@ A desktop "cowork" app that runs a built-in agent and detects installed CLI agen
 
 - 33,610 stars, Apache-2.0, last push 2026-10-14, latest release v2.2.2 (2026-09-09). Repo: [iOfficeAI/AionUi](https://github.com/iOfficeAI/AionUi). Not tested by clawdocs.
 
+
+### Vox AI Relay
+
+A native Android client that speaks the authenticated Gateway WebSocket protocol directly: `GatewayProtocol.kt` pins `minProtocol` and `maxProtocol` to 4, so it works with current Gateways, and pairing follows the usual `openclaw devices list` approval step. Voice input is transcribed on-device, replies stream into Android text-to-speech sentence by sentence, and the mic button interrupts generation mid-run. The same APK can also connect to a Hermes Agent `api_server`, with the backend switch visible in the UI, and push notifications arrive through self-hosted ntfy, so no Firebase project is required.
+
+- New project: first release `v0.8.0` (2026-11-10) is a pre-release with a debug-signed APK, source zip and SHA256SUMS; MIT, Kotlin, Gradle CI on every tag. Repo: [Xilebo123/vox-ai-relay](https://github.com/Xilebo123/vox-ai-relay). Not tested by clawdocs.
 ---
 
 ## Deployment tools

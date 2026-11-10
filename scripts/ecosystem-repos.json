@@ -61,6 +61,7 @@
     "openinterpreter/openinterpreter",
     "aaif-goose/goose",
     "n8n-io/n8n",
-    "FoundationAgents/MetaGPT"
+    "FoundationAgents/MetaGPT",
+    "Xilebo123/vox-ai-relay"
   ]
 }
