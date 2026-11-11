@@ -48,6 +48,7 @@ Prices are entry prices as of 2026-10-18, from each provider's site. Promotional
 | [Everpod](#everpod) | Managed | $29/mo | — | — | One customer per machine, model usage included |
 | [OpenClawHosting.io](#openclawhosting) | BYOS Managed | $29/mo | Yes (GPU) | — | Multi-instance teams |
 | [MoltBotHost](#moltbothost) | BYOS Managed | $29/mo | Yes (GPU) | Partial | Bring your own server |
+| [Heyron](#heyron) | Managed | $49/mo (model usage included) | No | — | Solo founders; includes a founder community |
 | [SEAOTTER](#seaotter) | Managed Hermes, **not OpenClaw** | $99/mo | No | — | Hermes Agent only |
 
 :::warning
@@ -273,6 +274,21 @@ Managed OpenClaw with a workspace on top. Each workspace is a standard OpenClaw 
 - **Data**: Notes and agent files are plain `.md`; any note downloads as a file
 - **Hosting**: Germany (netcup, Nuremberg); operated by PIKsolution OÜ, Tallinn, Estonia (EU)
 - **Trade-offs**: Catalog models only, OpenClaw releases arrive after the provider has tested them, no arbitrary packages on the server — see [what differs from self-hosting](https://aplite.ai/docs/openclaw)
+- **Status**: Independent service, not affiliated with the OpenClaw project
+
+### Heyron {#heyron}
+
+Managed OpenClaw for solo founders. Model usage and a founder community are included in one monthly price.
+
+- **URL**: [heyron.ai](https://heyron.ai)
+- **Price** (as of 2026-11-11, [source](https://heyron.ai/pricing)): $49/month for one agent, including $15/month of model usage; top-ups of $10, $25 or $50 carry over until used. Full refund within 14 days of the first payment
+- **Setup**: About a minute, per the provider; no server, terminal or API key needed
+- **Channels**: Telegram, WhatsApp, Discord, Slack and a web chat
+- **Agents**: OpenClaw by default; Hermes or a coding agent (Claude Code, Codex and others) can be picked instead
+- **Models**: Hosted model catalog; usage comes out of the included allowance, so no API key is needed
+- **Features** (provider's own claims): the agent runs 24/7 on its own computer, 1,000+ app connections, built-in web search
+- **Extras**: Membership includes Solo Software Studio, a community on launching an app and finding a first paying customer
+- **Local LLMs**: No
 - **Status**: Independent service, not affiliated with the OpenClaw project
 
 ---
