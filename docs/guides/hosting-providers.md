@@ -37,7 +37,7 @@ Prices are entry prices as of 2026-10-18, from each provider's site. Promotional
 | [OpenClaw Launch](#openclawlaunch) | Managed | $6/mo | No | No | AI credits, fast setup |
 | [MyClaw.ai](#myclawai) | Managed | $19/mo | No | Partial | Dedicated managed, also Hermes/Claude Code |
 | [OneClickClaw.io](#oneclickclaw) | Managed VPS | €14.99/mo | Yes (Hobbyist, Pro) | Yes | OpenClaw or Hermes Agent, 7-day free trial |
-| [serverserv](#serverserv) | Pre-installed VPS | $14.99/mo ($10.99/mo on 3 years) | Possible (CPU, larger plans) | — | Set up for you, with full root access |
+| [serverserv](#serverserv) | Pre-installed VPS | $8.99 first month, then $17.59/mo ($5.59/mo on 3 years) | Possible (CPU, larger plans) | — | Set up for you, with full root access |
 | [OpenClaw Cloud](#openclaw-cloud) | Managed | $19/mo | Free model | Yes | Free trial, own URL |
 | [ClawHosters](#clawhosters) | Managed VPS | €19/mo | — | Yes | GDPR, German servers |
 | [Clawbase](#molty-hosting) | Managed | $19.99/mo | No | — | Browser dashboard |
@@ -397,7 +397,7 @@ OpenClaw image on a Simple Application Server, wired to Alibaba Cloud Model Stud
 ### serverserv {#serverserv}
 
 - **URL**: [serverserv.com/openclaw-hosting.html](https://serverserv.com/openclaw-hosting.html)
-- **Price** (as of 2026-10-28): OpenClaw Starter (2 vCPU, 4 GB RAM, 50 GB NVMe) $14.99/month billed monthly, or $10.99/month on a 3-year term; larger plans up to 18 vCPU and 96 GB RAM
+- **Price** (as of 2026-11-11): OpenClaw Starter (2 vCPU, 4 GB RAM, 50 GB NVMe) $8.99 for the first month then $17.59/month, or $5.59/month on a 3-year term renewing at $10.39/month; larger plans up to 18 vCPU and 96 GB RAM
 - **Features**: OpenClaw pre-installed and configured on a KVM VPS with full root access; the first agent task is set up with the customer; bring your own model key or subscription
 - **Locations**: North America
 - **Refund**: 14 days on a first order
