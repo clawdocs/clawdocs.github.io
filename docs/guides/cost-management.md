@@ -246,6 +246,7 @@ These are third-party projects, not reviewed by clawdocs. Check what they read a
 | [openclaw-dashboard](https://github.com/tugcantopaloglu/openclaw-dashboard) | Usage-limit notifications and cost analysis by model |
 | [ClawWatcher](https://news.ycombinator.com/item?id=46954200) | Token usage and cost per model |
 | [OpenClaw Cost Calculator](https://calculator.vlvt.sh/) | Pre-deployment estimates |
+| [psyseal-scan](https://github.com/psyseal/psyseal-scan) | Offline, read-only scan of an agent folder (`npx psyseal-scan`): what loads on every message, heartbeat cost estimate, plaintext keys, planted memory. No network, MIT-0 |
 
 ## Quick start: cut costs today
 
