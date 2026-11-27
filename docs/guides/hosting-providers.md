@@ -48,6 +48,7 @@ Prices are entry prices as of 2026-10-18, from each provider's site. Promotional
 | [Everpod](#everpod) | Managed | $29/mo | — | — | One customer per machine, model usage included |
 | [OpenClawHosting.io](#openclawhosting) | BYOS Managed | $29/mo | Yes (GPU) | — | Multi-instance teams |
 | [MoltBotHost](#moltbothost) | BYOS Managed | $29/mo | Yes (GPU) | Partial | Bring your own server |
+| [Simafri](#simafri) | Managed VPS | US$33.99/mo excl. tax | Small models (CPU) | Not stated | Managed server, tested Docker guide |
 | [SEAOTTER](#seaotter) | Managed Hermes, **not OpenClaw** | $99/mo | No | — | Hermes Agent only |
 
 :::warning
@@ -273,6 +274,19 @@ Managed OpenClaw with a workspace on top. Each workspace is a standard OpenClaw 
 - **Data**: Notes and agent files are plain `.md`; any note downloads as a file
 - **Hosting**: Germany (netcup, Nuremberg); operated by PIKsolution OÜ, Tallinn, Estonia (EU)
 - **Trade-offs**: Catalog models only, OpenClaw releases arrive after the provider has tested them, no arbitrary packages on the server — see [what differs from self-hosting](https://aplite.ai/docs/openclaw)
+- **Status**: Independent service, not affiliated with the OpenClaw project
+
+### Simafri {#simafri}
+
+Managed VPS: Simafri runs the server, and you install OpenClaw yourself with the official Docker image, following a guide tested on the release it names.
+
+- **URL**: [simafri.com/en/managed-vps](https://www.simafri.com/en/managed-vps/)
+- **Price** (as of 2026-11-27, [source](https://www.simafri.com/en/managed-vps/)): US$33.99/month excl. tax for Managed VPS Pro 2 (2 vCPU, 4 GB RAM, 50 GB NVMe), the size the guide recommends for OpenClaw and the one it was tested on
+- **Setup**: you install OpenClaw from the [Simafri guide](https://www.simafri.com/en/guides/self-host-openclaw/): official image with Docker Compose, Caddy for HTTPS, browser pairing, `openclaw backup create` and restore, image updates; tested on 2026.11.10
+- **Managed** (per the provider): system and security updates, 24/7 monitoring with intervention on the server, proactive monitoring of your application, encrypted nightly backups kept off the machine, restores included, free migration
+- **Access**: root and SSH access to your own server
+- **LLM**: BYOK; your model provider bills its own usage
+- **Local LLMs**: compact models with Ollama or llama.cpp on the CPU, from Pro 3 per the provider ([source](https://www.simafri.com/en/ai-vps/))
 - **Status**: Independent service, not affiliated with the OpenClaw project
 
 ---
